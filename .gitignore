@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment & secrets (never commit real env; .env.example IS tracked)
+.env
+.env.local
+.env.*.local
+
+# Test / coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# Claude Code machine-local settings
+.claude/settings.local.json
+
+# Prisma generated client (regenerated via `prisma generate`)
+**/generated/prisma/

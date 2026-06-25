@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" width="200" height="280" role="img" aria-label="Junior – Froehlich">
+<ellipse cx="100" cy="262" rx="50" ry="8" fill="#3A5A10" opacity="0.10"></ellipse>
+<path d="M56 150 Q40 156 38 174" stroke="#A4D037" stroke-width="14" fill="none" stroke-linecap="round"></path>
+<path d="M144 150 Q160 156 162 174" stroke="#A4D037" stroke-width="14" fill="none" stroke-linecap="round"></path>
+<rect x="56" y="92" width="88" height="170" rx="44" fill="#A4D037"></rect>
+<path d="M56 212 H144 V218 Q144 262 100 262 Q56 262 56 218 Z" fill="#7FB024"></path>
+<path d="M100 92 L100 62" stroke="#7FB024" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<path d="M100 78 Q72 72 66 44 Q92 44 100 74 Z" fill="#8FC02E"></path>
+<path d="M100 72 Q128 62 140 36 Q108 34 100 68 Z" fill="#A4D037"></path>
+<circle cx="70" cy="156" r="7" fill="#FF9AA8"></circle><circle cx="130" cy="156" r="7" fill="#FF9AA8"></circle>
+<circle cx="84" cy="140" r="13" fill="#fff"></circle><circle cx="116" cy="140" r="13" fill="#fff"></circle>
+<circle cx="86" cy="142" r="7" fill="#21400A"></circle><circle cx="114" cy="142" r="7" fill="#21400A"></circle>
+<circle cx="88" cy="139" r="2.4" fill="#fff"></circle><circle cx="116" cy="139" r="2.4" fill="#fff"></circle>
+<path d="M84 160 Q100 178 116 160 Q100 170 84 160 Z" fill="#21400A"></path>
+<path d="M95 168 Q100 174 105 168 Z" fill="#FF9AA8"></path>
+</svg>

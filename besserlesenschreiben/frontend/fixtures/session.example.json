@@ -1,0 +1,21 @@
+{
+  "_comment": "GOLDEN FIXTURE — the example POST /sessions response the frontend must render. Covers all 12 exercise types (one each) with real content extracted from the prototype's LESSONS[]. Use this as (a) the backend's example payload, (b) the frontend's render target, (c) the snapshot-test fixture AGENTS.md asks for. Field shapes mirror backend SPEC.md §6 and the Exercise union in frontend SPEC.md §3. skillTags use the snake_case taxonomy from backend scripts/build-seed.ts (primary skill first). audioUrl is null here so the client falls back to Web Speech (de-DE); the backend may populate audioUrl / syllableAudio with pre-generated voice.",
+  "sessionId": "sess_demo_0001",
+  "profileId": "prof_mia_0001",
+  "unit": 1,
+  "generatedAt": "2026-06-25T09:00:00Z",
+  "items": [
+    { "id": "ex_count_001", "type": "count", "word": "Sommer", "syll": ["Som", "mer"], "answer": 2, "opts": [2, 3, 4], "praise": "Richtig! Som·mer – zwei Silben.", "audioUrl": null, "syllableAudio": null, "skillTags": ["syllable_count", "syllable_segmentation"] },
+    { "id": "ex_gap_001", "type": "gap", "word": "Banane", "syll": ["Ba", "na", "ne"], "gapIndex": 1, "answer": "na", "options": ["na", "mo", "le"], "praise": "Genau! Ba·na·ne ist komplett.", "audioUrl": null, "skillTags": ["syllable_gap", "syllable_segmentation"] },
+    { "id": "ex_order_001", "type": "order", "word": "Schmetterling", "syll": ["Schmet", "ter", "ling"], "tiles": ["ter", "Schmet", "ling"], "praise": "Super! Schmet·ter·ling sitzt.", "audioUrl": null, "skillTags": ["syllable_order", "syllable_segmentation"] },
+    { "id": "ex_rhyme_001", "type": "rhyme", "word": "Maus", "options": ["Haus", "Tisch", "Ball"], "answer": "Haus", "praise": "Genau! Maus reimt sich auf Haus.", "audioUrl": null, "skillTags": ["rhyme"] },
+    { "id": "ex_initial_001", "type": "initial", "word": "Apfel", "emoji": "🍎", "answer": "A", "options": ["A", "E", "O"], "praise": "Richtig! Apfel beginnt mit A.", "audioUrl": null, "skillTags": ["phoneme_initial", "letter_sound"] },
+    { "id": "ex_letter_001", "type": "letter", "word": "Sonne", "letters": ["S", "o", "n", "n", "e"], "gapIndex": 2, "answer": "n", "options": ["n", "m", "r"], "praise": "Genau! In Sonne fehlt das n.", "audioUrl": null, "skillTags": ["phoneme_position", "letter_sound"] },
+    { "id": "ex_case_001", "type": "case", "word": "Hund", "emoji": "🐶", "answer": "Hund", "options": ["Hund", "hund"], "praise": "Richtig! Hund ist ein Nomen – groß.", "audioUrl": null, "skillTags": ["capitalization", "word_class_noun"] },
+    { "id": "ex_arrange_001", "type": "arrange", "word": "Maus", "syll": ["M", "a", "u", "s"], "tiles": ["a", "s", "M", "u"], "praise": "Super! M·a·u·s – richtig geordnet.", "audioUrl": null, "skillTags": ["letter_order", "spelling"] },
+    { "id": "ex_nonsense_001", "type": "nonsense", "word": "Lomp", "answer": "Quatschwort", "options": ["Echtes Wort", "Quatschwort"], "praise": "Genau! Lomp ist ein Quatschwort.", "audioUrl": null, "skillTags": ["lexical_decision"] },
+    { "id": "ex_pairs_001", "type": "pairs", "tiles": ["Haus", "Tisch", "Maus", "Ball"], "pair": ["Haus", "Maus"], "praise": "Super! Haus und Maus reimen sich.", "audioUrl": null, "skillTags": ["rhyme_pairs", "rhyme"] },
+    { "id": "ex_bd_001", "type": "bd", "glyph": "d", "answer": "d", "options": ["b", "d", "p"], "praise": "Richtig! Das ist ein d – der Bauch zeigt nach rechts.", "audioUrl": null, "skillTags": ["letter_discrimination"] },
+    { "id": "ex_vowel_001", "type": "vowel", "word": "Liebe", "letters": ["L", "ie", "b", "e"], "gapIndex": 1, "answer": "ie", "options": ["ie", "ei", "eu"], "praise": "Genau! Liebe schreibt man mit ie.", "audioUrl": null, "skillTags": ["vowel_ie", "vowel_spelling", "spelling"] }
+  ]
+}

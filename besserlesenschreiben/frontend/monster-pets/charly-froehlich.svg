@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 270" width="260" height="270" role="img" aria-label="Charly – Froehlich">
+<ellipse cx="130" cy="252" rx="58" ry="10" fill="#114A2E" opacity="0.10"></ellipse>
+<path d="M74 80 L66 50 L104 76 Z" fill="#3DBE74"></path><path d="M186 80 L194 50 L156 76 Z" fill="#3DBE74"></path>
+<rect x="58" y="74" width="144" height="162" rx="66" fill="#3DBE74"></rect>
+<ellipse cx="130" cy="214" rx="52" ry="24" fill="#2A9E5C"></ellipse>
+<ellipse cx="130" cy="214" rx="52" ry="24" fill="#2A9E5C"></ellipse>
+<circle cx="80" cy="176" r="8" fill="#8FE0B0"></circle><circle cx="180" cy="176" r="8" fill="#8FE0B0"></circle>
+<circle cx="104" cy="150" r="20" fill="#fff"></circle><circle cx="156" cy="150" r="20" fill="#fff"></circle>
+<circle cx="107" cy="153" r="9" fill="#114A2E"></circle><circle cx="153" cy="153" r="9" fill="#114A2E"></circle>
+<circle cx="111" cy="148" r="3.5" fill="#fff"></circle><circle cx="157" cy="148" r="3.5" fill="#fff"></circle>
+<path d="M104 182 Q130 212 156 182 Q130 196 104 182 Z" fill="#114A2E"></path>
+<path d="M124 182 l1 7 5 -4 Z" fill="#fff"></path>
+<path d="M121 196 Q130 205 139 196 Z" fill="#FF7A59"></path>
+</svg>

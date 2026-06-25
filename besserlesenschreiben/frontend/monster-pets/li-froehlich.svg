@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 250" width="260" height="250" role="img" aria-label="Li – Froehlich">
+<ellipse cx="130" cy="236" rx="60" ry="9" fill="#7A5A0A" opacity="0.10"></ellipse>
+<path d="M98 92 L90 46 L116 84 Z" fill="#E8A91E"></path>
+<path d="M130 84 L130 38 L148 80 Z" fill="#E8A91E"></path>
+<path d="M162 92 L178 50 L144 84 Z" fill="#E8A91E"></path>
+<path d="M110 86 Q102 60 114 48" stroke="#E8A91E" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<circle cx="114" cy="46" r="7" fill="#FFE36B"></circle>
+<path d="M150 86 Q158 60 146 48" stroke="#E8A91E" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<g><circle cx="140" cy="44" r="6" fill="#FF8FB0"></circle><circle cx="152" cy="44" r="6" fill="#FF8FB0"></circle><circle cx="143" cy="54" r="6" fill="#FF8FB0"></circle><circle cx="149" cy="54" r="6" fill="#FF8FB0"></circle><circle cx="146" cy="47" r="4.5" fill="#FFE36B"></circle></g>
+<ellipse cx="130" cy="150" rx="80" ry="70" fill="#FDC73B"></ellipse>
+<ellipse cx="130" cy="180" rx="68" ry="34" fill="#E8A91E" opacity="0.45"></ellipse>
+<path d="M54 150 q-20 -6 -18 -30 q16 8 26 -2" stroke="#FDC73B" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M206 150 q20 -6 18 -30 q-16 8 -26 -2" stroke="#FDC73B" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M196 66 L186 88 L196 86 L190 106 L210 80 L199 82 Z" fill="#FF8A1E"></path>
+<circle cx="108" cy="142" r="24" fill="#fff"></circle>
+<circle cx="166" cy="148" r="15" fill="#fff"></circle>
+<circle cx="111" cy="146" r="9" fill="#3A2A0A"></circle>
+<circle cx="167" cy="151" r="6" fill="#3A2A0A"></circle>
+<circle cx="114" cy="142" r="3" fill="#fff"></circle>
+<circle cx="169" cy="148" r="2.2" fill="#fff"></circle>
+<path d="M84 126 l-10 -5 M89 120 l-8 -8 M96 116 l-5 -9" stroke="#3A2A0A" stroke-width="3" stroke-linecap="round"></path>
+<path d="M180 140 l9 -4 M178 135 l7 -7" stroke="#3A2A0A" stroke-width="2.6" stroke-linecap="round"></path>
+<path d="M100 176 Q130 208 160 176 Q130 190 100 176 Z" fill="#6E4A08"></path>
+<path d="M118 188 Q130 198 142 188 Z" fill="#FF8FB0"></path>
+<circle cx="84" cy="176" r="9" fill="#FF8FB0" opacity="0.55"></circle>
+<circle cx="178" cy="180" r="9" fill="#FF8FB0" opacity="0.55"></circle>
+</svg>

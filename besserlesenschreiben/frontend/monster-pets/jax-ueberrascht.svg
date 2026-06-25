@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 280" width="230" height="280" role="img" aria-label="Jax – Ueberrascht">
+<ellipse cx="115" cy="262" rx="52" ry="9" fill="#7A2A14" opacity="0.10"></ellipse>
+<path d="M76 82 L68 50 L106 78 Z" fill="#FF6B4A"></path><path d="M154 82 L162 50 L124 78 Z" fill="#FF6B4A"></path>
+<rect x="66" y="76" width="98" height="180" rx="49" fill="#FF6B4A"></rect>
+<ellipse cx="115" cy="230" rx="40" ry="22" fill="#E2502F"></ellipse>
+<rect x="73" y="128" width="84" height="30" rx="15" fill="#26313F"></rect>
+<rect x="81" y="136" width="26" height="8" rx="4" fill="#41526A"></rect>
+<path d="M56 126 Q56 54 115 54 Q174 54 174 126" stroke="#2B3543" stroke-width="10" fill="none" stroke-linecap="round"></path>
+<rect x="46" y="104" width="23" height="48" rx="11" fill="#2B3543"></rect><rect x="161" y="104" width="23" height="48" rx="11" fill="#2B3543"></rect>
+<circle cx="57" cy="128" r="6.5" fill="#28C7C7"></circle><circle cx="173" cy="128" r="6.5" fill="#28C7C7"></circle>
+<path d="M57 152 Q44 186 80 192" stroke="#2B3543" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<circle cx="82" cy="192" r="5.5" fill="#28C7C7"></circle><circle cx="150" cy="196" r="7" fill="#FFB59E"></circle>
+<path d="M88 116 Q115 106 142 116" stroke="#2B3543" stroke-width="4" fill="none" stroke-linecap="round"></path>
+<ellipse cx="115" cy="188" rx="8" ry="10" fill="#7A2A14"></ellipse>
+<path d="M150 60 Q143 72 150 77 Q157 72 150 60 Z" fill="#FFD9CC"></path>
+</svg>

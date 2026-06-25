@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 270" width="240" height="270" role="img" aria-label="Stella – Ueberrascht">
+<ellipse cx="120" cy="252" rx="56" ry="9" fill="#5A1840" opacity="0.10"></ellipse>
+<circle cx="78" cy="84" r="20" fill="#E8488F"></circle><circle cx="162" cy="84" r="20" fill="#E8488F"></circle>
+<path d="M104 70 L120 18 L136 70 Z" fill="#FFC53D"></path>
+<rect x="58" y="74" width="124" height="166" rx="58" fill="#E8488F"></rect>
+<ellipse cx="120" cy="220" rx="48" ry="22" fill="#CE2E72"></ellipse>
+<circle cx="74" cy="170" r="8" fill="#F6A9CE"></circle><circle cx="166" cy="170" r="8" fill="#F6A9CE"></circle>
+<path d="M78 128 Q98 118 118 128" stroke="#5A1840" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<path d="M122 128 Q142 118 162 128" stroke="#5A1840" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<circle cx="98" cy="146" r="22" fill="#fff"></circle><circle cx="142" cy="146" r="22" fill="#fff"></circle>
+<circle cx="98" cy="146" r="8" fill="#5A1840"></circle><circle cx="142" cy="146" r="8" fill="#5A1840"></circle>
+<circle cx="101" cy="142" r="3" fill="#fff"></circle><circle cx="145" cy="142" r="3" fill="#fff"></circle>
+<ellipse cx="120" cy="188" rx="8" ry="10" fill="#5A1840"></ellipse>
+<path d="M152 50 Q145 62 152 67 Q159 62 152 50 Z" fill="#D4EDFA"></path>
+</svg>

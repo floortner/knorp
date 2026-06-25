@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 270" width="240" height="270" role="img" aria-label="Stella – Traurig">
+<ellipse cx="120" cy="252" rx="56" ry="9" fill="#5A1840" opacity="0.10"></ellipse>
+<circle cx="78" cy="84" r="20" fill="#E8488F"></circle><circle cx="162" cy="84" r="20" fill="#E8488F"></circle>
+<path d="M104 70 L120 18 L136 70 Z" fill="#FFC53D"></path>
+<rect x="58" y="74" width="124" height="166" rx="58" fill="#E8488F"></rect>
+<ellipse cx="120" cy="220" rx="48" ry="22" fill="#CE2E72"></ellipse>
+<circle cx="74" cy="170" r="8" fill="#F6A9CE"></circle><circle cx="166" cy="170" r="8" fill="#F6A9CE"></circle>
+<circle cx="98" cy="144" r="20" fill="#fff"></circle><circle cx="142" cy="144" r="20" fill="#fff"></circle>
+<circle cx="96" cy="152" r="9" fill="#5A1840"></circle><circle cx="140" cy="152" r="9" fill="#5A1840"></circle>
+<circle cx="99" cy="149" r="3" fill="#fff"></circle><circle cx="143" cy="149" r="3" fill="#fff"></circle>
+<path d="M78 144 A20 20 0 0 0 118 144 Z" fill="#E8488F"></path><path d="M122 144 A20 20 0 0 0 162 144 Z" fill="#E8488F"></path>
+<path d="M80 134 L96 126" stroke="#5A1840" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<path d="M160 134 L144 126" stroke="#5A1840" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<path d="M102 196 Q120 180 138 196" stroke="#5A1840" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<path d="M148 162 Q141 176 148 181 Q155 176 148 162 Z" fill="#F9A8C9"></path>
+</svg>

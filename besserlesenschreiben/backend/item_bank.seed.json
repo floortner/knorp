@@ -1,0 +1,1003 @@
+{
+  "$schema_note": "Seed for item_bank (backend SPEC §3). 'payload' = the per-type fields the frontend renders (frontend SPEC §3); the backend composes Exercise = {id, type, ...payload, audioUrl, skillTags} when serving a session.",
+  "skill_tags_taxonomy": {
+    "syllable_count": "Anzahl der Silben bestimmen (count)",
+    "syllable_segmentation": "Wort in Silben zerlegen (gap, order)",
+    "syllable_gap": "fehlende Silbe ergänzen (gap)",
+    "syllable_order": "Silben in Reihenfolge bringen (order)",
+    "rhyme": "Reim erkennen (rhyme)",
+    "rhyme_pairs": "Reimpaare finden (pairs)",
+    "phoneme_initial": "Anlaut hören/erkennen (initial)",
+    "phoneme_position": "Laut an einer Position hören (letter, medial/final)",
+    "letter_sound": "Laut-Buchstaben-Zuordnung (initial, letter)",
+    "capitalization": "Groß-/Kleinschreibung (case)",
+    "word_class_noun": "Nomen erkennen (case)",
+    "word_class_verb": "Tunwort/Verb erkennen (case)",
+    "letter_order": "Buchstaben ordnen (arrange)",
+    "spelling": "Rechtschreibung allgemein (arrange, vowel)",
+    "lexical_decision": "echtes Wort vs. Quatschwort (nonsense)",
+    "letter_discrimination": "b/d/p/q unterscheiden (bd)",
+    "vowel_ie": "Dehnungs-ie (vowel)",
+    "vowel_ei": "Diphthong ei (vowel)",
+    "vowel_spelling": "Vokal-Schreibung allgemein (vowel)"
+  },
+  "counts": {
+    "total": 37,
+    "by_unit": {
+      "1": 4,
+      "2": 4,
+      "3": 5,
+      "4": 6,
+      "5": 6,
+      "6": 6,
+      "7": 6
+    },
+    "by_type": {
+      "count": 3,
+      "gap": 3,
+      "order": 2,
+      "rhyme": 5,
+      "initial": 3,
+      "letter": 3,
+      "case": 3,
+      "arrange": 3,
+      "nonsense": 3,
+      "pairs": 3,
+      "bd": 3,
+      "vowel": 3
+    }
+  },
+  "items": [
+    {
+      "seed_key": "u1-count-sommer",
+      "unit": 1,
+      "exercise_type": "count",
+      "payload": {
+        "word": "Sommer",
+        "syll": [
+          "Som",
+          "mer"
+        ],
+        "answer": 2,
+        "opts": [
+          2,
+          3,
+          4
+        ],
+        "praise": "Richtig! Som·mer – zwei Silben."
+      },
+      "skill_tags": [
+        "syllable_count",
+        "syllable_segmentation"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u1-gap-banane",
+      "unit": 1,
+      "exercise_type": "gap",
+      "payload": {
+        "word": "Banane",
+        "syll": [
+          "Ba",
+          "na",
+          "ne"
+        ],
+        "gapIndex": 1,
+        "answer": "na",
+        "options": [
+          "na",
+          "mo",
+          "le"
+        ],
+        "praise": "Genau! Ba·na·ne ist komplett."
+      },
+      "skill_tags": [
+        "syllable_gap",
+        "syllable_segmentation"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u1-order-schmetterling",
+      "unit": 1,
+      "exercise_type": "order",
+      "payload": {
+        "word": "Schmetterling",
+        "syll": [
+          "Schmet",
+          "ter",
+          "ling"
+        ],
+        "tiles": [
+          "ter",
+          "Schmet",
+          "ling"
+        ],
+        "praise": "Super! Schmet·ter·ling sitzt."
+      },
+      "skill_tags": [
+        "syllable_order",
+        "syllable_segmentation"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u1-gap-tomate",
+      "unit": 1,
+      "exercise_type": "gap",
+      "payload": {
+        "word": "Tomate",
+        "syll": [
+          "To",
+          "ma",
+          "te"
+        ],
+        "gapIndex": 1,
+        "answer": "ma",
+        "options": [
+          "ma",
+          "mi",
+          "lo"
+        ],
+        "praise": "Stark! To·ma·te – perfekt ergänzt."
+      },
+      "skill_tags": [
+        "syllable_gap",
+        "syllable_segmentation"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u2-count-elefant",
+      "unit": 2,
+      "exercise_type": "count",
+      "payload": {
+        "word": "Elefant",
+        "syll": [
+          "E",
+          "le",
+          "fant"
+        ],
+        "answer": 3,
+        "opts": [
+          2,
+          3,
+          4
+        ],
+        "praise": "Richtig! E·le·fant – drei Silben."
+      },
+      "skill_tags": [
+        "syllable_count",
+        "syllable_segmentation"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u2-order-kartoffel",
+      "unit": 2,
+      "exercise_type": "order",
+      "payload": {
+        "word": "Kartoffel",
+        "syll": [
+          "Kar",
+          "tof",
+          "fel"
+        ],
+        "tiles": [
+          "tof",
+          "fel",
+          "Kar"
+        ],
+        "praise": "Super! Kar·tof·fel sitzt."
+      },
+      "skill_tags": [
+        "syllable_order",
+        "syllable_segmentation"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u2-gap-marmelade",
+      "unit": 2,
+      "exercise_type": "gap",
+      "payload": {
+        "word": "Marmelade",
+        "syll": [
+          "Mar",
+          "me",
+          "la",
+          "de"
+        ],
+        "gapIndex": 1,
+        "answer": "me",
+        "options": [
+          "me",
+          "ma",
+          "mo"
+        ],
+        "praise": "Genau! Mar·me·la·de ist komplett."
+      },
+      "skill_tags": [
+        "syllable_gap",
+        "syllable_segmentation"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u2-count-sonnenblume",
+      "unit": 2,
+      "exercise_type": "count",
+      "payload": {
+        "word": "Sonnenblume",
+        "syll": [
+          "Son",
+          "nen",
+          "blu",
+          "me"
+        ],
+        "answer": 4,
+        "opts": [
+          3,
+          4,
+          5
+        ],
+        "praise": "Stark! Son·nen·blu·me – vier Silben."
+      },
+      "skill_tags": [
+        "syllable_count",
+        "syllable_segmentation"
+      ],
+      "difficulty": 3,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u3-rhyme-maus",
+      "unit": 3,
+      "exercise_type": "rhyme",
+      "payload": {
+        "word": "Maus",
+        "options": [
+          "Haus",
+          "Tisch",
+          "Ball"
+        ],
+        "answer": "Haus",
+        "praise": "Genau! Maus reimt sich auf Haus."
+      },
+      "skill_tags": [
+        "rhyme"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u3-rhyme-baum",
+      "unit": 3,
+      "exercise_type": "rhyme",
+      "payload": {
+        "word": "Baum",
+        "options": [
+          "Traum",
+          "Hund",
+          "Stein"
+        ],
+        "answer": "Traum",
+        "praise": "Super! Baum reimt sich auf Traum."
+      },
+      "skill_tags": [
+        "rhyme"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u3-rhyme-sonne",
+      "unit": 3,
+      "exercise_type": "rhyme",
+      "payload": {
+        "word": "Sonne",
+        "options": [
+          "Tonne",
+          "Blume",
+          "Wolke"
+        ],
+        "answer": "Tonne",
+        "praise": "Genau! Sonne reimt sich auf Tonne."
+      },
+      "skill_tags": [
+        "rhyme"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u3-rhyme-schokolade",
+      "unit": 3,
+      "exercise_type": "rhyme",
+      "payload": {
+        "word": "Schokolade",
+        "options": [
+          "Marmelade",
+          "Banane",
+          "Kartoffel"
+        ],
+        "answer": "Marmelade",
+        "praise": "Stark! Schokolade reimt sich auf Marmelade."
+      },
+      "skill_tags": [
+        "rhyme"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u3-rhyme-rakete",
+      "unit": 3,
+      "exercise_type": "rhyme",
+      "payload": {
+        "word": "Rakete",
+        "options": [
+          "Trompete",
+          "Tomate",
+          "Kamel"
+        ],
+        "answer": "Trompete",
+        "praise": "Toll! Rakete reimt sich auf Trompete."
+      },
+      "skill_tags": [
+        "rhyme"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u4-initial-apfel",
+      "unit": 4,
+      "exercise_type": "initial",
+      "payload": {
+        "word": "Apfel",
+        "emoji": "🍎",
+        "answer": "A",
+        "options": [
+          "A",
+          "E",
+          "O"
+        ],
+        "praise": "Richtig! Apfel beginnt mit A."
+      },
+      "skill_tags": [
+        "phoneme_initial",
+        "letter_sound"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u4-letter-sonne",
+      "unit": 4,
+      "exercise_type": "letter",
+      "payload": {
+        "word": "Sonne",
+        "letters": [
+          "S",
+          "o",
+          "n",
+          "n",
+          "e"
+        ],
+        "gapIndex": 2,
+        "answer": "n",
+        "options": [
+          "n",
+          "m",
+          "r"
+        ],
+        "praise": "Genau! In Sonne fehlt das n."
+      },
+      "skill_tags": [
+        "phoneme_position",
+        "letter_sound"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u4-initial-igel",
+      "unit": 4,
+      "exercise_type": "initial",
+      "payload": {
+        "word": "Igel",
+        "emoji": "🦔",
+        "answer": "I",
+        "options": [
+          "I",
+          "E",
+          "U"
+        ],
+        "praise": "Stark! Igel beginnt mit I."
+      },
+      "skill_tags": [
+        "phoneme_initial",
+        "letter_sound"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u4-letter-hund",
+      "unit": 4,
+      "exercise_type": "letter",
+      "payload": {
+        "word": "Hund",
+        "letters": [
+          "H",
+          "u",
+          "n",
+          "d"
+        ],
+        "gapIndex": 1,
+        "answer": "u",
+        "options": [
+          "u",
+          "a",
+          "o"
+        ],
+        "praise": "Super! In Hund hörst du ein u."
+      },
+      "skill_tags": [
+        "phoneme_position",
+        "letter_sound"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u4-initial-banane",
+      "unit": 4,
+      "exercise_type": "initial",
+      "payload": {
+        "word": "Banane",
+        "emoji": "🍌",
+        "answer": "B",
+        "options": [
+          "B",
+          "P",
+          "D"
+        ],
+        "praise": "Toll! Banane beginnt mit B."
+      },
+      "skill_tags": [
+        "phoneme_initial",
+        "letter_sound"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u4-letter-maus",
+      "unit": 4,
+      "exercise_type": "letter",
+      "payload": {
+        "word": "Maus",
+        "letters": [
+          "M",
+          "a",
+          "u",
+          "s"
+        ],
+        "gapIndex": 3,
+        "answer": "s",
+        "options": [
+          "s",
+          "z",
+          "f"
+        ],
+        "praise": "Genau! Maus endet mit s."
+      },
+      "skill_tags": [
+        "phoneme_position",
+        "letter_sound"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u5-case-hund",
+      "unit": 5,
+      "exercise_type": "case",
+      "payload": {
+        "word": "Hund",
+        "emoji": "🐶",
+        "answer": "Hund",
+        "options": [
+          "Hund",
+          "hund"
+        ],
+        "praise": "Richtig! Hund ist ein Nomen – groß."
+      },
+      "skill_tags": [
+        "capitalization",
+        "word_class_noun"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u5-arrange-maus",
+      "unit": 5,
+      "exercise_type": "arrange",
+      "payload": {
+        "word": "Maus",
+        "syll": [
+          "M",
+          "a",
+          "u",
+          "s"
+        ],
+        "tiles": [
+          "a",
+          "s",
+          "M",
+          "u"
+        ],
+        "praise": "Super! M·a·u·s – richtig geordnet."
+      },
+      "skill_tags": [
+        "letter_order",
+        "spelling"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u5-case-springen",
+      "unit": 5,
+      "exercise_type": "case",
+      "payload": {
+        "word": "springen",
+        "answer": "springen",
+        "options": [
+          "Springen",
+          "springen"
+        ],
+        "praise": "Genau! springen ist ein Tunwort – klein."
+      },
+      "skill_tags": [
+        "capitalization",
+        "word_class_verb"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u5-arrange-baum",
+      "unit": 5,
+      "exercise_type": "arrange",
+      "payload": {
+        "word": "Baum",
+        "syll": [
+          "B",
+          "a",
+          "u",
+          "m"
+        ],
+        "tiles": [
+          "u",
+          "B",
+          "m",
+          "a"
+        ],
+        "praise": "Stark! B·a·u·m sitzt."
+      },
+      "skill_tags": [
+        "letter_order",
+        "spelling"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u5-case-blume",
+      "unit": 5,
+      "exercise_type": "case",
+      "payload": {
+        "word": "Blume",
+        "emoji": "🌸",
+        "answer": "Blume",
+        "options": [
+          "blume",
+          "Blume"
+        ],
+        "praise": "Richtig! Blume ist ein Nomen – groß."
+      },
+      "skill_tags": [
+        "capitalization",
+        "word_class_noun"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u5-arrange-fisch",
+      "unit": 5,
+      "exercise_type": "arrange",
+      "payload": {
+        "word": "Fisch",
+        "syll": [
+          "F",
+          "i",
+          "s",
+          "ch"
+        ],
+        "tiles": [
+          "s",
+          "F",
+          "ch",
+          "i"
+        ],
+        "praise": "Toll! F·i·sch – geordnet."
+      },
+      "skill_tags": [
+        "letter_order",
+        "spelling"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u6-nonsense-tisch",
+      "unit": 6,
+      "exercise_type": "nonsense",
+      "payload": {
+        "word": "Tisch",
+        "answer": "Echtes Wort",
+        "options": [
+          "Echtes Wort",
+          "Quatschwort"
+        ],
+        "praise": "Richtig! Tisch gibt es wirklich."
+      },
+      "skill_tags": [
+        "lexical_decision"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u6-pairs-haus+maus",
+      "unit": 6,
+      "exercise_type": "pairs",
+      "payload": {
+        "tiles": [
+          "Haus",
+          "Tisch",
+          "Maus",
+          "Ball"
+        ],
+        "pair": [
+          "Haus",
+          "Maus"
+        ],
+        "praise": "Super! Haus und Maus reimen sich."
+      },
+      "skill_tags": [
+        "rhyme_pairs",
+        "rhyme"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u6-nonsense-lomp",
+      "unit": 6,
+      "exercise_type": "nonsense",
+      "payload": {
+        "word": "Lomp",
+        "answer": "Quatschwort",
+        "options": [
+          "Echtes Wort",
+          "Quatschwort"
+        ],
+        "praise": "Genau! Lomp ist ein Quatschwort."
+      },
+      "skill_tags": [
+        "lexical_decision"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u6-pairs-baum+traum",
+      "unit": 6,
+      "exercise_type": "pairs",
+      "payload": {
+        "tiles": [
+          "Baum",
+          "Hund",
+          "Stein",
+          "Traum"
+        ],
+        "pair": [
+          "Baum",
+          "Traum"
+        ],
+        "praise": "Stark! Baum und Traum reimen sich."
+      },
+      "skill_tags": [
+        "rhyme_pairs",
+        "rhyme"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u6-nonsense-sonne",
+      "unit": 6,
+      "exercise_type": "nonsense",
+      "payload": {
+        "word": "Sonne",
+        "answer": "Echtes Wort",
+        "options": [
+          "Echtes Wort",
+          "Quatschwort"
+        ],
+        "praise": "Richtig! Sonne gibt es wirklich."
+      },
+      "skill_tags": [
+        "lexical_decision"
+      ],
+      "difficulty": 1,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u6-pairs-hose+dose",
+      "unit": 6,
+      "exercise_type": "pairs",
+      "payload": {
+        "tiles": [
+          "Hose",
+          "Katze",
+          "Dose",
+          "Tasse"
+        ],
+        "pair": [
+          "Hose",
+          "Dose"
+        ],
+        "praise": "Toll! Hose und Dose reimen sich."
+      },
+      "skill_tags": [
+        "rhyme_pairs",
+        "rhyme"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u7-bd-d",
+      "unit": 7,
+      "exercise_type": "bd",
+      "payload": {
+        "glyph": "d",
+        "answer": "d",
+        "options": [
+          "b",
+          "d",
+          "p"
+        ],
+        "praise": "Richtig! Das ist ein d – der Bauch zeigt nach rechts."
+      },
+      "skill_tags": [
+        "letter_discrimination"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u7-vowel-liebe",
+      "unit": 7,
+      "exercise_type": "vowel",
+      "payload": {
+        "word": "Liebe",
+        "letters": [
+          "L",
+          "ie",
+          "b",
+          "e"
+        ],
+        "gapIndex": 1,
+        "answer": "ie",
+        "options": [
+          "ie",
+          "ei",
+          "eu"
+        ],
+        "praise": "Genau! Liebe schreibt man mit ie."
+      },
+      "skill_tags": [
+        "vowel_ie",
+        "vowel_spelling",
+        "spelling"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u7-bd-b",
+      "unit": 7,
+      "exercise_type": "bd",
+      "payload": {
+        "glyph": "b",
+        "answer": "b",
+        "options": [
+          "b",
+          "d",
+          "q"
+        ],
+        "praise": "Stark! Das ist ein b – der Bauch zeigt nach links."
+      },
+      "skill_tags": [
+        "letter_discrimination"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u7-vowel-eis",
+      "unit": 7,
+      "exercise_type": "vowel",
+      "payload": {
+        "word": "Eis",
+        "letters": [
+          "ei",
+          "s"
+        ],
+        "gapIndex": 0,
+        "answer": "ei",
+        "options": [
+          "ei",
+          "ie",
+          "au"
+        ],
+        "praise": "Toll! Eis schreibt man mit ei."
+      },
+      "skill_tags": [
+        "vowel_ei",
+        "vowel_spelling",
+        "spelling"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u7-bd-p",
+      "unit": 7,
+      "exercise_type": "bd",
+      "payload": {
+        "glyph": "p",
+        "answer": "p",
+        "options": [
+          "p",
+          "q",
+          "d"
+        ],
+        "praise": "Super! Das ist ein p."
+      },
+      "skill_tags": [
+        "letter_discrimination"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    },
+    {
+      "seed_key": "u7-vowel-brief",
+      "unit": 7,
+      "exercise_type": "vowel",
+      "payload": {
+        "word": "Brief",
+        "letters": [
+          "Br",
+          "ie",
+          "f"
+        ],
+        "gapIndex": 1,
+        "answer": "ie",
+        "options": [
+          "ie",
+          "ei",
+          "eu"
+        ],
+        "praise": "Genau! Brief schreibt man mit ie."
+      },
+      "skill_tags": [
+        "vowel_ie",
+        "vowel_spelling",
+        "spelling"
+      ],
+      "difficulty": 2,
+      "audio_url": null,
+      "syllable_audio": null,
+      "generated_by": "seed"
+    }
+  ]
+}

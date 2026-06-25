@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" width="240" height="260" role="img" aria-label="Nepo – Traurig">
+<ellipse cx="120" cy="242" rx="58" ry="9" fill="#0E3A52" opacity="0.10"></ellipse>
+<path d="M84 90 L74 52 L116 80 Z" fill="#1AA0E0"></path><path d="M156 90 L166 52 L124 80 Z" fill="#1AA0E0"></path>
+<rect x="56" y="78" width="128" height="160" rx="62" fill="#29B6F6"></rect>
+<ellipse cx="120" cy="216" rx="46" ry="22" fill="#1593CC"></ellipse>
+<circle cx="120" cy="140" r="34" fill="#fff"></circle><circle cx="118" cy="150" r="14" fill="#10384F"></circle>
+<circle cx="123" cy="146" r="4" fill="#fff"></circle>
+<path d="M86 140 A34 34 0 0 0 154 140 Z" fill="#29B6F6"></path>
+<path d="M86 140 A34 34 0 0 0 154 140" stroke="#1483BE" stroke-width="3" fill="none"></path>
+<path d="M106 116 L88 126" stroke="#10384F" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<path d="M134 116 L152 126" stroke="#10384F" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<path d="M102 200 Q120 184 138 200" stroke="#0E3A52" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<path d="M150 158 Q143 172 150 177 Q157 172 150 158 Z" fill="#7FD0F5"></path>
+</svg>

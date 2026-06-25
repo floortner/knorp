@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300" role="img" aria-label="Rudolph – Traurig">
+<ellipse cx="130" cy="276" rx="44" ry="8" fill="#7A5410" opacity="0.12"></ellipse>
+<path d="M112 80 L108 52" stroke="#B0743A" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<circle cx="108" cy="50" r="7.5" fill="#EFCF7E"></circle>
+<path d="M148 80 L152 52" stroke="#B0743A" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<circle cx="152" cy="50" r="7.5" fill="#EFCF7E"></circle>
+<path d="M70 150 Q40 158 38 182" stroke="#C9874A" stroke-width="19" fill="none" stroke-linecap="round"></path>
+<path d="M190 150 Q220 158 222 182" stroke="#C9874A" stroke-width="19" fill="none" stroke-linecap="round"></path>
+<rect x="68" y="78" width="124" height="150" rx="62" fill="#C9874A"></rect>
+<ellipse cx="130" cy="178" rx="48" ry="30" fill="#B0743A" opacity="0.45"></ellipse>
+<circle cx="92" cy="146" r="9" fill="#E0A05A"></circle>
+<circle cx="168" cy="146" r="9" fill="#E0A05A"></circle>
+<path d="M110 244 Q130 250 150 244" stroke="#C9874A" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.4"></path>
+<circle cx="46" cy="116" r="4" fill="#A4D037"></circle>
+<circle cx="216" cy="122" r="4" fill="#EFCF7E"></circle>
+<circle cx="202" cy="86" r="3" fill="#A4D037"></circle>
+<circle cx="58" cy="84" r="3" fill="#EFCF7E"></circle>
+<path d="M100 116 L122 124" stroke="#3A260C" stroke-width="4" stroke-linecap="round"></path>
+<path d="M160 116 L138 124" stroke="#3A260C" stroke-width="4" stroke-linecap="round"></path>
+<circle cx="112" cy="134" r="14" fill="#fff"></circle>
+<circle cx="148" cy="134" r="14" fill="#fff"></circle>
+<circle cx="111" cy="139" r="7" fill="#3A260C"></circle>
+<circle cx="147" cy="139" r="7" fill="#3A260C"></circle>
+<circle cx="113" cy="136" r="2.4" fill="#fff"></circle>
+<circle cx="149" cy="136" r="2.4" fill="#fff"></circle>
+<path d="M99 134 A14 14 0 0 0 125 134 Z" fill="#C9874A"></path>
+<path d="M135 134 A14 14 0 0 0 161 134 Z" fill="#C9874A"></path>
+<path d="M106 176 Q130 158 154 176" stroke="#6B4A12" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<path d="M104 150 Q98 162 105 166 Q112 162 106 150 Z" fill="#9FE0EC"></path>
+</svg>

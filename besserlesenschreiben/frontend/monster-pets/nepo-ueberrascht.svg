@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" width="240" height="260" role="img" aria-label="Nepo – Ueberrascht">
+<ellipse cx="120" cy="242" rx="58" ry="9" fill="#0E3A52" opacity="0.10"></ellipse>
+<path d="M84 90 L74 52 L116 80 Z" fill="#1AA0E0"></path><path d="M156 90 L166 52 L124 80 Z" fill="#1AA0E0"></path>
+<rect x="56" y="78" width="128" height="160" rx="62" fill="#29B6F6"></rect>
+<ellipse cx="120" cy="216" rx="46" ry="22" fill="#1593CC"></ellipse>
+<path d="M101 99 Q120 89 139 99" stroke="#10384F" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<circle cx="120" cy="142" r="36" fill="#fff"></circle><circle cx="120" cy="142" r="9" fill="#10384F"></circle>
+<circle cx="124" cy="138" r="3" fill="#fff"></circle>
+<ellipse cx="120" cy="192" rx="9" ry="12" fill="#0E3A52"></ellipse>
+<path d="M160 104 Q153 117 160 121 Q167 117 160 104 Z" fill="#7FD0F5"></path>
+</svg>
