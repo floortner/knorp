@@ -49,8 +49,9 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 ## Build milestones (SPEC §11)
 1. App shell + routing + tab nav + `lib/api.ts` + auth (email-code screens).
 2. Onboarding (buddy + goal). 3. `/lernen` home + session fetch.
-4. **The 12 exercise renderers + telemetry** (the bulk). 5. Progress + voice + a11y. 6. Chat.
-7. Parent area + PIN + billing/supporter + homework flow.
+4. **Telemetry plumbing** (`lib/telemetry.ts`: one fire-and-forget `/attempts` per answer, offline queue + retry) — proven before the renderers.
+5. **The 12 exercise renderers** (the bulk). 6. Progress + voice + a11y. 7. Chat.
+8. Parent area + PIN + billing/supporter + homework flow.
 
 ## Definition of done for a feature
 Renders from backend JSON; one `/attempts` per answer with sane timing; error codes map to the right UI;

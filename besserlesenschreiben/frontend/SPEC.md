@@ -196,10 +196,11 @@ VITE_PWA=true
 1. App shell, routing, tab nav, API client, auth (email-code + code-entry screens).
 2. Onboarding (buddy + goal) → `POST /profiles`.
 3. `/lernen` home + unit cards + session fetch.
-4. **The 12 exercise renderers + telemetry** (the bulk of the work).
-5. Progress (`/profil`, `/liga`) + voice + accessibility settings.
-6. Chat.
-7. Parent area + PIN + billing/supporter + homework flow.
+4. **Telemetry plumbing** (`lib/telemetry.ts`): fire-and-forget `POST /attempts` with a real `timeMs`, offline queue + Workbox retry. Build and prove this pipeline *before* the renderers so each renderer wires into it.
+5. **The 12 exercise renderers** (the bulk of the work) — each emits exactly one attempt through the milestone-4 pipeline.
+6. Progress (`/profil`, `/liga`) + voice + accessibility settings.
+7. Chat.
+8. Parent area + PIN + billing/supporter + homework flow.
 
 ## 12. Acceptance checks
 - Every answered item produces exactly one `/attempts` call with a sane `timeMs`.
