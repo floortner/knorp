@@ -1,0 +1,228 @@
+// besserlesenschreiben — Prisma schema. The canonical system of record (backend SPEC §3).
+// Wire format is camelCase; DB columns are snake_case (bridged via @map/@@map).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── ACCOUNT (household, keyed by parent email) ───────────────────────────────
+model Account {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  parentPinHash String?  @map("parent_pin_hash") // argon2; null until set at onboarding
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profiles    Profile[]
+  loginCodes  LoginCode[]
+  entitlement Entitlement?
+  credits     CreditsLedger[]
+
+  @@map("account")
+}
+
+// ── LOGIN CODES (passwordless) ───────────────────────────────────────────────
+model LoginCode {
+  id         String    @id @default(uuid()) @db.Uuid
+  accountId  String?   @map("account_id") @db.Uuid
+  email      String
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(6)
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  account Account? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@map("login_code")
+}
+
+// ── PROFILE (a child) ────────────────────────────────────────────────────────
+model Profile {
+  id           String   @id @default(uuid()) @db.Uuid
+  accountId    String   @map("account_id") @db.Uuid
+  name         String
+  buddy        String   @default("nepo") // nepo | stella
+  goalPerWeek  Int      @default(5) @map("goal_per_week")
+  // accessibility / settings
+  soundOn      Boolean  @default(true) @map("sound_on")
+  dyslexicFont Boolean  @default(false) @map("dyslexic_font")
+  fontScale    Decimal  @default(1.0) @map("font_scale") @db.Decimal(3, 2)
+  // gamification & progression state
+  stars        Int      @default(0)
+  streakDays   Int      @default(0) @map("streak_days")
+  lastActive   DateTime? @map("last_active") @db.Date
+  unlockedUnit Int      @default(1) @map("unlocked_unit")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  account      Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  sessions     Session[]
+  attempts     Attempt[]
+  reviewStates ReviewState[]
+  homework     HomeworkUpload[]
+  chatMessages ChatMessage[]
+
+  @@index([accountId])
+  @@map("profile")
+}
+
+// ── ITEM BANK (global, shared) ───────────────────────────────────────────────
+model ItemBank {
+  id            String   @id @default(uuid()) @db.Uuid
+  seedKey       String?  @unique @map("seed_key")
+  unit          Int
+  exerciseType  String   @map("exercise_type")
+  payload       Json
+  audioUrl      String?  @map("audio_url")
+  syllableAudio Json?    @map("syllable_audio")
+  skillTags     String[] @map("skill_tags")
+  difficulty    Int      @default(1)
+  generatedBy   String   @default("seed") @map("generated_by")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  attempts Attempt[]
+
+  @@index([unit])
+  @@map("item_bank")
+}
+
+// ── SESSION (a generated training session) ───────────────────────────────────
+model Session {
+  id          String    @id @default(uuid()) @db.Uuid
+  profileId   String    @map("profile_id") @db.Uuid
+  unit        Int?
+  itemIds     String[]  @map("item_ids") @db.Uuid
+  source      String // 'bank' | 'llm' | 'homework'
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  starsAward  Int?      @map("stars_award")
+
+  profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  attempts Attempt[]
+
+  @@index([profileId])
+  @@map("session")
+}
+
+// ── ATTEMPT (THE telemetry table — one row per answered item) ────────────────
+model Attempt {
+  id           String   @id @default(uuid()) @db.Uuid
+  profileId    String   @map("profile_id") @db.Uuid
+  sessionId    String   @map("session_id") @db.Uuid
+  itemId       String?  @map("item_id") @db.Uuid
+  exerciseType String   @map("exercise_type")
+  prompt       String
+  expected     String
+  given        String
+  isCorrect    Boolean  @map("is_correct")
+  timeMs       Int      @map("time_ms")
+  attemptNo    Int      @default(1) @map("attempt_no")
+  skillTags    String[] @map("skill_tags")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profile Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  session Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  item    ItemBank? @relation(fields: [itemId], references: [id])
+
+  // NOTE (ARCHITECTURE §4): idempotency dedupe on (session_id, item_id, attempt_no) needs a
+  // functional unique index with COALESCE(item_id, '0…0') because item_id is nullable and NULLs
+  // are distinct in Postgres. Added as raw SQL in the migration, not expressible here.
+  @@index([profileId])
+  @@index([sessionId])
+  @@map("attempt")
+}
+
+// ── FSRS scheduling state (one row per profile × skill_tag) ──────────────────
+model ReviewState {
+  id            String    @id @default(uuid()) @db.Uuid
+  profileId     String    @map("profile_id") @db.Uuid
+  skillTag      String    @map("skill_tag")
+  stability     Decimal?
+  difficulty    Decimal?
+  state         Int       @default(0) // 0=new 1=learning 2=review 3=relearning
+  reps          Int       @default(0)
+  lapses        Int       @default(0)
+  elapsedDays   Int       @default(0) @map("elapsed_days")
+  scheduledDays Int       @default(0) @map("scheduled_days")
+  due           DateTime? @db.Timestamptz(6)
+  lastReview    DateTime? @map("last_review") @db.Timestamptz(6)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, skillTag])
+  @@map("review_state")
+}
+
+// ── HOMEWORK uploads + analysis ──────────────────────────────────────────────
+model HomeworkUpload {
+  id          String   @id @default(uuid()) @db.Uuid
+  profileId   String   @map("profile_id") @db.Uuid
+  imageKey    String   @map("image_key")
+  status      String   @default("pending") // pending|analyzed|confirmed|rejected
+  analysis    Json?
+  confirmedBy String?  @map("confirmed_by")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("homework_upload")
+}
+
+// ── CHAT (trainer conversation thread, per child profile) ────────────────────
+model ChatMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  profileId String   @map("profile_id") @db.Uuid
+  role      String // 'child' | 'trainer'
+  text      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("chat_message")
+}
+
+// ── BILLING: entitlements + credits ledger ───────────────────────────────────
+model Entitlement {
+  accountId   String    @id @map("account_id") @db.Uuid
+  tier        String    @default("free") // free | supporter
+  status      String    @default("inactive") // active|inactive|past_due
+  renewsAt    DateTime? @map("renews_at") @db.Timestamptz(6)
+  provider    String? // lemonsqueezy|paddle
+  providerRef String?   @map("provider_ref")
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("entitlement")
+}
+
+model CreditsLedger {
+  id          String   @id @default(uuid()) @db.Uuid
+  accountId   String   @map("account_id") @db.Uuid
+  delta       Int
+  reason      String // 'purchase'|'homework_scan'|'llm_session'|'pay_it_forward_gift'|'subsidy_grant'
+  beneficiary String?  @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@map("credits_ledger")
+}
+
+// ── WEBHOOK idempotency (one row per provider event) ─────────────────────────
+model ProcessedWebhook {
+  provider    String
+  eventId     String   @map("event_id")
+  processedAt DateTime @default(now()) @map("processed_at") @db.Timestamptz(6)
+
+  @@id([provider, eventId])
+  @@map("processed_webhook")
+}

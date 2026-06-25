@@ -24,11 +24,14 @@
  *     @@map("item_bank")
  *   }
  */
+import "dotenv/config";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma/client";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg(process.env.DATABASE_URL as string);
+const prisma = new PrismaClient({ adapter });
 
 interface SeedItem {
   seed_key: string;
@@ -79,7 +82,7 @@ async function main(): Promise<void> {
         data: {
           ...base,
           audioUrl: row.audio_url ?? null,
-          syllableAudio: (row.syllable_audio ?? null) as object | null,
+          ...(row.syllable_audio ? { syllableAudio: row.syllable_audio as object } : {}),
         },
       });
       inserted++;
