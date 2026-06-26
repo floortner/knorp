@@ -8,6 +8,7 @@ import { ZodValidationPipe } from './common/pipes/zod-validation.pipe';
 import { PrismaModule } from './prisma/prisma.module';
 import { EmailModule } from './services/email/email.module';
 import { FsrsModule } from './services/fsrs/fsrs.module';
+import { StorageModule } from './services/storage/storage.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
@@ -15,6 +16,7 @@ import { ParentModule } from './modules/parent/parent.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { AttemptsModule } from './modules/attempts/attempts.module';
 import { ProgressModule } from './modules/progress/progress.module';
+import { DigestModule } from './modules/digest/digest.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -43,12 +45,14 @@ import { HealthController } from './modules/health/health.controller';
     PrismaModule,
     EmailModule,
     FsrsModule,
+    StorageModule,
     AuthModule,
     ProfilesModule,
     ParentModule,
     SessionsModule,
     AttemptsModule,
     ProgressModule,
+    DigestModule,
   ],
   controllers: [HealthController],
   providers: [
