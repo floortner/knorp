@@ -13,6 +13,20 @@ export function setAuthToken(token: string | null): void {
   authToken = token;
 }
 
+/**
+ * Cross-cutting status handlers (ARCHITECTURE §5). Registered once from inside the router so transport
+ * stays UI-free: 401/SESSION_EXPIRED clears auth + redirects to login; 402 routes the parent to the
+ * supporter screen. Set via setApiHandlers from <ApiErrorBridge>.
+ */
+export interface ApiHandlers {
+  onUnauthorized?: () => void;
+  onPaymentRequired?: () => void;
+}
+let handlers: ApiHandlers = {};
+export function setApiHandlers(next: ApiHandlers): void {
+  handlers = next;
+}
+
 export interface ApiErrorDetail {
   field: string;
   issue: string;
@@ -56,6 +70,9 @@ export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Prom
 
   if (!res.ok) {
     const envelope = (data as { error?: Partial<ApiError> } | null)?.error;
+    // Cross-cutting routing before the caller sees the error.
+    if (res.status === 401 || envelope?.code === 'SESSION_EXPIRED') handlers.onUnauthorized?.();
+    if (res.status === 402) handlers.onPaymentRequired?.();
     throw new ApiError(
       res.status,
       envelope?.code ?? 'INTERNAL',

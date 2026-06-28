@@ -25,7 +25,15 @@
 :root {
   font-family: var(--font-body);
   color: var(--color-ink);
-  /* fontScale (a11y, SPEC §6) is applied here at runtime in a later milestone. */
+  /* fontScale (a11y, SPEC §6) is applied at runtime by A11yProvider via html { font-size: N% }. */
+}
+
+/* dyslexicFont (a11y, SPEC §6): A11yProvider toggles this flag. Atkinson Hyperlegible is already
+   dyslexia-friendly; this adds the recommended extra letter/word spacing and line height. */
+html[data-dyslexic='true'] body {
+  letter-spacing: 0.045em;
+  word-spacing: 0.12em;
+  line-height: 1.7;
 }
 
 body {
