@@ -1,11 +1,12 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CurrentAccount,
   AuthAccount,
 } from '../../common/decorators/current-account.decorator';
+import { ParentScopeGuard } from '../../common/guards/parent-scope.guard';
 import { ParentService } from './parent.service';
-import { SetPinDto, VerifyPinDto } from './parent.dto';
+import { ProfileTargetDto, SetPinDto, VerifyPinDto } from './parent.dto';
 
 @ApiTags('parent')
 @ApiBearerAuth()
@@ -23,5 +24,20 @@ export class ParentController {
   @HttpCode(200)
   verifyPin(@CurrentAccount() account: AuthAccount, @Body() dto: VerifyPinDto) {
     return this.parent.verifyPin(account.id, dto.pin);
+  }
+
+  // ‡ Parent scope required (a fresh parentToken from verify-pin).
+  @Post('unlock-next')
+  @HttpCode(200)
+  @UseGuards(ParentScopeGuard)
+  unlockNext(@CurrentAccount() account: AuthAccount, @Body() dto: ProfileTargetDto) {
+    return this.parent.unlockNext(account.id, dto.profileId);
+  }
+
+  @Post('reset')
+  @HttpCode(200)
+  @UseGuards(ParentScopeGuard)
+  reset(@CurrentAccount() account: AuthAccount, @Body() dto: ProfileTargetDto) {
+    return this.parent.reset(account.id, dto.profileId);
   }
 }
