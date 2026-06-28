@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: backend (lint · typecheck · test · build · contract)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: besserlesenschreiben/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: besserlesenschreiben/backend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+      - run: npm run build
+      # Contract gate: the committed OpenAPI must match the code.
+      - run: npm run openapi:export
+      - name: openapi.json is up to date
+        run: git diff --exit-code openapi.json
+
+  frontend:
+    name: frontend (lint · typecheck · test · build · contract)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: besserlesenschreiben/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: besserlesenschreiben/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      # Contract gate: the committed generated types must match the committed OpenAPI.
+      - run: npm run gen:api
+      - name: api.gen.ts is up to date
+        run: git diff --exit-code src/lib/api.gen.ts
