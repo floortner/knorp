@@ -12,17 +12,28 @@ import type { CreateAttemptBody } from './types';
  */
 
 const QUEUE_KEY = 'blsb.attempts.queue';
+const MAX_QUEUE = 500; // hard cap so a long offline stretch can't grow localStorage without bound
+const MAX_AGE_MS = 48 * 60 * 60 * 1000; // purge unsent attempts older than 48h (don't keep child data forever)
 
-function loadQueue(): CreateAttemptBody[] {
+/** Stored shape: the wire body plus an enqueue timestamp (used only for retention; stripped on send). */
+type QueuedAttempt = CreateAttemptBody & { queuedAt?: number };
+
+/** Drop expired entries, then keep only the most recent MAX_QUEUE. Pure — callers persist the result. */
+function prune(queue: QueuedAttempt[], now: number): QueuedAttempt[] {
+  const fresh = queue.filter((a) => now - (a.queuedAt ?? now) < MAX_AGE_MS);
+  return fresh.length > MAX_QUEUE ? fresh.slice(fresh.length - MAX_QUEUE) : fresh;
+}
+
+function loadQueue(): QueuedAttempt[] {
   try {
     const raw = localStorage.getItem(QUEUE_KEY);
-    return raw ? (JSON.parse(raw) as CreateAttemptBody[]) : [];
+    return raw ? prune(JSON.parse(raw) as QueuedAttempt[], Date.now()) : [];
   } catch {
     return [];
   }
 }
 
-function saveQueue(queue: CreateAttemptBody[]): void {
+function saveQueue(queue: QueuedAttempt[]): void {
   try {
     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch {
@@ -53,7 +64,9 @@ export async function flushAttempts(): Promise<void> {
       while (loadQueue().length > 0) {
         const [head] = loadQueue();
         try {
-          await apiFetch('/attempts', { method: 'POST', body: head });
+          const body: QueuedAttempt = { ...head };
+          delete body.queuedAt; // queuedAt is local-only retention metadata; never sent on the wire
+          await apiFetch('/attempts', { method: 'POST', body });
         } catch (err) {
           if (!isNonRetryable(err)) break; // retry later (on next emit or 'online')
         }
@@ -67,7 +80,8 @@ export async function flushAttempts(): Promise<void> {
 
 /** Queue an attempt and kick a flush. Returns immediately — never await this in the UI. */
 export function recordAttempt(body: CreateAttemptBody): void {
-  saveQueue([...loadQueue(), body]);
+  const now = Date.now();
+  saveQueue(prune([...loadQueue(), { ...body, queuedAt: now }], now));
   void flushAttempts();
 }
 

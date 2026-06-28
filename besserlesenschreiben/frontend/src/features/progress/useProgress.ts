@@ -7,5 +7,6 @@ export function useProgress(profileId: string | undefined) {
     queryKey: ['progress', profileId],
     queryFn: () => coreApi.progress(profileId as string),
     enabled: Boolean(profileId),
+    staleTime: 30_000, // avoid refetching on every tab switch; completing a session invalidates it anyway
   });
 }

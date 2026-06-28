@@ -75,4 +75,24 @@ describe('telemetry queue', () => {
     await vi.waitFor(() => expect(pendingAttempts()).toBe(0));
     expect(fetchMock).toHaveBeenCalledOnce();
   });
+
+  it('does not put queuedAt on the wire', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(ok()));
+    vi.stubGlobal('fetch', fetchMock);
+    recordAttempt(attempt());
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    const sent = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
+    expect(sent).not.toHaveProperty('queuedAt');
+  });
+
+  it('purges entries older than the 48h retention window on enqueue', () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(offline));
+    // Hand-seed a stale entry directly in storage (queuedAt 3 days ago).
+    const stale = { ...attempt({ itemId: 'old' }), queuedAt: Date.now() - 3 * 24 * 60 * 60 * 1000 };
+    localStorage.setItem('blsb.attempts.queue', JSON.stringify([stale]));
+    recordAttempt(attempt({ itemId: 'fresh' })); // a fresh enqueue prunes synchronously
+    // network is down, so the fresh one stays queued and the stale one is gone
+    const queued = JSON.parse(localStorage.getItem('blsb.attempts.queue')!) as { itemId: string }[];
+    expect(queued.map((q) => q.itemId)).toEqual(['fresh']);
+  });
 });
