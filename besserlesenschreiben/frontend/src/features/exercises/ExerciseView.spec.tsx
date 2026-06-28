@@ -21,6 +21,17 @@ describe('ExerciseView golden render', () => {
   }
 });
 
+describe('renderer safety', () => {
+  it('throws on an unknown exercise type (so the lesson boundary can catch it)', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const bogus = { id: 'x', type: 'mystery', skillTags: [] } as unknown as Exercise;
+    expect(() =>
+      render(<ExerciseView ex={bogus} onAttempt={noop} onSolved={noop} soundOn={false} />),
+    ).toThrow(/Unhandled exercise type: mystery/);
+    spy.mockRestore();
+  });
+});
+
 describe('single-choice interaction (count)', () => {
   const count = items.find((i) => i.type === 'count')!;
 

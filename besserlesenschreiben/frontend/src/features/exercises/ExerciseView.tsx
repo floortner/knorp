@@ -121,5 +121,13 @@ export function ExerciseView({ ex, ...h }: { ex: Exercise } & ExerciseHandlers) 
       return <TileOrderExercise ex={ex} {...h} />;
     case 'pairs':
       return <PairsExercise ex={ex} {...h} />;
+    default:
+      // Unknown/forward-incompatible type from the backend: fail loudly so the lesson ErrorBoundary
+      // shows its fallback instead of silently rendering nothing (the contract should prevent this).
+      return assertNever(ex);
   }
+}
+
+function assertNever(ex: never): never {
+  throw new Error(`Unhandled exercise type: ${(ex as { type?: string }).type ?? 'unknown'}`);
 }
