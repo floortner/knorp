@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { ApiException } from '../exceptions/api-exception';
+import { SESSION_COOKIE } from '../session-cookie';
 import type { Env } from '../../config/env';
 
 export interface TokenPayload {
@@ -32,11 +33,14 @@ export class JwtAuthGuard implements CanActivate {
 
     const req = ctx.switchToHttp().getRequest<{
       headers: Record<string, string | undefined>;
+      cookies?: Record<string, string | undefined>;
       account?: { id: string };
       tokenPayload?: TokenPayload;
     }>();
     const auth = req.headers['authorization'];
-    const token = auth?.startsWith('Bearer ') ? auth.slice(7) : undefined;
+    const bearer = auth?.startsWith('Bearer ') ? auth.slice(7) : undefined;
+    // Browser sends the httpOnly cookie; API clients/tests may send a Bearer token.
+    const token = bearer ?? req.cookies?.[SESSION_COOKIE];
     if (!token) {
       throw new ApiException(401, 'UNAUTHENTICATED', 'Authentifizierung erforderlich.');
     }

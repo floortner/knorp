@@ -129,7 +129,9 @@ postAttempt({
 ## 6. Accessibility & settings
 
 Driven by `profile.settings` (from `GET /profiles/{id}`, edited via `PATCH /profiles/{id}/settings`):
-- `dyslexicFont` → toggle Atkinson Hyperlegible / OpenDyslexic body font.
+- `dyslexicFont` → currently toggles **extra letter/word spacing** on the (already dyslexia-friendly)
+  Atkinson Hyperlegible body font. Shipping the actual **OpenDyslexic** face is a follow-up; until then the
+  setting is spacing-only (don't relabel it as a font swap in the UI).
 - `fontScale` → root font-size multiplier.
 - `soundOn` → master audio toggle.
 - High contrast, large tap targets, keyboard operability throughout (children + assistive use).
@@ -138,8 +140,10 @@ Driven by `profile.settings` (from `GET /profiles/{id}`, edited via `PATCH /prof
 
 ## 7. API client & data flow
 
-Single typed `api.ts` wrapping `fetch`, base URL from `VITE_API_BASE`. Bearer/cookie auth.
-**Mirror the backend contract exactly** (`../backend/SPEC.md` §6). Endpoints consumed:
+Single typed `api.ts` wrapping `fetch`, base URL from `VITE_API_BASE`, `credentials:'include'` so the
+backend's **httpOnly session cookie** rides along (auth is derived from a `/me` probe — no token in JS;
+`setAuthToken`/Bearer remains only for API clients/tests). **Mirror the backend contract exactly**
+(`../backend/SPEC.md` §6). Endpoints consumed:
 
 ```
 POST /auth/request-code        POST /auth/verify
@@ -153,7 +157,12 @@ GET  /billing/status           POST /billing/checkout
 ```
 
 TanStack Query keys: `['me']`, `['units']`, `['session', id]`, `['progress', profileId]`, `['chat', profileId]`, `['billing']`.
-Invalidate `['progress']` + `['units']` after `/sessions/{id}/complete`.
+Invalidate `['me']` (stars/streak) + `['progress']` + `['units']` after `/sessions/{id}/complete`.
+
+**Types are generated, never hand-written.** `src/lib/api.gen.ts` is produced from the backend OpenAPI via
+`npm run gen:api` (`openapi-typescript`) and **committed**; CI re-runs it and fails on any diff (the contract
+drift gate). Never hand-edit `api.gen.ts` — change the backend Zod schema and regenerate. `api.ts` is the
+hand-written transport wrapper on top of those types.
 
 **402 handling:** a gated action returning 402 (no credits) → route the **parent** to the supporter/credit
 screen in `/parent`. Never surface payment to the child view.
@@ -193,14 +202,21 @@ VITE_PWA=true
 - Mobile-first responsive; test at 390px and tablet widths.
 
 ## 11. Milestones (suggested order for Claude Code)
-1. App shell, routing, tab nav, API client, auth (email-code + code-entry screens).
-2. Onboarding (buddy + goal) → `POST /profiles`.
-3. `/lernen` home + unit cards + session fetch.
-4. **Telemetry plumbing** (`lib/telemetry.ts`): fire-and-forget `POST /attempts` with a real `timeMs`, offline queue + Workbox retry. Build and prove this pipeline *before* the renderers so each renderer wires into it.
-5. **The 12 exercise renderers** (the bulk of the work) — each emits exactly one attempt through the milestone-4 pipeline.
-6. Progress (`/profil`, `/liga`) + voice + accessibility settings.
-7. Chat.
-8. Parent area + PIN + billing/supporter + homework flow.
+
+**Phase 1 (DONE, merged + CI-green):**
+1. ✅ App shell, routing, tab nav, API client, auth (email-code + code-entry screens; cookie session + `/me` probe).
+2. ✅ Onboarding (buddy + goal) → `POST /profiles`.
+3. ✅ `/lernen` home + unit cards + session fetch.
+4. ✅ **Telemetry plumbing** (`lib/telemetry.ts`): fire-and-forget `POST /attempts` with a real `timeMs`, offline queue + retry (+ 48h retention/size cap).
+5. ✅ **The 12 exercise renderers** (the bulk of the work) — each emits exactly one attempt through the milestone-4 pipeline.
+6. ✅ Progress (`/profil`, `/liga`) + voice + accessibility settings.
+
+**Phase 1.5 (DONE):** error boundary + renderer safety; offline session caching (PWA runtime caching); query
+correctness fixes; committed `api.gen.ts` + drift gate; flow tests.
+
+**Phase 2 (after 1.5):**
+7. Chat (★ LLM).
+8. Parent area billing/supporter + homework "Foto & verbessern" flow (parent-area only, behind the PIN).
 
 ## 12. Acceptance checks
 - Every answered item produces exactly one `/attempts` call with a sane `timeMs`.

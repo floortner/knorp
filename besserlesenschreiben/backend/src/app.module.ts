@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { validateEnv, type Env } from './config/env';
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe';
+import { ZodResponseInterceptor } from './common/interceptors/zod-response.interceptor';
 import { PrismaModule } from './prisma/prisma.module';
 import { EmailModule } from './services/email/email.module';
 import { FsrsModule } from './services/fsrs/fsrs.module';
@@ -58,6 +59,7 @@ import { HealthController } from './modules/health/health.controller';
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_PIPE, useClass: ZodValidationPipe },
+    { provide: APP_INTERCEPTOR, useClass: ZodResponseInterceptor },
   ],
 })
 export class AppModule {}

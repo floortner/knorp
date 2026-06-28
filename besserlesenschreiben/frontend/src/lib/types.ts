@@ -30,3 +30,4 @@ export type VerifyResponse = ResponseOf<operations['AuthController_verify']>;
 export type CreateProfileBody = BodyOf<operations['ProfilesController_create']>;
 export type Buddy = NonNullable<CreateProfileBody['buddy']>;
 export type CreateAttemptBody = BodyOf<operations['AttemptsController_record']>;
+export type UpdateSettingsBody = BodyOf<operations['ProfilesController_updateSettings']>;

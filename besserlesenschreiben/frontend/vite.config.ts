@@ -13,6 +13,25 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.svg'],
+      workbox: {
+        navigateFallback: 'index.html',
+        // Read-mostly API data: serve from network, fall back to the last good response after a short
+        // timeout so a connectivity blip doesn't blank /lernen or /profil (ARCHITECTURE — offline-playable).
+        // Writes (POST /attempts etc.) are never cached; the telemetry queue handles their retry.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url, request }: { url: URL; request: Request }) =>
+              request.method === 'GET' && /\/api\/v1\/(units|progress|me)(\/|$|\?)/.test(url.pathname + url.search),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'blsb-api',
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 * 24 }, // 1 day
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'besserlesenschreiben',
         short_name: 'blesen',

@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { coreApi } from '@/lib/endpoints';
 import type { Profile } from '@/lib/types';
 
-/** The authenticated household (account + child profiles). */
+/** The authenticated household (account + child profiles). Drives the cookie-session auth probe;
+ *  no retry so an anon 401 resolves to "not authenticated" promptly. */
 export function useMe() {
-  return useQuery({ queryKey: ['me'], queryFn: coreApi.me });
+  return useQuery({ queryKey: ['me'], queryFn: coreApi.me, retry: false, staleTime: 60_000 });
 }
 
 /**

@@ -1,9 +1,12 @@
-import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOkResponse } from '@nestjs/swagger';
+import { applyDecorators, SetMetadata } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { z, type ZodType } from 'zod';
 
 type ApiBodyOpts = Parameters<typeof ApiBody>[0];
 type ApiResponseOpts = Parameters<typeof ApiOkResponse>[0];
+
+/** Handler-metadata key carrying the response Zod schema for ZodResponseInterceptor. */
+export const ZOD_RESPONSE_KEY = 'zod:response';
 
 /**
  * Bridge Zod → OpenAPI so the generated frontend types (`npm run gen:api`) reflect the real contract
@@ -23,7 +26,24 @@ export function ApiZodBody(schema: ZodType) {
   return applyDecorators(ApiBody({ schema: zodToOpenApi(schema, 'input') } as ApiBodyOpts));
 }
 
-/** Document a 2xx response from its Zod schema. */
+/**
+ * Document a 2xx response from its Zod schema AND register it for runtime validation
+ * (ZodResponseInterceptor) — so the published contract can't silently drift from what services return.
+ */
 export function ApiZodResponse(schema: ZodType) {
-  return applyDecorators(ApiOkResponse({ schema: zodToOpenApi(schema, 'output') } as ApiResponseOpts));
+  return applyDecorators(
+    ApiOkResponse({ schema: zodToOpenApi(schema, 'output') } as ApiResponseOpts),
+    SetMetadata(ZOD_RESPONSE_KEY, schema),
+  );
+}
+
+/**
+ * Like {@link ApiZodResponse} but documents a 201 Created — for resource-creating POSTs (profiles,
+ * sessions) which return 201 at runtime. Pair with `@HttpCode(201)` so doc and runtime agree.
+ */
+export function ApiZodCreatedResponse(schema: ZodType) {
+  return applyDecorators(
+    ApiCreatedResponse({ schema: zodToOpenApi(schema, 'output') } as ApiResponseOpts),
+    SetMetadata(ZOD_RESPONSE_KEY, schema),
+  );
 }

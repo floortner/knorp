@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CurrentAccount,
   AuthAccount,
 } from '../../common/decorators/current-account.decorator';
-import { ApiZodBody, ApiZodResponse } from '../../common/zod-openapi';
+import { ApiZodBody, ApiZodCreatedResponse, ApiZodResponse } from '../../common/zod-openapi';
 import { meSchema, profileDetailSchema, profileEnvelopeSchema } from '../../contract/models';
 import { ProfilesService } from './profiles.service';
 import { CreateProfileDto, UpdateSettingsDto } from './profiles.dto';
@@ -22,8 +22,9 @@ export class ProfilesController {
   }
 
   @Post('profiles')
+  @HttpCode(201)
   @ApiZodBody(CreateProfileDto.schema)
-  @ApiZodResponse(profileEnvelopeSchema)
+  @ApiZodCreatedResponse(profileEnvelopeSchema)
   create(@CurrentAccount() account: AuthAccount, @Body() dto: CreateProfileDto) {
     return this.profiles.create(account.id, dto);
   }

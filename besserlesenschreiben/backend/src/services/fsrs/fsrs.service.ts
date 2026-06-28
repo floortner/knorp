@@ -17,6 +17,7 @@ export interface ReviewCardState {
   state: number;
   reps: number;
   lapses: number;
+  learningSteps: number;
   elapsedDays: number;
   scheduledDays: number;
   due: Date | null;
@@ -30,6 +31,7 @@ export interface NextReviewState {
   state: number;
   reps: number;
   lapses: number;
+  learningSteps: number;
   elapsedDays: number;
   scheduledDays: number;
   due: Date;
@@ -62,7 +64,7 @@ export class FsrsService {
       difficulty: Number(rs.difficulty),
       elapsed_days: rs.elapsedDays,
       scheduled_days: rs.scheduledDays,
-      learning_steps: 0,
+      learning_steps: rs.learningSteps,
       reps: rs.reps,
       lapses: rs.lapses,
       state: rs.state as State,
@@ -79,6 +81,7 @@ export class FsrsService {
       state: card.state,
       reps: card.reps,
       lapses: card.lapses,
+      learningSteps: card.learning_steps,
       elapsedDays: card.elapsed_days,
       scheduledDays: card.scheduled_days,
       due: card.due,
