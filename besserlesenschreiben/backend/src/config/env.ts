@@ -12,6 +12,9 @@ export const envSchema = z.object({
   JWT_SECRET: z.string().min(8),
   EMAIL_PROVIDER: z.string().default('console'),
   EMAIL_KEY: z.string().default(''),
+  // Sender identity for real email providers (e.g. "besserlesenschreiben <login@blesen.app>").
+  // Required when EMAIL_PROVIDER is not 'console'.
+  EMAIL_FROM: z.string().default(''),
   // later milestones (optional for now)
   ANTHROPIC_API_KEY: z.string().default(''),
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),

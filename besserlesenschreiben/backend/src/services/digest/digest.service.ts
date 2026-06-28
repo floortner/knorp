@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertProfileOwned } from '../../common/ownership';
 import { daysAgo } from '../../common/dates';
@@ -15,6 +15,8 @@ const DUE_EXAMPLE_ITEMS = 3;
  */
 @Injectable()
 export class DigestService {
+  private readonly logger = new Logger('DigestService');
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
@@ -55,7 +57,13 @@ export class DigestService {
     );
 
     const markdown = renderDigest(data);
-    await this.storage.writeUserFile(accountId, profileId, 'digest.md', markdown);
+    // Best-effort cache: the digest is fully regenerable from the DB, so a storage hiccup must not
+    // fail the request. Storage itself now throws on failure (no silent no-op); we absorb it here.
+    try {
+      await this.storage.writeUserFile(accountId, profileId, 'digest.md', markdown);
+    } catch (err) {
+      this.logger.warn({ event: 'digest.cache_write_failed', err: (err as Error).message }, 'digest cache write failed');
+    }
     return { markdown };
   }
 
