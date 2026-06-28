@@ -23,7 +23,8 @@ reports what happened. No lesson logic lives here.
 ## The one thing that matters most
 
 Every answered item emits **exactly one `/attempts`** call with a real `timeMs`. Telemetry is the product's
-spine — see `SPEC.md` §4. The 12 renderers + telemetry are the bulk of the work (`SPEC.md` §3, milestone 4).
+spine — see `SPEC.md` §4. Telemetry plumbing is its own milestone (4), built before the 12 renderers
+(milestone 5) — together the bulk of the work (`SPEC.md` §3).
 
 ## Prototype vs spec (what to copy vs build fresh)
 
@@ -62,6 +63,6 @@ On wrong: buzz + "Nochmal versuchen", allow retry (increment `attemptNo`). Confe
 > TypeScript + Tailwind + shadcn/ui — do not paste the prototype HTML. Render against `fixtures/` where
 > relevant. Stop after the shell so we can review.
 
-Drive it milestone by milestone (`SPEC.md` §11). The 12 renderers + telemetry (milestone 4) are ~half the
-work — give that its own focused sessions, one or two exercise types at a time, each with a golden snapshot
-test against `fixtures/session.example.json`.
+Drive it milestone by milestone (`SPEC.md` §11). Build the telemetry pipeline (milestone 4) first, then the
+12 renderers (milestone 5) — together ~half the work. Give the renderers their own focused sessions, one or
+two exercise types at a time, each with a golden snapshot test against `fixtures/session.example.json`.

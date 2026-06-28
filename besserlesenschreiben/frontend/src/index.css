@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+
+/* Self-hosted fonts (offline-friendly for the PWA). Atkinson Hyperlegible = dyslexia-friendly body. */
+@import '@fontsource/atkinson-hyperlegible/400.css';
+@import '@fontsource/atkinson-hyperlegible/700.css';
+@import '@fontsource-variable/bricolage-grotesque';
+
+/* Brand tokens (frontend CLAUDE.md). Tailwind 4 CSS-first @theme → generates bg-canvas, text-ink, … */
+@theme {
+  --color-canvas: #fcf7ef;
+  --color-ink: #27403c;
+  --color-ink-soft: #5b6f6a;
+  --color-teal: #27a99b;
+  --color-teal-dark: #1e8275;
+  --color-teal-tint: #dff0ec;
+  --color-orange: #f0915f;
+  --color-orange-dark: #e07a45;
+
+  --font-body: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1.25rem;
+}
+
+:root {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  /* fontScale (a11y, SPEC §6) is applied at runtime by A11yProvider via html { font-size: N% }. */
+}
+
+/* dyslexicFont (a11y, SPEC §6): A11yProvider toggles this flag. Atkinson Hyperlegible is already
+   dyslexia-friendly; this adds the recommended extra letter/word spacing and line height. */
+html[data-dyslexic='true'] body {
+  letter-spacing: 0.045em;
+  word-spacing: 0.12em;
+  line-height: 1.7;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Soft decorative blobs used on the auth screens (match the prototype's calm corners). */
+.bg-blobs {
+  background-image:
+    radial-gradient(40rem 40rem at 110% -10%, rgba(39, 169, 155, 0.12), transparent 60%),
+    radial-gradient(32rem 32rem at -10% 110%, rgba(240, 145, 95, 0.12), transparent 60%);
+}

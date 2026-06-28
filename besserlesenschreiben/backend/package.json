@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed": "prisma db seed",
+    "openapi:export": "tsx scripts/export-openapi.ts",
     "prisma:generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
@@ -36,6 +37,7 @@
     "pino-http": "^10",
     "reflect-metadata": "^0.2",
     "rxjs": "^7",
+    "ts-fsrs": "^5.4.1",
     "zod": "^4"
   },
   "devDependencies": {

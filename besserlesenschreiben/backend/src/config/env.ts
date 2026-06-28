@@ -17,6 +17,9 @@ export const envSchema = z.object({
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
   AZURE_STORAGE_ACCOUNT: z.string().default(''),
   AZURE_STORAGE_CONTAINER: z.string().default(''),
+  // Dev-only: where the local-filesystem Blob fake writes per-user files until the Azure adapter lands.
+  // Empty → defaults to <os tmpdir>/blsb-dev-blob. Never used when AZURE_STORAGE_ACCOUNT is set.
+  STORAGE_LOCAL_DIR: z.string().default(''),
   TTS_PROVIDER: z.string().default(''),
   TTS_KEY: z.string().default(''),
   BILLING_PROVIDER: z.string().default('lemonsqueezy'),

@@ -156,6 +156,7 @@ model ReviewState {
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@unique([profileId, skillTag])
+  @@index([profileId, due])
   @@map("review_state")
 }
 

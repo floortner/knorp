@@ -1,0 +1,7 @@
+# Build output
+dist/
+dev-dist/
+
+# Local env
+.env
+.env.local
