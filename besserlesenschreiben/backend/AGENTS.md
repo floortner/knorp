@@ -31,7 +31,12 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 7. **Errors use the one envelope** (`{error:{code,message,requestId,details}}`) via a global exception filter —
    never leak stack traces, Prisma errors, or provider errors to clients.
 8. **The API is the contract.** Every route under `/api/v1`; breaking changes go to `/api/v2`, never edit in
-   place. `@nestjs/swagger` OpenAPI feeds the frontend's generated types — keep DTOs clean and typed.
+   place. After any request/response shape change: edit the Zod schema in `src/contract/*`, then run
+   `npm run openapi:export` (regenerates the committed `openapi.json`) and the frontend's `npm run gen:api`,
+   and commit both. CI fails on drift. Annotate responses with `ApiZodResponse`/`ApiZodCreatedResponse` so the
+   global `ZodResponseInterceptor` validates them at runtime (dev throws, prod logs+strips).
+9. **No in-memory security state.** Lockout counters / rate-limit windows live in the DB (the PIN lockout uses
+   `account.pin_attempts` + `pin_locked_until`), never a process-local Map — the service scales to zero/out.
 
 ## Conventions
 - **Wire format is camelCase JSON; DB columns are snake_case.** Use Prisma `@map`/`@@map` to bridge; keep the
@@ -49,15 +54,15 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 - Install: `npm ci`   ·   Run: `npm run start:dev`
 - Test: `npm test` (Vitest; include **golden** tests for `digest.md` and the `Exercise` JSON shapes)
 - Lint/type: `npm run lint` (ESLint) · `npx tsc --noEmit`
+- Contract: `npm run openapi:export` (regenerate `openapi.json`) → then `npm run gen:api` in `../frontend`; commit both.
 - DB: `npx prisma migrate dev` (local) / `npx prisma migrate deploy` (CI) · `npx prisma generate`
 - Seed: `npm run seed` (`prisma db seed` → `prisma/seed.ts`)
 - Full local-dev setup (local Postgres, env, first run, calling the API): see [`./README.md`](./README.md).
 
 ## Build milestones (SPEC §12)
-1. Auth (email code + JWT) + account/profile + settings + parent PIN.
-2. Item bank: add a unique `seed_key` column, then load `item_bank.seed.json` via `prisma/seed.ts`.
-3. Sessions (bank) + attempts ingest + progress + FSRS.
-4. Digest generation. 5. Chat (LLM) + TTS pipeline. 6. Homework vision + confirm loop. 7. Billing.
+Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest) + Phase 1.5 hardening (response validation,
+cookie auth, durable PIN lockout, prod email/storage adapters, 201 statuses, FSRS `learning_steps`, tests) are
+**done**. Next is Phase 2 (★ gated): EntitlementGuard → LlmService → chat → homework vision → billing.
 
 ## Definition of done for a feature
 Endpoint matches `SPEC.md §6`; `user_id` from token; correct error codes; structured logs with `requestId`

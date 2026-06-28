@@ -25,6 +25,10 @@ media handling**), **this document wins**.
 ```
 
 - **Two repos, deployed independently.** The frontend is a static artifact; the backend is a container.
+  *Current reality:* both live in **one monorepo** (`besserlesenschreiben/{backend,frontend}`) for fast
+  cross-cutting iteration during Phase 1/1.5. They are kept independently buildable/deployable (separate
+  `package.json`, CI jobs, env) and split into the `-api`/`-web` repos before public launch — the contract
+  pipeline (§4) is what makes that split a non-event.
 - **The boundary is the HTTP API contract** (`backend/SPEC.md §6`). Neither side reaches across it: the
   frontend holds no DB/business logic; the backend serves no HTML.
 - Claude Design iterates on the screens; it changes how exercises *look*, never the data flow.
@@ -164,8 +168,11 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 - **Base path & versioning:** every route under `/api/v1`. The major version is the cross-repo contract;
   a breaking change means `/api/v2`, not an in-place edit. Additive (backward-compatible) changes stay in v1.
 - **Transport:** JSON only (`application/json`), UTF-8. `multipart/form-data` solely for `/homework` upload.
-- **Auth:** `Authorization: Bearer <jwt>`, preferably delivered as an **httpOnly, Secure, SameSite=Lax cookie**.
-  Parent-scoped routes additionally require a fresh `parent` claim (SPEC §4).
+- **Auth:** the session JWT (30-day TTL) is delivered as an **httpOnly, Secure, SameSite=Lax cookie** set on
+  `/auth/verify` and cleared on `/auth/logout`. The browser SPA holds **no token in JS** — it derives auth from
+  a `/me` probe, so a refresh never logs the child out. `JwtAuthGuard` also accepts `Authorization: Bearer <jwt>`
+  for non-browser/API clients. Parent-scoped routes additionally require a fresh `parent` claim (SPEC §4).
+  (Refresh-token rotation is deferred; the 30-day cookie is the v1 posture.)
 - **Naming:** resource nouns, plural, kebab-free snake in JSON bodies is *not* used — **JSON uses camelCase**,
   DB columns use snake_case; the backend maps between them. Pick one and never mix on the wire: **camelCase wins.**
 - **Status codes:** `200` ok · `201` created · `204` no body · `400` malformed · `401` unauthenticated ·
@@ -179,8 +186,28 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 - **Rate limits:** auth-code request/verify and parent-PIN verify are strictly limited (SPEC §4). Gated AI
   endpoints are limited per account. `429` responses include `Retry-After`.
 - **CORS:** backend allows only the known web origin(s) from config; credentials enabled (for the cookie).
-- **The contract is generated, not hand-drifted:** `@nestjs/swagger` emits OpenAPI at `/api/v1/openapi.json`. The
-  frontend's `api.ts` types are derived from it (e.g. `openapi-typescript`) so drift is caught at build time.
+- **The contract is generated, not hand-drifted** (the **contract pipeline**):
+
+  ```
+  Zod schemas (src/contract/*)               # the single source of truth
+     │  z.toJSONSchema(target:'openapi-3.0')  +  @nestjs/swagger
+     ▼
+  openapi.json   (committed)                 # exported via `npm run openapi:export`
+     │  openapi-typescript
+     ▼
+  api.gen.ts     (committed, frontend)       # generated via `npm run gen:api` — NEVER hand-edit
+     │
+     ▼
+  CI drift gate: re-run gen:api && git diff --exit-code  →  red on any drift
+  ```
+
+  The same Zod schemas drive Claude structured output (`zodOutputFormat`), so Exercise JSON stays typed
+  end-to-end. Changing a request/response shape means editing the Zod schema, then re-running both
+  generators and committing the result.
+- **Responses are validated at runtime, not just documented.** A global `ZodResponseInterceptor` re-`parse`s
+  every 2xx body against the same Zod schema the endpoint published (`ApiZodResponse`): in dev it throws on a
+  mismatch (so drift surfaces in tests), in prod it logs and strips unknown keys. The published contract
+  therefore cannot silently diverge from what services actually return.
 
 ---
 
@@ -211,6 +238,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 | 429 | `RATE_LIMITED` | back off using `Retry-After`; soft message |
 | 404 | `NOT_FOUND` | — |
 | 409 | `CONFLICT` | — |
+| 503 | `PROVIDER_UNAVAILABLE` | AI/TTS provider down; retry later — **no credit consumed** |
 | 500 | `INTERNAL` | generic apology + `requestId`; nothing technical |
 
 **Backend rules**
@@ -330,7 +358,10 @@ restore from the off-platform dumps) rather than the loss of every family's data
 - **The API version (`/v1`) is the cross-repo contract** and moves independently of repo SemVer.
 - Tag releases; `CHANGELOG.md` per repo. A frontend deploy must never assume an unreleased backend route.
 
-### CI/CD (GitHub Actions, per repo)
+### CI/CD (GitHub Actions)
+- Implemented in `.github/workflows/ci.yml` (monorepo: one workflow, a `backend` job and a `frontend` job, each
+  scoped to its subdirectory; on push to `main` + all PRs). On the repo split each job moves to its own repo
+  unchanged.
 - Frontend: install → typecheck (`tsc`) → lint → unit + **golden** tests → `vite build` → deploy to Azure on `main`.
 - Backend: `npm ci` → lint (ESLint) → typecheck (`tsc --noEmit`) → `vitest` (incl. **golden** tests) → `prisma generate` →
   build image → push to ACR → `prisma migrate deploy` + deploy to Container Apps on `main`.
@@ -349,6 +380,15 @@ restore from the off-platform dumps) rather than the loss of every family's data
 - **Security boundary (recap, non-negotiable):** `user_id`/`profile_id` derive only from the JWT; Blob access is
   via **user-delegation SAS scoped to the caller's prefix** (never a path from the client); parent-scope +
   entitlement checks gate the routes that need them; PIN and login code are hashed and rate-limited.
+- **No in-memory security state in prod.** Anything that gates access — PIN-lockout counters, rate-limit
+  windows — lives in a durable store (DB columns / Redis), never a process-local Map. The backend scales to
+  zero and out, so in-memory counters would reset on every cold start and never be shared across replicas
+  (a brute-force hole). The parent-PIN lockout (5 fails / 15 min) is persisted on `account`
+  (`pin_attempts`, `pin_locked_until`).
+- **LLM access is abstracted.** Paid AI work goes through a single swappable `LlmService` (Anthropic-direct is
+  the dev default) so the provider can move to Azure AI Foundry / Vertex EU without touching callers.
+  **EU data-residency for minors is a hard gate before any production LLM call** — see the data-flow options
+  below.
 - **Minors' data:** primary region **Austria East** keeps data at rest in Austria; DR backups stay within the
   EU (Germany West Central). Explicit parent consent for homework images; short retention via Blob lifecycle;
   the logging rules in §6 are part of this commitment. **LLM data-flow — three options, in preference order

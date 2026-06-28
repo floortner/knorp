@@ -18,9 +18,10 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 2. `../ARCHITECTURE.md` §4 (API rules), §5 (errors → UI behaviour), §10 (SVG-first media).
 
 ## Golden rules (do not violate)
-1. **Mirror the backend contract exactly.** `lib/api.ts` types are **generated from the backend OpenAPI**
-   (`openapi-typescript`). Never hand-drift the shapes; regenerate. `features/exercises/types.ts` and
-   `lib/api.ts` must stay in lockstep with `../backend/SPEC.md §6`.
+1. **Mirror the backend contract exactly.** `src/lib/api.gen.ts` is **generated from the backend OpenAPI**
+   (`npm run gen:api`, `openapi-typescript`) and committed — **never hand-edit it**. Change the backend Zod
+   schema, re-export `openapi.json`, then regenerate. CI fails on any drift. `features/exercises/types.ts` and
+   `lib/api.ts` (the hand-written transport wrapper) must stay in lockstep with `../backend/SPEC.md §6`.
 2. **`lib/api.ts` is transport only** — no JSX, no UI. Components never hand-roll fetch or error parsing.
 3. **Every answered item emits exactly one `/attempts` call** with a real `timeMs` (start timer on item mount,
    stop on answer). Fire-and-forget; queue + retry offline; never block the child's UI on the network (SPEC §4).
@@ -36,8 +37,11 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 ## Conventions
 - Mobile-first: design at ~390px, scale up. The child user needs big targets and calm feedback.
 - TanStack Query for ALL server state; keys `['me']`,`['units']`,`['session',id]`,`['progress',pid]`,
-  `['chat',pid]`,`['billing']`. Invalidate `['progress']`+`['units']` after `/sessions/{id}/complete`.
-- Auth token: prefer the backend's httpOnly cookie; do **not** put it in localStorage.
+  `['chat',pid]`,`['billing']`. Invalidate `['me']`+`['progress']`+`['units']` after `/sessions/{id}/complete`.
+- Auth: the backend's **httpOnly session cookie** is the source of truth (`credentials:'include'`); auth state
+  is derived from a `/me` probe — never put a token in localStorage/JS.
+- Wrap risky subtrees in the `ErrorBoundary` (whole app + the `LessonRunner`); a renderer throw must never
+  blank the app. `ExerciseView` throws on an unknown type so the boundary catches it.
 - Voice: play `audioUrl` if present, else Web Speech fallback (`de-DE`); respect `soundOn`.
 - A `401/SESSION_EXPIRED` clears auth and redirects once (no loops).
 
@@ -47,11 +51,9 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 - Types from API: `npm run gen:api` (openapi-typescript against the backend OpenAPI)
 
 ## Build milestones (SPEC §11)
-1. App shell + routing + tab nav + `lib/api.ts` + auth (email-code screens).
-2. Onboarding (buddy + goal). 3. `/lernen` home + session fetch.
-4. **Telemetry plumbing** (`lib/telemetry.ts`: one fire-and-forget `/attempts` per answer, offline queue + retry) — proven before the renderers.
-5. **The 12 exercise renderers** (the bulk). 6. Progress + voice + a11y. 7. Chat.
-8. Parent area + PIN + billing/supporter + homework flow.
+Phase 1 (shell/auth/onboarding/home/telemetry/12 renderers/progress) + Phase 1.5 (error boundary, offline
+caching, telemetry retention, query fixes, committed `api.gen.ts` + drift gate, flow tests) are **done**.
+Next is Phase 2: chat (★ LLM), then the parent billing/supporter + homework flow (parent-area only).
 
 ## Definition of done for a feature
 Renders from backend JSON; one `/attempts` per answer with sane timing; error codes map to the right UI;

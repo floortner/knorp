@@ -9,7 +9,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `besserlesenschreiben/backend/` — NestJS API (`-api` repo)
 - `besserlesenschreiben/frontend/` — Vite/React SPA/PWA (`-web` repo)
 
-The root-level `seed.ts` and `build-seed.ts` are reference implementations for the backend seed scripts. The canonical copies live in `besserlesenschreiben/backend/`.
+The seed scripts live in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent item-bank loader, run via `npm run seed`). There are no root-level `seed.ts`/`build-seed.ts`.
+
+Currently one **monorepo** for fast cross-cutting iteration; the two subprojects are independently buildable/deployable and split into the `-api`/`-web` repos before launch (ARCHITECTURE §1).
 
 ## Read order before touching any code
 
@@ -64,13 +66,14 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 - `prisma/seed.ts` — idempotent item-bank loader (upserts on `seed_key`)
 
 ### Frontend structure
-- `src/lib/api.ts` — typed fetch client, **transport only** (no JSX), generated from backend OpenAPI
+- `src/lib/api.gen.ts` — types **generated** from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
+- `src/lib/api.ts` — typed fetch client, **transport only** (no JSX), built on `api.gen.ts` types
 - `src/features/exercises/types.ts` — the `Exercise` discriminated union (12 types)
 - `src/features/exercises/` — the 12 exercise renderers
 - `src/lib/audio.ts` — `audioUrl` playback + Web Speech API fallback
 - `src/lib/telemetry.ts` — attempt timing + fire-and-forget emit
 
-`features/exercises/types.ts` and `lib/api.ts` **must stay in lockstep with the backend contract**. A change to either is a contract change — regenerate `api.ts` via `npm run gen:api` and update golden tests.
+`features/exercises/types.ts` and `lib/api.ts` **must stay in lockstep with the backend contract**. A change to either is a contract change — re-export `openapi.json`, regenerate `api.gen.ts` via `npm run gen:api`, and update golden tests.
 
 ### Session generation (two paths)
 - **Bank session (default, free):** deterministic — queries `attempt` table for weak/due skills via FSRS (`ts-fsrs`), selects from `item_bank`. Zero LLM calls.
@@ -93,6 +96,8 @@ The database decides *what* to drill; the LLM only generates *new content and co
 
 - **Wire format:** camelCase JSON on the wire; snake_case DB columns. Prisma `@map`/`@@map` bridges them.
 - **Validation:** Zod via `nestjs-zod` (`createZodDto`). The same Zod schemas drive Claude structured output (`zodOutputFormat` + `messages.parse`) so Exercise JSON stays typed end-to-end.
+- **Contract pipeline:** Zod schemas (`backend/src/contract/*`) → committed `backend/openapi.json` (`npm run openapi:export`) → committed `frontend/src/lib/api.gen.ts` (`npm run gen:api`), with a CI drift gate. Never hand-edit `api.gen.ts`. A global `ZodResponseInterceptor` also validates every 2xx response against its schema at runtime (dev throws, prod logs+strips).
+- **Auth:** session JWT (30-day) in an **httpOnly, Secure, SameSite cookie** (`/auth/verify` sets it, `/auth/logout` clears it); the SPA holds no token in JS and derives auth from a `/me` probe. No in-memory security state in prod — the PIN lockout is durable (`account.pin_attempts`/`pin_locked_until`).
 - **API versioning:** all routes under `/api/v1`. Breaking changes → `/api/v2`, never edit in place. Additive changes stay in v1.
 - **Golden tests:** `digest.md` format (LLM-facing) and `Exercise` JSON (client-facing) are pinned with golden files. Any change to these contract outputs must update the golden files intentionally.
 - **SVG-first media:** all app art, mascots (Nepo/Stella), icons, and badges are SVG. Sanitize any non-hand-authored SVG with DOMPurify before inlining — never `dangerouslySetInnerHTML` on raw SVG. Homework photos are the only raster exception (strip EXIF server-side, transcode to WebP).

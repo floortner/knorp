@@ -224,11 +224,11 @@ processed_webhook(
 2. `POST /auth/verify {email, code}` → check hash + expiry, increment `attempts`, **lock after 5 fails**. On success issue JWT (`sub=account_id`, `exp`), upsert account.
 
 **Parent PIN**
-- Set at onboarding: `POST /parent/set-pin {pin}` → store **argon2 hash** (never plaintext).
-- `POST /parent/verify-pin {pin}` → compare hash; **rate-limit, lock after 5 fails** (4 digits = 10k combos). On success return `parentToken`: a **separate short-lived JWT** carrying a `parent` claim (~15 min). The client holds it and sends it on `‡` routes; `ParentScopeGuard` requires a valid, unexpired `parent` claim. It **does not replace** the session JWT.
+- Set at onboarding: `POST /parent/set-pin {pin}` → store **argon2 hash** (never plaintext); also clears any standing lockout.
+- `POST /parent/verify-pin {pin}` → compare hash; **lock after 5 fails for 15 min** (4 digits = 10k combos). The lockout is **durable** — persisted on `account.pin_attempts` + `account.pin_locked_until`, not an in-memory Map — so it survives restarts and holds across scaled-out replicas (ARCHITECTURE §8). A correct PIN during the window returns `429 RATE_LIMITED`; a wrong PIN returns `403`. On success the counter is cleared and `parentToken` is returned: a **separate short-lived JWT** carrying a `parent` claim (~15 min). The client holds it and sends it on `‡` routes; `ParentScopeGuard` requires a valid, unexpired `parent` claim. It **does not replace** the session JWT.
 - The prototype's "any 4 digits" client check must NOT survive into production — the PIN guards `reset` and analytics.
 
-JWT in `Authorization: Bearer`. Prefer setting it as an **httpOnly, Secure, SameSite cookie** to keep it out of JS.
+**Session cookie.** The session JWT (30-day TTL) is set as an **httpOnly, Secure, SameSite=Lax cookie** on `/auth/verify` and cleared on `POST /auth/logout`. `JwtAuthGuard` reads the cookie or a `Bearer` header (the SPA uses the cookie and holds no token in JS, deriving auth from a `/me` probe; API clients/tests may use Bearer).
 
 ---
 
@@ -252,18 +252,21 @@ Postgres holds metadata + pointers; Blob holds markdown + media. Reads/writes vi
 
 ## 6. API contract  *(shared boundary with frontend)*
 
-All routes JSON unless noted. All require `Bearer` auth except `/auth/*`. `‡` = requires parent scope. `★` = entitlement/credit gated.
+All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*`. `‡` = requires parent scope. `★` = entitlement/credit gated (Phase 2; checks credits **before** any paid work, `402` on zero).
+
+This contract is **generated, not hand-written**: Zod schemas in `src/contract/*` → `openapi.json` (`npm run openapi:export`) → frontend `api.gen.ts` (`npm run gen:api`), with a CI drift gate. Every 2xx response is also validated at runtime against its Zod schema by a global `ZodResponseInterceptor` (dev: throws on mismatch; prod: logs + strips), so the documented shape can't drift from the served one.
 
 ### Auth
 ```
 POST /auth/request-code     {email}                  -> 200 {ok:true}
-POST /auth/verify           {email, code}            -> {token, isNewAccount}
+POST /auth/verify           {email, code}            -> 200 {token, isNewAccount}   # also Set-Cookie: session
+POST /auth/logout                                    -> 200 {ok:true}               # clears the session cookie
 ```
 
 ### Profiles & settings
 ```
 GET   /me                                            -> {account, profiles:[...]}
-POST  /profiles             {name, buddy, goal}      -> {profile}        # onboarding
+POST  /profiles             {name, buddy, goal}      -> 201 {profile}    # onboarding (resource created)
 GET   /profiles/{id}                                 -> {profile, settings, stars, streak}
 PATCH /profiles/{id}/settings {soundOn?,dyslexicFont?,fontScale?,goal?,buddy?} -> {profile}
 ```
@@ -272,12 +275,12 @@ PATCH /profiles/{id}/settings {soundOn?,dyslexicFont?,fontScale?,goal?,buddy?} -
 ```
 GET  /units                                          -> [{unit, title, subtitle, focus,
                             exerciseTypes, itemCount, status, theme:{iconBg, iconColor}}]
-POST /sessions              {profileId, unit?, source?} -> {sessionId, profileId, unit,
+POST /sessions              {profileId, unit?, source?} -> 201 {sessionId, profileId, unit,
                             generatedAt, items:[Exercise]}                     # ★ if source='llm'
 POST /attempts             {sessionId, itemId?, exerciseType, prompt,
                             expected, given, isCorrect, timeMs, attemptNo, skillTags}
-                                                     -> {ok:true}
-POST /sessions/{id}/complete                         -> {starsAwarded, streakDays, league}
+                                                     -> 200 {ok:true}   # idempotent → 200, not 201
+POST /sessions/{id}/complete                         -> 200 {starsAwarded, streakDays, league}   # idempotent
 ```
 - `unit` is the integer index (matches `item_bank.unit` / `session.unit`). `status` is per-profile:
   `locked | current | done`. The golden shapes are `../frontend/fixtures/units.example.json` and
@@ -411,19 +414,32 @@ ANTHROPIC_API_KEY=
 ANTHROPIC_MODEL=                 # configurable; see ../ARCHITECTURE.md §8
 AZURE_STORAGE_ACCOUNT= AZURE_STORAGE_CONTAINER=   # auth via Managed Identity / Key Vault, not keys in env
 TTS_PROVIDER= TTS_KEY=
-EMAIL_PROVIDER= EMAIL_KEY=       # for login codes
+EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev) | resend (prod, needs KEY + FROM)
+STORAGE_LOCAL_DIR=               # dev-only local Blob fake; unused when AZURE_STORAGE_ACCOUNT is set
 BILLING_PROVIDER=                # lemonsqueezy|paddle
 BILLING_WEBHOOK_SECRET=
 ```
 
 ## 12. Build milestones (suggested order for Claude Code)
-1. Auth (email code + JWT), account/profile, settings, parent PIN. 
-2. Item bank: add a unique `seed_key` column, then load `item_bank.seed.json` via `prisma/seed.ts` (`npm run seed`).
-3. Sessions (bank) + attempts ingest + progress + FSRS.
-4. Digest generation.
-5. Chat (LLM) + TTS pipeline.
-6. Homework vision + confirm loop.
-7. Billing (entitlements, credits, webhook, pay-it-forward).
+
+**Phase 1 — free tier (DONE, merged + CI-green):**
+1. ✅ Auth (email code + JWT, httpOnly cookie + logout), account/profile, settings, parent PIN.
+2. ✅ Item bank: unique `seed_key` column, load `item_bank.seed.json` via `prisma/seed.ts` (`npm run seed`).
+3. ✅ Sessions (bank) + attempts ingest + progress + FSRS.
+4. ✅ Digest generation.
+
+**Phase 1.5 — hardening (DONE):** runtime response-contract validation (`ZodResponseInterceptor`); httpOnly
+cookie auth + `/me`-probe frontend; durable PIN lockout (`pin_attempts`/`pin_locked_until`); prod email
+(Resend) + Azure Blob storage adapters (fail-loud, no silent no-op); 201 statuses on creating POSTs; FSRS
+`learning_steps` persistence; React error boundary + renderer safety; offline session caching + telemetry
+retention; guard/flow tests; these docs.
+
+**Phase 2 — gated/paid (★, after 1.5):**
+5. `EntitlementGuard` + `EntitlementService`/`CreditsService` (402 on zero credits) — prerequisite for every ★.
+6. `LlmService` (abstracted; Anthropic-direct dev default, EU-residency gate before prod).
+7. Chat (LLM) + TTS pipeline.
+8. Homework vision + parent-confirm loop (needs storage + LlmService + EntitlementGuard).
+9. Billing (entitlements, credits, webhook, pay-it-forward) — needs the MoR decision; PIN-gated, never in child tabs.
 
 ## 13. Acceptance checks
 - `user_id` never read from request body/path; only from JWT. (grep the codebase.)
