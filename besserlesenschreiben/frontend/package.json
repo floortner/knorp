@@ -11,7 +11,7 @@
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gen:api": "openapi-typescript http://localhost:3000/api/v1/openapi.json -o src/lib/api.gen.ts"
+    "gen:api": "openapi-typescript ../backend/openapi.json -o src/lib/api.gen.ts"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5",

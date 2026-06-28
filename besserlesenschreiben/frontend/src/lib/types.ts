@@ -1,53 +1,32 @@
 /**
- * Wire types mirroring `../backend/SPEC.md §6`. Hand-written stopgap until `npm run gen:api`
- * generates them from the backend OpenAPI — keep in lockstep with the contract (AGENTS rule 1).
+ * Wire types for the app, derived entirely from the backend OpenAPI via `src/lib/api.gen.ts`
+ * (regenerate with `npm run gen:api`). Nothing here is hand-authored — these are ergonomic aliases
+ * over the generated `operations`, so the frontend stays in lockstep with the contract (AGENTS rule 1).
  */
+import type { operations } from './api.gen';
 
-export interface Profile {
-  id: string;
-  name: string;
-  buddy: string;
-  goalPerWeek: number;
-  soundOn: boolean;
-  dyslexicFont: boolean;
-  fontScale: number;
-  stars: number;
-  streakDays: number;
-  unlockedUnit: number;
-  createdAt: string;
-}
+type JsonOf<T> = T extends { content: { 'application/json': infer J } } ? J : never;
+/** The application/json body of an operation's (single) documented 2xx response. */
+type ResponseOf<Op> = Op extends { responses: infer R } ? { [S in keyof R]: JsonOf<R[S]> }[keyof R] : never;
+/** The application/json request body of an operation. */
+type BodyOf<Op> = Op extends { requestBody?: infer B } ? JsonOf<B> : never;
 
-export interface Me {
-  account: { id: string; email: string };
-  profiles: Profile[];
-}
+export type Me = ResponseOf<operations['ProfilesController_getMe']>;
+export type Profile = Me['profiles'][number];
 
-export type UnitStatus = 'locked' | 'current' | 'done';
+export type Unit = ResponseOf<operations['SessionsController_units']>[number];
+export type UnitStatus = Unit['status'];
 
-export interface Unit {
-  unit: number;
-  title: string;
-  subtitle: string;
-  focus: string;
-  exerciseTypes: string[];
-  itemCount: number;
-  status: UnitStatus;
-  theme: { iconBg: string; iconColor: string };
-}
+export type SessionResponse = ResponseOf<operations['SessionsController_create']>;
+export type Exercise = SessionResponse['items'][number];
+/** @deprecated use Exercise — kept so existing imports compile during the M5 build-out. */
+export type SessionItem = Exercise;
 
-/** A served exercise. Fully typed as the discriminated union when the renderers land (M5). */
-export interface SessionItem {
-  id: string;
-  type: string;
-  skillTags: string[];
-  audioUrl: string | null;
-  [field: string]: unknown;
-}
+export type SessionComplete = ResponseOf<operations['SessionsController_complete']>;
+export type Progress = ResponseOf<operations['ProgressController_get']>;
 
-export interface SessionResponse {
-  sessionId: string;
-  profileId: string;
-  unit: number;
-  generatedAt: string;
-  items: SessionItem[];
-}
+export type VerifyResponse = ResponseOf<operations['AuthController_verify']>;
+
+export type CreateProfileBody = BodyOf<operations['ProfilesController_create']>;
+export type Buddy = NonNullable<CreateProfileBody['buddy']>;
+export type CreateAttemptBody = BodyOf<operations['AttemptsController_record']>;

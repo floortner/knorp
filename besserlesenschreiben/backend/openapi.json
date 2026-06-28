@@ -1,0 +1,2168 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/auth/request-code": {
+      "post": {
+        "operationId": "AuthController_requestCode",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/verify": {
+      "post": {
+        "operationId": "AuthController_verify",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                  }
+                },
+                "required": [
+                  "email",
+                  "code"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "isNewAccount": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "isNewAccount"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "ProfilesController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "account": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "email"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "profiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "buddy": {
+                            "type": "string"
+                          },
+                          "goalPerWeek": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "soundOn": {
+                            "type": "boolean"
+                          },
+                          "dyslexicFont": {
+                            "type": "boolean"
+                          },
+                          "fontScale": {
+                            "type": "number"
+                          },
+                          "stars": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "streakDays": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "unlockedUnit": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "buddy",
+                          "goalPerWeek",
+                          "soundOn",
+                          "dyslexicFont",
+                          "fontScale",
+                          "stars",
+                          "streakDays",
+                          "unlockedUnit",
+                          "createdAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "account",
+                    "profiles"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/profiles": {
+      "post": {
+        "operationId": "ProfilesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "buddy": {
+                    "type": "string",
+                    "enum": [
+                      "nepo",
+                      "stella"
+                    ]
+                  },
+                  "goal": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 14
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "buddy": {
+                          "type": "string"
+                        },
+                        "goalPerWeek": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "soundOn": {
+                          "type": "boolean"
+                        },
+                        "dyslexicFont": {
+                          "type": "boolean"
+                        },
+                        "fontScale": {
+                          "type": "number"
+                        },
+                        "stars": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "streakDays": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "unlockedUnit": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "buddy",
+                        "goalPerWeek",
+                        "soundOn",
+                        "dyslexicFont",
+                        "fontScale",
+                        "stars",
+                        "streakDays",
+                        "unlockedUnit",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "profile"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/profiles/{id}": {
+      "get": {
+        "operationId": "ProfilesController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "buddy": {
+                          "type": "string"
+                        },
+                        "goalPerWeek": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "soundOn": {
+                          "type": "boolean"
+                        },
+                        "dyslexicFont": {
+                          "type": "boolean"
+                        },
+                        "fontScale": {
+                          "type": "number"
+                        },
+                        "stars": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "streakDays": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "unlockedUnit": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "buddy",
+                        "goalPerWeek",
+                        "soundOn",
+                        "dyslexicFont",
+                        "fontScale",
+                        "stars",
+                        "streakDays",
+                        "unlockedUnit",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "settings": {
+                      "type": "object",
+                      "properties": {
+                        "soundOn": {
+                          "type": "boolean"
+                        },
+                        "dyslexicFont": {
+                          "type": "boolean"
+                        },
+                        "fontScale": {
+                          "type": "number"
+                        },
+                        "goalPerWeek": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "buddy": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "soundOn",
+                        "dyslexicFont",
+                        "fontScale",
+                        "goalPerWeek",
+                        "buddy"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "stars": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "streak": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "profile",
+                    "settings",
+                    "stars",
+                    "streak"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/profiles/{id}/settings": {
+      "patch": {
+        "operationId": "ProfilesController_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "soundOn": {
+                    "type": "boolean"
+                  },
+                  "dyslexicFont": {
+                    "type": "boolean"
+                  },
+                  "fontScale": {
+                    "type": "number",
+                    "minimum": 0.8,
+                    "maximum": 2
+                  },
+                  "goal": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 14
+                  },
+                  "buddy": {
+                    "type": "string",
+                    "enum": [
+                      "nepo",
+                      "stella"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "buddy": {
+                          "type": "string"
+                        },
+                        "goalPerWeek": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "soundOn": {
+                          "type": "boolean"
+                        },
+                        "dyslexicFont": {
+                          "type": "boolean"
+                        },
+                        "fontScale": {
+                          "type": "number"
+                        },
+                        "stars": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "streakDays": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "unlockedUnit": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "buddy",
+                        "goalPerWeek",
+                        "soundOn",
+                        "dyslexicFont",
+                        "fontScale",
+                        "stars",
+                        "streakDays",
+                        "unlockedUnit",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "profile"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/parent/set-pin": {
+      "post": {
+        "operationId": "ParentController_setPin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pin": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                  }
+                },
+                "required": [
+                  "pin"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "parent"
+        ]
+      }
+    },
+    "/api/v1/parent/verify-pin": {
+      "post": {
+        "operationId": "ParentController_verifyPin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pin": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                  }
+                },
+                "required": [
+                  "pin"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "parentToken": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "parentToken"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "parent"
+        ]
+      }
+    },
+    "/api/v1/parent/unlock-next": {
+      "post": {
+        "operationId": "ParentController_unlockNext",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profileId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "profileId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "unlockedUnit": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "unlockedUnit"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "parent"
+        ]
+      }
+    },
+    "/api/v1/parent/reset": {
+      "post": {
+        "operationId": "ParentController_reset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profileId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "profileId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "parent"
+        ]
+      }
+    },
+    "/api/v1/units": {
+      "get": {
+        "operationId": "SessionsController_units",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "unit": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "subtitle": {
+                        "type": "string"
+                      },
+                      "focus": {
+                        "type": "string"
+                      },
+                      "exerciseTypes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "itemCount": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "locked",
+                          "current",
+                          "done"
+                        ]
+                      },
+                      "theme": {
+                        "type": "object",
+                        "properties": {
+                          "iconBg": {
+                            "type": "string"
+                          },
+                          "iconColor": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "iconBg",
+                          "iconColor"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "unit",
+                      "title",
+                      "subtitle",
+                      "focus",
+                      "exerciseTypes",
+                      "itemCount",
+                      "status",
+                      "theme"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/sessions": {
+      "post": {
+        "operationId": "SessionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profileId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "unit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "bank"
+                    ]
+                  }
+                },
+                "required": [
+                  "profileId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionId": {
+                      "type": "string"
+                    },
+                    "profileId": {
+                      "type": "string"
+                    },
+                    "unit": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "count"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "syll": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "answer": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "opts": {
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "syll",
+                              "answer",
+                              "opts",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "gap"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "syll": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "gapIndex": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "syll",
+                              "gapIndex",
+                              "answer",
+                              "options",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "order"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "syll": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "tiles": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "syll",
+                              "tiles",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "rhyme"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "options",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "initial"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "emoji": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "emoji",
+                              "answer",
+                              "options",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "letter"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "letters": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "gapIndex": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "letters",
+                              "gapIndex",
+                              "answer",
+                              "options",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "case"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "emoji": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "answer",
+                              "options",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "arrange"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "syll": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "tiles": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "syll",
+                              "tiles",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "nonsense"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "answer",
+                              "options",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "pairs"
+                                ]
+                              },
+                              "tiles": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "pair": {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                "minItems": 2,
+                                "maxItems": 2
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "tiles",
+                              "pair",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "bd"
+                                ]
+                              },
+                              "glyph": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "glyph",
+                              "answer",
+                              "options",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "vowel"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "letters": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "gapIndex": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "letters",
+                              "gapIndex",
+                              "answer",
+                              "options",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "sessionId",
+                    "profileId",
+                    "unit",
+                    "generatedAt",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/sessions/{id}/complete": {
+      "post": {
+        "operationId": "SessionsController_complete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "starsAwarded": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "streakDays": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "league": {
+                      "type": "object",
+                      "properties": {
+                        "tier": {
+                          "type": "string",
+                          "enum": [
+                            "bronze",
+                            "silber",
+                            "gold"
+                          ]
+                        },
+                        "starsWeek": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "starsToNext": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "tier",
+                        "starsWeek",
+                        "starsToNext"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "starsAwarded",
+                    "streakDays",
+                    "league"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/attempts": {
+      "post": {
+        "operationId": "AttemptsController_record",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "itemId": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "exerciseType": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "expected": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "given": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "isCorrect": {
+                    "type": "boolean"
+                  },
+                  "timeMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 600000
+                  },
+                  "attemptNo": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                  },
+                  "skillTags": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40
+                    }
+                  }
+                },
+                "required": [
+                  "sessionId",
+                  "exerciseType",
+                  "prompt",
+                  "expected",
+                  "given",
+                  "isCorrect",
+                  "timeMs",
+                  "skillTags"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "attempts"
+        ]
+      }
+    },
+    "/api/v1/progress/{profileId}": {
+      "get": {
+        "operationId": "ProgressController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "streakDays": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "stars": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "weeklyActivity": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "monthlyHeatmap": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "league": {
+                      "type": "object",
+                      "properties": {
+                        "tier": {
+                          "type": "string",
+                          "enum": [
+                            "bronze",
+                            "silber",
+                            "gold"
+                          ]
+                        },
+                        "starsWeek": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "starsToNext": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "tier",
+                        "starsWeek",
+                        "starsToNext"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "skillBreakdown": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "skill": {
+                            "type": "string"
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "correctPct": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "due": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "skill",
+                          "attempts",
+                          "correctPct",
+                          "due"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "streakDays",
+                    "stars",
+                    "weeklyActivity",
+                    "monthlyHeatmap",
+                    "league",
+                    "skillBreakdown"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "progress"
+        ]
+      }
+    },
+    "/api/v1/digest/{profileId}": {
+      "get": {
+        "operationId": "DigestController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "markdown": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "markdown"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "digest"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "besserlesenschreiben API",
+    "description": "",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {}
+  }
+}

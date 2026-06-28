@@ -2,9 +2,6 @@
 dist/
 dev-dist/
 
-# Generated API types (regenerated via `npm run gen:api`)
-src/lib/api.gen.ts
-
 # Local env
 .env
 .env.local

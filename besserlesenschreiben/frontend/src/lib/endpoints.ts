@@ -1,24 +1,19 @@
 import { apiFetch } from './api';
-import type { Me, Profile, SessionResponse, Unit } from './types';
-
-export type Buddy = 'nepo' | 'stella';
-
-export interface CreateProfileBody {
-  name: string;
-  buddy?: Buddy;
-  goal?: number;
-}
+import type {
+  CreateProfileBody,
+  Me,
+  Profile,
+  SessionResponse,
+  Unit,
+  VerifyResponse,
+} from './types';
 
 /**
- * Typed endpoint wrappers mirroring `../backend/SPEC.md §6`. These hand-written shapes are a stopgap
- * until `npm run gen:api` generates them from the backend OpenAPI — keep them in lockstep with the
- * contract (AGENTS golden rule 1).
+ * Typed endpoint wrappers over the transport client. Request/response types come from the generated
+ * contract (`./types` → `./api.gen.ts`); re-run `npm run gen:api` after a backend contract change.
  */
 
-export interface VerifyResponse {
-  token: string;
-  isNewAccount: boolean;
-}
+export type { Buddy, CreateProfileBody } from './types';
 
 export const authApi = {
   /** Always resolves (the backend never reveals whether an email exists). */
