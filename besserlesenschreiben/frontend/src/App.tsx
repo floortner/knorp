@@ -4,6 +4,7 @@ import { Lernen } from '@/app/tabs/Lernen';
 import { Liga } from '@/app/tabs/Liga';
 import { Chat } from '@/app/tabs/Chat';
 import { Profil } from '@/app/tabs/Profil';
+import { LessonScreen } from '@/features/lessons/LessonScreen';
 import { LoginScreen } from '@/features/auth/LoginScreen';
 import { CodeScreen } from '@/features/auth/CodeScreen';
 import { RequireAuth } from '@/features/auth/RequireAuth';
@@ -24,6 +25,7 @@ export function App() {
       >
         <Route index element={<Navigate to="lernen" replace />} />
         <Route path="lernen" element={<Lernen />} />
+        <Route path="lesson" element={<LessonScreen />} />
         <Route path="liga" element={<Liga />} />
         <Route path="chat" element={<Chat />} />
         <Route path="profil" element={<Profil />} />

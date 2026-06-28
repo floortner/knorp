@@ -1,9 +1,10 @@
 import { apiFetch } from './api';
+import type { Me, SessionResponse, Unit } from './types';
 
 /**
  * Typed endpoint wrappers mirroring `../backend/SPEC.md §6`. These hand-written shapes are a stopgap
  * until `npm run gen:api` generates them from the backend OpenAPI — keep them in lockstep with the
- * contract (AGENTS golden rule 1). Only the endpoints needed so far (M1 auth) are defined.
+ * contract (AGENTS golden rule 1).
  */
 
 export interface VerifyResponse {
@@ -18,4 +19,17 @@ export const authApi = {
 
   verify: (email: string, code: string) =>
     apiFetch<VerifyResponse>('/auth/verify', { method: 'POST', body: { email, code } }),
+};
+
+export const coreApi = {
+  me: () => apiFetch<Me>('/me'),
+
+  units: (profileId: string) =>
+    apiFetch<Unit[]>(`/units?profileId=${encodeURIComponent(profileId)}`),
+
+  createSession: (profileId: string, unit?: number) =>
+    apiFetch<SessionResponse>('/sessions', {
+      method: 'POST',
+      body: { profileId, ...(unit !== undefined ? { unit } : {}) },
+    }),
 };
