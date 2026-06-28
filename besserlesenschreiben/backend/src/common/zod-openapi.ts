@@ -1,5 +1,5 @@
 import { applyDecorators, SetMetadata } from '@nestjs/common';
-import { ApiBody, ApiOkResponse } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { z, type ZodType } from 'zod';
 
 type ApiBodyOpts = Parameters<typeof ApiBody>[0];
@@ -33,6 +33,17 @@ export function ApiZodBody(schema: ZodType) {
 export function ApiZodResponse(schema: ZodType) {
   return applyDecorators(
     ApiOkResponse({ schema: zodToOpenApi(schema, 'output') } as ApiResponseOpts),
+    SetMetadata(ZOD_RESPONSE_KEY, schema),
+  );
+}
+
+/**
+ * Like {@link ApiZodResponse} but documents a 201 Created — for resource-creating POSTs (profiles,
+ * sessions) which return 201 at runtime. Pair with `@HttpCode(201)` so doc and runtime agree.
+ */
+export function ApiZodCreatedResponse(schema: ZodType) {
+  return applyDecorators(
+    ApiCreatedResponse({ schema: zodToOpenApi(schema, 'output') } as ApiResponseOpts),
     SetMetadata(ZOD_RESPONSE_KEY, schema),
   );
 }

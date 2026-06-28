@@ -16,6 +16,9 @@ model Account {
   id            String   @id @default(uuid()) @db.Uuid
   email         String   @unique
   parentPinHash String?  @map("parent_pin_hash") // argon2; null until set at onboarding
+  // Durable PIN-lockout state (replaces the old in-memory Map → survives restart & scale-out).
+  pinAttempts    Int       @default(0) @map("pin_attempts")
+  pinLockedUntil DateTime? @map("pin_locked_until") @db.Timestamptz(6)
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   profiles    Profile[]
@@ -148,6 +151,7 @@ model ReviewState {
   state         Int       @default(0) // 0=new 1=learning 2=review 3=relearning
   reps          Int       @default(0)
   lapses        Int       @default(0)
+  learningSteps Int       @default(0) @map("learning_steps") // ts-fsrs step index; persisted so mid-learning isn't reset
   elapsedDays   Int       @default(0) @map("elapsed_days")
   scheduledDays Int       @default(0) @map("scheduled_days")
   due           DateTime? @db.Timestamptz(6)

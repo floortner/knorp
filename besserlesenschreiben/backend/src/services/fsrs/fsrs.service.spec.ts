@@ -47,6 +47,7 @@ describe('FsrsService', () => {
         state: 2,
         reps: 5,
         lapses: 0,
+        learningSteps: 0,
         elapsedDays: 15,
         scheduledDays: 15,
         due: new Date('2026-06-25T09:00:00Z'),

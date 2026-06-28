@@ -16,13 +16,6 @@ const MAX_UNIT = UNIT_CATALOG.length;
 export class ParentService {
   private readonly logger = new Logger('ParentService');
 
-  /**
-   * In-memory PIN lockout, keyed by account. Good enough for a single dev instance; a durable
-   * store (DB column or Redis) is needed before horizontal scaling — there is intentionally no
-   * pin-attempts column in the schema yet (SPEC §4).
-   */
-  private readonly locks = new Map<string, { fails: number; until: number }>();
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
@@ -30,33 +23,49 @@ export class ParentService {
 
   async setPin(accountId: string, pin: string): Promise<{ ok: true }> {
     const parentPinHash = await argon2.hash(pin);
-    await this.prisma.account.update({ where: { id: accountId }, data: { parentPinHash } });
-    this.locks.delete(accountId);
+    // Setting/replacing the PIN clears any standing lockout.
+    await this.prisma.account.update({
+      where: { id: accountId },
+      data: { parentPinHash, pinAttempts: 0, pinLockedUntil: null },
+    });
     return { ok: true };
   }
 
+  /**
+   * Verify the parent PIN with a durable lockout (5 fails / 15 min), persisted on `account` so it
+   * survives restarts and holds across scaled-out instances (SPEC §4 — no in-memory security state).
+   */
   async verifyPin(accountId: string, pin: string): Promise<{ parentToken: string }> {
-    const lock = this.locks.get(accountId);
-    if (lock && lock.until > Date.now()) {
-      throw new ApiException(429, 'RATE_LIMITED', 'Zu viele Fehlversuche. Bitte später erneut.');
-    }
-
     const account = await this.prisma.account.findUnique({ where: { id: accountId } });
     if (!account?.parentPinHash) {
       throw new ApiException(409, 'CONFLICT', 'Eltern-PIN ist noch nicht gesetzt.');
     }
 
+    if (account.pinLockedUntil && account.pinLockedUntil.getTime() > Date.now()) {
+      throw new ApiException(429, 'RATE_LIMITED', 'Zu viele Fehlversuche. Bitte später erneut.');
+    }
+
     const ok = await argon2.verify(account.parentPinHash, pin);
     if (!ok) {
-      const fails = (lock?.fails ?? 0) + 1;
-      this.locks.set(accountId, {
-        fails,
-        until: fails >= MAX_PIN_ATTEMPTS ? Date.now() + LOCK_MS : 0,
+      const fails = account.pinAttempts + 1;
+      const locked = fails >= MAX_PIN_ATTEMPTS;
+      await this.prisma.account.update({
+        where: { id: accountId },
+        data: {
+          // Reset the counter once the lock trips so the next window starts clean after it expires.
+          pinAttempts: locked ? 0 : fails,
+          pinLockedUntil: locked ? new Date(Date.now() + LOCK_MS) : null,
+        },
       });
       throw new ApiException(403, 'FORBIDDEN', 'PIN falsch.');
     }
 
-    this.locks.delete(accountId);
+    if (account.pinAttempts !== 0 || account.pinLockedUntil) {
+      await this.prisma.account.update({
+        where: { id: accountId },
+        data: { pinAttempts: 0, pinLockedUntil: null },
+      });
+    }
     const parentToken = await this.jwt.signAsync(
       { sub: accountId, scope: 'parent' },
       { expiresIn: PARENT_TTL },
