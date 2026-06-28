@@ -3,9 +3,11 @@ import type {
   CreateProfileBody,
   Me,
   Profile,
+  Progress,
   SessionComplete,
   SessionResponse,
   Unit,
+  UpdateSettingsBody,
   VerifyResponse,
 } from './types';
 
@@ -30,6 +32,15 @@ export const coreApi = {
 
   createProfile: (body: CreateProfileBody) =>
     apiFetch<{ profile: Profile }>('/profiles', { method: 'POST', body }),
+
+  updateSettings: (profileId: string, body: UpdateSettingsBody) =>
+    apiFetch<{ profile: Profile }>(`/profiles/${encodeURIComponent(profileId)}/settings`, {
+      method: 'PATCH',
+      body,
+    }),
+
+  progress: (profileId: string) =>
+    apiFetch<Progress>(`/progress/${encodeURIComponent(profileId)}`),
 
   units: (profileId: string) =>
     apiFetch<Unit[]>(`/units?profileId=${encodeURIComponent(profileId)}`),
