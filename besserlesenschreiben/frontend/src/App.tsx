@@ -8,12 +8,22 @@ import { LessonScreen } from '@/features/lessons/LessonScreen';
 import { LoginScreen } from '@/features/auth/LoginScreen';
 import { CodeScreen } from '@/features/auth/CodeScreen';
 import { RequireAuth } from '@/features/auth/RequireAuth';
+import { OnboardingScreen } from '@/features/onboarding/OnboardingScreen';
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/login/code" element={<CodeScreen />} />
+
+      <Route
+        path="/onboarding"
+        element={
+          <RequireAuth>
+            <OnboardingScreen />
+          </RequireAuth>
+        }
+      />
 
       <Route
         path="/app"

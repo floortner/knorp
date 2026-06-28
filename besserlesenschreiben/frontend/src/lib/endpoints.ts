@@ -1,5 +1,13 @@
 import { apiFetch } from './api';
-import type { Me, SessionResponse, Unit } from './types';
+import type { Me, Profile, SessionResponse, Unit } from './types';
+
+export type Buddy = 'nepo' | 'stella';
+
+export interface CreateProfileBody {
+  name: string;
+  buddy?: Buddy;
+  goal?: number;
+}
 
 /**
  * Typed endpoint wrappers mirroring `../backend/SPEC.md §6`. These hand-written shapes are a stopgap
@@ -23,6 +31,9 @@ export const authApi = {
 
 export const coreApi = {
   me: () => apiFetch<Me>('/me'),
+
+  createProfile: (body: CreateProfileBody) =>
+    apiFetch<{ profile: Profile }>('/profiles', { method: 'POST', body }),
 
   units: (profileId: string) =>
     apiFetch<Unit[]>(`/units?profileId=${encodeURIComponent(profileId)}`),

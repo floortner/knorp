@@ -21,8 +21,8 @@ export function CodeScreen() {
     mutationFn: (code: string) => authApi.verify(email ?? '', code),
     onSuccess: (res) => {
       login(res.token);
-      // New accounts go to onboarding (milestone 2); existing users land on the home tab.
-      navigate(res.isNewAccount ? '/app/lernen' : '/app/lernen', { replace: true });
+      // New accounts set up their child profile first; existing users land on the home tab.
+      navigate(res.isNewAccount ? '/onboarding' : '/app/lernen', { replace: true });
     },
   });
 

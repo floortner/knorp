@@ -4,6 +4,7 @@ import { useActiveProfile, useMe } from '@/features/profile/useMe';
 import { useUnits } from '@/features/units/useUnits';
 import { useCreateSession } from '@/features/sessions/useCreateSession';
 import { UnitCard } from '@/features/units/UnitCard';
+import { Button } from '@/components/ui/button';
 import { TopBar } from '@/app/components/TopBar';
 import { WeekStrip } from '@/app/components/WeekStrip';
 
@@ -17,13 +18,15 @@ export function Lernen() {
   if (me.isLoading) return <CenterNote>Lädt …</CenterNote>;
   if (me.isError) return <CenterNote>{(me.error as ApiError).message}</CenterNote>;
 
-  // New account without a child profile yet → onboarding (milestone 2).
+  // Authenticated but no child profile yet → send them through onboarding.
   if (!profile) {
     return (
-      <CenterNote>
-        Noch kein Profil angelegt.
-        <span className="mt-1 block text-sm text-ink-soft">Das Onboarding folgt in Meilenstein 2.</span>
-      </CenterNote>
+      <div className="py-16 text-center">
+        <p className="font-medium text-ink-soft">Noch kein Profil angelegt.</p>
+        <Button className="mt-4" onClick={() => navigate('/onboarding')}>
+          Jetzt einrichten
+        </Button>
+      </div>
     );
   }
 
