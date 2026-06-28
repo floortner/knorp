@@ -1,0 +1,696 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ExerciseView golden render > renders arrange from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Tippe die Teile in der richtigen Reihenfolge an.
+    </p>
+    <div>
+      <div
+        class="space-y-4"
+      >
+        <div
+          class="flex min-h-14 flex-wrap items-center justify-center gap-2 rounded-2xl bg-black/[0.03] p-3"
+        >
+          <span
+            class="text-sm text-ink-soft/60"
+          >
+            …
+          </span>
+        </div>
+        <div
+          class="flex flex-wrap justify-center gap-2"
+        >
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            a
+          </button>
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            s
+          </button>
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            M
+          </button>
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            u
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders bd from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Welcher Buchstabe ist das?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <span
+        class="font-display text-7xl font-bold text-ink"
+      >
+        d
+      </span>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-3"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          b
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          d
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          p
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders case from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Groß oder klein geschrieben?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <div
+        class="text-6xl"
+      >
+        🐶
+      </div>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-2"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Hund
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          hund
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders count from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Wie viele Silben hat das Wort?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <div
+        class="space-y-3"
+      >
+        <p
+          class="text-center font-display text-3xl font-bold text-ink"
+        >
+          Sommer
+        </p>
+        <div
+          class="flex flex-wrap items-center justify-center gap-1.5"
+        >
+          <span
+            class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+          >
+            Som
+          </span>
+          <span
+            class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+          >
+            mer
+          </span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-3"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          2
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          3
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          4
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders gap from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Welche Silbe fehlt?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <div
+        class="flex flex-wrap items-center justify-center gap-1.5"
+      >
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          Ba
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold min-w-10 bg-orange/15 text-orange-dark"
+        >
+           ? 
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          ne
+        </span>
+      </div>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-3"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          na
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          mo
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          le
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders initial from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Womit beginnt das Wort?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <div
+        class="space-y-2 text-center"
+      >
+        <div
+          class="text-6xl"
+        >
+          🍎
+        </div>
+        <p
+          class="text-center font-display text-3xl font-bold text-ink"
+        >
+          Apfel
+        </p>
+      </div>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-3"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          A
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          E
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          O
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders letter from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Welcher Buchstabe fehlt?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <div
+        class="flex flex-wrap items-center justify-center gap-1.5"
+      >
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          S
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          o
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold min-w-10 bg-orange/15 text-orange-dark"
+        >
+           ? 
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          n
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          e
+        </span>
+      </div>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-3"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          n
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          m
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          r
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders nonsense from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Echtes Wort oder Quatschwort?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <p
+        class="text-center font-display text-3xl font-bold text-ink"
+      >
+        Lomp
+      </p>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-2"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Echtes Wort
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Quatschwort
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders order from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Tippe die Teile in der richtigen Reihenfolge an.
+    </p>
+    <div>
+      <div
+        class="space-y-4"
+      >
+        <div
+          class="flex min-h-14 flex-wrap items-center justify-center gap-2 rounded-2xl bg-black/[0.03] p-3"
+        >
+          <span
+            class="text-sm text-ink-soft/60"
+          >
+            …
+          </span>
+        </div>
+        <div
+          class="flex flex-wrap justify-center gap-2"
+        >
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            ter
+          </button>
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            Schmet
+          </button>
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            ling
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders pairs from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Finde die zwei Wörter, die sich reimen.
+    </p>
+    <div>
+      <div
+        class="grid grid-cols-2 gap-3"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Haus
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Tisch
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Maus
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Ball
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders rhyme from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Was reimt sich auf „Maus"?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <p
+        class="text-center font-display text-3xl font-bold text-ink"
+      >
+        Maus
+      </p>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-3"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Haus
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Tisch
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Ball
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders vowel from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Welche Buchstaben fehlen?
+    </p>
+    <div
+      class="flex justify-center"
+    >
+      <div
+        class="flex flex-wrap items-center justify-center gap-1.5"
+      >
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          L
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold min-w-10 bg-orange/15 text-orange-dark"
+        >
+           ? 
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          b
+        </span>
+        <span
+          class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
+        >
+          e
+        </span>
+      </div>
+    </div>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-3"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          ie
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          ei
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          eu
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;

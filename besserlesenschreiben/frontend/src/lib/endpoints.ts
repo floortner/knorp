@@ -3,6 +3,7 @@ import type {
   CreateProfileBody,
   Me,
   Profile,
+  SessionComplete,
   SessionResponse,
   Unit,
   VerifyResponse,
@@ -37,5 +38,11 @@ export const coreApi = {
     apiFetch<SessionResponse>('/sessions', {
       method: 'POST',
       body: { profileId, ...(unit !== undefined ? { unit } : {}) },
+    }),
+
+  completeSession: (sessionId: string) =>
+    apiFetch<SessionComplete>(`/sessions/${encodeURIComponent(sessionId)}/complete`, {
+      method: 'POST',
+      body: {},
     }),
 };
