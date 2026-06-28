@@ -16,7 +16,7 @@ process.env.DATABASE_URL ??= 'postgresql://export:export@localhost:5432/export';
 process.env.JWT_SECRET ??= 'export-only-secret';
 
 async function main(): Promise<void> {
-  const { AppModule } = await import('../src/app.module');
+  const { AppModule } = await import('../src/app.module.js');
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
     preview: true,
     logger: ['error', 'warn'],
