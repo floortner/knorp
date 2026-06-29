@@ -39,10 +39,14 @@ the parent email authenticates the household; the PIN re-gates parent controls a
 account (1) ───< profile (N children)
 account (1) ───< credits_ledger
 profile (1) ───< session ───< attempt
-profile (1) ───< homework_upload
+profile (1) ───< homework_upload ───< homework_review
 profile (1) ───< chat_message
 profile (1) ───< review_state
 item_bank (global, shared) ──referenced by── attempt.item_id
+
+# STAFF realm (disjoint identity — ARCHITECTURE §1a):
+reviewer (internal staff) ───< homework_review        # authoritative homework verdicts
+reviewer ──claims/actions──▶ homework_upload          # shared queue, soft-locked while claimed
 ```
 
 ---
@@ -157,15 +161,45 @@ review_state(
   unique(profile_id, skill_tag)
 )
 
--- HOMEWORK uploads + analysis
+-- HOMEWORK uploads + analysis (human gate = STAFF reviewer, not parent — §10, ARCHITECTURE §11)
 homework_upload(
-  id           uuid pk,
-  profile_id   uuid fk -> profile,
-  image_key    text not null,           -- Blob key under user prefix
-  status       text default 'pending',  -- pending|analyzed|confirmed|rejected
-  analysis     jsonb,                    -- structured vision output (§9)
-  confirmed_by text,                     -- parent must confirm before it mutates learning profile
-  created_at   timestamptz default now()
+  id                uuid pk,
+  profile_id        uuid fk -> profile,
+  image_key         text not null,            -- Blob key under user prefix (EXIF-stripped WebP)
+  status            text default 'pending_analysis',
+                    -- pending_analysis | pending_review | reviewed | rejected
+  llm_analysis      jsonb,                     -- DRAFT vision output (§9) — NEVER applied on its own
+  reviewed_analysis jsonb,                     -- AUTHORITATIVE; only this mutates the learning profile
+  reviewer_id       uuid fk -> reviewer,       -- who actioned it (null until reviewed)
+  review_decision   text,                      -- 'approved' | 'corrected' | 'rejected'
+  reviewed_at       timestamptz,
+  applied_at        timestamptz,               -- when reviewed_analysis was written to attempt/review_state
+  claimed_by        uuid fk -> reviewer,       -- soft lock so two reviewers don't grab the same item
+  claimed_until     timestamptz,               -- claim lease expiry (auto-released)
+  created_at        timestamptz default now()
+)
+
+-- STAFF realm: internal literacy professionals (ARCHITECTURE §1a). DISJOINT from account/profile.
+reviewer(
+  id              uuid pk,
+  email           text unique not null,        -- staff login (never a family email)
+  name            text not null,
+  role            text default 'reviewer',     -- 'reviewer' | 'admin'
+  status          text default 'active',       -- 'active' | 'revoked'
+  created_at      timestamptz default now()
+)
+
+-- HOMEWORK review audit (append-only): retains LLM draft + reviewer verdict to measure vision quality (§10)
+homework_review(
+  id                uuid pk,
+  upload_id         uuid fk -> homework_upload,
+  reviewer_id       uuid fk -> reviewer,
+  decision          text not null,             -- 'approved' | 'corrected' | 'rejected'
+  llm_analysis      jsonb not null,            -- snapshot of the draft shown to the reviewer
+  reviewed_analysis jsonb,                     -- the verdict (null when rejected)
+  agreed_with_llm   boolean not null,          -- false ⇒ the reviewer changed something (LLM-quality signal)
+  notes             text,                      -- optional reviewer note (QA only; never child-identifying)
+  created_at        timestamptz default now()
 )
 
 -- CHAT (trainer conversation thread, per child profile; backs the /chat endpoints §6)
@@ -301,12 +335,37 @@ GET  /chat/{profileId}                               -> {messages:[{me:bool, tex
 POST /chat/{profileId}      {text}                   -> {reply:{me:false, text}}   # ★ LLM
 ```
 
-### Homework
+### Homework (family realm)
 ```
-POST /homework             (multipart: image, profileId)  -> {uploadId, status:'pending'}   # ★
-GET  /homework/{id}                                  -> {status, analysis}
-POST /homework/{id}/confirm ‡ {accept:bool, edits?}  -> applies analysis to learning profile
+POST /homework             (multipart: image, profileId)  -> {uploadId, status:'pending_analysis'}   # ★
+GET  /homework/{id}        -> {status, reviewedAnalysis?}    # family sees the AUTHORITATIVE result only,
+                                                             # and only once status='reviewed' (never the raw LLM draft)
 ```
+- The former `POST /homework/{id}/confirm` parent-confirm step is **removed**. The human gate is now the
+  **staff reviewer** (ARCHITECTURE §11). The family is notified when status flips to `reviewed`; there is no
+  family action to take and the child is never blocked.
+
+### Staff — homework review (STAFF realm only; `aud:"staff"` cookie, `StaffAuthGuard` — never a family JWT)
+```
+POST /staff/auth/request-code  {email}               -> 200 (always; no staff-enumeration)
+POST /staff/auth/verify        {email, code}         -> sets httpOnly staff cookie
+POST /staff/auth/logout                              -> clears staff cookie
+GET  /staff/me                                       -> {reviewerId, name, role}
+GET  /staff/queue           ?limit=&cursor=          -> {items:[{uploadId, profileHandle, gradeBand,
+                                                          skillTags, imageUrl, llmAnalysis, createdAt}], nextCursor}
+                                                        # PSEUDONYMISED: no name/email/chat/billing (ARCHITECTURE §1a)
+POST /staff/queue/{uploadId}/claim                   -> {uploadId, claimedUntil}   # soft-lock; 409 if held by another
+POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
+                                 reviewedAnalysis?, notes?}
+                                                     -> {status}   # authoritative; applies on approved|corrected
+```
+- `imageUrl` is a short-lived user-delegation SAS scoped to that one upload — the reviewer never gets a
+  container key or any other child's prefix.
+- `claim` leases the item (`claimed_until`) so two reviewers don't grade it twice; the lease auto-expires.
+- On `approved`/`corrected` the backend writes derived `attempt` rows + adjusts `review_state` from
+  `reviewed_analysis`, sets `status='reviewed'`, and records a `homework_review` row (with `agreed_with_llm`).
+  On `rejected` nothing mutates; the image is left to the §7 retention sweep.
+- **admin-only:** reviewer CRUD / revoke lives behind `role='admin'` (deferred detail; the guard distinguishes).
 
 ### Parent & billing
 ```
@@ -369,12 +428,18 @@ Two mechanisms — **most sessions never touch the LLM:**
 
 **FSRS:** use the `ts-fsrs` package (or SM-2 as a simpler fallback). Schedule **per skill_tag**, not per word. Update `review_state` on `/attempts`.
 
-**B. LLM session (★, for novelty / homework follow-up)**
-1. Load `digest.md` (§6) — the compact markdown, not raw rows.
-2. Prompt Claude: "Given this Lernprofil, generate N exercises of types {…} targeting {weak skills}, as JSON matching these schemas." Provide the per-type schemas (`../frontend/SPEC.md` §3).
-3. Validate against the Zod schemas, insert into `item_bank` (`generated_by='llm'`), optionally trigger TTS synth, return as a `session` (`source='llm'`).
+**B. LLM session (★, lectures generated on the fly)**
+1. Load `digest.md` (§6) — the compact markdown, not raw rows. The digest is derived from the **behavioural
+   signal in `attempt`**, not just right/wrong: per-skill accuracy, **response time** (`time_ms`), **retries/
+   self-corrections** (`attempt_no`), and recent trend. This is the "previous answers, clicks and response
+   times" the lecture adapts to — hesitation and slow-but-correct are weak signals, not just errors.
+2. If the profile has a **professionally-reviewed** homework upload (`status='reviewed'`), fold its
+   `reviewed_analysis.suggestedFocus` into the target skills — the validated focus, never the raw LLM draft.
+3. Prompt Claude: "Given this Lernprofil, generate N exercises of types {…} targeting {weak skills}, as JSON matching these schemas." Provide the per-type schemas (`../frontend/SPEC.md` §3).
+4. Validate against the Zod schemas, insert into `item_bank` (`generated_by='llm'`), optionally trigger TTS synth, return as a `session` (`source='llm'`).
 
-**Rule:** the database decides *what* to drill (deterministic, free); the LLM only generates *new content* and *conversation*.
+**Rule:** the database decides *what* to drill (deterministic, free) — informed by telemetry **and the
+professionally-validated** homework focus; the LLM only generates *new content* and *conversation*.
 
 ---
 
@@ -385,22 +450,33 @@ Two mechanisms — **most sessions never touch the LLM:**
 - Frontend plays `audio_url` if present; **Web Speech API is the fallback** for dynamic text (chat) only.
 - Verify current provider voices/pricing before committing — those change.
 
-## 10. Homework vision pipeline
+## 10. Homework vision pipeline — professional-in-the-loop (ARCHITECTURE §11)
 
-1. `POST /homework` → strip EXIF, transcode to WebP, store in Blob under user prefix, row `status='pending'` (see `../ARCHITECTURE.md` §10).
+1. `POST /homework` → strip EXIF, transcode to WebP, store in Blob under user prefix, row
+   `status='pending_analysis'` (see `../ARCHITECTURE.md` §10).
 2. Send image to **Claude vision** with a structured prompt → **JSON only**:
    ```json
    {"topic":"...","exerciseType":"...","items":[
      {"prompt":"...","childAnswer":"...","correct":true,"errorType":"vowel_ei"}],
     "suggestedFocus":["vowel_ei","letter_discrimination"]}
    ```
-3. Store as `homework/{date}.md` + `analysis` jsonb, `status='analyzed'`.
-4. **Human-in-the-loop (mandatory):** child handwriting OCR is unreliable → parent confirms via
-   `POST /homework/{id}/confirm` before anything mutates the learning profile. Only on confirm do we
-   write derived `attempt` rows / adjust `review_state`, then optionally generate a targeted LLM session.
+3. Store the JSON as `llm_analysis` (a **DRAFT — never applied on its own**), `status='pending_review'`, and
+   enqueue it on the shared staff review queue.
+4. **Human-in-the-loop = STAFF REVIEWER (mandatory, authoritative).** Child handwriting OCR is unreliable, so a
+   vetted internal literacy professional validates it in the **reviewer portal** (`/staff/*`, §6): they see the
+   image and the LLM draft **side by side** and `approve` | `correct` | `reject`. This **replaces** the old
+   parent-confirm. Only on `approve`/`correct` do we write `reviewed_analysis`, derive `attempt` rows / adjust
+   `review_state`, and let the next LLM session (§8) target the validated focus. A `homework_review` row retains
+   the draft + verdict + `agreed_with_llm` so we can **compare reviewer vs LLM** and track vision quality.
+5. **Async, never blocking:** the child plays on; review latency lands in the *next* generated lecture. The
+   family only ever sees the authoritative `reviewed_analysis` (once `status='reviewed'`), never the draft.
 
-**Data-protection (minors):** parent-gated, short retention on raw images, EU data residency where the
-provider offers it, explicit consent at upload. Bake in now.
+**Pseudonymisation (hard rule):** the reviewer queue exposes image + draft + skill tags + grade band only — no
+child name, parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived SAS.
+
+**Data-protection (minors):** parent-consented at upload (copy states a trained professional reviews the
+photo), short retention on raw images regardless of review state, EU data residency where the provider offers
+it, every reviewer action audit-logged (ids + outcome, never content — ARCHITECTURE §6). Bake in now.
 
 ---
 
@@ -409,7 +485,11 @@ Validated at boot by a Zod env schema (`@nestjs/config`); fail fast if any are m
 ```
 NODE_ENV= PORT=
 DATABASE_URL=                    # Prisma connection string (Postgres)
-JWT_SECRET=
+JWT_SECRET=                      # family realm (aud:"family")
+STAFF_JWT_SECRET=                # staff realm (aud:"staff") — DISTINCT from JWT_SECRET; realms never share keys
+WEB_ORIGIN=                      # family SPA origin(s), CORS allowlist (credentials on)
+REVIEWER_ORIGIN=                 # staff portal origin, CORS allowlist (credentials on) — separate from WEB_ORIGIN
+HOMEWORK_REVIEW_CLAIM_TTL=       # queue soft-lock lease, e.g. 900 (seconds)
 ANTHROPIC_API_KEY=
 ANTHROPIC_MODEL=                 # configurable; see ../ARCHITECTURE.md §8
 AZURE_STORAGE_ACCOUNT= AZURE_STORAGE_CONTAINER=   # auth via Managed Identity / Key Vault, not keys in env
@@ -452,8 +532,31 @@ retention; guard/flow tests; these docs.
 5. `EntitlementGuard` + `EntitlementService`/`CreditsService` (402 on zero credits) — prerequisite for every ★.
 6. `LlmService` (abstracted; Anthropic-direct dev default, EU-residency gate before prod).
 7. Chat (LLM) + TTS pipeline.
-8. Homework vision + parent-confirm loop (needs storage + LlmService + EntitlementGuard).
+8. **Homework upload + vision draft (family side only).** `POST /homework` → storage (EXIF strip, WebP) →
+   gated Claude vision → `llm_analysis` draft, `status='pending_review'`. **Nothing mutates the profile** and
+   there is **no apply path yet** — that is delivered in Phase 2.5. Needs storage + LlmService +
+   EntitlementGuard. Family `-web` shows upload + `pending_*` status only.
 9. Billing (entitlements, credits, webhook, pay-it-forward) — needs the MoR decision; PIN-gated, never in child tabs.
+
+**Phase 2.5 — professional review + staff portal (★, the human gate that closes the homework loop).**
+Builds the entire staff realm and the `-review` portal; only here does reviewed homework start shaping lectures.
+10. **Staff realm foundation.** `reviewer` + `homework_review` tables; `StaffAuthGuard` (`aud:"staff"`,
+    disjoint key `STAFF_JWT_SECRET`, rejected on family routes and vice-versa); staff login (email code, own
+    httpOnly cookie) + `GET /staff/me`; **~3 reviewers admin-seeded** (no self-signup).
+11. **Review queue + authoritative apply (closes milestone 8's loop).** `GET /staff/queue` (pseudonymised,
+    cursor-paged, per-upload short-lived SAS for `imageUrl`); claim/lease (`409` if held); `POST /staff/reviews/{id}`
+    that writes `reviewed_analysis`, derives `attempt` rows + adjusts `review_state`, sets `status='reviewed'`,
+    and records the LLM-vs-reviewer diff (`agreed_with_llm`).
+12. **Lecture wiring + family status.** LLM session generation (§8) folds a reviewed upload's
+    `reviewed_analysis.suggestedFocus` into the next lecture; `-web` surfaces `pending_review → reviewed` and
+    the read-only authoritative result (no confirm UI).
+13. **Reviewer portal** (`besserlesenschreiben/reviewer`, future `-review` repo) — thin client over `/staff/*`,
+    all enforcement in `staff/`; **desktop/tablet, landscape, not mobile-first** (ARCHITECTURE §1a/§11). Build
+    in order, each with golden/flow tests:
+    - **a. Shell + staff auth:** app shell, `lib/api.ts` (staff routes), email-code login, `/staff/me` gate, logout.
+    - **b. Queue screen:** pseudonymised list (`profileHandle`, grade band, skill tags, thumbnail), claim action.
+    - **c. Review screen:** two-pane landscape (homework image | LLM draft), `approve` / `correct` (editable
+      fields) / `reject`, submit → `POST /staff/reviews/{id}`; release claim on leave.
 
 ## 13. Acceptance checks
 - `user_id` never read from request body/path; only from JWT. (grep the codebase.)
@@ -461,4 +564,9 @@ retention; guard/flow tests; these docs.
 - `/attempts` insert < 50ms p95; data sufficient to rebuild `digest.md`.
 - A bank session is generated with **zero** LLM calls.
 - Gated op with 0 credits returns 402, logs nothing paid.
-- Homework analysis cannot mutate `review_state` before parent confirm.
+- Homework analysis cannot mutate `review_state` before a **staff reviewer** verdict (`llm_analysis` is a
+  draft; only `reviewed_analysis` applies). The former parent-confirm path no longer exists.
+- A staff (`aud:"staff"`) cookie is rejected on every family route, and a family JWT is rejected on every
+  `/staff/*` route — the two realms never cross.
+- The `/staff/queue` payload contains no child name, parent email, chat text, or billing field.
+- A claimed upload returns `409` to a second reviewer until the lease expires.
