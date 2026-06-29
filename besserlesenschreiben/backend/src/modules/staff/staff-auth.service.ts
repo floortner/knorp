@@ -11,6 +11,7 @@ import type { Env } from '../../config/env';
 
 const CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_VERIFY_ATTEMPTS = 5;
+const RESEND_INTERVAL_MS = 60 * 1000; // min gap between code emails per address (anti email-bomb)
 
 export interface StaffMe {
   reviewerId: string;
@@ -38,12 +39,20 @@ export class StaffAuthService {
   async requestCode(email: string): Promise<{ ok: true }> {
     const reviewer = await this.prisma.reviewer.findUnique({ where: { email } });
     if (reviewer && reviewer.status === 'active') {
-      const code = String(randomInt(100000, 1000000)); // 6-digit
-      await this.prisma.staffLoginCode.create({
-        data: { email, codeHash: await argon2.hash(code), expiresAt: new Date(Date.now() + CODE_TTL_MS) },
+      // Throttle: at most one code email per address per minute. A still-fresh code blocks a re-send
+      // (anti email-bomb) — the earlier code stays valid for its 10-min TTL, so legitimate retries work.
+      const recent = await this.prisma.staffLoginCode.findFirst({
+        where: { email, createdAt: { gt: new Date(Date.now() - RESEND_INTERVAL_MS) } },
+        orderBy: { createdAt: 'desc' },
       });
-      await this.email.sendLoginCode(email, code);
-      this.logger.log({ event: 'staff.code_requested', reviewerId: reviewer.id }, 'staff code issued');
+      if (!recent) {
+        const code = String(randomInt(100000, 1000000)); // 6-digit
+        await this.prisma.staffLoginCode.create({
+          data: { email, codeHash: await argon2.hash(code), expiresAt: new Date(Date.now() + CODE_TTL_MS) },
+        });
+        await this.email.sendLoginCode(email, code);
+        this.logger.log({ event: 'staff.code_requested', reviewerId: reviewer.id }, 'staff code issued');
+      }
     }
     return { ok: true };
   }
