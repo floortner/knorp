@@ -151,7 +151,7 @@ GET  /me                       POST /profiles            PATCH /profiles/{id}/se
 GET  /units                    POST /sessions            POST /attempts        POST /sessions/{id}/complete
 GET  /progress/{id}            GET  /digest/{id}
 GET  /chat/{id}                POST /chat/{id}
-POST /homework                 GET  /homework/{id}        POST /homework/{id}/confirm
+POST /homework                 GET  /homework/{id}        # no /confirm — staff reviewer is the human gate (§9)
 POST /parent/verify-pin        POST /parent/unlock-next   POST /parent/reset
 GET  /billing/status           POST /billing/checkout
 ```
@@ -184,12 +184,20 @@ screen in `/parent`. Never surface payment to the child view.
 
 ## 9. Homework "Foto & verbessern" flow (parent-initiated)
 
-1. Parent takes/uploads photo → `POST /homework` (multipart). Show pending state.
-2. Poll `GET /homework/{id}` until `analyzed`.
-3. Show the analysis (topic, per-item correct/wrong, suggested focus) for **parent confirmation**.
-4. `POST /homework/{id}/confirm {accept, edits?}` → on accept, backend folds errors into the learning
-   profile and can generate a targeted session. Surface that session in `/lernen`.
-- Children's handwriting OCR is unreliable → the confirm step is mandatory and parent-only.
+The human gate is a **trained professional (staff reviewer)**, not the parent — see `../ARCHITECTURE.md` §11
+and `../backend/SPEC.md` §10. This `-web` app **uploads and tracks status only**; it never shows the raw LLM
+draft and has **no confirm/edit UI** (the reviewer portal `-review` owns that, and is not part of this repo).
+
+1. Parent takes/uploads photo → `POST /homework` (multipart). Show pending state. Consent copy states the
+   photo is reviewed by a trained professional to tailor lessons.
+2. Poll `GET /homework/{id}`: surface `pending_analysis` → `pending_review` ("Wird von einer Fachkraft
+   geprüft …") → `reviewed`. Never display an `analyzed`/draft state to the family.
+3. On `reviewed`, show the **authoritative** result (`reviewedAnalysis`: topic, per-item correct/wrong,
+   suggested focus) as a read-only summary — no accept/reject buttons.
+4. The validated focus shapes the **next** generated lecture; surface that session in `/lernen` when it
+   appears. There is no family confirm step and the child is never blocked while a photo is in review.
+- Children's handwriting OCR is unreliable → the mandatory human gate is the **staff reviewer**, whose verdict
+  is authoritative (the former parent-confirm step is removed).
 
 ---
 
@@ -216,7 +224,13 @@ correctness fixes; committed `api.gen.ts` + drift gate; flow tests.
 
 **Phase 2 (after 1.5):**
 7. Chat (★ LLM).
-8. Parent area billing/supporter + homework "Foto & verbessern" flow (parent-area only, behind the PIN).
+8. Parent area billing/supporter + homework "Foto & verbessern" upload + status tracking (parent-area only,
+   behind the PIN; no confirm UI — the staff reviewer portal owns review, §9).
+
+> The **staff reviewer portal** (`besserlesenschreiben/reviewer`, future `-review` repo) is a **separate
+> subproject** with its own milestones — see `../backend/SPEC.md` §12, Phase 2.5. It is **out of scope for this
+> `-web` app**: don't build review/queue screens here. The only homework surface in `-web` is the upload +
+> status tracking in milestone 8 above.
 
 ## 12. Acceptance checks
 - Every answered item produces exactly one `/attempts` call with a sane `timeMs`.

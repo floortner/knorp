@@ -12,8 +12,14 @@ media handling**), **this document wins**.
 ```
 ┌─────────────────────────┐         HTTPS / JSON          ┌─────────────────────────┐
 │  FRONTEND (repo: -web)  │  ───────────────────────────▶ │  BACKEND (repo: -api)   │
-│  Vite + React SPA / PWA │   Bearer (httpOnly cookie)    │  NestJS · Azure          │
+│  Vite + React SPA / PWA │   family cookie (httpOnly)    │  NestJS · Azure          │
 │  static, Azure CDN/SWA  │ ◀───────────────────────────  │  Container Apps          │
+│  child + parent areas   │                               │                          │
+└─────────────────────────┘                               │                          │
+┌─────────────────────────┐         HTTPS / JSON          │                          │
+│ REVIEWER (repo: -review)│  ───────────────────────────▶ │                          │
+│ Vite + React (staff)    │   staff cookie (httpOnly)     │                          │
+│ homework review queue   │ ◀───────────────────────────  │                          │
 └─────────────────────────┘                               └───────────┬─────────────┘
                                   Azure (Austria East / Switzerland N) │
               ┌───────────────────────┬──────────────────┬────────────┼───────────────┐
@@ -24,14 +30,38 @@ media handling**), **this document wins**.
                                                                                   checkout, webhook
 ```
 
-- **Two repos, deployed independently.** The frontend is a static artifact; the backend is a container.
-  *Current reality:* both live in **one monorepo** (`besserlesenschreiben/{backend,frontend}`) for fast
-  cross-cutting iteration during Phase 1/1.5. They are kept independently buildable/deployable (separate
-  `package.json`, CI jobs, env) and split into the `-api`/`-web` repos before public launch — the contract
-  pipeline (§4) is what makes that split a non-event.
-- **The boundary is the HTTP API contract** (`backend/SPEC.md §6`). Neither side reaches across it: the
-  frontend holds no DB/business logic; the backend serves no HTML.
+- **Three repos, deployed independently.** The two **frontends** (`-web` family app, `-review` staff portal)
+  are static artifacts; the **backend** is a container. *Current reality:* all live in **one monorepo**
+  (`besserlesenschreiben/{backend,frontend,reviewer}`) for fast cross-cutting iteration during Phase 1/1.5.
+  They are kept independently buildable/deployable (separate `package.json`, CI jobs, env) and split into the
+  `-api`/`-web`/`-review` repos before public launch — the contract pipeline (§4) is what makes that split a
+  non-event. The reviewer portal is **internal-staff-only** (see §1a) and never shipped to families.
+- **The boundary is the HTTP API contract** (`backend/SPEC.md §6`). No frontend reaches across it: the
+  frontends hold no DB/business logic; the backend serves no HTML.
 - Claude Design iterates on the screens; it changes how exercises *look*, never the data flow.
+
+### 1a. Actors & identities — two disjoint auth realms
+
+The system has **two completely separate identity realms**; a credential in one is never valid in the other,
+and the JWTs carry a different `aud`/role so a guard can never confuse them.
+
+| Realm | Who | Surface | Auth | Sees |
+|---|---|---|---|---|
+| **Family** | parent (account) + their children (profiles) | `-web` SPA/PWA | email login code → 30-day httpOnly family cookie; parent area re-gated by PIN | only their own account's data |
+| **Staff** | internal literacy professionals ("reviewers") + admins | `-review` portal | own staff login → httpOnly **staff** cookie (`aud:"staff"`); MFA before prod | a **pseudonymised** review queue across all families — homework image + LLM draft only |
+
+- **Reviewers are a small internal staff pool (~3 in v1), not tied to one family.** Accounts are
+  **hand-provisioned by an admin** (no self-signup); they pull homework from a shared queue and are
+  employees/contractors under a staff DPA, not a family's own teacher. There is **no per-family professional**
+  in v1, and the pool is small enough that the queue is about preventing double-review, not load-balancing.
+- **Minimisation at the realm boundary (hard rule):** a reviewer never sees a child's name, the parent email,
+  free-text chat, billing, or any direct identifier. The queue exposes a **pseudonymous profile handle**
+  (opaque id), coarse grade/age band, relevant skill tags, the homework **image**, and the **LLM draft
+  analysis** — nothing more. This keeps staff access to minors' data scoped to exactly what the review task
+  needs (§8).
+- The reviewer's verdict is **authoritative** and **replaces the parent-confirm step** for homework
+  (§10). Review is **asynchronous**: it never blocks a child mid-lesson; it shapes the *next* generated
+  lecture.
 
 ---
 
@@ -116,10 +146,13 @@ src/
   modules/                # one folder per resource: controller (HTTP) + service + Zod DTOs
     auth/  profiles/  sessions/  attempts/  progress/
     chat/  homework/  parent/  billing/
+    staff/                # STAFF realm (§1a): reviewer auth + review queue + verdict submit
+  common/guards/          # … + StaffAuthGuard (aud:"staff") — disjoint from JwtAuthGuard (family realm)
   services/               # DOMAIN logic only — plain injectables, NO controllers/HTTP here (dtctl lesson)
     sessions.service.ts   # bank + LLM session generation (SPEC §8)
     fsrs.service.ts       # scheduling (ts-fsrs)
     digest.service.ts     # derived markdown performance digest
+    review.service.ts     # homework queue claim + authoritative apply of reviewed analysis (SPEC §10/§11)
     tts.service.ts  vision.service.ts  storage.service.ts  media.service.ts  email.service.ts
 prisma/
   schema.prisma           # the model truth (account, profile, item_bank, attempt, …)
@@ -150,6 +183,25 @@ public/                   # PWA icons (SVG), manifest
 assets/svg/               # app illustrations, mascots (Nepo/Stella), badges — all SVG (§ Media)
 index.html  vite.config.ts  package.json  package-lock.json  .env.example  AGENTS.md
 ```
+
+### Reviewer `-review` (internal staff portal)
+```
+src/
+  main.tsx  App.tsx
+  lib/
+    api.ts                # typed fetch client over the STAFF routes only (backend/SPEC.md §6)
+    api.gen.ts            # generated from the same backend OpenAPI (staff paths)
+  routes/                 # staff-login, queue, review/{uploadId}
+  features/
+    queue/                # the pending_review list (pseudonymised rows)
+    review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject
+  components/ui/          # shadcn components (shared look, separate build)
+index.html  vite.config.ts  package.json  .env.example  AGENTS.md
+```
+The reviewer portal is **transport + UI only** — every decision (queue ordering, authoritative apply, who may
+review) is enforced by the backend `staff/` module. It ships to ~3 internal staff, never to families, and
+authenticates on the disjoint **staff** realm (§1a). **Form factor: desktop/tablet, landscape two-pane** (image
+| LLM draft) — **not** mobile-first; skip phone layouts (that's the family app's job, §11).
 
 `features/exercises/types.ts` (the `Exercise` discriminated union) and `lib/api.ts` are the two files that
 **must** stay in lockstep with the backend contract. Treat a change to either as a contract change (§4).
@@ -274,8 +326,9 @@ wrapper over `console` (optionally shipping warn/error to Sentry).
 
 **Levels**
 - `DEBUG` — local only; never enabled in prod.
-- `INFO` — request completed, session generated (counts, source), webhook processed, migration ran.
-- `WARNING` — rate-limit hit, credit exhausted, provider slow/retried, PIN lockout.
+- `INFO` — request completed, session generated (counts, source), webhook processed, migration ran, homework
+  review actioned (`{event:"homework.reviewed","reviewerId":"…","uploadId":"…","decision":"corrected","agreedWithLlm":false}` — ids + outcome, never the analysis content).
+- `WARNING` — rate-limit hit, credit exhausted, provider slow/retried, PIN lockout, staff-auth failure.
 - `ERROR` — unhandled exception (with `requestId`), provider failure, webhook signature mismatch.
 
 **NEVER log (this is a children's app — treat it as the hard line):**
@@ -389,6 +442,14 @@ restore from the off-platform dumps) rather than the loss of every family's data
   the dev default) so the provider can move to Azure AI Foundry / Vertex EU without touching callers.
   **EU data-residency for minors is a hard gate before any production LLM call** — see the data-flow options
   below.
+- **Staff access to minors' data (reviewers).** Homework review (§11) means internal staff see a child's
+  homework photo — the strongest minors'-data exposure in the system. Gate it hard: (a) reviewers are a small,
+  **vetted, DPA-bound** staff pool with named accounts and MFA, never anonymous; (b) the queue is
+  **pseudonymised** — image + LLM draft + skill tags + grade band only, no name/email/chat/billing (§1a); (c)
+  every reviewer action (claim, approve, correct, reject) is **audit-logged** with the staff id and upload id
+  (identifiers + outcome, never image/answer content — §6); (d) consent copy at upload states that a homework
+  photo is reviewed by a trained professional to tailor lessons; (e) raw images expire on the §7 lifecycle
+  regardless of review state. An admin can revoke a reviewer; queue claims are released on revoke.
 - **Minors' data:** primary region **Austria East** keeps data at rest in Austria; DR backups stay within the
   EU (Germany West Central). Explicit parent consent for homework images; short retention via Blob lifecycle;
   the logging rules in §6 are part of this commitment. **LLM data-flow — three options, in preference order
@@ -481,5 +542,54 @@ and must **not** be faked into SVG. Handle it as the deliberate exception:
 - The *output* of vision analysis is structured JSON / markdown (§ SPEC §10), not an image — so everything
   downstream of the photo is back to text/SVG.
 
+---
 
-renderers, telemetry), `item_bank.seed.json` (starter content). This file governs the seams between them.*
+## 11. Homework review — professional-in-the-loop (authoritative human gate)
+
+Child handwriting OCR is unreliable and the stakes (shaping a struggling child's lessons) are high, so a
+homework photo's LLM analysis is **never** applied on its own. A vetted **internal literacy professional**
+(staff reviewer, §1a) validates it first. The reviewer's verdict is **authoritative** and **replaces** the
+former parent-confirm step. The flow is **asynchronous** — the child is never blocked.
+
+```
+parent/child uploads photo  ──▶  backend: strip EXIF, →WebP, store under user prefix
+        │                                          status = pending_analysis
+        ▼
+Claude vision (★, gated)  ──▶  llm_analysis (DRAFT, NOT applied)   status = pending_review
+        │                                          ▼  enqueued to the shared review queue
+        ▼
+REVIEWER PORTAL (-review):  reviewer pulls next item, sees image + LLM draft SIDE BY SIDE,
+        approves as-is │ corrects fields │ rejects (unreadable / not homework)
+        │                                          status = reviewed | rejected
+        ▼
+backend applies the REVIEWED analysis (authoritative) ──▶ derived attempt rows + review_state
+        │   records llm-vs-reviewer diff (LLM-quality signal)
+        ▼
+next generated lecture (§ SPEC §9) consumes the validated focus skills;
+parent is notified "Hausübung ausgewertet — nächste Lektion angepasst" (informational, non-blocking)
+```
+
+**Invariants (non-negotiable):**
+- **Nothing mutates the learning profile before a reviewer verdict.** `llm_analysis` is a draft; only the
+  `reviewed_analysis` writes `attempt`/`review_state`. (Replaces the old "before parent confirm" rule.)
+- **The LLM draft and the reviewer's correction are both retained** as an append-only review record, with an
+  `agreed_with_llm` flag — this is how we measure and improve vision quality over time ("compare against the
+  LLM response"). It is product/QA data, governed like learning telemetry (§6), never operational logging.
+- **The reviewer sees pseudonymised data only** (§1a): image + draft + skill tags + grade band, never the
+  child's name, parent email, chat, or billing.
+- **Async, never blocking:** review latency lands in the *next* lecture, not the current lesson. A pending or
+  rejected upload simply means the next lecture isn't yet homework-informed.
+- **Rejected** uploads (unreadable, not homework, or contains unexpected personal data) mutate nothing and are
+  deleted on the raster-retention schedule (§7).
+
+The reviewer portal is a thin client over backend endpoints (`backend/SPEC.md §6` staff routes); it holds no
+business logic. Reviewer auth, queue claiming (to avoid double-review), and the authoritative-apply step all
+live in the backend.
+
+**Scale & form factor (deliberately small):** the staff pool is **~3 reviewers** in v1 — a tiny, fixed,
+hand-provisioned set (no self-signup; an admin seeds the `reviewer` rows). Design accordingly: the queue and
+claim-lease exist to stop *two* people grabbing the same item, not to load-balance hundreds; throughput is
+not a concern, correctness and auditability are. The portal targets **desktop/laptop and tablet** (staff want
+room to see the homework photo and the LLM draft side by side) — it is **not** optimised for phones. Build the
+review screen as a two-pane **landscape** layout (image | draft) with comfortable tap targets for tablet; a
+narrow-phone layout is explicitly out of scope (the family `-web` app is the mobile-first one, not this).
