@@ -10,7 +10,7 @@ const items = (session as unknown as { items: Exercise[] }).items;
 const noop = () => {};
 
 describe('ExerciseView golden render', () => {
-  // Pins the rendering contract for all 12 types against the golden fixture.
+  // Pins the rendering contract for all 17 types against the golden fixture.
   for (const ex of items) {
     it(`renders ${ex.type} from backend JSON`, () => {
       const { container } = render(
