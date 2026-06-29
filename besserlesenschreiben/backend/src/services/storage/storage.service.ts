@@ -98,4 +98,43 @@ export class StorageService {
       throw err;
     }
   }
+
+  /**
+   * A short-lived, read-only URL for one stored object (a homework photo) — what the reviewer queue hands
+   * to staff (SPEC §6/§10). In Azure this is a **user-delegation SAS** scoped to that single blob (never a
+   * container key, never another child's prefix — security §2). `key` is the full stored key
+   * (`users/{account}/{profile}/homework/…`), taken from `homework_upload.image_key`, never client input.
+   */
+  async signedHomeworkReadUrl(key: string, ttlSeconds: number): Promise<string> {
+    if (this.useAzure) {
+      const { BlobServiceClient, generateBlobSASQueryParameters, BlobSASPermissions, SASProtocol } =
+        await import('@azure/storage-blob');
+      const { DefaultAzureCredential } = await import('@azure/identity');
+      const service = new BlobServiceClient(
+        `https://${this.account}.blob.core.windows.net`,
+        new DefaultAzureCredential(),
+      );
+      const now = new Date();
+      const expiresOn = new Date(now.getTime() + ttlSeconds * 1000);
+      // User-delegation key is signed by Entra ID (no account key in the app) — the per-blob SAS rule.
+      const udk = await service.getUserDelegationKey(new Date(now.getTime() - 60_000), expiresOn);
+      const sas = generateBlobSASQueryParameters(
+        {
+          containerName: this.container,
+          blobName: key,
+          permissions: BlobSASPermissions.parse('r'),
+          startsOn: new Date(now.getTime() - 60_000),
+          expiresOn,
+          protocol: SASProtocol.Https,
+        },
+        udk,
+        this.account,
+      ).toString();
+      return `https://${this.account}.blob.core.windows.net/${this.container}/${encodeURI(key)}?${sas}`;
+    }
+    // Dev (no Blob): there is no real object store and no homework-upload pipeline yet, so the queue is
+    // empty in practice. Return a stable dev placeholder URL; local image serving lands with the homework
+    // upload milestone (Phase 2, SPEC §10).
+    return `${this.localRoot}/${key}`;
+  }
 }

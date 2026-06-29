@@ -14,6 +14,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 // Set BEFORE importing AppModule (whose ConfigModule.forRoot validates env at module-eval time).
 process.env.DATABASE_URL ??= 'postgresql://export:export@localhost:5432/export';
 process.env.JWT_SECRET ??= 'export-only-secret';
+process.env.STAFF_JWT_SECRET ??= 'export-only-staff-secret';
 
 async function main(): Promise<void> {
   const { AppModule } = await import('../src/app.module.js');
