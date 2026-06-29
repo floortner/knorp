@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import type { FastifyReply } from 'fastify';
 import { Public } from '../../common/decorators/public.decorator';
+import { StaffPublic } from '../../common/decorators/staff-public.decorator';
 import { ApiZodBody, ApiZodResponse } from '../../common/zod-openapi';
 import { okSchema } from '../../contract/models';
 import {
@@ -20,11 +21,13 @@ import { ReviewService } from './review.service';
 import { ReviewSubmitDto, StaffRequestCodeDto, StaffVerifyDto } from './staff.dto';
 
 /**
- * STAFF realm routes (ARCHITECTURE §1a). The whole controller is `@Public()` so the GLOBAL family
- * `JwtAuthGuard` is skipped — a family JWT is never accepted here. The gated routes instead enforce
- * `StaffAuthGuard` (staff cookie/JWT). Reviewer id always comes from the staff token, never the request.
+ * STAFF realm routes (ARCHITECTURE §1a). `@Public()` skips the GLOBAL family `JwtAuthGuard` (a family JWT
+ * is never accepted here); `StaffAuthGuard` is applied at the CLASS level so every route is default-deny.
+ * The auth endpoints opt out with `@StaffPublic()` — so a newly-added staff route is protected unless it
+ * explicitly says otherwise. Reviewer id always comes from the staff token, never the request.
  */
 @Public()
+@UseGuards(StaffAuthGuard)
 @ApiTags('staff')
 @Controller('staff')
 export class StaffController {
@@ -38,7 +41,8 @@ export class StaffController {
     return this.config.get('NODE_ENV', { infer: true }) === 'production';
   }
 
-  // ── Auth (open) ──────────────────────────────────────────────────────────────
+  // ── Auth (opted out of StaffAuthGuard via @StaffPublic) ───────────────────────
+  @StaffPublic()
   @Post('auth/request-code')
   @HttpCode(200)
   @ApiZodBody(StaffRequestCodeDto.schema)
@@ -47,6 +51,7 @@ export class StaffController {
     return this.auth.requestCode(dto.email);
   }
 
+  @StaffPublic()
   @Post('auth/verify')
   @HttpCode(200)
   @ApiZodBody(StaffVerifyDto.schema)
@@ -57,6 +62,7 @@ export class StaffController {
     return me;
   }
 
+  @StaffPublic()
   @Post('auth/logout')
   @HttpCode(200)
   @ApiZodResponse(okSchema)
@@ -65,16 +71,14 @@ export class StaffController {
     return { ok: true as const };
   }
 
-  // ── Gated (staff JWT) ────────────────────────────────────────────────────────
+  // ── Gated (staff JWT, via the class-level StaffAuthGuard) ──────────────────────
   @Get('me')
-  @UseGuards(StaffAuthGuard)
   @ApiZodResponse(staffMeSchema)
   me(@CurrentReviewer() reviewer: AuthReviewer) {
     return this.auth.me(reviewer.id);
   }
 
   @Get('queue')
-  @UseGuards(StaffAuthGuard)
   @ApiZodResponse(queuePageSchema)
   queue(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
     const n = limit ? Number.parseInt(limit, 10) : 50;
@@ -83,7 +87,6 @@ export class StaffController {
 
   @Post('queue/:uploadId/claim')
   @HttpCode(200)
-  @UseGuards(StaffAuthGuard)
   @ApiZodResponse(claimResponseSchema)
   claim(@CurrentReviewer() reviewer: AuthReviewer, @Param('uploadId') uploadId: string) {
     return this.review.claim(reviewer.id, uploadId);
@@ -91,7 +94,6 @@ export class StaffController {
 
   @Post('reviews/:uploadId')
   @HttpCode(200)
-  @UseGuards(StaffAuthGuard)
   @ApiZodBody(ReviewSubmitDto.schema)
   @ApiZodResponse(reviewSubmitResponseSchema)
   submit(

@@ -57,6 +57,17 @@ describe('StaffAuthService.requestCode (no self-signup, no enumeration)', () => 
     expect(prisma.staffLoginCode.create).toHaveBeenCalledOnce();
     expect(email.sendLoginCode).toHaveBeenCalledOnce();
   });
+
+  it('does not re-send while a recent code is still within the throttle window', async () => {
+    const { svc, prisma, email } = setup({
+      reviewer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'reviewer', status: 'active' },
+      // a code created just now → findFirst returns it → throttle blocks a new send
+      code: { id: 'code-0', codeHash: 'x', expiresAt: new Date(Date.now() + 60_000), attempts: 0 },
+    });
+    await expect(svc.requestCode('dana@team.test')).resolves.toEqual({ ok: true });
+    expect(prisma.staffLoginCode.create).not.toHaveBeenCalled();
+    expect(email.sendLoginCode).not.toHaveBeenCalled();
+  });
 });
 
 describe('StaffAuthService.verify', () => {
