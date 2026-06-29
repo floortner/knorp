@@ -39,6 +39,32 @@ export function buzz(soundOn: boolean): void {
   beep(soundOn, 160, 0.18);
 }
 
+/** Ascending arpeggio fanfare for all-units-complete celebration. */
+export function fanfare(soundOn: boolean): void {
+  if (!soundOn) return;
+  try {
+    const Ctx = window.AudioContext ?? (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const t = ctx.currentTime + i * 0.13;
+      osc.frequency.value = freq;
+      osc.type = 'triangle';
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.35);
+    });
+    window.setTimeout(() => void ctx.close().catch(() => {}), 1000);
+  } catch {
+    /* best-effort */
+  }
+}
+
 function beep(soundOn: boolean, freq: number, durationS: number): void {
   if (!soundOn) return;
   try {

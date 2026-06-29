@@ -108,14 +108,24 @@ export class SessionsService {
 
     const stars = STARS_PER_SESSION;
     const streakDays = nextStreak(profile.lastActive, now, profile.streakDays);
+    const shouldUnlock = session.unit === profile.unlockedUnit && profile.unlockedUnit < UNIT_CATALOG.length;
+    const profileUpdate = {
+      stars: { increment: stars },
+      streakDays,
+      lastActive: startOfUtcDay(now),
+      ...(shouldUnlock ? { unlockedUnit: { increment: 1 } } : {}),
+    };
     await this.prisma.$transaction([
       this.prisma.session.update({ where: { id: sessionId }, data: { completedAt: now, starsAward: stars } }),
-      this.prisma.profile.update({
-        where: { id: profile.id },
-        data: { stars: { increment: stars }, streakDays, lastActive: startOfUtcDay(now) },
-      }),
+      this.prisma.profile.update({ where: { id: profile.id }, data: profileUpdate }),
     ]);
 
+    if (shouldUnlock) {
+      this.logger.log(
+        { event: 'session.unit_unlocked', unlockedUnit: profile.unlockedUnit + 1 },
+        'next unit unlocked',
+      );
+    }
     this.logger.log({ event: 'session.completed', sessionId, stars, streakDays }, 'session completed');
     return { starsAwarded: stars, streakDays, league: await this.weeklyLeague(profile.id, now) };
   }

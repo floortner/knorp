@@ -30,7 +30,13 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
     attemptNo.current = 1;
   }, [index]);
 
-  if (done || !ex) return <LessonComplete result={complete.data} pending={complete.isPending} />;
+  if (done || !ex) return (
+    <LessonComplete
+      result={complete.data}
+      pending={complete.isPending}
+      allUnitsComplete={session.unit === 7}
+    />
+  );
 
   const onAttempt = (given: string, isCorrect: boolean) => {
     const { prompt, expected } = promptAndExpected(ex);

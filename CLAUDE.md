@@ -34,8 +34,10 @@ Postgres — do the one-time DB setup in `besserlesenschreiben/backend/README.md
 npm ci                          # install
 npm run start:dev               # dev server
 npm test                        # Vitest (includes golden tests for digest.md + Exercise JSON)
+npm test -- src/path/to/spec.ts # run a single test file
 npm run lint                    # ESLint
 npx tsc --noEmit                # typecheck
+npm run openapi:export          # regenerate committed openapi.json after any contract (Zod) change
 npx prisma migrate dev          # local DB migrations
 npx prisma migrate deploy       # CI/prod migrations (run as pre-traffic step)
 npx prisma generate             # regenerate Prisma client after schema changes
@@ -48,6 +50,7 @@ npm install                     # install
 npm run dev                     # dev server
 npm run build                   # production build (vite build)
 npm test                        # golden snapshot tests for Exercise rendering contract
+npm test -- src/path/to/spec.ts # run a single test file
 npm run gen:api                 # regenerate api.ts types from backend OpenAPI (openapi-typescript)
 ```
 
@@ -66,14 +69,17 @@ Frontend (Vite/React SPA/PWA)  ←→  Backend (NestJS/Fastify)
 The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend holds no DB or business logic; the backend serves no HTML.
 
 ### Backend structure
+- `src/contract/` — Zod schemas (`exercise.ts`, `models.ts`) that are the **source** of the contract pipeline: Zod → `openapi.json` → `api.gen.ts`. Edit here first, then re-export.
 - `src/modules/` — one folder per resource: controller (HTTP only) + service + Zod DTOs
-- `src/services/` — domain logic only (sessions, fsrs, digest, tts, vision, storage, email) — **no HTTP concerns here**
+- `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (Azure Blob SAS), `email`
 - `src/common/guards/` — `JwtAuthGuard`, `ParentScopeGuard`, `EntitlementGuard`
 - `src/common/filters/` — global exception filter → the one error envelope
 - `prisma/schema.prisma` — the model truth; DDL in `backend/SPEC.md §3` is its conceptual form
 - `prisma/seed.ts` — idempotent item-bank loader (upserts on `seed_key`)
 
 ### Frontend structure
+- `docs/knorp.html` — **interactive design prototype**; visual + interaction source of truth for every screen and the 12 exercise interactions. Open in a browser before building any UI. Recreate in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
+- `fixtures/` — committed golden JSON payloads (`session.example.json` = one of each exercise type; `units.example.json` = 7 units + theme colors). Build renderers and snapshot tests against these.
 - `src/lib/api.gen.ts` — types **generated** from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
 - `src/lib/api.ts` — typed fetch client, **transport only** (no JSX), built on `api.gen.ts` types
 - `src/features/exercises/types.ts` — the `Exercise` discriminated union (12 types)
@@ -88,6 +94,9 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 - **LLM session (★ gated):** loads `digest.md` → prompts Claude → validates against Zod schemas → inserts into `item_bank` (`generated_by='llm'`) → returns session.
 
 The database decides *what* to drill; the LLM only generates *new content and conversation*.
+
+### Build status
+Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest) and Phase 1.5 (hardening: response validation, cookie auth, durable PIN lockout, prod email/storage, tests) are **done**. Phase 2 is next: `EntitlementGuard` → `LlmService` → chat → homework vision → billing.
 
 ## Non-negotiable security rules
 

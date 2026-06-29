@@ -1,4 +1,4 @@
-import { apiFetch } from './api';
+import { apiFetch, setAuthToken } from './api';
 import type {
   CreateProfileBody,
   Me,
@@ -60,4 +60,19 @@ export const coreApi = {
       method: 'POST',
       body: {},
     }),
+};
+
+/** Parent-area endpoints. parent-scoped calls (reset) send the parentToken as Bearer. */
+export const parentApi = {
+  setPin: (pin: string) =>
+    apiFetch<{ ok: true }>('/parent/set-pin', { method: 'POST', body: { pin } }),
+
+  verifyPin: (pin: string) =>
+    apiFetch<{ parentToken: string }>('/parent/verify-pin', { method: 'POST', body: { pin } }),
+
+  reset: (profileId: string, parentToken: string) => {
+    setAuthToken(parentToken);
+    return apiFetch<{ ok: true }>('/parent/reset', { method: 'POST', body: { profileId } })
+      .finally(() => setAuthToken(null));
+  },
 };
