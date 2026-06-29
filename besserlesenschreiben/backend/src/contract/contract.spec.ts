@@ -27,7 +27,7 @@ describe('contract ↔ golden fixtures', () => {
     }
   });
 
-  it('the fixture covers all 12 exercise types', () => {
+  it('the fixture covers all 17 exercise types', () => {
     const types = (load('session.example.json').items as Array<{ type: string }>).map((i) => i.type);
     expect(new Set(types)).toEqual(new Set(EXERCISE_TYPES));
   });

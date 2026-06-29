@@ -9,6 +9,8 @@ import type { Exercise } from '@/lib/types';
 function wordOf(ex: Exercise): string {
   if (ex.type === 'pairs') return ex.tiles.join(', ');
   if (ex.type === 'bd') return ex.glyph;
+  if (ex.type === 'odd') return ex.answer;
+  if (ex.type === 'sentence') return ex.answer;
   return ex.word;
 }
 

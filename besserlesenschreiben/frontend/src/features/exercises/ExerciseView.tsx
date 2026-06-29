@@ -3,6 +3,10 @@ import { BigWord, Chips } from './parts';
 import { SingleChoiceExercise, type Choice } from './SingleChoiceExercise';
 import { TileOrderExercise } from './TileOrderExercise';
 import { PairsExercise } from './PairsExercise';
+import { SwipeExercise } from './SwipeExercise';
+import { ListenExercise } from './ListenExercise';
+import { SentenceExercise } from './SentenceExercise';
+import { BuildExercise } from './BuildExercise';
 
 export interface ExerciseHandlers {
   onAttempt: (given: string, isCorrect: boolean) => void;
@@ -20,7 +24,7 @@ export function ExerciseView({ ex, ...h }: { ex: Exercise } & ExerciseHandlers) 
         <SingleChoiceExercise
           ex={ex}
           instruction="Wie viele Silben hat das Wort?"
-          prompt={<div className="space-y-3"><BigWord>{ex.word}</BigWord><Chips parts={ex.syll} /></div>}
+          prompt={<BigWord>{ex.word}</BigWord>}
           options={ex.opts.map((n) => ({ key: String(n), label: String(n) }))}
           correctKey={String(ex.answer)}
           {...h}
@@ -121,6 +125,25 @@ export function ExerciseView({ ex, ...h }: { ex: Exercise } & ExerciseHandlers) 
       return <TileOrderExercise ex={ex} {...h} />;
     case 'pairs':
       return <PairsExercise ex={ex} {...h} />;
+    case 'swipe':
+      return <SwipeExercise ex={ex} {...h} />;
+    case 'odd':
+      return (
+        <SingleChoiceExercise
+          ex={ex}
+          instruction={ex.instruction}
+          options={ex.words.map((w) => ({ key: w, label: w }))}
+          correctKey={ex.answer}
+          columns={2}
+          {...h}
+        />
+      );
+    case 'listen':
+      return <ListenExercise ex={ex} {...h} />;
+    case 'sentence':
+      return <SentenceExercise ex={ex} {...h} />;
+    case 'build':
+      return <BuildExercise ex={ex} {...h} />;
     default:
       // Unknown/forward-incompatible type from the backend: fail loudly so the lesson ErrorBoundary
       // shows its fallback instead of silently rendering nothing (the contract should prevent this).

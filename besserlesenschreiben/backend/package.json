@@ -57,5 +57,14 @@
     "typescript-eslint": "^8",
     "unplugin-swc": "^1",
     "vitest": "^3"
+  },
+  "allowScripts": {
+    "argon2@0.43.1": true,
+    "esbuild@0.28.1": true,
+    "prisma@7.8.0": true,
+    "@prisma/engines@7.8.0": true,
+    "@swc/core@1.15.43": true,
+    "@scarf/scarf@1.4.0": true,
+    "fsevents@2.3.3": true
   }
 }

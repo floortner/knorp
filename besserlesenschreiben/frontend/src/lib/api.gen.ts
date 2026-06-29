@@ -882,6 +882,65 @@ export interface operations {
                             syllableAudio?: string[] | null;
                             skillTags: string[];
                             praise: string;
+                        } | {
+                            /** @enum {string} */
+                            type: "swipe";
+                            word: string;
+                            leftLabel: string;
+                            rightLabel: string;
+                            /** @enum {string} */
+                            answer: "left" | "right";
+                            id: string;
+                            audioUrl: string | null;
+                            syllableAudio?: string[] | null;
+                            skillTags: string[];
+                            praise: string;
+                        } | {
+                            /** @enum {string} */
+                            type: "odd";
+                            words: (string)[];
+                            answer: string;
+                            instruction: string;
+                            id: string;
+                            audioUrl: string | null;
+                            syllableAudio?: string[] | null;
+                            skillTags: string[];
+                            praise: string;
+                        } | {
+                            /** @enum {string} */
+                            type: "listen";
+                            word: string;
+                            instruction: string;
+                            options: string[];
+                            answer: string;
+                            id: string;
+                            audioUrl: string | null;
+                            syllableAudio?: string[] | null;
+                            skillTags: string[];
+                            praise: string;
+                        } | {
+                            /** @enum {string} */
+                            type: "sentence";
+                            tokens: string[];
+                            instruction: string;
+                            answer: string;
+                            id: string;
+                            audioUrl: string | null;
+                            syllableAudio?: string[] | null;
+                            skillTags: string[];
+                            praise: string;
+                        } | {
+                            /** @enum {string} */
+                            type: "build";
+                            emoji: string;
+                            word: string;
+                            tiles: string[];
+                            answer: string[];
+                            id: string;
+                            audioUrl: string | null;
+                            syllableAudio?: string[] | null;
+                            skillTags: string[];
+                            praise: string;
                         })[];
                     };
                 };

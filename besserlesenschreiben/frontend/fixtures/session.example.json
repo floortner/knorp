@@ -16,6 +16,11 @@
     { "id": "ex_nonsense_001", "type": "nonsense", "word": "Lomp", "answer": "Quatschwort", "options": ["Echtes Wort", "Quatschwort"], "praise": "Genau! Lomp ist ein Quatschwort.", "audioUrl": null, "skillTags": ["lexical_decision"] },
     { "id": "ex_pairs_001", "type": "pairs", "tiles": ["Haus", "Tisch", "Maus", "Ball"], "pair": ["Haus", "Maus"], "praise": "Super! Haus und Maus reimen sich.", "audioUrl": null, "skillTags": ["rhyme_pairs", "rhyme"] },
     { "id": "ex_bd_001", "type": "bd", "glyph": "d", "answer": "d", "options": ["b", "d", "p"], "praise": "Richtig! Das ist ein d – der Bauch zeigt nach rechts.", "audioUrl": null, "skillTags": ["letter_discrimination"] },
-    { "id": "ex_vowel_001", "type": "vowel", "word": "Liebe", "letters": ["L", "ie", "b", "e"], "gapIndex": 1, "answer": "ie", "options": ["ie", "ei", "eu"], "praise": "Genau! Liebe schreibt man mit ie.", "audioUrl": null, "skillTags": ["vowel_ie", "vowel_spelling", "spelling"] }
+    { "id": "ex_vowel_001", "type": "vowel", "word": "Liebe", "letters": ["L", "ie", "b", "e"], "gapIndex": 1, "answer": "ie", "options": ["ie", "ei", "eu"], "praise": "Genau! Liebe schreibt man mit ie.", "audioUrl": null, "skillTags": ["vowel_ie", "vowel_spelling", "spelling"] },
+    { "id": "ex_swipe_001", "type": "swipe", "word": "Sommer", "leftLabel": "1 Silbe", "rightLabel": "2 Silben", "answer": "right", "praise": "Richtig! Sommer hat 2 Silben.", "audioUrl": null, "skillTags": ["syllable_count"] },
+    { "id": "ex_odd_001", "type": "odd", "words": ["Haus", "Maus", "Baum", "Laus"], "answer": "Baum", "instruction": "Welches Wort reimt sich nicht?", "praise": "Richtig! Baum passt nicht zu den anderen.", "audioUrl": null, "skillTags": ["rhyme"] },
+    { "id": "ex_listen_001", "type": "listen", "word": "Schmetterling", "instruction": "Wie viele Silben hörst du?", "options": ["2", "3", "4"], "answer": "3", "praise": "Richtig! Schmet·ter·ling – drei Silben.", "audioUrl": null, "skillTags": ["syllable_count", "phonological_awareness"] },
+    { "id": "ex_sentence_001", "type": "sentence", "tokens": ["Der", "Hund", "läuft", "schnell", "."], "instruction": "Tippe das Nomen (Hauptwort) an.", "answer": "Hund", "praise": "Richtig! Hund ist ein Nomen.", "audioUrl": null, "skillTags": ["capitalization", "word_class_noun"] },
+    { "id": "ex_build_001", "type": "build", "emoji": "🐱", "word": "Katze", "tiles": ["t", "K", "a", "z", "e"], "answer": ["K", "a", "t", "z", "e"], "praise": "Super! K·a·t·z·e – richtig buchstabiert!", "audioUrl": null, "skillTags": ["spelling", "letter_order"] }
   ]
 }

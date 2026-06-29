@@ -1797,6 +1797,322 @@
                               "praise"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "swipe"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "leftLabel": {
+                                "type": "string"
+                              },
+                              "rightLabel": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string",
+                                "enum": [
+                                  "left",
+                                  "right"
+                                ]
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "leftLabel",
+                              "rightLabel",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "odd"
+                                ]
+                              },
+                              "words": {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                "minItems": 4,
+                                "maxItems": 4
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "instruction": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "words",
+                              "answer",
+                              "instruction",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "listen"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "instruction": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "instruction",
+                              "options",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "sentence"
+                                ]
+                              },
+                              "tokens": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "instruction": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "tokens",
+                              "instruction",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "build"
+                                ]
+                              },
+                              "emoji": {
+                                "type": "string"
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "tiles": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "answer": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "emoji",
+                              "word",
+                              "tiles",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       }

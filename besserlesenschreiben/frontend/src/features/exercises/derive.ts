@@ -14,8 +14,14 @@ export function promptAndExpected(ex: Exercise): { prompt: string; expected: str
       return { prompt: ex.tiles.join(' '), expected: ex.pair.join('+') };
     case 'bd':
       return { prompt: ex.glyph, expected: String(ex.answer) };
+    case 'odd':
+      return { prompt: ex.words.join(' '), expected: ex.answer };
+    case 'sentence':
+      return { prompt: ex.tokens.join(' '), expected: ex.answer };
+    case 'build':
+      return { prompt: ex.emoji, expected: ex.answer.join('') };
     default:
-      // count | gap | rhyme | initial | letter | case | nonsense | vowel — all have word + answer.
+      // count | gap | rhyme | initial | letter | case | nonsense | vowel | swipe | listen
       return { prompt: ex.word, expected: String(ex.answer) };
   }
 }
