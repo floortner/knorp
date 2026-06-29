@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
-import type { ContainerClient } from '@azure/storage-blob';
+import type { BlobServiceClient, ContainerClient, UserDelegationKey } from '@azure/storage-blob';
 import type { Env } from '../../config/env';
 
 /**
@@ -26,7 +26,10 @@ export class StorageService {
   private readonly container: string;
   private readonly localRoot: string;
   private readonly useAzure: boolean;
-  private containerClientPromise: Promise<ContainerClient> | null = null;
+  private blobServicePromise: Promise<BlobServiceClient> | null = null;
+  // A user-delegation key is valid for days and signs many SAS tokens — cache it instead of fetching one
+  // per blob (the review queue signs up to 50 URLs per page load).
+  private udkCache: { value: UserDelegationKey; expiresOn: Date } | null = null;
 
   constructor(config: ConfigService<Env, true>) {
     this.account = config.get('AZURE_STORAGE_ACCOUNT', { infer: true });
@@ -44,19 +47,39 @@ export class StorageService {
     return `users/${accountId}/${profileId}/${name}`;
   }
 
-  /** Lazily build the Azure container client (Managed Identity). Built once; reused across calls. */
-  private azureContainer(): Promise<ContainerClient> {
+  /** Lazily build the Azure Blob service client (Managed Identity). Built once; reused across calls. */
+  private blobService(): Promise<BlobServiceClient> {
     // `??=` narrows away the null; the cast bridges the package's dual ESM/CJS type declarations
-    // (the runtime `await import()` resolves the ESM ContainerClient, the field uses the CJS one).
-    return (this.containerClientPromise ??= (async () => {
+    // (the runtime `await import()` resolves the ESM client, the field uses the CJS one).
+    return (this.blobServicePromise ??= (async () => {
       const { BlobServiceClient } = await import('@azure/storage-blob');
       const { DefaultAzureCredential } = await import('@azure/identity');
-      const service = new BlobServiceClient(
+      return new BlobServiceClient(
         `https://${this.account}.blob.core.windows.net`,
         new DefaultAzureCredential(),
-      );
-      return service.getContainerClient(this.container) as unknown as ContainerClient;
+      ) as unknown as BlobServiceClient;
     })());
+  }
+
+  /** The container client (cheap to derive — no network) off the cached service client. */
+  private async azureContainer(): Promise<ContainerClient> {
+    const service = await this.blobService();
+    return service.getContainerClient(this.container);
+  }
+
+  /** A cached user-delegation key valid past `neededUntil`; refetched (with skew) only when stale. */
+  private async userDelegationKey(neededUntil: Date): Promise<UserDelegationKey> {
+    const SKEW_MS = 5 * 60 * 1000;
+    const WINDOW_MS = 6 * 60 * 60 * 1000; // reuse one key for ~6h of signing
+    if (this.udkCache && this.udkCache.expiresOn.getTime() - SKEW_MS > neededUntil.getTime()) {
+      return this.udkCache.value;
+    }
+    const now = Date.now();
+    const service = await this.blobService();
+    const expiresOn = new Date(Math.max(neededUntil.getTime(), now + WINDOW_MS));
+    const value = await service.getUserDelegationKey(new Date(now - 60_000), expiresOn);
+    this.udkCache = { value, expiresOn };
+    return value;
   }
 
   /** Write a user file. Throws on failure (callers that can tolerate a miss must catch). */
@@ -107,17 +130,13 @@ export class StorageService {
    */
   async signedHomeworkReadUrl(key: string, ttlSeconds: number): Promise<string> {
     if (this.useAzure) {
-      const { BlobServiceClient, generateBlobSASQueryParameters, BlobSASPermissions, SASProtocol } =
+      const { generateBlobSASQueryParameters, BlobSASPermissions, SASProtocol } =
         await import('@azure/storage-blob');
-      const { DefaultAzureCredential } = await import('@azure/identity');
-      const service = new BlobServiceClient(
-        `https://${this.account}.blob.core.windows.net`,
-        new DefaultAzureCredential(),
-      );
       const now = new Date();
       const expiresOn = new Date(now.getTime() + ttlSeconds * 1000);
       // User-delegation key is signed by Entra ID (no account key in the app) — the per-blob SAS rule.
-      const udk = await service.getUserDelegationKey(new Date(now.getTime() - 60_000), expiresOn);
+      // Cached + reused across the many URLs a queue page signs.
+      const udk = await this.userDelegationKey(expiresOn);
       const sas = generateBlobSASQueryParameters(
         {
           containerName: this.container,

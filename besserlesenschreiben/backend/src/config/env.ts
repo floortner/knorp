@@ -46,5 +46,11 @@ export function validateEnv(config: Record<string, unknown>): Env {
       .join('\n');
     throw new Error(`Invalid environment variables:\n${issues}`);
   }
+  // The family and staff realms MUST NOT share a signing key (ARCHITECTURE §1a). The family guard
+  // verifies by secret only, so an identical key would let a staff token authenticate as a family
+  // account. Enforce the separation at boot rather than trusting operator discipline.
+  if (parsed.data.STAFF_JWT_SECRET === parsed.data.JWT_SECRET) {
+    throw new Error('Invalid environment variables:\n  - STAFF_JWT_SECRET: must differ from JWT_SECRET (realm isolation)');
+  }
   return parsed.data;
 }

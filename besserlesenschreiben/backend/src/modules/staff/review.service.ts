@@ -65,24 +65,28 @@ export class ReviewService {
     });
 
     const page = rows.slice(0, take);
-    const items: QueueItem[] = [];
-    for (const row of page) {
+    // Parse first (a malformed draft shouldn't break the whole queue — skip it, surface the id for
+    // triage), then sign the image URLs concurrently rather than one blocking round-trip per row.
+    const valid = page.flatMap((row) => {
       const parsed = homeworkAnalysisSchema.safeParse(row.llmAnalysis);
       if (!parsed.success) {
-        // A malformed draft shouldn't break the whole queue — skip it, surface the id for triage.
         this.logger.warn({ event: 'review.draft_unparseable', uploadId: row.id }, 'skipping bad draft');
-        continue;
+        return [];
       }
-      items.push({
+      return [{ row, analysis: parsed.data }];
+    });
+
+    const items: QueueItem[] = await Promise.all(
+      valid.map(async ({ row, analysis }) => ({
         uploadId: row.id,
         profileHandle: ReviewService.handle(row.profileId),
         gradeBand: `Einheit ${row.profile.unlockedUnit}`,
-        skillTags: parsed.data.suggestedFocus,
+        skillTags: analysis.suggestedFocus,
         imageUrl: await this.storage.signedHomeworkReadUrl(row.imageKey, this.claimTtlMs / 1000),
-        llmAnalysis: parsed.data,
+        llmAnalysis: analysis,
         createdAt: row.createdAt.toISOString(),
-      });
-    }
+      })),
+    );
 
     const nextCursor = rows.length > take ? page[page.length - 1].id : null;
     return { items, nextCursor };
@@ -137,9 +141,12 @@ export class ReviewService {
     const now = new Date();
 
     if (dto.decision === 'rejected') {
-      await this.prisma.$transaction([
-        this.prisma.homeworkUpload.update({
-          where: { id: uploadId },
+      await this.prisma.$transaction(async (tx) => {
+        // Conditional flip is the authoritative guard against a double-apply: if a concurrent submit
+        // (expired-lease takeover, or a double-click) already moved it off pending_review, we win 0 rows
+        // and abort before writing a duplicate audit row.
+        const won = await tx.homeworkUpload.updateMany({
+          where: { id: uploadId, status: 'pending_review' },
           data: {
             status: 'rejected',
             reviewerId,
@@ -148,8 +155,11 @@ export class ReviewService {
             claimedBy: null,
             claimedUntil: null,
           },
-        }),
-        this.prisma.homeworkReview.create({
+        });
+        if (won.count === 0) {
+          throw new ApiException(409, 'CONFLICT', 'Diese Hausübung wurde bereits geprüft.');
+        }
+        await tx.homeworkReview.create({
           data: {
             uploadId,
             reviewerId,
@@ -158,8 +168,8 @@ export class ReviewService {
             agreedWithLlm: false,
             notes: dto.notes,
           },
-        }),
-      ]);
+        });
+      });
       this.logger.log({ event: 'homework.reviewed', reviewerId, uploadId, decision: 'rejected' }, 'rejected');
       return { status: 'rejected' };
     }
@@ -169,8 +179,10 @@ export class ReviewService {
     const agreedWithLlm = JSON.stringify(reviewed) === JSON.stringify(draft.data);
 
     await this.prisma.$transaction(async (tx) => {
-      await tx.homeworkUpload.update({
-        where: { id: uploadId },
+      // Same conditional-flip guard as the reject path — only one submit may apply to the learning
+      // profile, so the homework session / attempts / FSRS nudges are never duplicated.
+      const won = await tx.homeworkUpload.updateMany({
+        where: { id: uploadId, status: 'pending_review' },
         data: {
           status: 'reviewed',
           reviewedAnalysis: reviewed as unknown as Prisma.InputJsonValue,
@@ -182,6 +194,9 @@ export class ReviewService {
           claimedUntil: null,
         },
       });
+      if (won.count === 0) {
+        throw new ApiException(409, 'CONFLICT', 'Diese Hausübung wurde bereits geprüft.');
+      }
       await tx.homeworkReview.create({
         data: {
           uploadId,

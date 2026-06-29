@@ -141,4 +141,15 @@ describe('ReviewService.submit', () => {
     const { svc } = setup({ uploadRow: { ...claimedByMe, status: 'reviewed' } });
     expect(await statusOf(svc.submit('rev-1', 'up-1', { decision: 'rejected' }))).toBe(409);
   });
+
+  it('409s and applies nothing when a concurrent submit already won the conditional flip', async () => {
+    // Pre-checks pass (still pending_review) but the in-transaction conditional update wins 0 rows
+    // because a racing submit flipped the status first — the apply must abort, not double-write.
+    const { svc, calls } = setup({ uploadRow: claimedByMe, updateManyCount: 0 });
+    expect(await statusOf(svc.submit('rev-1', 'up-1', { decision: 'corrected', reviewedAnalysis: analysis }))).toBe(409);
+    expect(calls.reviewCreate).not.toHaveBeenCalled();
+    expect(calls.sessionCreate).not.toHaveBeenCalled();
+    expect(calls.attemptCreate).not.toHaveBeenCalled();
+    expect(calls.reviewStateUpsert).not.toHaveBeenCalled();
+  });
 });
