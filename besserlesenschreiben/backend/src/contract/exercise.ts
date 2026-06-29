@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * The wire `Exercise` discriminated union — the single source of truth for the 12 exercise types
+ * The wire `Exercise` discriminated union — the single source of truth for the 17 exercise types
  * (SPEC §8 / frontend SPEC §3). Used to (a) publish the OpenAPI the frontend types from, (b) drift-gate
  * the golden fixtures, and later (c) validate LLM-generated exercise content (`messages.parse`).
  *

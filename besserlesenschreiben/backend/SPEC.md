@@ -434,6 +434,20 @@ cookie auth + `/me`-probe frontend; durable PIN lockout (`pin_attempts`/`pin_loc
 `learning_steps` persistence; React error boundary + renderer safety; offline session caching + telemetry
 retention; guard/flow tests; these docs.
 
+**Phase 1.6 — content + UX polish (DONE):**
+- Auto-unlock next unit on session complete (atomic, backend).
+- All-units-complete celebration (pixel mascot, fanfare, confetti).
+- 5 new exercise types: `swipe`, `odd`, `listen`, `sentence`, `build` (Zod contract + renderers + seed items).
+- Parent area: PIN gate, set-PIN flow, child progress view, two-step progress reset.
+- Profile tab: Ton toggle wired end-to-end; removed Legasthenie-Schrift + Schriftgröße stubs.
+
+**Technical debt (Phase 1.6, to address before Phase 2):**
+- `parentApi.reset` sends `profileId` in the request body — violates "id from JWT only" rule. Fix: encode profileId in the parentToken JWT, or accept no body and reset all profiles on the account.
+- `apiFetch` has no per-request `Authorization` header override; `parentApi` works around this via a temporary global `setAuthToken` mutation. Fix: add an optional `token` param to `apiFetch`.
+- `sessionCompleteSchema` doesn't include `newUnlockedUnit` or `allUnitsComplete` — the frontend derives `allUnitsComplete` from `session.unit === TOTAL_UNITS` (a hardcoded constant). Fix: add `allUnitsComplete: boolean` to the complete response so the frontend is authoritative.
+- Unsafe `as ApiError` cast in `ParentScreen` error rendering — should use a type guard.
+- Parent area shows raw backend error strings; wrap with user-friendly messages.
+
 **Phase 2 — gated/paid (★, after 1.5):**
 5. `EntitlementGuard` + `EntitlementService`/`CreditsService` (402 on zero credits) — prerequisite for every ★.
 6. `LlmService` (abstracted; Anthropic-direct dev default, EU-residency gate before prod).

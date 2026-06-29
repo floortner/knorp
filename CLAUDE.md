@@ -96,7 +96,7 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 The database decides *what* to drill; the LLM only generates *new content and conversation*.
 
 ### Build status
-Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest) and Phase 1.5 (hardening: response validation, cookie auth, durable PIN lockout, prod email/storage, tests) are **done**. Phase 2 is next: `EntitlementGuard` → `LlmService` → chat → homework vision → billing.
+Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest), Phase 1.5 (hardening), and Phase 1.6 (content + UX polish: unit unlock, celebration, 5 new exercise types, parent area, profile tab) are **done**. Technical debt from 1.6 is tracked in `backend/SPEC.md §12`. Phase 2 is next: `EntitlementGuard` → `LlmService` → chat → homework vision → billing.
 
 ## Non-negotiable security rules
 

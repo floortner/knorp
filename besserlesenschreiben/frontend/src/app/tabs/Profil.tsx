@@ -2,19 +2,13 @@ import { useNavigate } from 'react-router-dom';
 import { Flame, HeartHandshake, MessageCircle, Star } from 'lucide-react';
 import { useActiveProfile } from '@/features/profile/useMe';
 import { useUpdateSettings } from '@/features/profile/useUpdateSettings';
+import { buddySrc } from '@/lib/constants';
 import { useProgress } from '@/features/progress/useProgress';
 import { SkillBreakdown } from '@/features/progress/components';
 import { useAuth } from '@/features/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { cn } from '@/lib/cn';
 
-const BUDDY_SRC: Record<string, string> = { nepo: '/nepo.svg', stella: '/stella.svg' };
-const FONT_SCALES = [
-  { value: 1, label: 'Normal' },
-  { value: 1.25, label: 'Groß' },
-  { value: 1.5, label: 'Sehr groß' },
-];
 
 export function Profil() {
   const navigate = useNavigate();
@@ -35,7 +29,7 @@ export function Profil() {
     <div className="space-y-6">
       {/* Header */}
       <section className="flex items-center gap-4 rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
-        <img src={BUDDY_SRC[profile.buddy] ?? '/nepo.svg'} alt="" className="h-16 w-16" />
+        <img src={buddySrc(profile.buddy)} alt="" className="h-16 w-16" />
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold text-ink">{profile.name}</h1>
           <p className="text-sm text-ink-soft">aktiv seit {activeSince}</p>
@@ -66,34 +60,6 @@ export function Profil() {
             disabled={settings.isPending}
             onChange={(soundOn) => settings.mutate({ soundOn })}
           />
-        </Row>
-        <Row label="Legasthenie-Schrift">
-          <Switch
-            label="Legasthenie-Schrift"
-            checked={profile.dyslexicFont}
-            disabled={settings.isPending}
-            onChange={(dyslexicFont) => settings.mutate({ dyslexicFont })}
-          />
-        </Row>
-        <Row label="Schriftgröße">
-          <div className="flex gap-2">
-            {FONT_SCALES.map((f) => (
-              <button
-                key={f.value}
-                type="button"
-                disabled={settings.isPending}
-                onClick={() => settings.mutate({ fontScale: f.value })}
-                className={cn(
-                  'rounded-xl px-3 py-1.5 text-sm font-semibold ring-1 transition disabled:opacity-50',
-                  Math.abs(profile.fontScale - f.value) < 0.01
-                    ? 'bg-teal text-white ring-teal'
-                    : 'bg-white text-ink ring-black/10',
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
         </Row>
       </section>
 

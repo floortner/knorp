@@ -22,15 +22,15 @@
     "vowel_spelling": "Vokal-Schreibung allgemein (vowel)"
   },
   "counts": {
-    "total": 37,
+    "total": 52,
     "by_unit": {
-      "1": 4,
-      "2": 4,
-      "3": 5,
-      "4": 6,
-      "5": 6,
-      "6": 6,
-      "7": 6
+      "1": 7,
+      "2": 6,
+      "3": 7,
+      "4": 9,
+      "5": 9,
+      "6": 7,
+      "7": 7
     },
     "by_type": {
       "count": 3,
@@ -44,7 +44,12 @@
       "nonsense": 3,
       "pairs": 3,
       "bd": 3,
-      "vowel": 3
+      "vowel": 3,
+      "swipe": 3,
+      "odd": 3,
+      "listen": 3,
+      "sentence": 3,
+      "build": 3
     }
   },
   "items": [
@@ -998,6 +1003,26 @@
       "audio_url": null,
       "syllable_audio": null,
       "generated_by": "seed"
-    }
+    },
+
+    { "seed_key": "u1-swipe-tiger", "unit": 1, "exercise_type": "swipe", "payload": { "word": "Tiger", "leftLabel": "1 Silbe", "rightLabel": "2 Silben", "answer": "right", "praise": "Richtig! Ti·ger hat 2 Silben." }, "skill_tags": ["syllable_count", "binary_sort"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u2-swipe-banane", "unit": 2, "exercise_type": "swipe", "payload": { "word": "Banane", "leftLabel": "2 Silben", "rightLabel": "3 Silben", "answer": "right", "praise": "Richtig! Ba·na·ne hat 3 Silben." }, "skill_tags": ["syllable_count", "binary_sort"], "difficulty": 2, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u6-swipe-lomp", "unit": 6, "exercise_type": "swipe", "payload": { "word": "Lomp", "leftLabel": "Echtes Wort", "rightLabel": "Quatschwort", "answer": "right", "praise": "Genau! Lomp ist ein Quatschwort." }, "skill_tags": ["lexical_decision", "binary_sort"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+
+    { "seed_key": "u1-odd-silben", "unit": 1, "exercise_type": "odd", "payload": { "words": ["Sonne", "Winter", "Eis", "Regen"], "answer": "Eis", "instruction": "Welches Wort hat nur eine Silbe?", "praise": "Richtig! Eis hat nur eine Silbe – die anderen haben zwei." }, "skill_tags": ["syllable_count", "odd_one_out"], "difficulty": 2, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u3-odd-reim1", "unit": 3, "exercise_type": "odd", "payload": { "words": ["Haus", "Maus", "Laus", "Baum"], "answer": "Baum", "instruction": "Welches Wort reimt sich nicht?", "praise": "Richtig! Baum reimt sich nicht auf -aus." }, "skill_tags": ["rhyme", "odd_one_out"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u3-odd-reim2", "unit": 3, "exercise_type": "odd", "payload": { "words": ["Bein", "Stein", "Wein", "Ball"], "answer": "Ball", "instruction": "Welches Wort reimt sich nicht?", "praise": "Richtig! Ball reimt sich nicht auf -ein." }, "skill_tags": ["rhyme", "odd_one_out"], "difficulty": 2, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+
+    { "seed_key": "u1-listen-schmetterling", "unit": 1, "exercise_type": "listen", "payload": { "word": "Schmetterling", "instruction": "Wie viele Silben hörst du?", "options": ["2", "3", "4"], "answer": "3", "praise": "Richtig! Schmet·ter·ling – drei Silben." }, "skill_tags": ["syllable_count", "phonological_awareness"], "difficulty": 2, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u2-listen-krokodil", "unit": 2, "exercise_type": "listen", "payload": { "word": "Krokodil", "instruction": "Wie viele Silben hörst du?", "options": ["2", "3", "4"], "answer": "3", "praise": "Richtig! Kro·ko·dil – drei Silben." }, "skill_tags": ["syllable_count", "phonological_awareness"], "difficulty": 2, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u4-listen-apfel", "unit": 4, "exercise_type": "listen", "payload": { "word": "Apfel", "instruction": "Womit beginnt das Wort?", "options": ["A", "E", "O"], "answer": "A", "praise": "Richtig! Apfel beginnt mit A." }, "skill_tags": ["phoneme_initial", "phonological_awareness"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+
+    { "seed_key": "u4-sentence-ball", "unit": 4, "exercise_type": "sentence", "payload": { "tokens": ["Der", "Ball", "rollt", "weit", "."], "instruction": "Tippe das Wort an, das mit B beginnt.", "answer": "Ball", "praise": "Richtig! Ball beginnt mit B." }, "skill_tags": ["phoneme_initial", "word_in_context"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u5-sentence-hund", "unit": 5, "exercise_type": "sentence", "payload": { "tokens": ["Der", "Hund", "bellt", "laut", "."], "instruction": "Tippe das Nomen (Hauptwort) an.", "answer": "Hund", "praise": "Richtig! Hund ist ein Nomen – deshalb groß." }, "skill_tags": ["capitalization", "word_class_noun", "word_in_context"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u5-sentence-katze", "unit": 5, "exercise_type": "sentence", "payload": { "tokens": ["Die", "Katze", "schläft", "gerne", "."], "instruction": "Tippe das Nomen (Hauptwort) an.", "answer": "Katze", "praise": "Richtig! Katze ist ein Nomen – deshalb groß." }, "skill_tags": ["capitalization", "word_class_noun", "word_in_context"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+
+    { "seed_key": "u4-build-katze", "unit": 4, "exercise_type": "build", "payload": { "emoji": "🐱", "word": "Katze", "tiles": ["t", "K", "a", "z", "e"], "answer": ["K", "a", "t", "z", "e"], "praise": "Super! K·a·t·z·e – richtig buchstabiert!" }, "skill_tags": ["spelling", "letter_order"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u5-build-hund", "unit": 5, "exercise_type": "build", "payload": { "emoji": "🐕", "word": "Hund", "tiles": ["u", "H", "n", "d"], "answer": ["H", "u", "n", "d"], "praise": "Super! H·u·n·d – richtig buchstabiert!" }, "skill_tags": ["spelling", "letter_order"], "difficulty": 1, "audio_url": null, "syllable_audio": null, "generated_by": "seed" },
+    { "seed_key": "u7-build-liebe", "unit": 7, "exercise_type": "build", "payload": { "emoji": "❤️", "word": "Liebe", "tiles": ["b", "L", "ie", "e"], "answer": ["L", "ie", "b", "e"], "praise": "Super! L·ie·b·e – mit ie geschrieben!" }, "skill_tags": ["vowel_ie", "spelling", "letter_order"], "difficulty": 2, "audio_url": null, "syllable_audio": null, "generated_by": "seed" }
   ]
 }

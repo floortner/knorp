@@ -4,11 +4,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Flame, RotateCcw, Star } from 'lucide-react';
 import { parentApi } from '@/lib/endpoints';
 import { ApiError } from '@/lib/api';
+import { TOTAL_UNITS, buddySrc } from '@/lib/constants';
 import { useMe } from '@/features/profile/useMe';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 
-const TOTAL_UNITS = 7;
 const LEN = 4;
 
 type View = 'gate' | 'set-pin' | 'home';
@@ -194,7 +194,7 @@ function ParentHome({ parentToken, onLock }: { parentToken: string; onLock: () =
 
   if (!profile) return <p className="py-16 text-center text-ink-soft">Lädt …</p>;
 
-  const BUDDY_SRC: Record<string, string> = { nepo: '/nepo.svg', stella: '/stella.svg' };
+
 
   return (
     <section className="space-y-5">
@@ -202,7 +202,7 @@ function ParentHome({ parentToken, onLock }: { parentToken: string; onLock: () =
 
       {/* Child summary */}
       <div className="flex items-center gap-4 rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
-        <img src={BUDDY_SRC[profile.buddy] ?? '/nepo.svg'} alt="" className="h-16 w-16" />
+        <img src={buddySrc(profile.buddy)} alt="" className="h-16 w-16" />
         <div className="min-w-0 flex-1">
           <p className="font-display text-lg font-bold text-ink">{profile.name}</p>
           <div className="mt-1 flex gap-4 text-sm font-semibold text-ink">

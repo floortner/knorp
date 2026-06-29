@@ -24,10 +24,9 @@ export function ListenExercise({
   const played = useRef(false);
 
   useEffect(() => {
-    if (!played.current) {
-      played.current = true;
-      speak(ex, soundOn);
-    }
+    if (played.current || !soundOn) return; // wait until sound is actually on
+    played.current = true;
+    speak(ex, true);
   }, [ex, soundOn]);
 
   const tileState = (opt: string) => {

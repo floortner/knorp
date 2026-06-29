@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Exercise } from '@/lib/types';
 import { cn } from '@/lib/cn';
 import { ExerciseCard } from './ExerciseCard';
@@ -18,7 +19,9 @@ export function SentenceExercise({
   onSolved: () => void;
   soundOn: boolean;
 }) {
-  const { status, given, submit } = useAnswer(ex, onAttempt, onSolved, soundOn);
+  const { status, submit } = useAnswer(ex, onAttempt, onSolved, soundOn);
+  // Track by index, not value, so duplicate tokens highlight independently.
+  const [wrongIdx, setWrongIdx] = useState<number | null>(null);
 
   const isPunct = (t: string) => /^[.,!?;:]$/.test(t);
 
@@ -35,21 +38,24 @@ export function SentenceExercise({
           }
 
           const isAnswer = token === ex.answer;
-          const isGiven = token === given;
+          const isWrong = i === wrongIdx;
 
           return (
             <button
               key={i}
               type="button"
               disabled={status === 'correct'}
-              onClick={() => submit(token, isAnswer)}
+              onClick={() => {
+                if (!isAnswer) setWrongIdx(i);
+                submit(token, isAnswer);
+              }}
               className={cn(
                 'rounded-xl px-3 py-1.5 font-display text-2xl font-bold transition active:scale-95',
                 status === 'correct' && isAnswer && 'bg-teal text-white',
-                status === 'wrong' && isGiven && 'bg-orange/15 text-orange-dark',
+                status === 'wrong' && isWrong && 'bg-orange/15 text-orange-dark',
                 status === 'correct' && !isAnswer && 'text-ink/40',
                 status === 'idle' && 'text-ink hover:bg-teal-tint',
-                status === 'wrong' && !isGiven && 'text-ink hover:bg-teal-tint',
+                status === 'wrong' && !isWrong && 'text-ink hover:bg-teal-tint',
               )}
             >
               {token}
