@@ -1,0 +1,9 @@
+# Build output
+dist/
+
+# Deps
+node_modules/
+
+# Local env
+.env
+.env.local

@@ -187,21 +187,26 @@ index.html  vite.config.ts  package.json  package-lock.json  .env.example  AGENT
 ### Reviewer `-review` (internal staff portal)
 ```
 src/
-  main.tsx  App.tsx
+  main.tsx  App.tsx        # providers + routes: /login, /login/code, /queue, /review/:uploadId
+  index.css               # neutral staff @theme tokens (teal accent, slate surface) — no PWA, no mascots
+  app/AppLayout.tsx       # top bar (reviewer identity + logout) over the routed <Outlet>
   lib/
-    api.ts                # typed fetch client over the STAFF routes only (backend/SPEC.md §6)
-    api.gen.ts            # generated from the same backend OpenAPI (staff paths)
-  routes/                 # staff-login, queue, review/{uploadId}
+    api.ts                # transport only over the STAFF routes — staff cookie, error-envelope → ApiError
+    contract.ts           # PROVISIONAL staff types until backend ships /staff/* in openapi.json,
+                          #   then replaced by generated api.gen.ts via `npm run gen:api`
+    endpoints.ts          # typed wrappers: staffAuthApi, reviewApi
   features/
+    auth/                 # StaffAuthProvider, /staff/me probe, RequireStaff guard, login + code screens
     queue/                # the pending_review list (pseudonymised rows)
-    review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject
-  components/ui/          # shadcn components (shared look, separate build)
-index.html  vite.config.ts  package.json  .env.example  AGENTS.md
+    review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
+  components/ui/          # button, input, textarea
+index.html  vite.config.ts  package.json  .env.example  README.md  AGENTS.md
 ```
 The reviewer portal is **transport + UI only** — every decision (queue ordering, authoritative apply, who may
 review) is enforced by the backend `staff/` module. It ships to ~3 internal staff, never to families, and
 authenticates on the disjoint **staff** realm (§1a). **Form factor: desktop/tablet, landscape two-pane** (image
-| LLM draft) — **not** mobile-first; skip phone layouts (that's the family app's job, §11).
+| LLM draft) — **not** mobile-first; skip phone layouts (that's the family app's job, §11). It currently runs
+against a **provisional** `lib/contract.ts`; the backend `staff/` module (auth, queue, apply) is Phase 2.5.
 
 `features/exercises/types.ts` (the `Exercise` discriminated union) and `lib/api.ts` are the two files that
 **must** stay in lockstep with the backend contract. Treat a change to either as a contract change (§4).

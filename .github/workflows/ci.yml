@@ -55,3 +55,23 @@ jobs:
       - run: npm run gen:api
       - name: api.gen.ts is up to date
         run: git diff --exit-code src/lib/api.gen.ts
+
+  reviewer:
+    name: reviewer (lint · typecheck · test · build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: besserlesenschreiben/reviewer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: besserlesenschreiben/reviewer/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      # No contract gate yet: the staff routes aren't in the backend OpenAPI, so the portal runs against
+      # a provisional lib/contract.ts. Add a `gen:api` drift gate (like frontend) once /staff/* ships.
