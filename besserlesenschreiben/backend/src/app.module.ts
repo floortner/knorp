@@ -18,6 +18,7 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { AttemptsModule } from './modules/attempts/attempts.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { DigestModule } from './modules/digest/digest.module';
+import { StaffModule } from './modules/staff/staff.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -54,6 +55,7 @@ import { HealthController } from './modules/health/health.controller';
     AttemptsModule,
     ProgressModule,
     DigestModule,
+    StaffModule,
   ],
   controllers: [HealthController],
   providers: [

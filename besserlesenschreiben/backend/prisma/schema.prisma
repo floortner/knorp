@@ -209,6 +209,23 @@ model Reviewer {
   @@map("reviewer")
 }
 
+// ── STAFF login codes (passwordless, disjoint from family login_code) ─────────
+// Separate table so a staff code can never be consumed by a family verify and vice-versa, even if an
+// email somehow appears in both realms. Staff are admin-provisioned (no self-signup) — request-code only
+// issues a code when an active reviewer owns the email, but always returns ok (no enumeration).
+model StaffLoginCode {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(6)
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([email])
+  @@map("staff_login_code")
+}
+
 // ── HOMEWORK review audit (append-only) ──────────────────────────────────────
 // Retains the LLM draft + reviewer verdict so vision quality is measurable ("compare vs LLM", SPEC §10).
 model HomeworkReview {
