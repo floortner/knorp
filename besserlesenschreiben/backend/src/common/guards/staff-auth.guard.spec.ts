@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { ExecutionContext } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
+import type { Reflector } from '@nestjs/core';
 import { StaffAuthGuard } from './staff-auth.guard';
 import { ApiException } from '../exceptions/api-exception';
 import type { PrismaService } from '../../prisma/prisma.service';
@@ -22,6 +23,7 @@ function ctxFor(req: ReqShape): ExecutionContext {
 function makeGuard(opts: {
   verify?: (token: string) => Promise<{ sub: string; role?: 'reviewer' | 'admin' }>;
   reviewer?: { id: string; role: string; status: string } | null;
+  isStaffPublic?: boolean;
 }) {
   const jwt = {
     verifyAsync: vi.fn(async (token: string) => {
@@ -33,11 +35,17 @@ function makeGuard(opts: {
   const prisma = {
     reviewer: { findUnique: vi.fn(async () => opts.reviewer ?? null) },
   } as unknown as PrismaService;
-  return new StaffAuthGuard(jwt, config, prisma);
+  const reflector = { getAllAndOverride: () => opts.isStaffPublic ?? false } as unknown as Reflector;
+  return new StaffAuthGuard(jwt, config, prisma, reflector);
 }
 
 describe('StaffAuthGuard', () => {
-  it('rejects when neither Bearer nor staff cookie is present', async () => {
+  it('lets a @StaffPublic() route through without a token (the auth endpoints)', async () => {
+    const guard = makeGuard({ isStaffPublic: true });
+    await expect(guard.canActivate(ctxFor({ headers: {} }))).resolves.toBe(true);
+  });
+
+  it('rejects when neither Bearer nor staff cookie is present (default-deny)', async () => {
     const guard = makeGuard({});
     await expect(guard.canActivate(ctxFor({ headers: {} }))).rejects.toBeInstanceOf(ApiException);
   });
