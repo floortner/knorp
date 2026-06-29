@@ -21,6 +21,14 @@ Currently one **monorepo** for fast cross-cutting iteration; the two subprojects
 
 ## Commands
 
+### Run both at once (local dev)
+```bash
+besserlesenschreiben/dev.sh          # start backend (:3000) + frontend (:5173), Ctrl-C stops both
+besserlesenschreiben/dev.sh api      # backend only   ·   dev.sh web = frontend only
+```
+Copies missing `.env` files from `.env.example` and installs deps on first run. It does **not** set up
+Postgres — do the one-time DB setup in `besserlesenschreiben/backend/README.md` first.
+
 ### Backend (`besserlesenschreiben/backend/`)
 ```bash
 npm ci                          # install
