@@ -84,3 +84,35 @@ export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Prom
 
   return data as T;
 }
+
+/**
+ * POST multipart/form-data (e.g. a homework photo). Mirrors apiFetch's error handling, but lets the
+ * browser set the multipart boundary — so it must NOT send a JSON content-type.
+ */
+export async function uploadFile<T>(path: string, form: FormData, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: { ...(authToken ? { authorization: `Bearer ${authToken}` } : {}) },
+    body: form,
+    credentials: 'include',
+    signal,
+  });
+
+  if (res.status === 204) return undefined as T;
+  const data: unknown = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const envelope = (data as { error?: Partial<ApiError> } | null)?.error;
+    if (res.status === 401 || envelope?.code === 'SESSION_EXPIRED') handlers.onUnauthorized?.();
+    if (res.status === 402) handlers.onPaymentRequired?.();
+    throw new ApiError(
+      res.status,
+      envelope?.code ?? 'INTERNAL',
+      envelope?.message ?? 'Etwas ist schiefgelaufen.',
+      envelope?.requestId,
+      envelope?.details,
+    );
+  }
+
+  return data as T;
+}

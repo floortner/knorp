@@ -4,14 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-**besserlesenschreiben** — an adaptive German children's literacy tutor. Two sub-projects that are developed together but deployed independently:
+**besserlesenschreiben** — an adaptive German children's literacy tutor. Sub-projects developed together but deployed independently:
 
 - `besserlesenschreiben/backend/` — NestJS API (`-api` repo)
-- `besserlesenschreiben/frontend/` — Vite/React SPA/PWA (`-web` repo)
+- `besserlesenschreiben/frontend/` — Vite/React SPA/PWA, the family app (`-web` repo)
+- `besserlesenschreiben/reviewer/` — Vite/React internal **staff portal** for professional homework review (`-review` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. (Backend `staff/` module exists first; the portal itself is Phase 2.5.)
+
+Two disjoint **auth realms** (ARCHITECTURE §1a): the **family** realm (parents + children, `-web`) and the **staff** realm (internal reviewers, `-review`). A credential in one is never valid in the other — different cookie/`aud`, different guard (`JwtAuthGuard` vs `StaffAuthGuard`).
 
 The seed scripts live in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent item-bank loader, run via `npm run seed`). There are no root-level `seed.ts`/`build-seed.ts`.
 
-Currently one **monorepo** for fast cross-cutting iteration; the two subprojects are independently buildable/deployable and split into the `-api`/`-web` repos before launch (ARCHITECTURE §1).
+Currently one **monorepo** for fast cross-cutting iteration; the subprojects are independently buildable/deployable and split into the `-api`/`-web`/`-review` repos before launch (ARCHITECTURE §1).
 
 ## Read order before touching any code
 
@@ -72,7 +75,7 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 - `src/contract/` — Zod schemas (`exercise.ts`, `models.ts`) that are the **source** of the contract pipeline: Zod → `openapi.json` → `api.gen.ts`. Edit here first, then re-export.
 - `src/modules/` — one folder per resource: controller (HTTP only) + service + Zod DTOs
 - `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (Azure Blob SAS), `email`
-- `src/common/guards/` — `JwtAuthGuard`, `ParentScopeGuard` (`EntitlementGuard` is Phase 2, not yet built)
+- `src/common/guards/` — `JwtAuthGuard` (family; requires `status='active'`), `ParentScopeGuard`, `StaffAuthGuard` (staff realm)
 - `src/common/filters/` — global exception filter → the one error envelope
 - `prisma/schema.prisma` — the model truth; DDL in `backend/SPEC.md §3` is its conceptual form
 - `prisma/seed.ts` — idempotent item-bank loader (upserts on `seed_key`)
@@ -91,23 +94,32 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 
 ### Session generation (two paths)
 - **Bank session (default, free):** deterministic — queries `attempt` table for weak/due skills via FSRS (`ts-fsrs`), selects from `item_bank`. Zero LLM calls.
-- **LLM session (★ gated):** loads `digest.md` → prompts Claude → validates against Zod schemas → inserts into `item_bank` (`generated_by='llm'`) → returns session.
+- **LLM session (★ gated):** lectures generated on the fly — loads `digest.md` (derived from answers, **response times** `time_ms`, and **retries** `attempt_no`) plus any **professionally-reviewed** homework focus → prompts Claude → validates against Zod schemas → inserts into `item_bank` (`generated_by='llm'`) → returns session.
 
-The database decides *what* to drill; the LLM only generates *new content and conversation*.
+The database decides *what* to drill — informed by telemetry **and the staff-validated homework focus**; the LLM only generates *new content and conversation*.
+
+### Homework review (professional-in-the-loop)
+Homework photos are uploaded by the family but validated by an **internal staff reviewer**, not the parent (ARCHITECTURE §11, backend SPEC §10). Vision produces a **draft** (`homework_upload.llm_analysis`) that is **never applied on its own**; a reviewer approves/corrects/rejects in the staff portal, and only the **authoritative** `reviewed_analysis` mutates `attempt`/`review_state` and feeds the next lecture. Review is **async** (the child is never blocked) and the queue is **pseudonymised** (image + draft + skill tags + grade band only). The old `POST /homework/{id}/confirm` parent step is **removed**.
 
 ### Build status
-Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest), Phase 1.5 (hardening), and Phase 1.6 (content + UX polish: unit unlock, celebration, 5 new exercise types, parent area, profile tab) are **done**. Technical debt from 1.6 is tracked in `backend/SPEC.md §12`. Phase 2 is next: `EntitlementGuard` → `LlmService` → chat → homework vision → billing.
+Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest), Phase 1.5 (hardening), Phase 1.6 (content + UX polish), and the **staff realm + professional homework review** (`reviewer`/`homework_review` tables, `StaffAuthGuard`, `/staff/*` queue + authoritative apply, reviewer portal) are **done**. Technical debt from 1.6 is tracked in `backend/SPEC.md §12`.
+
+**Product decision — the app is FREE, including the AI features; access is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred** and not built: no `EntitlementGuard`, credits, or `402` gating. The `entitlement`/`credits_ledger` tables stay dormant so metering stays a future option; `★` means "AI-backed / cost-bearing op," free for any approved active account.
+
+Phase 2 is next: **`LlmService`** (Anthropic-direct, abstracted) → **chat** → **homework upload + vision draft** (feeds the existing staff queue) → **LLM session generation**, all free. Plus the **approval-gated access** milestone: `account.status` (`pending|active|deactivated`), silent pending-on-first-code signup, and **staff admin user-management** (approve / deactivate / delete, admin-role-only) — backend SPEC §12.
 
 ## Non-negotiable security rules
 
 1. **`user_id`/`profile_id` come ONLY from the JWT** — never from a request body or path parameter. Grep for violations.
 2. **Blob access via user-delegation SAS scoped to the caller's prefix** (`users/{account_id}/{profile_id}/…`). Container keys never exposed.
-3. **Parent-scoped routes** (`/parent/*`, `/billing/*`) require a fresh `parent` claim in the JWT (`ParentScopeGuard`).
-4. **Gated AI endpoints** check entitlement/credits before doing any paid work (`EntitlementGuard`). Zero credits → `402`, nothing paid happens.
-5. **Webhook is the billing source of truth** — verify provider signature, idempotent on provider event id. Never trust client-reported payment success.
+3. **Parent-scoped routes** (`/parent/*`) require a fresh `parent` claim in the JWT (`ParentScopeGuard`).
+4. **Access is gated by account status, not payment.** The family `JwtAuthGuard` requires `account.status='active'` (a per-request check) — `pending`/`deactivated`/deleted accounts can't act, and revocation is immediate. AI (`★`) endpoints are **free**; there is no entitlement/credit check (billing deferred, ARCHITECTURE §9).
+5. **Signup is silent pending-on-first-code.** A first `/auth/request-code` for an unknown email creates a `pending` account and **emails nothing** (still `200`, no enumeration); a staff admin approves before any code is sent. The family UI says "we'll email you soon," never advancing to code entry.
 6. **Never log** child answers, homework/OCR content, email addresses, login codes, PIN or its hash, JWTs, SAS URLs, or request/response bodies. Log identifiers + outcomes only.
 7. **One error envelope** for every non-2xx response: `{error:{code,message,requestId,details[]}}`. The global exception filter handles this — never leak Prisma/provider errors.
-8. **Billing UI is parent-area only, behind the PIN.** A `402` routes the *parent* to the supporter screen — never show a price, paywall, or buy button in the child tabs.
+8. **Staff user-administration is admin-role-only and sees identity.** Approve/deactivate/delete (`/staff/users/*`) handle real emails and are gated by `role='admin'` — kept separate from the pseudonymised reviewer queue (rule 10). Account deletion erases DB rows **and** the account's blobs.
+9. **The two auth realms never cross.** `/staff/*` requires a staff cookie (`aud:"staff"`, `StaffAuthGuard`); a family JWT is rejected there and a staff cookie is rejected on every family route. Realms use **distinct signing keys** (`STAFF_JWT_SECRET` ≠ `JWT_SECRET`).
+10. **The reviewer queue is pseudonymised.** `/staff/*` exposes only the homework image (per-upload SAS), the LLM draft, skill tags, and a grade band — never a child name, parent email, chat text, or billing. Homework's `llm_analysis` is a draft and **must not** mutate the learning profile before a reviewer verdict; only `reviewed_analysis` applies.
 
 ## Key conventions
 

@@ -166,18 +166,85 @@ model ReviewState {
 
 // ── HOMEWORK uploads + analysis ──────────────────────────────────────────────
 model HomeworkUpload {
-  id          String   @id @default(uuid()) @db.Uuid
-  profileId   String   @map("profile_id") @db.Uuid
-  imageKey    String   @map("image_key")
-  status      String   @default("pending") // pending|analyzed|confirmed|rejected
-  analysis    Json?
-  confirmedBy String?  @map("confirmed_by")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id        String @id @default(uuid()) @db.Uuid
+  profileId String @map("profile_id") @db.Uuid
+  imageKey  String @map("image_key")
+  // pending_analysis | pending_review | reviewed | rejected
+  status    String @default("pending_analysis")
 
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  llmAnalysis      Json?     @map("llm_analysis") // DRAFT vision output — NEVER applied on its own
+  reviewedAnalysis Json?     @map("reviewed_analysis") // AUTHORITATIVE; only this mutates the learning profile
+  reviewerId       String?   @map("reviewer_id") @db.Uuid // who actioned it (null until reviewed)
+  reviewDecision   String?   @map("review_decision") // approved|corrected|rejected
+  reviewedAt       DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  appliedAt        DateTime? @map("applied_at") @db.Timestamptz(6) // when reviewedAnalysis hit attempt/review_state
+  claimedBy        String?   @map("claimed_by") @db.Uuid // soft-lock so two reviewers don't grab the same item
+  claimedUntil     DateTime? @map("claimed_until") @db.Timestamptz(6) // claim lease expiry (auto-released)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profile  Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  reviewer Reviewer?        @relation("ReviewerActioned", fields: [reviewerId], references: [id])
+  claimant Reviewer?        @relation("ReviewerClaimed", fields: [claimedBy], references: [id])
+  reviews  HomeworkReview[]
 
   @@index([profileId])
+  @@index([status]) // queue scan for pending_review
   @@map("homework_upload")
+}
+
+// ── STAFF realm: internal literacy professionals (ARCHITECTURE §1a) ──────────
+// DISJOINT identity from Account/Profile — a staff credential is never valid in the family realm.
+model Reviewer {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique // staff login (never a family email)
+  name      String
+  role      String   @default("reviewer") // reviewer|admin
+  status    String   @default("active") // active|revoked
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actioned HomeworkUpload[] @relation("ReviewerActioned")
+  claimed  HomeworkUpload[] @relation("ReviewerClaimed")
+  reviews  HomeworkReview[]
+
+  @@map("reviewer")
+}
+
+// ── STAFF login codes (passwordless, disjoint from family login_code) ─────────
+// Separate table so a staff code can never be consumed by a family verify and vice-versa, even if an
+// email somehow appears in both realms. Staff are admin-provisioned (no self-signup) — request-code only
+// issues a code when an active reviewer owns the email, but always returns ok (no enumeration).
+model StaffLoginCode {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(6)
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([email])
+  @@map("staff_login_code")
+}
+
+// ── HOMEWORK review audit (append-only) ──────────────────────────────────────
+// Retains the LLM draft + reviewer verdict so vision quality is measurable ("compare vs LLM", SPEC §10).
+model HomeworkReview {
+  id               String   @id @default(uuid()) @db.Uuid
+  uploadId         String   @map("upload_id") @db.Uuid
+  reviewerId       String   @map("reviewer_id") @db.Uuid
+  decision         String // approved|corrected|rejected
+  llmAnalysis      Json     @map("llm_analysis") // snapshot of the draft shown to the reviewer
+  reviewedAnalysis Json?    @map("reviewed_analysis") // the verdict (null when rejected)
+  agreedWithLlm    Boolean  @map("agreed_with_llm") // false ⇒ reviewer changed something (LLM-quality signal)
+  notes            String? // optional QA note; never child-identifying
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  upload   HomeworkUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  reviewer Reviewer       @relation(fields: [reviewerId], references: [id])
+
+  @@index([uploadId])
+  @@index([reviewerId])
+  @@map("homework_review")
 }
 
 // ── CHAT (trainer conversation thread, per child profile) ────────────────────

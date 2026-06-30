@@ -1,6 +1,10 @@
-import { apiFetch, setAuthToken } from './api';
+import { apiFetch, setAuthToken, uploadFile } from './api';
 import type {
+  ChatHistory,
+  ChatReply,
   CreateProfileBody,
+  HomeworkResult,
+  HomeworkUploadResponse,
   Me,
   Profile,
   Progress,
@@ -60,6 +64,26 @@ export const coreApi = {
       method: 'POST',
       body: {},
     }),
+};
+
+/** Homework "Foto & verbessern": upload a photo, then poll its status (family sees the result only). */
+export const homeworkApi = {
+  upload: (profileId: string, file: File) => {
+    const form = new FormData();
+    form.append('profileId', profileId);
+    form.append('image', file);
+    return uploadFile<HomeworkUploadResponse>('/homework', form);
+  },
+
+  status: (uploadId: string) => apiFetch<HomeworkResult>(`/homework/${encodeURIComponent(uploadId)}`),
+};
+
+/** Trainer chat (free AI). History + send, both scoped to the child profile. */
+export const chatApi = {
+  history: (profileId: string) => apiFetch<ChatHistory>(`/chat/${encodeURIComponent(profileId)}`),
+
+  send: (profileId: string, text: string) =>
+    apiFetch<ChatReply>(`/chat/${encodeURIComponent(profileId)}`, { method: 'POST', body: { text } }),
 };
 
 /** Parent-area endpoints. parent-scoped calls (reset) send the parentToken as Bearer. */

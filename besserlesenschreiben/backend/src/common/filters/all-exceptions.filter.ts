@@ -21,6 +21,9 @@ const STATUS_CODE: Record<number, string> = {
   429: 'RATE_LIMITED',
 };
 
+/** 5xx codes that are intentional + safe to surface to the client (their messages carry no internals). */
+const SAFE_5XX_CODES = new Set<string>(['PROVIDER_UNAVAILABLE']);
+
 /**
  * The ONE error envelope for every non-2xx response (ARCHITECTURE §5):
  *   { error: { code, message, requestId, details? } }
@@ -61,8 +64,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       );
     }
 
-    // Never leak internals on a 5xx.
-    if (status >= 500) {
+    // Never leak internals on a 5xx — EXCEPT a small allowlist of intentional, safe-to-surface codes
+    // (e.g. PROVIDER_UNAVAILABLE for an AI/TTS outage, which the client acts on; ARCHITECTURE §5). Their
+    // messages are author-written, not provider/stack text, so they carry nothing sensitive.
+    if (status >= 500 && !SAFE_5XX_CODES.has(code)) {
       code = 'INTERNAL';
       message = 'Etwas ist schiefgelaufen.';
       details = undefined;

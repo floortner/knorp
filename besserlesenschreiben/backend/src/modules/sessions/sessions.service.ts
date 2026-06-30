@@ -1,9 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { z } from 'zod';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 import { assertProfileOwned } from '../../common/ownership';
 import { daysAgo, startOfUtcDay, startOfUtcWeek } from '../../common/dates';
 import { STARS_PER_SESSION, leagueFor, nextStreak, type League } from '../progress/gamification';
+import { LlmService } from '../../services/llm/llm.service';
+import { DigestService } from '../../services/digest/digest.service';
+import { exerciseSchema } from '../../contract/exercise';
+import { homeworkAnalysisSchema } from '../../contract/staff';
+import { Prisma } from '../../generated/prisma/client';
 import { toExercise } from './exercise.mapper';
 import { selectBankItems, weakSkills } from './session-select';
 import { UNIT_CATALOG, unitStatus } from './units.catalog';
@@ -11,12 +17,31 @@ import type { CreateSessionInput } from './sessions.dto';
 
 const RECENT_WINDOW_DAYS = 14;
 const RECENT_ATTEMPT_LIMIT = 200;
+const LLM_ITEM_UNIT = 0; // sentinel: generated items live outside the curated unit catalogue (1..N)
+const LLM_SESSION_SIZE = 6;
+
+/** What the model returns: a batch of wire-shaped exercises (id/audioUrl are placeholders we overwrite). */
+const generatedSessionSchema = z.object({
+  exercises: z.array(exerciseSchema).min(1).max(LLM_SESSION_SIZE),
+});
+
+const LLM_SYSTEM = [
+  'Du generierst deutsche Grundschul-Übungen zum Lesen und Schreiben.',
+  `Erzeuge bis zu ${LLM_SESSION_SIZE} abwechslungsreiche Übungen, die GENAU auf die genannten Förderschwerpunkte zielen.`,
+  'Jede Übung muss eindeutig korrekt lösbar sein: bei "count" ist answer die richtige Silbenzahl und in opts enthalten;',
+  'bei "order"/"arrange" entsprechen tiles genau den syll; bei "pairs" reimt sich das pair; Optionen enthalten die richtige Antwort.',
+  'Setze skillTags aus den Schwerpunkten und einen kurzen, motivierenden deutschen praise. id darf ein Platzhalter sein, audioUrl=null.',
+].join(' ');
 
 @Injectable()
 export class SessionsService {
   private readonly logger = new Logger('SessionsService');
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly llm: LlmService,
+    private readonly digest: DigestService,
+  ) {}
 
   /** GET /units — the catalogue with live per-profile status + item counts. */
   async units(accountId: string, profileId?: string) {
@@ -85,6 +110,96 @@ export class SessionsService {
       unit,
       generatedAt: session.createdAt,
       items: selected.map(toExercise),
+    };
+  }
+
+  /**
+   * POST /sessions {source:'llm'} — generate a lecture on the fly (SPEC §8B, free ★). The DB still decides
+   * WHAT to drill (recent weakness + FSRS-due + professionally-reviewed homework focus); the LLM only
+   * produces NEW content for those skills, validated against the Exercise contract, stored as
+   * `generated_by='llm'` items (unit 0, outside the curated catalogue) and returned as a normal session.
+   */
+  async createLlm(accountId: string, dto: CreateSessionInput) {
+    const profile = await assertProfileOwned(this.prisma, accountId, dto.profileId);
+    if (!this.llm.available) {
+      throw new ApiException(503, 'PROVIDER_UNAVAILABLE', 'KI-Sitzungen sind in dieser Umgebung nicht verfügbar.');
+    }
+    const unit = dto.unit ?? profile.unlockedUnit;
+    const now = new Date();
+
+    // WHAT to drill: recent weak skills + FSRS-due + the staff-validated homework focus.
+    const recent = await this.prisma.attempt.findMany({
+      where: { profileId: profile.id, createdAt: { gte: daysAgo(now, RECENT_WINDOW_DAYS) } },
+      select: { skillTags: true, isCorrect: true, timeMs: true },
+      orderBy: { createdAt: 'desc' },
+      take: RECENT_ATTEMPT_LIMIT,
+    });
+    const due = await this.prisma.reviewState.findMany({
+      where: { profileId: profile.id, due: { lte: now } },
+      select: { skillTag: true },
+    });
+    const reviewedHw = await this.prisma.homeworkUpload.findMany({
+      where: { profileId: profile.id, status: 'reviewed' },
+      orderBy: { reviewedAt: 'desc' },
+      take: 5,
+      select: { reviewedAnalysis: true },
+    });
+    const hwFocus = reviewedHw.flatMap(
+      (r) => homeworkAnalysisSchema.safeParse(r.reviewedAnalysis).data?.suggestedFocus ?? [],
+    );
+    const focus = [...new Set<string>([...weakSkills(recent), ...due.map((d) => d.skillTag), ...hwFocus])];
+
+    // The compact, LLM-facing performance view (best-effort context).
+    let digestMd = '';
+    try {
+      digestMd = (await this.digest.generate(accountId, profile.id)).markdown;
+    } catch {
+      /* digest is optional context */
+    }
+
+    const focusLine = focus.length ? focus.join(', ') : 'Grundlagen: Silben, Anlaute, Reime';
+    const generated = await this.llm.extract(generatedSessionSchema, 'generated_session', {
+      system: LLM_SYSTEM,
+      messages: [{ role: 'user', text: `Förderschwerpunkte: ${focusLine}\n\nLernstand:\n${digestMd}` }],
+    });
+
+    // Persist the new items (unit 0 sentinel) + the session, then return the wire shape.
+    const created = await this.prisma.$transaction(async (tx) => {
+      const items = [];
+      for (const ex of generated.exercises) {
+        // Strip the backend-owned fields; the rest is the per-type render payload (incl. praise).
+        const payload: Record<string, unknown> = { ...ex };
+        for (const k of ['id', 'type', 'audioUrl', 'syllableAudio', 'skillTags']) delete payload[k];
+        items.push(
+          await tx.itemBank.create({
+            data: {
+              unit: LLM_ITEM_UNIT,
+              exerciseType: ex.type,
+              payload: payload as Prisma.InputJsonValue,
+              skillTags: ex.skillTags,
+              audioUrl: null,
+              generatedBy: 'llm',
+            },
+          }),
+        );
+      }
+      const session = await tx.session.create({
+        data: { profileId: profile.id, unit, itemIds: items.map((i) => i.id), source: 'llm' },
+      });
+      return { session, items };
+    });
+
+    this.logger.log(
+      { event: 'session.created', sessionId: created.session.id, source: 'llm', items: created.items.length, focus: focus.length },
+      'llm session generated',
+    );
+
+    return {
+      sessionId: created.session.id,
+      profileId: profile.id,
+      unit,
+      generatedAt: created.session.createdAt,
+      items: created.items.map(toExercise),
     };
   }
 

@@ -67,6 +67,20 @@ export function Lernen() {
         </p>
       )}
 
+      <button
+        type="button"
+        onClick={() => navigate('/homework')}
+        className="flex w-full items-center gap-3 rounded-card bg-white p-4 text-left shadow-sm ring-1 ring-black/5 transition active:scale-[0.99]"
+      >
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange/15 text-2xl" aria-hidden>
+          📷
+        </span>
+        <div>
+          <p className="font-display font-bold text-ink">Hausübung · Foto & verbessern</p>
+          <p className="text-sm text-ink-soft">Foto hochladen – eine Fachkraft passt die Übungen an</p>
+        </div>
+      </button>
+
       <div className="flex items-center gap-3 rounded-card border border-dashed border-teal/40 bg-white/50 p-4">
         <img src="/pixel.svg" alt="" className="h-10 w-10" />
         <div>

@@ -59,10 +59,6 @@ describe('Profil', () => {
     expect(updateSettings).toHaveBeenCalledWith('p1', { soundOn: false });
   });
 
-  it('changes font scale via PATCH settings', async () => {
-    const user = userEvent.setup();
-    renderProfil();
-    await user.click(await screen.findByRole('button', { name: 'Groß' }));
-    expect(updateSettings).toHaveBeenCalledWith('p1', { fontScale: 1.25 });
-  });
+  // NOTE: the Schriftgröße ("Groß") control was removed in milestone 1.6 (the font-scale stub was cut),
+  // so there is no longer a font-scale PATCH from this screen — the test for it was removed with it.
 });

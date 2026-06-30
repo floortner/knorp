@@ -10,6 +10,7 @@ import type { Env } from '../../config/env';
 export interface TokenPayload {
   sub: string;
   scope?: 'parent';
+  aud?: string | string[];
 }
 
 /**
@@ -49,6 +50,13 @@ export class JwtAuthGuard implements CanActivate {
       const payload = await this.jwt.verifyAsync<TokenPayload>(token, {
         secret: this.config.get('JWT_SECRET', { infer: true }),
       });
+      // Defence-in-depth realm isolation (ARCHITECTURE §1a): a staff token carries aud:'staff'. The
+      // secrets already differ (enforced at boot), but reject it here too so a family route never
+      // honours a staff credential even under a key misconfiguration.
+      const aud = payload.aud;
+      if (aud === 'staff' || (Array.isArray(aud) && aud.includes('staff'))) {
+        throw new ApiException(401, 'UNAUTHENTICATED', 'Ungültiges Token.');
+      }
       req.account = { id: payload.sub };
       req.tokenPayload = payload;
       return true;

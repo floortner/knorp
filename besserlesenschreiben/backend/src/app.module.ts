@@ -9,6 +9,7 @@ import { ZodResponseInterceptor } from './common/interceptors/zod-response.inter
 import { PrismaModule } from './prisma/prisma.module';
 import { EmailModule } from './services/email/email.module';
 import { FsrsModule } from './services/fsrs/fsrs.module';
+import { LlmModule } from './services/llm/llm.module';
 import { StorageModule } from './services/storage/storage.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
@@ -18,6 +19,9 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { AttemptsModule } from './modules/attempts/attempts.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { DigestModule } from './modules/digest/digest.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { HomeworkModule } from './modules/homework/homework.module';
+import { StaffModule } from './modules/staff/staff.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -47,6 +51,7 @@ import { HealthController } from './modules/health/health.controller';
     EmailModule,
     FsrsModule,
     StorageModule,
+    LlmModule,
     AuthModule,
     ProfilesModule,
     ParentModule,
@@ -54,6 +59,9 @@ import { HealthController } from './modules/health/health.controller';
     AttemptsModule,
     ProgressModule,
     DigestModule,
+    ChatModule,
+    HomeworkModule,
+    StaffModule,
   ],
   controllers: [HealthController],
   providers: [

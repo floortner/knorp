@@ -112,6 +112,98 @@ exports[`ExerciseView golden render > renders bd from backend JSON 1`] = `
 </div>
 `;
 
+exports[`ExerciseView golden render > renders build from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Buchstabiere das Wort!
+    </p>
+    <div>
+      <div
+        class="space-y-5"
+      >
+        <div
+          class="flex justify-center text-6xl"
+        >
+          🐱
+        </div>
+        <div
+          class="flex flex-wrap justify-center gap-2"
+        >
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold transition border-2 border-dashed border-black/20"
+            disabled=""
+            type="button"
+          />
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold transition border-2 border-dashed border-black/20"
+            disabled=""
+            type="button"
+          />
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold transition border-2 border-dashed border-black/20"
+            disabled=""
+            type="button"
+          />
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold transition border-2 border-dashed border-black/20"
+            disabled=""
+            type="button"
+          />
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold transition border-2 border-dashed border-black/20"
+            disabled=""
+            type="button"
+          />
+        </div>
+        <div
+          class="flex flex-wrap justify-center gap-2"
+        >
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold shadow-sm ring-1 transition bg-white text-ink ring-black/5 active:scale-95 hover:bg-black/[0.02]"
+            type="button"
+          >
+            t
+          </button>
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold shadow-sm ring-1 transition bg-white text-ink ring-black/5 active:scale-95 hover:bg-black/[0.02]"
+            type="button"
+          >
+            K
+          </button>
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold shadow-sm ring-1 transition bg-white text-ink ring-black/5 active:scale-95 hover:bg-black/[0.02]"
+            type="button"
+          >
+            a
+          </button>
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold shadow-sm ring-1 transition bg-white text-ink ring-black/5 active:scale-95 hover:bg-black/[0.02]"
+            type="button"
+          >
+            z
+          </button>
+          <button
+            class="flex h-14 w-11 items-center justify-center rounded-xl font-display text-xl font-bold shadow-sm ring-1 transition bg-white text-ink ring-black/5 active:scale-95 hover:bg-black/[0.02]"
+            type="button"
+          >
+            e
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
 exports[`ExerciseView golden render > renders case from backend JSON 1`] = `
 <div>
   <section
@@ -170,29 +262,11 @@ exports[`ExerciseView golden render > renders count from backend JSON 1`] = `
     <div
       class="flex justify-center"
     >
-      <div
-        class="space-y-3"
+      <p
+        class="text-center font-display text-3xl font-bold text-ink"
       >
-        <p
-          class="text-center font-display text-3xl font-bold text-ink"
-        >
-          Sommer
-        </p>
-        <div
-          class="flex flex-wrap items-center justify-center gap-1.5"
-        >
-          <span
-            class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
-          >
-            Som
-          </span>
-          <span
-            class="rounded-xl px-3 py-2 font-display text-xl font-bold bg-teal-tint text-teal-dark"
-          >
-            mer
-          </span>
-        </div>
-      </div>
+        Sommer
+      </p>
     </div>
     <div>
       <div
@@ -426,6 +500,86 @@ exports[`ExerciseView golden render > renders letter from backend JSON 1`] = `
 </div>
 `;
 
+exports[`ExerciseView golden render > renders listen from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Wie viele Silben hörst du?
+    </p>
+    <div>
+      <div
+        class="space-y-5"
+      >
+        <button
+          aria-label="Nochmal anhören"
+          class="mx-auto flex h-24 w-24 flex-col items-center justify-center gap-2 rounded-full bg-teal-tint text-teal-dark shadow-sm ring-1 ring-teal/20 transition active:scale-95 hover:bg-teal/10"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-volume2 lucide-volume-2 h-10 w-10"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
+            />
+            <path
+              d="M16 9a5 5 0 0 1 0 6"
+            />
+            <path
+              d="M19.364 18.364a9 9 0 0 0 0-12.728"
+            />
+          </svg>
+          <span
+            class="text-xs font-semibold"
+          >
+            Nochmal
+          </span>
+        </button>
+        <div
+          class="grid grid-cols-3 gap-3"
+        >
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            2
+          </button>
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            3
+          </button>
+          <button
+            class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            4
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
 exports[`ExerciseView golden render > renders nonsense from backend JSON 1`] = `
 <div>
   <section
@@ -460,6 +614,54 @@ exports[`ExerciseView golden render > renders nonsense from backend JSON 1`] = `
           type="button"
         >
           Quatschwort
+        </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders odd from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Welches Wort reimt sich nicht?
+    </p>
+    <div>
+      <div
+        class="grid gap-3 grid-cols-2"
+      >
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Haus
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Maus
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Baum
+        </button>
+        <button
+          class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          type="button"
+        >
+          Laus
         </button>
       </div>
     </div>
@@ -615,6 +817,142 @@ exports[`ExerciseView golden render > renders rhyme from backend JSON 1`] = `
         >
           Ball
         </button>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders sentence from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Tippe das Nomen (Hauptwort) an.
+    </p>
+    <div>
+      <div
+        class="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-3 rounded-2xl bg-white px-6 py-8 shadow-sm ring-1 ring-black/5"
+      >
+        <button
+          class="rounded-xl px-3 py-1.5 font-display text-2xl font-bold transition active:scale-95 text-ink hover:bg-teal-tint"
+          type="button"
+        >
+          Der
+        </button>
+        <button
+          class="rounded-xl px-3 py-1.5 font-display text-2xl font-bold transition active:scale-95 text-ink hover:bg-teal-tint"
+          type="button"
+        >
+          Hund
+        </button>
+        <button
+          class="rounded-xl px-3 py-1.5 font-display text-2xl font-bold transition active:scale-95 text-ink hover:bg-teal-tint"
+          type="button"
+        >
+          läuft
+        </button>
+        <button
+          class="rounded-xl px-3 py-1.5 font-display text-2xl font-bold transition active:scale-95 text-ink hover:bg-teal-tint"
+          type="button"
+        >
+          schnell
+        </button>
+        <span
+          class="font-display text-2xl font-bold text-ink -ml-1.5"
+        >
+          .
+        </span>
+      </div>
+    </div>
+    <div
+      aria-live="polite"
+      class="min-h-12 text-center"
+    />
+  </section>
+</div>
+`;
+
+exports[`ExerciseView golden render > renders swipe from backend JSON 1`] = `
+<div>
+  <section
+    class="space-y-6"
+  >
+    <p
+      class="text-center font-medium text-ink-soft"
+    >
+      Wohin gehört das Wort?
+    </p>
+    <div>
+      <div
+        class="space-y-5"
+      >
+        <div
+          class="flex items-center justify-center rounded-2xl bg-teal-tint px-8 py-6"
+        >
+          <p
+            class="font-display text-4xl font-bold text-ink"
+          >
+            Sommer
+          </p>
+        </div>
+        <div
+          class="flex gap-3"
+        >
+          <button
+            class="flex flex-1 flex-col items-center justify-center gap-2 rounded-2xl px-4 py-6 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.97] bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-left h-6 w-6"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m15 18-6-6 6-6"
+              />
+            </svg>
+            1 Silbe
+          </button>
+          <button
+            class="flex flex-1 flex-col items-center justify-center gap-2 rounded-2xl px-4 py-6 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.97] bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-right h-6 w-6"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m9 18 6-6-6-6"
+              />
+            </svg>
+            2 Silben
+          </button>
+        </div>
       </div>
     </div>
     <div

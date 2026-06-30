@@ -8,8 +8,8 @@ const items = (session as unknown as { items: Exercise[] }).items;
 const byType = (t: string) => items.find((i) => i.type === t)!;
 
 describe('promptAndExpected', () => {
-  it('derives prompt + expected for every one of the 12 fixture types without throwing', () => {
-    expect(items).toHaveLength(12);
+  it('derives prompt + expected for every one of the 17 fixture types without throwing', () => {
+    expect(items).toHaveLength(17);
     for (const ex of items) {
       const { prompt, expected } = promptAndExpected(ex);
       expect(typeof prompt).toBe('string');

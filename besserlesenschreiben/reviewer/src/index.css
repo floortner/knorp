@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+
+/* Staff portal theme. Shares the brand accent (teal) but is a calm, neutral, information-dense
+   desktop/tablet surface — not the warm child canvas. Slate text on near-white, generous whitespace. */
+@theme {
+  --color-canvas: #f6f8f8;
+  --color-surface: #ffffff;
+  --color-ink: #1c2b29;
+  --color-ink-soft: #5b6f6a;
+  --color-line: #e3e9e8;
+  --color-teal: #27a99b;
+  --color-teal-dark: #1e8275;
+  --color-teal-tint: #dff0ec;
+  --color-amber: #e07a45;
+  --color-amber-tint: #fdeee5;
+  --color-danger: #c2453a;
+  --color-danger-tint: #fbeae8;
+  --color-good: #2e8b6f;
+  --color-good-tint: #e4f3ec;
+
+  --font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --radius-card: 0.875rem;
+}
+
+:root {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+}

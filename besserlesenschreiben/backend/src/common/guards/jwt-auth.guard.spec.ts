@@ -22,7 +22,7 @@ function ctxFor(req: ReqShape): ExecutionContext {
 
 function makeGuard(opts: {
   isPublic?: boolean;
-  verify?: (token: string) => Promise<{ sub: string; scope?: 'parent' }>;
+  verify?: (token: string) => Promise<{ sub: string; scope?: 'parent'; aud?: string | string[] }>;
 }) {
   const reflector = { getAllAndOverride: () => opts.isPublic ?? false } as unknown as Reflector;
   const jwt = {
@@ -58,6 +58,13 @@ describe('JwtAuthGuard', () => {
     const req: ReqShape = { headers: {}, cookies: { session: 'cookie-jwt' } };
     await expect(guard.canActivate(ctxFor(req))).resolves.toBe(true);
     expect(req.account).toEqual({ id: 'acc-cookie' });
+  });
+
+  it('rejects a staff-realm token (aud:staff) even if it verifies — realm isolation', async () => {
+    const guard = makeGuard({ verify: async () => ({ sub: 'rev-1', aud: 'staff' }) });
+    const req: ReqShape = { headers: { authorization: 'Bearer staff-token' } };
+    await expect(guard.canActivate(ctxFor(req))).rejects.toBeInstanceOf(ApiException);
+    expect(req.account).toBeUndefined();
   });
 
   it('maps an expired token to SESSION_EXPIRED (401)', async () => {
