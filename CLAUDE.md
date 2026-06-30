@@ -81,13 +81,13 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 - `prisma/seed.ts` — idempotent item-bank loader (upserts on `seed_key`)
 
 ### Frontend structure
-- `docs/knorp.html` — **interactive design prototype**; visual + interaction source of truth for every screen and the 12 exercise interactions. Open in a browser before building any UI. Recreate in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
+- `docs/knorp.html` — **interactive design prototype**; visual + interaction source of truth for every screen and the (original 12) exercise interactions. Open in a browser before building any UI. Recreate in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
 - `fixtures/` — committed golden JSON payloads (`session.example.json` = one of each exercise type; `units.example.json` = 7 units + theme colors). Build renderers and snapshot tests against these.
 - `src/lib/api.gen.ts` — types **generated** from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
 - `src/lib/api.ts` — typed fetch client, **transport only** (no JSX), built on `api.gen.ts` types
-- `src/features/exercises/types.ts` — the `Exercise` discriminated union (12 types)
-- `src/features/exercises/` — the 12 exercise renderers
-- `src/lib/audio.ts` — `audioUrl` playback + Web Speech API fallback
+- `src/features/exercises/types.ts` — the `Exercise` discriminated union (17 types)
+- `src/features/exercises/` — the 17 exercise renderers
+- `src/features/exercises/audio.ts` — `audioUrl` playback + Web Speech API fallback
 - `src/lib/telemetry.ts` — attempt timing + fire-and-forget emit
 
 `features/exercises/types.ts` and `lib/api.ts` **must stay in lockstep with the backend contract**. A change to either is a contract change — re-export `openapi.json`, regenerate `api.gen.ts` via `npm run gen:api`, and update golden tests.

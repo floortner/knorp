@@ -14,7 +14,7 @@ Node 24 LTS · TypeScript 5.x · React 19.2.x · Vite 8.1.x (+ @vitejs/plugin-re
 vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grotesque (display).
 
 ## Read order before coding
-1. `./SPEC.md` §3 (the 12 exercise renderers + the `Exercise` union) and §4 (telemetry).
+1. `./SPEC.md` §3 (the 17 exercise renderers + the `Exercise` union) and §4 (telemetry).
 2. `../ARCHITECTURE.md` §4 (API rules), §5 (errors → UI behaviour), §10 (SVG-first media).
 
 ## Golden rules (do not violate)
@@ -25,7 +25,7 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 2. **`lib/api.ts` is transport only** — no JSX, no UI. Components never hand-roll fetch or error parsing.
 3. **Every answered item emits exactly one `/attempts` call** with a real `timeMs` (start timer on item mount,
    stop on answer). Fire-and-forget; queue + retry offline; never block the child's UI on the network (SPEC §4).
-4. **No hardcoded lesson data.** Render all 12 types from backend-served JSON.
+4. **No hardcoded lesson data.** Render all 17 types from backend-served JSON.
 5. **Payments/paywalls are parent-area only, behind the PIN.** A `402` from the API routes the **parent** to the
    supporter screen — never show a price, paywall, or buy button in the child tabs.
 6. **SVG-first media** (ARCHITECTURE §10): all app art/icons/mascots/badges are SVG. **Sanitize any
@@ -52,8 +52,10 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 
 ## Build milestones (SPEC §11)
 Phase 1 (shell/auth/onboarding/home/telemetry/12 renderers/progress) + Phase 1.5 (error boundary, offline
-caching, telemetry retention, query fixes, committed `api.gen.ts` + drift gate, flow tests) are **done**.
-Next is Phase 2: chat (★ LLM), then the parent billing/supporter + homework flow (parent-area only).
+caching, telemetry retention, query fixes, committed `api.gen.ts` + drift gate, flow tests) + Phase 1.6
+(content + UX polish: unit unlock, all-done celebration, 5 new exercise renderers → 17 total, parent area,
+profile tab) are **done**. Next is Phase 2: chat (★ LLM), then the parent billing/supporter + homework flow
+(parent-area only).
 
 ## Definition of done for a feature
 Renders from backend JSON; one `/attempts` per answer with sane timing; error codes map to the right UI;

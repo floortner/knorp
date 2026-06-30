@@ -30,7 +30,7 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (child u
 /onboarding       welcome (buddy intro) → choose buddy (Nepo|Stella) → choose weekly goal
 /app
   ├ /lernen       home: greeting, unit cards (title/subtitle/status), reward strip, START
-  │   └ /lesson   exercise runner (12 renderers), feedback, confetti on complete
+  │   └ /lesson   exercise runner (17 renderers), feedback, confetti on complete
   ├ /liga         league (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
   ├ /profil       name, buddy, "aktiv seit", streak, stars, weekly activity, progress rows, contact-trainer CTA
   └ /chat         message thread with trainer Angelika + input
@@ -45,8 +45,11 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (child u
 
 ## 3. Exercise renderers (the core)
 
-The backend serves a `session` = ordered `Exercise[]`. Render one at a time. **12 types** (ported from the
-prototype's `LESSONS[]`). Each renderer: shows the prompt, captures the answer, gives feedback, **emits telemetry**.
+The backend serves a `session` = ordered `Exercise[]`. Render one at a time. **17 types** — the original 12
+(ported from the prototype's `LESSONS[]`) plus 5 added in Phase 1.6 (`swipe`, `odd`, `listen`, `sentence`,
+`build`; not in the prototype). The source of truth is the backend Zod union in
+`backend/src/contract/exercise.ts`. Each renderer: shows the prompt, captures the answer, gives feedback,
+**emits telemetry**.
 
 Discriminated union on `type`:
 
@@ -64,6 +67,12 @@ type Exercise =
   | { type:'pairs';    id; tiles:string[]; pair:[string,string]; praise }                    // match rhyming pair
   | { type:'bd';       id; glyph:string; answer:string; options:string[]; praise }           // b/d/p/q discrimination
   | { type:'vowel';    id; word; letters:string[]; gapIndex; answer:string; options:string[]; praise } // ie/ei/eu
+  // ── added in Phase 1.6 ──
+  | { type:'swipe';    id; word; leftLabel:string; rightLabel:string; answer:'left'|'right'; praise }   // swipe a card to categorise
+  | { type:'odd';      id; words:[string,string,string,string]; answer:string; instruction:string; praise } // tap the odd one out
+  | { type:'listen';   id; word; instruction:string; options:string[]; answer:string; praise }          // audio auto-plays, word hidden
+  | { type:'sentence'; id; tokens:string[]; instruction:string; answer:string; praise }                 // tap the word in the sentence
+  | { type:'build';    id; emoji:string; word; tiles:string[]; answer:string[]; praise }                // spell the emoji's word from tiles
 ```
 
 Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice.
@@ -71,10 +80,14 @@ Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice.
 > **Field-name gotcha:** `count` uniquely uses `opts:number[]` (numeric syllable counts); every other
 > single-choice type uses `options:string[]`. This is intentional — keep them distinct, don't unify.
 
-**Interaction patterns** (from prototype handlers):
-- Single-choice (`count, rhyme, initial, case, nonsense, bd, gap, letter, vowel`): tap option → correct/wrong.
+**Interaction patterns** (from prototype handlers, extended for the Phase-1.6 types):
+- Single-choice (`count, rhyme, initial, case, nonsense, bd, gap, letter, vowel`, plus `odd`, `listen`,
+  `sentence`): tap option/word → correct/wrong. `odd` taps the word that doesn't fit; `listen` auto-plays
+  audio with the word hidden; `sentence` taps the token in the sentence matching `instruction`.
 - Tile-order (`order, arrange`): tap tiles in sequence; compare to `syll.join('|')`; reset button.
+  `build` is also tile-order but spells the emoji's word and compares to `answer` (string[]).
 - Pair-match (`pairs`): tap two tiles; correct if both in `pair`.
+- Swipe (`swipe`): swipe/tap a card left or right; correct if the side matches `answer` (`'left'|'right'`).
 - States: `idle | correct | wrong`. On correct: chime + speak word + `praise`, advance. On wrong: buzz + "Nochmal versuchen", allow retry. Confetti/fanfare on session complete.
 
 ---
@@ -222,6 +235,11 @@ VITE_PWA=true
 **Phase 1.5 (DONE):** error boundary + renderer safety; offline session caching (PWA runtime caching); query
 correctness fixes; committed `api.gen.ts` + drift gate; flow tests.
 
+**Phase 1.6 — content + UX polish (DONE):** auto-unlock next unit on complete; all-units-complete
+celebration (mascot + fanfare + confetti); **5 new exercise renderers** (`swipe`, `odd`, `listen`,
+`sentence`, `build`) → **17 total**; parent area (PIN gate, set-PIN, child progress, two-step reset);
+profile tab Ton toggle wired end-to-end.
+
 **Phase 2 (after 1.5):**
 7. Chat (★ LLM).
 8. Parent area billing/supporter + homework "Foto & verbessern" upload + status tracking (parent-area only,
@@ -234,7 +252,7 @@ correctness fixes; committed `api.gen.ts` + drift gate; flow tests.
 
 ## 12. Acceptance checks
 - Every answered item produces exactly one `/attempts` call with a sane `timeMs`.
-- App renders all 12 exercise types from backend-served JSON with no hardcoded lesson data.
+- App renders all 17 exercise types from backend-served JSON with no hardcoded lesson data.
 - `dyslexicFont` + `fontScale` visibly change rendering; `soundOn` mutes all audio.
 - No price/paywall/buy control is reachable from the child tabs — only from `/parent` behind the PIN.
 - Works installed as a PWA; attempts queue and sync after an offline blip.

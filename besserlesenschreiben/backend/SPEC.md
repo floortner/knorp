@@ -106,7 +106,7 @@ item_bank(
   id            uuid pk,
   seed_key      text unique,            -- stable natural key for idempotent seeding (§12); null for generated_by='llm'
   unit          int not null,           -- which unit/Einheit (1..N)
-  exercise_type text not null,          -- count|gap|order|rhyme|initial|letter|case|arrange|nonsense|pairs|bd|vowel
+  exercise_type text not null,          -- count|gap|order|rhyme|initial|letter|case|arrange|nonsense|pairs|bd|vowel|swipe|odd|listen|sentence|build
   payload       jsonb not null,         -- the exercise spec (see §8 for per-type shape)
   audio_url     text,                   -- pre-generated TTS for the word (SAS at read time)
   syllable_audio jsonb,                 -- optional per-syllable audio urls
@@ -440,7 +440,7 @@ This is the **LLM-facing view** — compact, not raw rows. Target format:
   - Supporter subscription → included monthly quota.
   - Credit packs → decrement `credits_ledger` by 1 per op; **reject with 402 if balance ≤ 0** (frontend shows parent-area upsell, never shown to child).
 - **Pay-it-forward:** `/billing/checkout` accepts `payItForwardAmount`; on payment, log `credits_ledger(+N, reason='pay_it_forward_gift')` to a **subsidy pool**; grant pool credits to flagged free accounts as `subsidy_grant`.
-- **Webhook:** verify provider signature, update `entitlement` + ledger. Idempotent on `provider_ref`.
+- **Webhook:** verify provider signature, update `entitlement` + ledger. Idempotent on the provider **event id** — dedupe via the `processed_webhook(provider, event_id)` table (ARCHITECTURE §4/§9).
 - **Transparency endpoint** feeds the parent-area "this month cost €X, you funded Y" line.
 
 Payment surface rules: **all billing UI is parent-scoped**; the child app never references price, paywall, or purchase. No lives/energy/loot mechanics anywhere.
