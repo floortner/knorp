@@ -1006,7 +1006,8 @@
                   "source": {
                     "type": "string",
                     "enum": [
-                      "bank"
+                      "bank",
+                      "llm"
                     ]
                   }
                 },
@@ -2214,6 +2215,41 @@
         ]
       }
     },
+    "/api/v1/digest/{profileId}": {
+      "get": {
+        "operationId": "DigestController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "markdown": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "markdown"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "digest"
+        ]
+      }
+    },
     "/api/v1/attempts": {
       "post": {
         "operationId": "AttemptsController_record",
@@ -2457,41 +2493,6 @@
         ],
         "tags": [
           "progress"
-        ]
-      }
-    },
-    "/api/v1/digest/{profileId}": {
-      "get": {
-        "operationId": "DigestController_get",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "markdown": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "markdown"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "digest"
         ]
       }
     },

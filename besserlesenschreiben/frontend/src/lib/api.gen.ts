@@ -244,6 +244,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/digest/{profileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DigestController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/attempts": {
         parameters: {
             query?: never;
@@ -268,22 +284,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["ProgressController_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/digest/{profileId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["DigestController_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -887,7 +887,7 @@ export interface operations {
                     profileId: string;
                     unit?: number;
                     /** @enum {string} */
-                    source?: "bank";
+                    source?: "bank" | "llm";
                 };
             };
         };
@@ -1135,6 +1135,27 @@ export interface operations {
             };
         };
     };
+    DigestController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        markdown: string;
+                    };
+                };
+            };
+        };
+    };
     AttemptsController_record: {
         parameters: {
             query?: never;
@@ -1208,27 +1229,6 @@ export interface operations {
                             correctPct: number;
                             due: boolean;
                         }[];
-                    };
-                };
-            };
-        };
-    };
-    DigestController_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        markdown: string;
                     };
                 };
             };
