@@ -22,6 +22,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.65.0",
     "@azure/identity": "^4.13.1",
     "@azure/storage-blob": "^12.33.0",
     "@fastify/cookie": "^11.0.2",

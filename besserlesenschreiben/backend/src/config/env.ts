@@ -25,6 +25,9 @@ export const envSchema = z.object({
   // later milestones (optional for now)
   ANTHROPIC_API_KEY: z.string().default(''),
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
+  // EU data-residency / DPA acknowledgement for Anthropic-direct. Required in production before any LLM
+  // call goes out (ARCHITECTURE §8): the app refuses to start with a key set but this unacknowledged.
+  LLM_RESIDENCY_ACK: z.string().default(''),
   AZURE_STORAGE_ACCOUNT: z.string().default(''),
   AZURE_STORAGE_CONTAINER: z.string().default(''),
   // Dev-only: where the local-filesystem Blob fake writes per-user files until the Azure adapter lands.
