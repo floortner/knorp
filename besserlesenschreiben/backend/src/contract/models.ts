@@ -100,6 +100,15 @@ export const progressSchema = z.object({
 
 export const digestSchema = z.object({ markdown: z.string() });
 
+// ── Chat (trainer) ─────────────────────────────────────────────────────────────
+export const chatMessageSchema = z.object({
+  me: z.boolean(), // true = the child, false = the trainer (Angelika)
+  text: z.string(),
+  ts: z.string(), // ISO timestamp
+});
+export const chatHistorySchema = z.object({ messages: z.array(chatMessageSchema) });
+export const chatReplySchema = z.object({ reply: chatMessageSchema });
+
 // ── Parent ─────────────────────────────────────────────────────────────────────
 export const parentTokenSchema = z.object({ parentToken: z.string() });
 export const unlockNextSchema = z.object({ ok: z.literal(true), unlockedUnit: z.number().int() });

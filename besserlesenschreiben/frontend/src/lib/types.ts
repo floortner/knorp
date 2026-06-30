@@ -31,3 +31,8 @@ export type CreateProfileBody = BodyOf<operations['ProfilesController_create']>;
 export type Buddy = NonNullable<CreateProfileBody['buddy']>;
 export type CreateAttemptBody = BodyOf<operations['AttemptsController_record']>;
 export type UpdateSettingsBody = BodyOf<operations['ProfilesController_updateSettings']>;
+
+export type ChatHistory = ResponseOf<operations['ChatController_history']>;
+export type ChatMessage = ChatHistory['messages'][number];
+export type ChatReply = ResponseOf<operations['ChatController_send']>;
+export type SendChatBody = BodyOf<operations['ChatController_send']>;
