@@ -1,5 +1,7 @@
 import { apiFetch, setAuthToken } from './api';
 import type {
+  ChatHistory,
+  ChatReply,
   CreateProfileBody,
   Me,
   Profile,
@@ -60,6 +62,14 @@ export const coreApi = {
       method: 'POST',
       body: {},
     }),
+};
+
+/** Trainer chat (free AI). History + send, both scoped to the child profile. */
+export const chatApi = {
+  history: (profileId: string) => apiFetch<ChatHistory>(`/chat/${encodeURIComponent(profileId)}`),
+
+  send: (profileId: string, text: string) =>
+    apiFetch<ChatReply>(`/chat/${encodeURIComponent(profileId)}`, { method: 'POST', body: { text } }),
 };
 
 /** Parent-area endpoints. parent-scoped calls (reset) send the parentToken as Bearer. */
