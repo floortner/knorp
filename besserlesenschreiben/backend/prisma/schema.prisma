@@ -15,6 +15,10 @@ datasource db {
 model Account {
   id            String   @id @default(uuid()) @db.Uuid
   email         String   @unique
+  // Access lifecycle (ARCHITECTURE §1b): pending → active → deactivated. A first login-code request
+  // creates a `pending` account and emails NOTHING; a staff admin approves before the first code is sent.
+  // The family JwtAuthGuard requires `active` per-request, so deactivate/delete take effect immediately.
+  status        String   @default("pending") @map("status") // pending | active | deactivated
   parentPinHash String?  @map("parent_pin_hash") // argon2; null until set at onboarding
   // Durable PIN-lockout state (replaces the old in-memory Map → survives restart & scale-out).
   pinAttempts    Int       @default(0) @map("pin_attempts")

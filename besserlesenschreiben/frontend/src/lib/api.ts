@@ -70,8 +70,10 @@ export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Prom
 
   if (!res.ok) {
     const envelope = (data as { error?: Partial<ApiError> } | null)?.error;
-    // Cross-cutting routing before the caller sees the error.
-    if (res.status === 401 || envelope?.code === 'SESSION_EXPIRED') handlers.onUnauthorized?.();
+    // Cross-cutting routing before the caller sees the error. ACCOUNT_INACTIVE (403) is a deactivated
+    // or deleted account — the JwtAuthGuard revokes immediately, so bounce to login like a 401.
+    if (res.status === 401 || envelope?.code === 'SESSION_EXPIRED' || envelope?.code === 'ACCOUNT_INACTIVE')
+      handlers.onUnauthorized?.();
     if (res.status === 402) handlers.onPaymentRequired?.();
     throw new ApiError(
       res.status,
@@ -103,7 +105,8 @@ export async function uploadFile<T>(path: string, form: FormData, signal?: Abort
 
   if (!res.ok) {
     const envelope = (data as { error?: Partial<ApiError> } | null)?.error;
-    if (res.status === 401 || envelope?.code === 'SESSION_EXPIRED') handlers.onUnauthorized?.();
+    if (res.status === 401 || envelope?.code === 'SESSION_EXPIRED' || envelope?.code === 'ACCOUNT_INACTIVE')
+      handlers.onUnauthorized?.();
     if (res.status === 402) handlers.onPaymentRequired?.();
     throw new ApiError(
       res.status,

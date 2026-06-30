@@ -28,3 +28,8 @@ export type ClaimResponse = ResponseOf<operations['StaffController_claim']>;
 export type ReviewSubmitBody = BodyOf<operations['StaffController_submit']>;
 export type ReviewSubmitResponse = ResponseOf<operations['StaffController_submit']>;
 export type ReviewDecision = NonNullable<ReviewSubmitBody['decision']>;
+
+/** User administration (admin role only; backend SPEC §6) — identity-bearing, NOT pseudonymised. */
+export type AdminUserPage = ResponseOf<operations['StaffUsersController_list']>;
+export type AdminUser = AdminUserPage['items'][number];
+export type AccountStatus = AdminUser['status'];

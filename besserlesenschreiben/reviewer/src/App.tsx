@@ -6,6 +6,7 @@ import { RequireStaff } from '@/features/auth/RequireStaff';
 import { ApiErrorBridge } from '@/features/auth/ApiErrorBridge';
 import { QueueScreen } from '@/features/queue/QueueScreen';
 import { ReviewScreen } from '@/features/review/ReviewScreen';
+import { UsersScreen } from '@/features/users/UsersScreen';
 
 export function App() {
   return (
@@ -24,6 +25,7 @@ export function App() {
         >
           <Route path="/queue" element={<QueueScreen />} />
           <Route path="/review/:uploadId" element={<ReviewScreen />} />
+          <Route path="/users" element={<UsersScreen />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/queue" replace />} />

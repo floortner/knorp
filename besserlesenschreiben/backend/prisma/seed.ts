@@ -90,6 +90,22 @@ async function main(): Promise<void> {
   }
 
   console.log(`item_bank seeded: ${inserted} inserted, ${updated} updated, ${items.length} total`);
+
+  // Admin bootstrap (ARCHITECTURE §1b): there is no staff self-signup, so the first admin reviewer must
+  // be provisioned here. STAFF_ADMIN_EMAILS (comma-separated) are upserted as active admins, giving the
+  // owner an account that can approve/deactivate/delete families. Idempotent; never downgrades an admin.
+  const adminEmails = (process.env.STAFF_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  for (const email of adminEmails) {
+    await prisma.reviewer.upsert({
+      where: { email },
+      update: { role: "admin", status: "active" },
+      create: { email, name: email.split("@")[0], role: "admin", status: "active" },
+    });
+  }
+  if (adminEmails.length) console.log(`staff admins ensured: ${adminEmails.length}`);
 }
 
 main()

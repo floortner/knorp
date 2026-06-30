@@ -23,6 +23,7 @@ function ctxFor(req: ReqShape): ExecutionContext {
 function makeGuard(opts: {
   isPublic?: boolean;
   verify?: (token: string) => Promise<{ sub: string; scope?: 'parent'; aud?: string | string[] }>;
+  accountStatus?: string | null; // null → account not found; undefined → defaults to 'active'
 }) {
   const reflector = { getAllAndOverride: () => opts.isPublic ?? false } as unknown as Reflector;
   const jwt = {
@@ -32,7 +33,11 @@ function makeGuard(opts: {
     }),
   } as unknown as JwtService;
   const config = { get: () => 'secret' } as unknown as ConstructorParameters<typeof JwtAuthGuard>[2];
-  return new JwtAuthGuard(jwt, reflector, config);
+  const status = opts.accountStatus === undefined ? 'active' : opts.accountStatus;
+  const prisma = {
+    account: { findUnique: vi.fn(async () => (status === null ? null : { status })) },
+  } as unknown as ConstructorParameters<typeof JwtAuthGuard>[3];
+  return new JwtAuthGuard(jwt, reflector, config, prisma);
 }
 
 describe('JwtAuthGuard', () => {
@@ -64,6 +69,24 @@ describe('JwtAuthGuard', () => {
     const guard = makeGuard({ verify: async () => ({ sub: 'rev-1', aud: 'staff' }) });
     const req: ReqShape = { headers: { authorization: 'Bearer staff-token' } };
     await expect(guard.canActivate(ctxFor(req))).rejects.toBeInstanceOf(ApiException);
+    expect(req.account).toBeUndefined();
+  });
+
+  it('rejects a valid token for a deactivated account (403 ACCOUNT_INACTIVE) — immediate revocation', async () => {
+    const guard = makeGuard({ verify: async () => ({ sub: 'acc-1' }), accountStatus: 'deactivated' });
+    const req: ReqShape = { headers: { authorization: 'Bearer abc' } };
+    const err = (await guard.canActivate(ctxFor(req)).catch((e: unknown) => e)) as ApiException;
+    expect(err).toBeInstanceOf(ApiException);
+    expect(err.getStatus()).toBe(403);
+    expect(err.getResponse()).toMatchObject({ code: 'ACCOUNT_INACTIVE' });
+    expect(req.account).toBeUndefined();
+  });
+
+  it('rejects a valid token whose account no longer exists (deleted)', async () => {
+    const guard = makeGuard({ verify: async () => ({ sub: 'gone' }), accountStatus: null });
+    const req: ReqShape = { headers: { authorization: 'Bearer abc' } };
+    const err = (await guard.canActivate(ctxFor(req)).catch((e: unknown) => e)) as ApiException;
+    expect(err.getStatus()).toBe(403);
     expect(req.account).toBeUndefined();
   });
 

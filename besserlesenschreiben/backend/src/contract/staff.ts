@@ -55,3 +55,27 @@ export const claimResponseSchema = z.object({
 export const reviewSubmitResponseSchema = z.object({
   status: z.enum(['reviewed', 'rejected']),
 });
+
+// ── User administration (STAFF realm, ADMIN role only; SPEC §6, ARCHITECTURE §1b) ───────────────
+// Distinct from the pseudonymised review queue: these expose the real family email and account
+// lifecycle. The owner's approval/control surface — admin-gated, identity-bearing.
+export const accountStatusEnum = z.enum(['pending', 'active', 'deactivated']);
+
+export const adminUserSchema = z.object({
+  accountId: z.string(),
+  email: z.string(),
+  status: accountStatusEnum,
+  createdAt: z.string(),
+  profileCount: z.number().int(),
+  lastActive: z.string().nullable(),
+});
+
+export const adminUserPageSchema = z.object({
+  items: z.array(adminUserSchema),
+  nextCursor: z.string().nullable(),
+});
+
+export const adminUserStatusSchema = z.object({
+  accountId: z.string(),
+  status: accountStatusEnum,
+});
