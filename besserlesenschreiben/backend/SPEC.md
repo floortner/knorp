@@ -59,11 +59,17 @@ generates the client and migrations. `item_bank.seed_key` is the unique natural 
 ```sql
 -- ACCOUNT (household, keyed by parent email)
 account(
-  id              uuid pk,
-  email           text unique not null,
-  parent_pin_hash text,                 -- argon2; null until set at onboarding
-  created_at      timestamptz default now()
+  id               uuid pk,
+  email            text unique not null,
+  status           text default 'pending',  -- 'pending' | 'active' | 'deactivated' (lifecycle, ARCHITECTURE §1b)
+  parent_pin_hash  text,                 -- argon2; null until set at onboarding
+  pin_attempts     int default 0,        -- durable PIN lockout (§4)
+  pin_locked_until timestamptz,
+  created_at       timestamptz default now()
 )
+-- Access = approval, not payment (ARCHITECTURE §1b/§9): a first login-code request creates a `pending`
+-- account and emails NOTHING; a staff admin approves it → `active` → the code is released. `deactivated`
+-- blocks login. The family JwtAuthGuard requires status='active' on every request (immediate revocation).
 
 -- LOGIN CODES (passwordless)
 login_code(
@@ -253,9 +259,15 @@ processed_webhook(
 | Returns | JWT session token | Short-lived `parent` scope (~15 min) added to claims |
 | Guards | Everything | `/parent/*` and `/billing/*` (destructive + sensitive) |
 
-**Login flow**
-1. `POST /auth/request-code {email}` → generate 4-digit code, store `code_hash` + 10-min expiry, email it. Always return 200 (don't leak which emails exist).
-2. `POST /auth/verify {email, code}` → check hash + expiry, increment `attempts`, **lock after 5 fails**. On success issue JWT (`sub=account_id`, `exp`), upsert account.
+**Login flow (approval-gated — ARCHITECTURE §1b)**
+1. `POST /auth/request-code {email}` → look up the account:
+   - **unknown email** → create a `pending` account and **send no code** (still return `200` — no enumeration). The account now appears in the staff admin queue for approval. The family UI shows a clear "we'll review and email you soon — not instantly" state (it does **not** advance to code entry).
+   - **`active`** → generate a 4-digit code, store `code_hash` + 10-min expiry, email it (per-email resend throttle as in the staff flow). Always `200`.
+   - **`pending` / `deactivated`** → send nothing, `200`.
+2. `POST /auth/verify {email, code}` → check hash + expiry, increment `attempts`, **lock after 5 fails**. Only an `active` account can verify. On success issue the JWT (`sub=account_id`, `exp`) + set the session cookie.
+3. Approval/deactivation/deletion are performed by a **staff admin** (§6 Staff — user administration); on approval the account flips to `active` and its first code is released by email.
+
+The session JWT alone is not enough: the family `JwtAuthGuard` re-reads the account each request and rejects anything not `status='active'`, so deactivate/delete take effect immediately (not at 30-day token expiry).
 
 **Parent PIN**
 - Set at onboarding: `POST /parent/set-pin {pin}` → store **argon2 hash** (never plaintext); also clears any standing lockout.
@@ -365,18 +377,32 @@ POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
 - On `approved`/`corrected` the backend writes derived `attempt` rows + adjusts `review_state` from
   `reviewed_analysis`, sets `status='reviewed'`, and records a `homework_review` row (with `agreed_with_llm`).
   On `rejected` nothing mutates; the image is left to the §7 retention sweep.
-- **admin-only:** reviewer CRUD / revoke lives behind `role='admin'` (deferred detail; the guard distinguishes).
 
-### Parent & billing
+### Staff — user administration (STAFF realm, **admin role only**; ARCHITECTURE §1b)
+Distinct from the pseudonymised review queue: these handle real account identity, so they are gated by
+`role='admin'` (not plain reviewers) and **do** return the family email. This is the owner's approval/control
+surface.
+```
+GET    /staff/users          ?status=&limit=&cursor=   -> {items:[{accountId, email, status, createdAt,
+                                                            profileCount, lastActive}], nextCursor}
+POST   /staff/users/{id}/approve                       -> {accountId, status:'active'}   # pending → active; releases the login code by email
+POST   /staff/users/{id}/deactivate                    -> {accountId, status:'deactivated'} # blocks login; data retained
+DELETE /staff/users/{id}                               -> 204   # erasure: DB cascade + blob prefix users/{account}/…
+```
+- `approve` flips `pending → active` and triggers the welcome/login email (the first code release).
+- `deactivate` is reversible (a later `approve` reactivates); `DELETE` is permanent erasure (minors' data — also
+  removes the account's blobs).
+- All four require the staff cookie **and** `role='admin'`; a plain reviewer gets `403`.
+
+### Parent
 ```
 POST /parent/set-pin       {pin}                     -> {ok}
 POST /parent/verify-pin    {pin}                     -> {parentToken}
 POST /parent/unlock-next   ‡ {profileId}             -> {ok}
 POST /parent/reset         ‡ {profileId}             -> {ok}     # destructive; parent scope mandatory
-GET  /billing/status       ‡                         -> {tier, status, credits, payItForwardFunded}
-POST /billing/checkout     ‡ {plan|creditPack, payItForwardAmount?} -> {checkoutUrl}
-POST /billing/webhook      (provider signature)      -> 200      # NO auth header; verify signature
 ```
+**Billing — DEFERRED (not built):** `/billing/*` (`status`, `checkout`, `webhook`) belong to the deferred
+paid-tier option (ARCHITECTURE §9). The app is free; nothing here is implemented. Listed for the future only.
 
 ### Digest generation (`GET /digest`)
 Regenerate `digest.md` from the `attempt` table (last ~14 days), write to Blob, return markdown.
@@ -402,7 +428,12 @@ This is the **LLM-facing view** — compact, not raw rows. Target format:
 
 ---
 
-## 7. Billing logic
+## 7. Billing logic — **DEFERRED (not built; ARCHITECTURE §9)**
+
+> The app is currently **free, including the ★ AI ops** — there is no credit decrement, no `402` gating, no
+> webhook. Access is gated by **account status** (§4 / ARCHITECTURE §1b), not payment. The model below is the
+> preserved future option; the `entitlement`/`credits_ledger` tables stay dormant. `★` now means
+> "AI-backed / cost-bearing op," free for any approved active account.
 
 - **Free tier:** unlimited bank sessions, scheduling, progress, Web-Speech voice. No gate.
 - **Gated (★) ops:** `source='llm'` sessions, `/chat` LLM replies, `/homework`, premium TTS.
@@ -528,15 +559,32 @@ retention; guard/flow tests; these docs.
 - Unsafe `as ApiError` cast in `ParentScreen` error rendering — should use a type guard.
 - Parent area shows raw backend error strings; wrap with user-friendly messages.
 
-**Phase 2 — gated/paid (★, after 1.5):**
-5. `EntitlementGuard` + `EntitlementService`/`CreditsService` (402 on zero credits) — prerequisite for every ★.
-6. `LlmService` (abstracted; Anthropic-direct dev default, EU-residency gate before prod).
-7. Chat (LLM) + TTS pipeline.
-8. **Homework upload + vision draft (family side only).** `POST /homework` → storage (EXIF strip, WebP) →
-   gated Claude vision → `llm_analysis` draft, `status='pending_review'`. **Nothing mutates the profile** and
-   there is **no apply path yet** — that is delivered in Phase 2.5. Needs storage + LlmService +
-   EntitlementGuard. Family `-web` shows upload + `pending_*` status only.
-9. Billing (entitlements, credits, webhook, pay-it-forward) — needs the MoR decision; PIN-gated, never in child tabs.
+**Phase 2 — free AI features + approval-gated access (★, after 1.5).**
+> **Product decision (current):** the app is **free, including the AI features**. There is **no billing,
+> `EntitlementGuard`, or credit enforcement** — `★` now means "AI-backed / cost-bearing op," free for any
+> **approved, active** account. The `entitlement`/`credits_ledger`/`processed_webhook` tables stay **dormant**
+> so metering can be added later without a migration (ARCHITECTURE §9, deferred). Access control moves to the
+> **account lifecycle** (ARCHITECTURE §1b), which the owner drives from the staff portal.
+
+5. **`LlmService`** (abstracted; Anthropic-direct dev default via `@anthropic-ai/sdk` + `zodOutputFormat`
+   reusing `src/contract`; EU-residency gate before prod; canned/stub path when `ANTHROPIC_API_KEY` is unset).
+   No credit hook.
+6. **Chat** (free ★) + TTS pipeline.
+7. **Homework upload + vision draft (family side).** `POST /homework` → storage (EXIF strip, WebP) → Claude
+   vision → `llm_analysis` draft, `status='pending_review'`, enqueued for the (already-built) staff review
+   queue. **Nothing mutates the profile** until a reviewer approves. Needs storage + LlmService.
+8. **LLM session generation** (§8) — folds a reviewed upload's `reviewed_analysis.suggestedFocus` into the
+   next on-the-fly lecture.
+
+**Phase 2 access-control milestone — approval-gated signup + staff user-admin (ARCHITECTURE §1b):**
+9. **Account lifecycle.** `account.status` (`pending|active|deactivated`) + migration; silent
+   pending-on-first-code (no email until approved; family UI "we'll email you soon"); family `JwtAuthGuard`
+   requires `status='active'` (immediate deactivate/delete).
+10. **Staff user administration (admin role only).** `GET /staff/users`, approve / deactivate / delete
+    (`§6`) — distinct from the pseudonymised reviewer queue; deletion erases DB + blobs. Reviewer-portal
+    admin screens (`-review`).
+
+~~Billing (entitlements, credits, webhook, pay-it-forward)~~ — **removed from the roadmap** (schema kept dormant; ARCHITECTURE §9).
 
 **Phase 2.5 — professional review + staff portal (★, the human gate that closes the homework loop).**
 Builds the entire staff realm and the `-review` portal; only here does reviewed homework start shaping lectures.

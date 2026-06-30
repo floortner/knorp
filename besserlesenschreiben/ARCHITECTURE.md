@@ -63,6 +63,32 @@ and the JWTs carry a different `aud`/role so a guard can never confuse them.
   (§10). Review is **asynchronous**: it never blocks a child mid-lesson; it shapes the *next* generated
   lecture.
 
+### 1b. Family access = approval, not payment
+
+The app is **free, including the AI features**; the owner retains control over *who gets in* through an
+**approval gate**, not a paywall (§9 is deferred). Access is governed by a family **account lifecycle**:
+
+**`account.status`: `pending → active → deactivated`** (plus hard **delete**).
+
+- **Signup is silent pending-on-first-code.** A first `POST /auth/request-code {email}` for an unknown email
+  **creates a `pending` account and sends nothing** (still a generic `200` — no account enumeration). The
+  family UI then shows a clear "**we'll review your request and email you soon — not instantly**" state, so the
+  user isn't left waiting for an email that isn't coming yet. No separate signup form.
+- **An admin approves** the pending account in the staff portal (§1a) → status `active` → **only then** is the
+  login code released by email and the account can sign in.
+- **Deactivate** → `deactivated`: login refused and existing sessions stop working, but data is retained.
+- **Delete** → account erased: DB cascade **plus** the account's blobs (homework images under
+  `users/{account}/…`) — a real right-to-erasure for minors' data, not just a flag.
+
+Because deactivate/delete must take effect **immediately** (not whenever a 30-day cookie expires), the family
+`JwtAuthGuard` does a per-request account lookup and requires `status==='active'` — the same posture the staff
+guard already uses for reviewer `status`. (Cost: one indexed read per request; worth it for control.)
+
+**Two faces of the staff realm.** Homework **review** stays strictly **pseudonymised** (§1a). But **user
+administration** (approve / deactivate / delete) inherently handles real identity (an email), so it is a
+separate, **admin-role-only** surface — never mixed into the reviewer queue. Reviewers see pseudonymised
+homework; admins see accounts. Same `Reviewer.role` (`reviewer | admin`) gates the difference.
+
 ---
 
 ## 2. Tech stack & pinned versions
@@ -436,17 +462,18 @@ restore from the off-platform dumps) rather than the loss of every family's data
   is documented in a committed `.env.example`; **no secret is ever committed**. Secrets live in **Azure Key
   Vault**. Full var list: `backend/SPEC.md §11`.
 - **Security boundary (recap, non-negotiable):** `user_id`/`profile_id` derive only from the JWT; Blob access is
-  via **user-delegation SAS scoped to the caller's prefix** (never a path from the client); parent-scope +
-  entitlement checks gate the routes that need them; PIN and login code are hashed and rate-limited.
+  via **user-delegation SAS scoped to the caller's prefix** (never a path from the client); routes are gated by
+  **account status (approved/active, §1b)** + **parent-scope** where needed (entitlement/credit gating is
+  deferred, §9); PIN and login code are hashed and rate-limited.
 - **No in-memory security state in prod.** Anything that gates access — PIN-lockout counters, rate-limit
   windows — lives in a durable store (DB columns / Redis), never a process-local Map. The backend scales to
   zero and out, so in-memory counters would reset on every cold start and never be shared across replicas
   (a brute-force hole). The parent-PIN lockout (5 fails / 15 min) is persisted on `account`
   (`pin_attempts`, `pin_locked_until`).
-- **LLM access is abstracted.** Paid AI work goes through a single swappable `LlmService` (Anthropic-direct is
-  the dev default) so the provider can move to Azure AI Foundry / Vertex EU without touching callers.
-  **EU data-residency for minors is a hard gate before any production LLM call** — see the data-flow options
-  below.
+- **LLM access is abstracted.** AI work (free, but access-gated by account status) goes through a single
+  swappable `LlmService` (Anthropic-direct is the dev default) so the provider can move to Azure AI Foundry /
+  Vertex EU without touching callers. **EU data-residency for minors is a hard gate before any production LLM
+  call** — see the data-flow options below.
 - **Staff access to minors' data (reviewers).** Homework review (§11) means internal staff see a child's
   homework photo — the strongest minors'-data exposure in the system. Gate it hard: (a) reviewers are a small,
   **vetted, DPA-bound** staff pool with named accounts and MFA, never anonymous; (b) the queue is
@@ -475,7 +502,16 @@ restore from the off-platform dumps) rather than the loss of every family's data
 
 ---
 
-## 9. Payments
+## 9. Payments — **DEFERRED (not in the current build)**
+
+> **Status (current product decision): the app is FREE, including the AI features** (chat, homework vision,
+> LLM-generated lessons, premium TTS). Access is **gated by staff approval, not payment** (see §1b). Nothing in
+> this section is built: there is **no** billing module, checkout, webhook, `EntitlementGuard`, or credit
+> enforcement. The `entitlement` / `credits_ledger` / `processed_webhook` tables are kept in the schema
+> **dormant** so paid tiers remain a clean future option — flip them on without a migration. The `★` marker
+> on endpoints means "AI-backed / cost-bearing op" (so it could be metered later); today `★` ops are simply
+> free for any **approved, active** account. The rest of this section is the **future option**, preserved for
+> when/if metering is introduced — treat it as not-current.
 
 **Approach:** a **Merchant of Record (MoR)** — **Lemon Squeezy or Paddle** — is the legal seller. It hosts the
 checkout, takes the card, and **files EU VAT/OSS for you** — the single biggest reason a solo operator should
