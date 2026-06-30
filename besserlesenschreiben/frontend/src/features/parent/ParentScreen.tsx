@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Flame, RotateCcw, Star } from 'lucide-react';
 import { parentApi } from '@/lib/endpoints';
-import { ApiError } from '@/lib/api';
+import { ApiError, errorMessage } from '@/lib/api';
 import { TOTAL_UNITS, buddySrc } from '@/lib/constants';
 import { useMe } from '@/features/profile/useMe';
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,12 @@ type View = 'gate' | 'set-pin' | 'home';
 
 export function ParentScreen() {
   const navigate = useNavigate();
+  const { data: me } = useMe();
   const [view, setView] = useState<View>('gate');
   const [parentToken, setParentToken] = useState('');
+
+  // The parent area acts on one child; the parentToken is bound to it at verify-pin time.
+  const profileId = me?.profiles[0]?.id;
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-6 py-8">
@@ -27,19 +31,27 @@ export function ParentScreen() {
       </Button>
 
       <div className="mt-8 flex-1">
-        {view === 'gate' && (
-          <PinGate
-            onSuccess={(token) => { setParentToken(token); setView('home'); }}
-            onNoPin={() => setView('set-pin')}
-          />
-        )}
-        {view === 'set-pin' && (
-          <SetPin
-            onSuccess={(token) => { setParentToken(token); setView('home'); }}
-          />
-        )}
-        {view === 'home' && (
-          <ParentHome parentToken={parentToken} onLock={() => setView('gate')} />
+        {!profileId ? (
+          <p className="py-16 text-center text-ink-soft">Lädt …</p>
+        ) : (
+          <>
+            {view === 'gate' && (
+              <PinGate
+                profileId={profileId}
+                onSuccess={(token) => { setParentToken(token); setView('home'); }}
+                onNoPin={() => setView('set-pin')}
+              />
+            )}
+            {view === 'set-pin' && (
+              <SetPin
+                profileId={profileId}
+                onSuccess={(token) => { setParentToken(token); setView('home'); }}
+              />
+            )}
+            {view === 'home' && (
+              <ParentHome parentToken={parentToken} onLock={() => setView('gate')} />
+            )}
+          </>
         )}
       </div>
     </main>
@@ -48,12 +60,20 @@ export function ParentScreen() {
 
 // ─── PIN gate ────────────────────────────────────────────────────────────────
 
-function PinGate({ onSuccess, onNoPin }: { onSuccess: (token: string) => void; onNoPin: () => void }) {
+function PinGate({
+  profileId,
+  onSuccess,
+  onNoPin,
+}: {
+  profileId: string;
+  onSuccess: (token: string) => void;
+  onNoPin: () => void;
+}) {
   const [digits, setDigits] = useState<string[]>(Array(LEN).fill(''));
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
   const verify = useMutation({
-    mutationFn: (pin: string) => parentApi.verifyPin(pin),
+    mutationFn: (pin: string) => parentApi.verifyPin(pin, profileId),
     onSuccess: (res) => onSuccess(res.parentToken),
     onError: (err: ApiError) => {
       if (err.code === 'CONFLICT') onNoPin();
@@ -95,7 +115,7 @@ function PinGate({ onSuccess, onNoPin }: { onSuccess: (token: string) => void; o
 
 // ─── Set PIN (first time) ─────────────────────────────────────────────────────
 
-function SetPin({ onSuccess }: { onSuccess: (token: string) => void }) {
+function SetPin({ profileId, onSuccess }: { profileId: string; onSuccess: (token: string) => void }) {
   const [step, setStep] = useState<'enter' | 'confirm'>('enter');
   const [first, setFirst] = useState('');
   const [digits, setDigits] = useState<string[]>(Array(LEN).fill(''));
@@ -103,7 +123,7 @@ function SetPin({ onSuccess }: { onSuccess: (token: string) => void }) {
 
   const setPin = useMutation({ mutationFn: (pin: string) => parentApi.setPin(pin) });
   const verify = useMutation({
-    mutationFn: (pin: string) => parentApi.verifyPin(pin),
+    mutationFn: (pin: string) => parentApi.verifyPin(pin, profileId),
     onSuccess: (res) => onSuccess(res.parentToken),
   });
 
@@ -154,7 +174,7 @@ function SetPin({ onSuccess }: { onSuccess: (token: string) => void }) {
       {mismatch && <p role="alert" className="text-sm text-orange-dark">PINs stimmen nicht überein.</p>}
       {(setPin.isError || verify.isError) && (
         <p role="alert" className="text-sm text-orange-dark">
-          {(setPin.error ?? verify.error as ApiError).message}
+          {errorMessage(setPin.error ?? verify.error)}
         </p>
       )}
 
@@ -182,7 +202,7 @@ function ParentHome({ parentToken, onLock }: { parentToken: string; onLock: () =
   const profile = me?.profiles[0];
 
   const reset = useMutation({
-    mutationFn: () => parentApi.reset(profile!.id, parentToken),
+    mutationFn: () => parentApi.reset(parentToken),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['me'] });
       void qc.invalidateQueries({ queryKey: ['progress'] });
@@ -273,7 +293,7 @@ function ParentHome({ parentToken, onLock }: { parentToken: string; onLock: () =
             </div>
             {reset.isError && (
               <p role="alert" className="text-sm text-orange-dark">
-                {(reset.error as ApiError).message}
+                {errorMessage(reset.error)}
               </p>
             )}
           </div>

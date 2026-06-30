@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Camera, X } from 'lucide-react';
 import { homeworkApi } from '@/lib/endpoints';
-import { ApiError } from '@/lib/api';
+import { errorMessage } from '@/lib/api';
 import type { HomeworkResult } from '@/lib/types';
 import { useActiveProfile } from '@/features/profile/useMe';
 import { Button } from '@/components/ui/button';
@@ -89,7 +89,7 @@ export function HomeworkScreen() {
 
             {upload.isError && (
               <p role="alert" className="text-center text-sm text-orange-dark">
-                {(upload.error as ApiError).message}
+                {errorMessage(upload.error)}
               </p>
             )}
           </div>

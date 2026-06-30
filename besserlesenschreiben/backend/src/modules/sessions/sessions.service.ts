@@ -213,11 +213,16 @@ export class SessionsService {
     const profile = await assertProfileOwned(this.prisma, accountId, session.profileId);
     const now = new Date();
 
+    // A finished session whose unit is the last in the catalogue means the child cleared everything —
+    // the backend owns this so the client never hardcodes the unit count (SPEC §12).
+    const allUnitsComplete = session.unit === UNIT_CATALOG.length;
+
     if (session.completedAt) {
       return {
         starsAwarded: session.starsAward ?? 0,
         streakDays: profile.streakDays,
         league: await this.weeklyLeague(profile.id, now),
+        allUnitsComplete,
       };
     }
 
@@ -242,7 +247,7 @@ export class SessionsService {
       );
     }
     this.logger.log({ event: 'session.completed', sessionId, stars, streakDays }, 'session completed');
-    return { starsAwarded: stars, streakDays, league: await this.weeklyLeague(profile.id, now) };
+    return { starsAwarded: stars, streakDays, league: await this.weeklyLeague(profile.id, now), allUnitsComplete };
   }
 
   /** League from stars earned since Monday this week (sum of completed sessions' awards). */

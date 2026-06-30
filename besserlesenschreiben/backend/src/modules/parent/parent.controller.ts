@@ -5,10 +5,11 @@ import {
   AuthAccount,
 } from '../../common/decorators/current-account.decorator';
 import { ParentScopeGuard } from '../../common/guards/parent-scope.guard';
-import { ApiZodBody, ApiZodResponse } from '../../common/zod-openapi';
+import { ParentProfileId } from '../../common/decorators/parent-profile.decorator';
+import { ApiZodResponse, ApiZodBody } from '../../common/zod-openapi';
 import { okSchema, parentTokenSchema, unlockNextSchema } from '../../contract/models';
 import { ParentService } from './parent.service';
-import { ProfileTargetDto, SetPinDto, VerifyPinDto } from './parent.dto';
+import { SetPinDto, VerifyPinDto } from './parent.dto';
 
 @ApiTags('parent')
 @ApiBearerAuth()
@@ -29,25 +30,24 @@ export class ParentController {
   @ApiZodBody(VerifyPinDto.schema)
   @ApiZodResponse(parentTokenSchema)
   verifyPin(@CurrentAccount() account: AuthAccount, @Body() dto: VerifyPinDto) {
-    return this.parent.verifyPin(account.id, dto.pin);
+    return this.parent.verifyPin(account.id, dto.pin, dto.profileId);
   }
 
-  // ‡ Parent scope required (a fresh parentToken from verify-pin).
+  // ‡ Parent scope required. The target child is read from the parentToken (signed in at verify-pin),
+  // never from the request body — so there is no body id to trust here (security §1).
   @Post('unlock-next')
   @HttpCode(200)
   @UseGuards(ParentScopeGuard)
-  @ApiZodBody(ProfileTargetDto.schema)
   @ApiZodResponse(unlockNextSchema)
-  unlockNext(@CurrentAccount() account: AuthAccount, @Body() dto: ProfileTargetDto) {
-    return this.parent.unlockNext(account.id, dto.profileId);
+  unlockNext(@CurrentAccount() account: AuthAccount, @ParentProfileId() profileId: string) {
+    return this.parent.unlockNext(account.id, profileId);
   }
 
   @Post('reset')
   @HttpCode(200)
   @UseGuards(ParentScopeGuard)
-  @ApiZodBody(ProfileTargetDto.schema)
   @ApiZodResponse(okSchema)
-  reset(@CurrentAccount() account: AuthAccount, @Body() dto: ProfileTargetDto) {
-    return this.parent.reset(account.id, dto.profileId);
+  reset(@CurrentAccount() account: AuthAccount, @ParentProfileId() profileId: string) {
+    return this.parent.reset(account.id, profileId);
   }
 }

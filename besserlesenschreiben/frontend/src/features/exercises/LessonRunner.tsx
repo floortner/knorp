@@ -3,7 +3,6 @@ import type { SessionResponse } from '@/lib/types';
 import { recordAttempt } from '@/lib/telemetry';
 import { useSoundOn } from '@/features/settings/a11y';
 import { useCompleteSession } from '@/features/sessions/useCompleteSession';
-import { TOTAL_UNITS } from '@/lib/constants';
 import { ExerciseView } from './ExerciseView';
 import { LessonComplete } from './LessonComplete';
 import { promptAndExpected } from './derive';
@@ -35,7 +34,8 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
     <LessonComplete
       result={complete.data}
       pending={complete.isPending}
-      allUnitsComplete={session.unit === TOTAL_UNITS}
+      // Backend-authoritative (SPEC §12): no more hardcoded unit count on the client.
+      allUnitsComplete={complete.data?.allUnitsComplete ?? false}
     />
   );
 

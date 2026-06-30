@@ -830,6 +830,8 @@ export interface operations {
             content: {
                 "application/json": {
                     pin: string;
+                    /** Format: uuid */
+                    profileId: string;
                 };
             };
         };
@@ -853,14 +855,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** Format: uuid */
-                    profileId: string;
-                };
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -883,14 +878,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** Format: uuid */
-                    profileId: string;
-                };
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -1194,6 +1182,7 @@ export interface operations {
                             starsWeek: number;
                             starsToNext: number;
                         };
+                        allUnitsComplete: boolean;
                     };
                 };
             };

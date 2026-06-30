@@ -35,7 +35,9 @@ export class ParentService {
    * Verify the parent PIN with a durable lockout (5 fails / 15 min), persisted on `account` so it
    * survives restarts and holds across scaled-out instances (SPEC §4 — no in-memory security state).
    */
-  async verifyPin(accountId: string, pin: string): Promise<{ parentToken: string }> {
+  async verifyPin(accountId: string, pin: string, profileId: string): Promise<{ parentToken: string }> {
+    // The token is bound to this child — verify it belongs to the account before signing it in.
+    await assertProfileOwned(this.prisma, accountId, profileId);
     const account = await this.prisma.account.findUnique({ where: { id: accountId } });
     if (!account?.parentPinHash) {
       throw new ApiException(409, 'CONFLICT', 'Eltern-PIN ist noch nicht gesetzt.');
@@ -67,7 +69,7 @@ export class ParentService {
       });
     }
     const parentToken = await this.jwt.signAsync(
-      { sub: accountId, scope: 'parent' },
+      { sub: accountId, scope: 'parent', profileId },
       { expiresIn: PARENT_TTL },
     );
     return { parentToken };

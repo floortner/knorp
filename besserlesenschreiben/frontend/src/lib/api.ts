@@ -7,12 +7,6 @@
 
 const BASE: string = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000/api/v1';
 
-// Token kept in memory only (SPEC §1: no localStorage; prefer the backend httpOnly cookie when available).
-let authToken: string | null = null;
-export function setAuthToken(token: string | null): void {
-  authToken = token;
-}
-
 /**
  * Cross-cutting status handlers (ARCHITECTURE §5). Registered once from inside the router so transport
  * stays UI-free: 401/SESSION_EXPIRED clears auth + redirects to login; 402 routes the parent to the
@@ -46,10 +40,27 @@ export class ApiError extends Error {
   }
 }
 
+/** Narrow an unknown caught value to an ApiError (replaces unsafe `as ApiError` casts at call sites). */
+export function isApiError(e: unknown): e is ApiError {
+  return e instanceof ApiError;
+}
+
+/**
+ * A safe, user-facing message for any caught value. Backend envelope messages are already German and
+ * family-friendly; anything else (network blip, thrown non-ApiError) gets a calm generic fallback rather
+ * than leaking a raw JS error string into the UI.
+ */
+export function errorMessage(e: unknown, fallback = 'Etwas ist schiefgelaufen. Bitte versuche es erneut.'): string {
+  return isApiError(e) ? e.message : fallback;
+}
+
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
   signal?: AbortSignal;
+  // Per-request Bearer override for short-lived scoped tokens (e.g. the parentToken). Browser auth is
+  // normally the httpOnly cookie; this lets one call carry a different token without a global mutation.
+  token?: string;
 }
 
 export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Promise<T> {
@@ -57,7 +68,7 @@ export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Prom
     method: opts.method ?? 'GET',
     headers: {
       'content-type': 'application/json',
-      ...(authToken ? { authorization: `Bearer ${authToken}` } : {}),
+      ...(opts.token ? { authorization: `Bearer ${opts.token}` } : {}),
     },
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     credentials: 'include',
@@ -94,7 +105,7 @@ export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Prom
 export async function uploadFile<T>(path: string, form: FormData, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: { ...(authToken ? { authorization: `Bearer ${authToken}` } : {}) },
+    // Browser auth is the httpOnly cookie (credentials:'include'); no Bearer header to set here.
     body: form,
     credentials: 'include',
     signal,

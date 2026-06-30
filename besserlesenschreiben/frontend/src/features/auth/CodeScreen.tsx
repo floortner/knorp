@@ -2,7 +2,7 @@ import { type ClipboardEvent, type KeyboardEvent, useRef, useState } from 'react
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { authApi } from '@/lib/endpoints';
-import { ApiError } from '@/lib/api';
+import { errorMessage } from '@/lib/api';
 import { useAuth } from './auth-context';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
@@ -98,7 +98,7 @@ export function CodeScreen() {
 
         {verify.isError && (
           <p role="alert" className="mt-4 text-center text-sm text-orange-dark">
-            {(verify.error as ApiError).message}
+            {errorMessage(verify.error)}
           </p>
         )}
 

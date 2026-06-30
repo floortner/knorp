@@ -80,6 +80,9 @@ export const sessionCompleteSchema = z.object({
   starsAwarded: z.number().int(),
   streakDays: z.number().int(),
   league: leagueSchema,
+  // True once the child has completed the final unit — the backend is authoritative so the client never
+  // has to hardcode the unit count to decide whether to show the all-units celebration.
+  allUnitsComplete: z.boolean(),
 });
 
 // ── Progress / digest ──────────────────────────────────────────────────────────
