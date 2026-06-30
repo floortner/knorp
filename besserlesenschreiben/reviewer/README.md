@@ -40,7 +40,8 @@ src/
   app/AppLayout.tsx          # top bar (reviewer identity + logout) over the routed Outlet
   lib/
     api.ts                   # transport only — staff cookie, error-envelope → ApiError
-    contract.ts              # PROVISIONAL staff types (replace via `npm run gen:api` once backend ships /staff/*)
+    api.gen.ts               # types GENERATED from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
+    contract.ts              # ergonomic aliases over api.gen.ts `operations` (no hand-authored shapes)
     endpoints.ts             # typed wrappers: staffAuthApi, reviewApi
     cn.ts
   features/
@@ -59,13 +60,13 @@ npm run dev                  # http://localhost:5173
 npm run lint                 # ESLint
 npm run build                # tsc -b && vite build
 npm test                     # Vitest
-npm run gen:api              # regenerate types from backend OpenAPI — only once /staff/* is published
+npm run gen:api              # regenerate types from backend OpenAPI (committed; CI drift-gates it)
 ```
 
-> **Status:** scaffold (Phase 2.5 / milestone 13 in `../backend/SPEC.md` §12). Screens render against the
-> **provisional** `lib/contract.ts` and the typed `endpoints.ts`. The backend `staff/` module (auth, queue,
-> authoritative apply) is milestones 10–12 and is **not implemented yet** — wire the portal to the real
-> `/staff/*` routes, then regenerate the contract types, when it lands.
+> **Status:** wired to the live backend `staff/` module. Types are generated from the backend's published
+> `/staff/*` OpenAPI (`lib/api.gen.ts`, committed) and aliased in `lib/contract.ts`; CI fails on drift, same
+> as the family app. The portal itself is Phase 2.5 (`../backend/SPEC.md` §12) — auth, queue, and the
+> two-pane review/apply flow are scaffolded against the real contract.
 
 ## The review flow (backend SPEC §10, ARCHITECTURE §11)
 

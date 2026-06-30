@@ -36,10 +36,11 @@ job. Comfortable tap targets for tablet are welcome.
 
 ## Golden rules (do not violate)
 1. **`lib/api.ts` is transport only** — no JSX, no UI. Screens never hand-roll `fetch` or error parsing.
-2. **Contract types live in `lib/contract.ts` and are PROVISIONAL.** They're hand-authored to mirror
-   `../backend/SPEC.md §6` only because the backend hasn't published `/staff/*` in `openapi.json` yet. The
-   moment it does: run `npm run gen:api` and replace `contract.ts` with aliases over the generated
-   `operations` (copy the `-web` `lib/types.ts` pattern). Keep the exported type names stable.
+2. **Contract types are GENERATED, never hand-authored.** `lib/api.gen.ts` comes from the backend's
+   published `/staff/*` OpenAPI via `npm run gen:api` (committed; CI drift-gates it) — never edit it.
+   `lib/contract.ts` only re-exports ergonomic aliases over the generated `operations` (the `-web`
+   `lib/types.ts` pattern). After any backend staff-contract change: re-export `openapi.json`, run
+   `gen:api`, commit both. Keep the exported type names stable.
 3. **The reviewer verdict is authoritative; the LLM output is a draft.** The UI seeds the editor from
    `llmAnalysis` and submits the (possibly corrected) copy as `reviewedAnalysis`. `approved` = unchanged,
    `corrected` = edited, `rejected` = unreadable/not-homework (sends no analysis). Don't apply anything
@@ -67,5 +68,5 @@ Next: wire to the real backend `/staff/*` once it lands; regenerate types; add g
 
 ## Definition of done for a feature
 Renders from backend JSON; shows no child-identifying data; claim/verdict flow maps backend status codes to
-the right UI (incl. `409`); types still match the (provisional or generated) contract; desktop/tablet layout
+the right UI (incl. `409`); types still match the generated contract (`gen:api` drift-clean); desktop/tablet layout
 holds at typical tablet widths.
