@@ -36,3 +36,8 @@ export type ChatHistory = ResponseOf<operations['ChatController_history']>;
 export type ChatMessage = ChatHistory['messages'][number];
 export type ChatReply = ResponseOf<operations['ChatController_send']>;
 export type SendChatBody = BodyOf<operations['ChatController_send']>;
+
+export type HomeworkUploadResponse = ResponseOf<operations['HomeworkController_upload']>;
+export type HomeworkResult = ResponseOf<operations['HomeworkController_result']>;
+export type HomeworkStatus = HomeworkResult['status'];
+export type HomeworkAnalysis = NonNullable<HomeworkResult['reviewedAnalysis']>;
