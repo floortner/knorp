@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { ApiException } from '../exceptions/api-exception';
+import { PrismaService } from '../../prisma/prisma.service';
 import { SESSION_COOKIE } from '../session-cookie';
 import type { Env } from '../../config/env';
 
@@ -23,6 +24,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly jwt: JwtService,
     private readonly reflector: Reflector,
     private readonly config: ConfigService<Env, true>,
+    private readonly prisma: PrismaService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -57,10 +59,24 @@ export class JwtAuthGuard implements CanActivate {
       if (aud === 'staff' || (Array.isArray(aud) && aud.includes('staff'))) {
         throw new ApiException(401, 'UNAUTHENTICATED', 'Ungültiges Token.');
       }
+      // Access is gated by account status, not payment (ARCHITECTURE §1b, security rule 4). A valid
+      // token is not enough: re-read the account each request and require `active`, so a staff
+      // deactivate/delete takes effect immediately rather than at 30-day token expiry. The id still
+      // comes ONLY from the token `sub` (security §1) — the lookup just authorises it.
+      const account = await this.prisma.account.findUnique({
+        where: { id: payload.sub },
+        select: { status: true },
+      });
+      if (!account || account.status !== 'active') {
+        throw new ApiException(403, 'ACCOUNT_INACTIVE', 'Dein Zugang ist nicht aktiv.');
+      }
       req.account = { id: payload.sub };
       req.tokenPayload = payload;
       return true;
     } catch (err) {
+      // Our own deliberate rejections (realm-isolation, inactive account) pass straight through —
+      // only JWT-verification failures get mapped to the generic 401s below.
+      if (err instanceof ApiException) throw err;
       if (err instanceof Error && err.name === 'TokenExpiredError') {
         throw new ApiException(401, 'SESSION_EXPIRED', 'Sitzung abgelaufen.');
       }

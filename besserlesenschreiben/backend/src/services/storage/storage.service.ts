@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { BlobServiceClient, ContainerClient, UserDelegationKey } from '@azure/storage-blob';
@@ -124,6 +124,27 @@ export class StorageService {
     }
     this.logger.log({ event: 'storage.write_binary', name }, 'user binary written');
     return key;
+  }
+
+  /**
+   * Erase every object under an account's prefix (`users/{accountId}/…`) — the blob half of account
+   * deletion (SPEC §6; security rule 8: delete removes DB rows AND blobs). The accountId comes from the
+   * deleted row, never client input. Idempotent: a missing prefix is a no-op.
+   */
+  async deleteUserPrefix(accountId: string): Promise<void> {
+    const prefix = `users/${accountId}/`;
+    if (this.useAzure) {
+      const container = await this.azureContainer();
+      let deleted = 0;
+      for await (const blob of container.listBlobsFlat({ prefix })) {
+        await container.getBlockBlobClient(blob.name).deleteIfExists();
+        deleted += 1;
+      }
+      this.logger.log({ event: 'storage.delete_prefix', count: deleted }, 'account blobs erased (azure)');
+      return;
+    }
+    await rm(join(this.localRoot, 'users', accountId), { recursive: true, force: true });
+    this.logger.log({ event: 'storage.delete_prefix' }, 'account blobs erased (dev local)');
   }
 
   /** Read binary content by full key (e.g. for vision analysis), or null if missing. */

@@ -3220,6 +3220,173 @@
           "staff"
         ]
       }
+    },
+    "/api/v1/staff/users": {
+      "get": {
+        "operationId": "StaffUsersController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountId": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "active",
+                              "deactivated"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "profileCount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "lastActive": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "accountId",
+                          "email",
+                          "status",
+                          "createdAt",
+                          "profileCount",
+                          "lastActive"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "nextCursor": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/users/{id}/approve": {
+      "post": {
+        "operationId": "StaffUsersController_approve",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accountId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "active",
+                        "deactivated"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "accountId",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/users/{id}/deactivate": {
+      "post": {
+        "operationId": "StaffUsersController_deactivate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accountId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "active",
+                        "deactivated"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "accountId",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/users/{id}": {
+      "delete": {
+        "operationId": "StaffUsersController_remove",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
     }
   },
   "info": {

@@ -20,23 +20,40 @@ export class AuthService {
     private readonly email: EmailService,
   ) {}
 
-  /** Always returns {ok:true} — never reveal whether an email exists (ARCHITECTURE §5). */
+  /**
+   * Silent pending-on-first-code signup (ARCHITECTURE §1b/§5). Always returns {ok:true} — never reveal
+   * whether an email exists or what state it is in (no enumeration). A code is emailed ONLY for an
+   * `active` account; an unknown email silently creates a `pending` account and emails nothing (a staff
+   * admin approves before the first code is released); `pending`/`deactivated` accounts get nothing.
+   */
   async requestCode(email: string): Promise<{ ok: true }> {
-    const code = String(randomInt(1000, 10000)); // 4-digit
-    const codeHash = await argon2.hash(code);
     const account = await this.prisma.account.findUnique({ where: { email } });
 
+    if (!account) {
+      // First contact for an unknown email → create the account in `pending`, awaiting staff approval.
+      // No code, no email; the family UI shows "we'll review and email you soon".
+      await this.prisma.account.create({ data: { email, status: 'pending', entitlement: { create: {} } } });
+      this.logger.log({ event: 'auth.signup_pending' }, 'pending account created (awaiting approval)');
+      return { ok: true };
+    }
+
+    if (account.status !== 'active') {
+      // Known but not yet approved (or deactivated) — emit nothing, but never reveal that.
+      this.logger.log({ event: 'auth.code_suppressed', accountId: account.id }, 'code suppressed (not active)');
+      return { ok: true };
+    }
+
+    const code = String(randomInt(1000, 10000)); // 4-digit
     await this.prisma.loginCode.create({
       data: {
         email,
-        accountId: account?.id ?? null,
-        codeHash,
+        accountId: account.id,
+        codeHash: await argon2.hash(code),
         expiresAt: new Date(Date.now() + CODE_TTL_MS),
       },
     });
-
     await this.email.sendLoginCode(email, code);
-    this.logger.log({ event: 'auth.code_requested' }, 'login code issued');
+    this.logger.log({ event: 'auth.code_requested', accountId: account.id }, 'login code issued');
     return { ok: true };
   }
 
@@ -64,19 +81,22 @@ export class AuthService {
       throw invalid;
     }
 
+    // The account is provisioned at request-code time and a code is only ever emailed to an `active`
+    // account, but re-check here too: a code could have been issued and the account then deactivated.
+    const account = await this.prisma.account.findUnique({
+      where: { email },
+      select: { id: true, status: true, _count: { select: { profiles: true } } },
+    });
+    if (!account || account.status !== 'active') throw invalid;
+
     await this.prisma.loginCode.update({
       where: { id: login.id },
       data: { consumedAt: new Date() },
     });
 
-    const existing = await this.prisma.account.findUnique({ where: { email } });
-    const isNewAccount = !existing;
-    const account =
-      existing ??
-      (await this.prisma.account.create({
-        data: { email, entitlement: { create: {} } },
-      }));
-
+    // No account creation here any more (signup is the pending-on-first-code path). "New" now means a
+    // freshly-approved account that hasn't created a child profile yet → the SPA routes to onboarding.
+    const isNewAccount = account._count.profiles === 0;
     const token = await this.jwt.signAsync({ sub: account.id }, { expiresIn: SESSION_TTL });
     this.logger.log({ event: 'auth.verified', accountId: account.id, isNewAccount }, 'login ok');
     return { token, isNewAccount };

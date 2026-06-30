@@ -15,6 +15,9 @@ export const envSchema = z.object({
   STAFF_JWT_SECRET: z.string().min(8),
   // Staff portal origin for CORS (credentials on). Empty → CORS reflects any origin (dev default).
   REVIEWER_ORIGIN: z.string().default(''),
+  // Admin bootstrap (ARCHITECTURE §1b): comma-separated emails upserted as active admin reviewers by the
+  // seed (no staff self-signup). Empty in dev; set to the owner's email so someone can approve families.
+  STAFF_ADMIN_EMAILS: z.string().default(''),
   // Homework review queue soft-lock lease, seconds (SPEC §6). Default 15 min.
   HOMEWORK_REVIEW_CLAIM_TTL: z.coerce.number().int().positive().default(900),
   EMAIL_PROVIDER: z.string().default('console'),
