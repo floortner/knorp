@@ -244,6 +244,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/digest/{profileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DigestController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/attempts": {
         parameters: {
             query?: never;
@@ -276,14 +292,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/digest/{profileId}": {
+    "/api/v1/chat/{profileId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["DigestController_get"];
+        get: operations["ChatController_history"];
+        put?: never;
+        post: operations["ChatController_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/homework": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["HomeworkController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/homework/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HomeworkController_result"];
         put?: never;
         post?: never;
         delete?: never;
@@ -399,6 +447,70 @@ export interface paths {
         put?: never;
         post: operations["StaffController_submit"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffUsersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffUsersController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users/{id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffUsersController_deactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["StaffUsersController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -839,7 +951,7 @@ export interface operations {
                     profileId: string;
                     unit?: number;
                     /** @enum {string} */
-                    source?: "bank";
+                    source?: "bank" | "llm";
                 };
             };
         };
@@ -1087,6 +1199,27 @@ export interface operations {
             };
         };
     };
+    DigestController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        markdown: string;
+                    };
+                };
+            };
+        };
+    };
     AttemptsController_record: {
         parameters: {
             query?: never;
@@ -1165,7 +1298,7 @@ export interface operations {
             };
         };
     };
-    DigestController_get: {
+    ChatController_history: {
         parameters: {
             query?: never;
             header?: never;
@@ -1180,7 +1313,98 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        markdown: string;
+                        messages: {
+                            me: boolean;
+                            text: string;
+                            ts: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ChatController_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    text: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        reply: {
+                            me: boolean;
+                            text: string;
+                            ts: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    HomeworkController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        uploadId: string;
+                        /** @enum {string} */
+                        status: "pending_analysis" | "pending_review" | "reviewed" | "rejected";
+                    };
+                };
+            };
+        };
+    };
+    HomeworkController_result: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "pending_analysis" | "pending_review" | "reviewed" | "rejected";
+                        reviewedAnalysis: {
+                            topic: string;
+                            exerciseType: string;
+                            items: {
+                                prompt: string;
+                                childAnswer: string;
+                                correct: boolean;
+                                errorType?: string | null;
+                            }[];
+                            suggestedFocus: string[];
+                        } | null;
                     };
                 };
             };
@@ -1393,6 +1617,99 @@ export interface operations {
                         status: "reviewed" | "rejected";
                     };
                 };
+            };
+        };
+    };
+    StaffUsersController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            accountId: string;
+                            email: string;
+                            /** @enum {string} */
+                            status: "pending" | "active" | "deactivated";
+                            createdAt: string;
+                            profileCount: number;
+                            lastActive: string | null;
+                        }[];
+                        nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    StaffUsersController_approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        accountId: string;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "deactivated";
+                    };
+                };
+            };
+        };
+    };
+    StaffUsersController_deactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        accountId: string;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "deactivated";
+                    };
+                };
+            };
+        };
+    };
+    StaffUsersController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -1,5 +1,8 @@
 import { apiFetch } from './api';
 import type {
+  AccountStatus,
+  AdminUser,
+  AdminUserPage,
   ClaimResponse,
   QueuePage,
   ReviewSubmitBody,
@@ -51,4 +54,38 @@ export const reviewApi = {
       method: 'POST',
       body,
     }),
+};
+
+/**
+ * User administration (backend SPEC §6) — ADMIN role only, identity-bearing (real family email + status).
+ * The owner's approval/control surface, kept separate from the pseudonymised review queue. A plain reviewer
+ * gets 403 on every call here.
+ */
+export const usersApi = {
+  list: (params: { status?: AccountStatus; limit?: number; cursor?: string } = {}) => {
+    const q = new URLSearchParams();
+    if (params.status) q.set('status', params.status);
+    if (params.limit !== undefined) q.set('limit', String(params.limit));
+    if (params.cursor) q.set('cursor', params.cursor);
+    const qs = q.toString();
+    return apiFetch<AdminUserPage>(`/staff/users${qs ? `?${qs}` : ''}`);
+  },
+
+  /** pending|deactivated → active; releases the first login code by email. */
+  approve: (accountId: string) =>
+    apiFetch<{ accountId: string; status: AdminUser['status'] }>(
+      `/staff/users/${encodeURIComponent(accountId)}/approve`,
+      { method: 'POST', body: {} },
+    ),
+
+  /** Block login (reversible); data retained. Takes effect immediately. */
+  deactivate: (accountId: string) =>
+    apiFetch<{ accountId: string; status: AdminUser['status'] }>(
+      `/staff/users/${encodeURIComponent(accountId)}/deactivate`,
+      { method: 'POST', body: {} },
+    ),
+
+  /** Permanent erasure: DB rows + the account's blobs. Returns 204. */
+  remove: (accountId: string) =>
+    apiFetch<void>(`/staff/users/${encodeURIComponent(accountId)}`, { method: 'DELETE' }),
 };
