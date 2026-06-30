@@ -17,7 +17,7 @@ besserlesenschreiben/
 │   └── scripts/build-seed.ts ← regenerates the seed JSON from source
 └── frontend/            ← the SPA / PWA  (TypeScript · React · Vite · Tailwind)
     ├── AGENTS.md        ← Claude Code: read this FIRST when working in frontend/
-    └── SPEC.md          ← screens, the 12 exercise renderers, telemetry
+    └── SPEC.md          ← screens, the 17 exercise renderers, telemetry
 ```
 
 ## How to start with Claude Code
@@ -29,7 +29,7 @@ subfolder to build one at a time. Either way, the agent should read, in order:
 Suggested order of work (each project's milestones are in its SPEC):
 1. **Backend first** — auth + profiles + parent PIN (the security boundary everything depends on), then the
    item bank (load `item_bank.seed.json`), sessions + attempts, progress, digest, chat, homework, billing.
-2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, then the 12 renderers +
+2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, then the 17 renderers +
    telemetry (the bulk), then progress/voice/accessibility, chat, and the parent area + billing.
 
 The frontend depends on the backend's API contract (`backend/SPEC.md §6`). Build the backend endpoints a

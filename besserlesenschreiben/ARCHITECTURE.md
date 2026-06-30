@@ -138,11 +138,10 @@ src/
   lib/
     api.ts                # typed fetch client — mirrors backend/SPEC.md §6 EXACTLY
     queryClient.ts        # TanStack Query config
-    audio.ts              # audio_url playback + Web Speech fallback
     telemetry.ts          # attempt timing + emit (frontend SPEC §4)
   routes/                 # login, onboarding, app(lernen|liga|profil|chat), parent
   features/
-    exercises/            # the 12 renderers + the Exercise union type
+    exercises/            # the 17 renderers + the Exercise union type + audio.ts (audio_url playback + Web Speech fallback)
     progress/  chat/  parent/  billing/
   components/ui/          # shadcn components
   hooks/  styles/theme.css (@theme tokens)
@@ -480,6 +479,3 @@ and must **not** be faked into SVG. Handle it as the deliberate exception:
   prefix with the lifecycle auto-delete from §7.
 - The *output* of vision analysis is structured JSON / markdown (§ SPEC §10), not an image — so everything
   downstream of the photo is back to text/SVG.
-
-
-renderers, telemetry), `item_bank.seed.json` (starter content). This file governs the seams between them.*

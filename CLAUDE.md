@@ -72,19 +72,19 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 - `src/contract/` — Zod schemas (`exercise.ts`, `models.ts`) that are the **source** of the contract pipeline: Zod → `openapi.json` → `api.gen.ts`. Edit here first, then re-export.
 - `src/modules/` — one folder per resource: controller (HTTP only) + service + Zod DTOs
 - `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (Azure Blob SAS), `email`
-- `src/common/guards/` — `JwtAuthGuard`, `ParentScopeGuard`, `EntitlementGuard`
+- `src/common/guards/` — `JwtAuthGuard`, `ParentScopeGuard` (`EntitlementGuard` is Phase 2, not yet built)
 - `src/common/filters/` — global exception filter → the one error envelope
 - `prisma/schema.prisma` — the model truth; DDL in `backend/SPEC.md §3` is its conceptual form
 - `prisma/seed.ts` — idempotent item-bank loader (upserts on `seed_key`)
 
 ### Frontend structure
-- `docs/knorp.html` — **interactive design prototype**; visual + interaction source of truth for every screen and the 12 exercise interactions. Open in a browser before building any UI. Recreate in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
+- `docs/knorp.html` — **interactive design prototype**; visual + interaction source of truth for every screen and the (original 12) exercise interactions. Open in a browser before building any UI. Recreate in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
 - `fixtures/` — committed golden JSON payloads (`session.example.json` = one of each exercise type; `units.example.json` = 7 units + theme colors). Build renderers and snapshot tests against these.
 - `src/lib/api.gen.ts` — types **generated** from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
 - `src/lib/api.ts` — typed fetch client, **transport only** (no JSX), built on `api.gen.ts` types
-- `src/features/exercises/types.ts` — the `Exercise` discriminated union (12 types)
-- `src/features/exercises/` — the 12 exercise renderers
-- `src/lib/audio.ts` — `audioUrl` playback + Web Speech API fallback
+- `src/features/exercises/types.ts` — the `Exercise` discriminated union (17 types)
+- `src/features/exercises/` — the 17 exercise renderers
+- `src/features/exercises/audio.ts` — `audioUrl` playback + Web Speech API fallback
 - `src/lib/telemetry.ts` — attempt timing + fire-and-forget emit
 
 `features/exercises/types.ts` and `lib/api.ts` **must stay in lockstep with the backend contract**. A change to either is a contract change — re-export `openapi.json`, regenerate `api.gen.ts` via `npm run gen:api`, and update golden tests.
