@@ -308,6 +308,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/homework": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["HomeworkController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/homework/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HomeworkController_result"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/staff/auth/request-code": {
         parameters: {
             query?: never;
@@ -1253,6 +1285,62 @@ export interface operations {
                             text: string;
                             ts: string;
                         };
+                    };
+                };
+            };
+        };
+    };
+    HomeworkController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        uploadId: string;
+                        /** @enum {string} */
+                        status: "pending_analysis" | "pending_review" | "reviewed" | "rejected";
+                    };
+                };
+            };
+        };
+    };
+    HomeworkController_result: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "pending_analysis" | "pending_review" | "reviewed" | "rejected";
+                        reviewedAnalysis: {
+                            topic: string;
+                            exerciseType: string;
+                            items: {
+                                prompt: string;
+                                childAnswer: string;
+                                correct: boolean;
+                                errorType?: string | null;
+                            }[];
+                            suggestedFocus: string[];
+                        } | null;
                     };
                 };
             };

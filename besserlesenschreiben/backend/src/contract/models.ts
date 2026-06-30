@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { exerciseSchema } from './exercise';
+import { homeworkAnalysisSchema } from './staff';
 
 /**
  * Wire schemas for the API read/response models (mirrors the service return shapes; SPEC §6). These
@@ -108,6 +109,18 @@ export const chatMessageSchema = z.object({
 });
 export const chatHistorySchema = z.object({ messages: z.array(chatMessageSchema) });
 export const chatReplySchema = z.object({ reply: chatMessageSchema });
+
+// ── Homework (family realm) ─────────────────────────────────────────────────────
+export const homeworkStatusEnum = z.enum(['pending_analysis', 'pending_review', 'reviewed', 'rejected']);
+export const homeworkUploadResponseSchema = z.object({
+  uploadId: z.string(),
+  status: homeworkStatusEnum,
+});
+// The family sees only the AUTHORITATIVE result, and only once reviewed — never the raw LLM draft (§10).
+export const homeworkResultSchema = z.object({
+  status: homeworkStatusEnum,
+  reviewedAnalysis: homeworkAnalysisSchema.nullable(),
+});
 
 // ── Parent ─────────────────────────────────────────────────────────────────────
 export const parentTokenSchema = z.object({ parentToken: z.string() });

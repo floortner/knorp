@@ -100,6 +100,51 @@ export class StorageService {
     this.logger.log({ event: 'storage.write', name }, 'user file written (dev local)');
   }
 
+  /**
+   * Write binary content (e.g. a transcoded homework WebP) under the caller's prefix and return the full
+   * storage key (stored on the row; never the raw path/URL). Ids come from the JWT (security §2).
+   */
+  async writeUserBinary(
+    accountId: string,
+    profileId: string,
+    name: string,
+    content: Buffer,
+    contentType: string,
+  ): Promise<string> {
+    const key = this.keyFor(accountId, profileId, name);
+    if (this.useAzure) {
+      const container = await this.azureContainer();
+      await container.getBlockBlobClient(key).upload(content, content.byteLength, {
+        blobHTTPHeaders: { blobContentType: contentType },
+      });
+    } else {
+      const path = join(this.localRoot, key);
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, content);
+    }
+    this.logger.log({ event: 'storage.write_binary', name }, 'user binary written');
+    return key;
+  }
+
+  /** Read binary content by full key (e.g. for vision analysis), or null if missing. */
+  async readBinary(key: string): Promise<Buffer | null> {
+    if (this.useAzure) {
+      const container = await this.azureContainer();
+      try {
+        return await container.getBlockBlobClient(key).downloadToBuffer();
+      } catch (err) {
+        if ((err as { statusCode?: number }).statusCode === 404) return null;
+        throw err;
+      }
+    }
+    try {
+      return await readFile(join(this.localRoot, key));
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null;
+      throw err;
+    }
+  }
+
   /** Read a user file, or null if it does not exist. Other errors propagate. */
   async readUserFile(accountId: string, profileId: string, name: string): Promise<string | null> {
     const key = this.keyFor(accountId, profileId, name);

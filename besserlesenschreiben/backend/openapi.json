@@ -2620,6 +2620,145 @@
         ]
       }
     },
+    "/api/v1/homework": {
+      "post": {
+        "operationId": "HomeworkController_upload",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "uploadId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending_analysis",
+                        "pending_review",
+                        "reviewed",
+                        "rejected"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "uploadId",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "homework"
+        ]
+      }
+    },
+    "/api/v1/homework/{id}": {
+      "get": {
+        "operationId": "HomeworkController_result",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending_analysis",
+                        "pending_review",
+                        "reviewed",
+                        "rejected"
+                      ]
+                    },
+                    "reviewedAnalysis": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "topic": {
+                          "type": "string"
+                        },
+                        "exerciseType": {
+                          "type": "string"
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "prompt": {
+                                "type": "string"
+                              },
+                              "childAnswer": {
+                                "type": "string"
+                              },
+                              "correct": {
+                                "type": "boolean"
+                              },
+                              "errorType": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "prompt",
+                              "childAnswer",
+                              "correct"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "suggestedFocus": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "topic",
+                        "exerciseType",
+                        "items",
+                        "suggestedFocus"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "reviewedAnalysis"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "homework"
+        ]
+      }
+    },
     "/api/v1/staff/auth/request-code": {
       "post": {
         "operationId": "StaffController_requestCode",
