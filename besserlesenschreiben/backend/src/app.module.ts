@@ -9,6 +9,7 @@ import { ZodResponseInterceptor } from './common/interceptors/zod-response.inter
 import { PrismaModule } from './prisma/prisma.module';
 import { EmailModule } from './services/email/email.module';
 import { FsrsModule } from './services/fsrs/fsrs.module';
+import { LlmModule } from './services/llm/llm.module';
 import { StorageModule } from './services/storage/storage.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
@@ -48,6 +49,7 @@ import { HealthController } from './modules/health/health.controller';
     EmailModule,
     FsrsModule,
     StorageModule,
+    LlmModule,
     AuthModule,
     ProfilesModule,
     ParentModule,
