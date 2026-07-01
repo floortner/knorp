@@ -616,7 +616,10 @@ Builds the entire staff realm and the `-review` portal; only here does reviewed 
 - Parent reset returns 403 without a fresh parent scope.
 - `/attempts` insert < 50ms p95; data sufficient to rebuild `digest.md`.
 - A bank session is generated with **zero** LLM calls.
-- Gated op with 0 credits returns 402, logs nothing paid.
+- A generated exercise that fails `solvableExerciseSchema` (answer not among options, unknown skill tag, …)
+  is never persisted to `item_bank` and never reaches a child.
+- ★ ops are free but capped per profile per day (`LLM_SESSIONS_PER_DAY`, `CHAT_MESSAGES_PER_DAY`); over cap
+  returns a friendly `429 RATE_LIMITED`, and no model call or row write happens.
 - Homework analysis cannot mutate `review_state` before a **staff reviewer** verdict (`llm_analysis` is a
   draft; only `reviewed_analysis` applies). The former parent-confirm path no longer exists.
 - A staff (`aud:"staff"`) cookie is rejected on every family route, and a family JWT is rejected on every

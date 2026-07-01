@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertProfileOwned } from '../../common/ownership';
+import { ApiException } from '../../common/exceptions/api-exception';
+import { startOfUtcDay } from '../../common/dates';
 import { LlmService } from '../../services/llm/llm.service';
 import type { LlmMessage } from '../../services/llm/llm.types';
 
@@ -26,6 +30,7 @@ export class ChatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
+    private readonly config: ConfigService<Env, true>,
   ) {}
 
   /** The persona + guardrails for the tutor. Kept here (not the client) so it can't be tampered with. */
@@ -53,6 +58,21 @@ export class ChatService {
   /** Persist the child's message, get the trainer's reply from the LLM, persist + return it. */
   async send(accountId: string, profileId: string, text: string): Promise<{ reply: WireMessage }> {
     await assertProfileOwned(this.prisma, accountId, profileId);
+
+    // Daily cap on the cost-bearing path (counts the child's sent messages today, from existing rows).
+    // Checked BEFORE persisting so an over-cap message costs nothing and doesn't skew the history.
+    const cap = this.config.get('CHAT_MESSAGES_PER_DAY', { infer: true });
+    const sentToday = await this.prisma.chatMessage.count({
+      where: { profileId, role: 'child', createdAt: { gte: startOfUtcDay(new Date()) } },
+    });
+    if (sentToday >= cap) {
+      this.logger.log({ event: 'chat.capped', cap }, 'daily chat cap hit');
+      throw new ApiException(
+        429,
+        'RATE_LIMITED',
+        'Angelika braucht jetzt eine kleine Pause. Morgen könnt ihr weiterschreiben!',
+      );
+    }
 
     await this.prisma.chatMessage.create({ data: { profileId, role: 'child', text } });
 

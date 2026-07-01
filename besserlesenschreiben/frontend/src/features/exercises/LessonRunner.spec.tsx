@@ -46,4 +46,34 @@ describe('LessonRunner', () => {
     expect(mutate).toHaveBeenCalledWith('sess-1');
     expect(screen.getByText('+3 Sterne')).toBeInTheDocument();
   });
+
+  it('shows the teaching intro first for a generated lecture, then runs exercises normally', async () => {
+    const user = userEvent.setup();
+    const session = { ...oneItemSession(), intro: 'Merke: Klatsch die Silben mit!' } as SessionResponse;
+    render(
+      <MemoryRouter>
+        <LessonRunner session={session} />
+      </MemoryRouter>,
+    );
+
+    // intro card first — no exercise visible, nothing emitted
+    expect(screen.getByText('Merke: Klatsch die Silben mit!')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '2' })).not.toBeInTheDocument();
+    expect(recordAttempt).not.toHaveBeenCalled();
+
+    // dismiss → first exercise appears; answering still emits exactly one attempt
+    await user.click(screen.getByRole('button', { name: /Los geht's/i }));
+    await user.click(screen.getByRole('button', { name: '2' }));
+    expect(recordAttempt).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips the intro phase entirely for bank sessions (no intro field)', () => {
+    render(
+      <MemoryRouter>
+        <LessonRunner session={oneItemSession()} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByText(/Los geht's/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
+  });
 });

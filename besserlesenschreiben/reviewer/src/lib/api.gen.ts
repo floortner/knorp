@@ -954,6 +954,7 @@ export interface operations {
                         profileId: string;
                         unit: number;
                         generatedAt: string;
+                        intro?: string;
                         items: ({
                             /** @enum {string} */
                             type: "count";

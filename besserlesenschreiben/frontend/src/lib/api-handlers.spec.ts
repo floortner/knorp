@@ -31,21 +31,11 @@ describe('api status handlers', () => {
     expect(onUnauthorized).toHaveBeenCalledOnce();
   });
 
-  it('invokes onPaymentRequired on a 402', async () => {
-    vi.stubGlobal('fetch', mockFetch(402, { error: { code: 'INSUFFICIENT_CREDITS', message: 'x' } }));
-    const onPaymentRequired = vi.fn();
-    setApiHandlers({ onPaymentRequired });
-    await apiFetch('/chat/1', { method: 'POST', body: {} }).catch(() => {});
-    expect(onPaymentRequired).toHaveBeenCalledOnce();
-  });
-
   it('does not invoke handlers on success', async () => {
     vi.stubGlobal('fetch', mockFetch(200, { ok: true }));
     const onUnauthorized = vi.fn();
-    const onPaymentRequired = vi.fn();
-    setApiHandlers({ onUnauthorized, onPaymentRequired });
+    setApiHandlers({ onUnauthorized });
     await apiFetch('/me');
     expect(onUnauthorized).not.toHaveBeenCalled();
-    expect(onPaymentRequired).not.toHaveBeenCalled();
   });
 });

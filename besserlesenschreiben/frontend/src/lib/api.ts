@@ -9,12 +9,11 @@ const BASE: string = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000/api
 
 /**
  * Cross-cutting status handlers (ARCHITECTURE §5). Registered once from inside the router so transport
- * stays UI-free: 401/SESSION_EXPIRED clears auth + redirects to login; 402 routes the parent to the
- * supporter screen. Set via setApiHandlers from <ApiErrorBridge>.
+ * stays UI-free: 401/SESSION_EXPIRED clears auth + redirects to login. Set via setApiHandlers from
+ * <ApiErrorBridge>. (The app is free — nothing emits 402, so there is no payment handler.)
  */
 export interface ApiHandlers {
   onUnauthorized?: () => void;
-  onPaymentRequired?: () => void;
 }
 let handlers: ApiHandlers = {};
 export function setApiHandlers(next: ApiHandlers): void {
@@ -85,7 +84,6 @@ export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Prom
     // or deleted account — the JwtAuthGuard revokes immediately, so bounce to login like a 401.
     if (res.status === 401 || envelope?.code === 'SESSION_EXPIRED' || envelope?.code === 'ACCOUNT_INACTIVE')
       handlers.onUnauthorized?.();
-    if (res.status === 402) handlers.onPaymentRequired?.();
     throw new ApiError(
       res.status,
       envelope?.code ?? 'INTERNAL',
@@ -118,7 +116,6 @@ export async function uploadFile<T>(path: string, form: FormData, signal?: Abort
     const envelope = (data as { error?: Partial<ApiError> } | null)?.error;
     if (res.status === 401 || envelope?.code === 'SESSION_EXPIRED' || envelope?.code === 'ACCOUNT_INACTIVE')
       handlers.onUnauthorized?.();
-    if (res.status === 402) handlers.onPaymentRequired?.();
     throw new ApiError(
       res.status,
       envelope?.code ?? 'INTERNAL',

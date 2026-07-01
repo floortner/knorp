@@ -37,10 +37,4 @@ describe('ApiErrorBridge', () => {
     act(() => captured.onUnauthorized?.());
     expect(screen.getByTestId('loc')).toHaveTextContent('/login');
   });
-
-  it('routes a 402 to the parent supporter screen', () => {
-    renderBridge();
-    act(() => captured.onPaymentRequired?.());
-    expect(screen.getByTestId('loc')).toHaveTextContent('/parent');
-  });
 });

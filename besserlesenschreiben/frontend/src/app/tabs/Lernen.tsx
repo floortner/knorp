@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { errorMessage } from '@/lib/api';
+import { errorMessage, isApiError } from '@/lib/api';
 import { useActiveProfile, useMe } from '@/features/profile/useMe';
 import { useUnits } from '@/features/units/useUnits';
 import { useCreateSession } from '@/features/sessions/useCreateSession';
@@ -14,6 +15,7 @@ export function Lernen() {
   const profile = useActiveProfile();
   const units = useUnits(profile?.id);
   const createSession = useCreateSession();
+  const [lectureNote, setLectureNote] = useState<string | null>(null);
 
   if (me.isLoading) return <CenterNote>Lädt …</CenterNote>;
   if (me.isError) return <CenterNote>{errorMessage(me.error)}</CenterNote>;
@@ -30,13 +32,33 @@ export function Lernen() {
     );
   }
 
+  const toLesson = (session: unknown) => navigate('/app/lesson', { state: { session } });
+
   const startUnit = (unit: number) => {
+    createSession.mutate({ profileId: profile.id, unit }, { onSuccess: toLesson });
+  };
+
+  // ✨ generated lecture: a teaching intro + fresh exercises, made for this child (takes a few seconds).
+  // When the LLM is unavailable (503) we fall back to a normal bank session with a friendly note.
+  const startLecture = () => {
+    setLectureNote(null);
     createSession.mutate(
-      { profileId: profile.id, unit },
-      { onSuccess: (session) => navigate('/app/lesson', { state: { session } }) },
+      { profileId: profile.id, source: 'llm' },
+      {
+        onSuccess: toLesson,
+        onError: (err) => {
+          if (isApiError(err) && err.status === 503) {
+            setLectureNote('Die Zauber-Übungen machen gerade Pause – wir üben mit deinen normalen Aufgaben weiter!');
+            createSession.mutate({ profileId: profile.id }, { onSuccess: toLesson });
+          }
+        },
+      },
     );
   };
+
   const startingUnit = createSession.isPending ? createSession.variables?.unit : undefined;
+  // Pending without a unit → the lecture card (or its bank fallback) is what's loading.
+  const lectureBusy = createSession.isPending && createSession.variables?.unit === undefined;
 
   return (
     <div className="space-y-5">
@@ -49,6 +71,29 @@ export function Lernen() {
           Schön, dass du da bist! Wähle eine Einheit und leg los.
         </p>
       </div>
+
+      <button
+        type="button"
+        onClick={startLecture}
+        disabled={createSession.isPending}
+        className="flex w-full items-center gap-3 rounded-card bg-white p-4 text-left shadow-sm ring-1 ring-teal/30 transition active:scale-[0.99] disabled:opacity-70"
+      >
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-tint text-2xl" aria-hidden>
+          ✨
+        </span>
+        <div>
+          <p className="font-display font-bold text-ink">Neue Übungen für dich</p>
+          <p className="text-sm text-ink-soft">
+            {lectureBusy ? 'Nepo denkt sich neue Übungen aus …' : 'Nepo erfindet Übungen genau für dich'}
+          </p>
+        </div>
+      </button>
+
+      {lectureNote && (
+        <p role="status" className="text-center text-sm text-ink-soft">
+          {lectureNote}
+        </p>
+      )}
 
       {units.isLoading && <CenterNote>Einheiten laden …</CenterNote>}
       {units.isError && <CenterNote>{errorMessage(units.error)}</CenterNote>}

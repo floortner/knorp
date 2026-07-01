@@ -5,7 +5,7 @@ This app is a pure HTTP client — it holds no business logic about *what* to dr
 exercises the backend serves and how to report what happened. **Screens & interactions are iterated
 separately in Claude Design; this spec defines structure, data flow, and the API contract it consumes.**
 
-> **Governed by `../ARCHITECTURE.md`** (versions, API rules, errors, logging, hosting, payments, media). Read `./AGENTS.md` first, then `../ARCHITECTURE.md`, then this file. On any conflict, ARCHITECTURE wins.
+> **Governed by `../ARCHITECTURE.md`** (versions, API rules, errors, logging, hosting, media). Read `./AGENTS.md` first, then `../ARCHITECTURE.md`, then this file. On any conflict, ARCHITECTURE wins. The app is **free** — access is staff-approval-gated, and no payment UI exists anywhere (ARCHITECTURE §1b/§9).
 
 ---
 
@@ -29,17 +29,20 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (child u
 /login            email entry → 4-digit code entry → (session-expired state)
 /onboarding       welcome (buddy intro) → choose buddy (Nepo|Stella) → choose weekly goal
 /app
-  ├ /lernen       home: greeting, unit cards (title/subtitle/status), reward strip, START
-  │   └ /lesson   exercise runner (17 renderers), feedback, confetti on complete
+  ├ /lernen       home: greeting, unit cards (title/subtitle/status), ✨ generated-lecture card, reward strip, START
+  │   └ /lesson   exercise runner (17 renderers), feedback, confetti on complete; generated lectures
+  │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!")
   ├ /liga         league (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
   ├ /profil       name, buddy, "aktiv seit", streak, stars, weekly activity, progress rows, contact-trainer CTA
   └ /chat         message thread with trainer Angelika + input
-/parent           PIN gate → trainer actions (unlock next, reset) + BILLING/supporter section
+/parent           PIN gate → trainer actions (unlock next, reset) + homework upload & status
 ```
 
 **Tabs** (bottom nav, mobile): `lernen · liga · profil · chat`. Parent area reached from profile, **PIN-gated**.
 
-**Billing UI lives ONLY in `/parent`.** The child-facing app must never render a price, paywall, or buy button.
+**The app is free.** No price, paywall, or buy button exists anywhere — child or parent view. The ✨ lecture
+card requests `POST /sessions {source:'llm'}` (loading state: generation takes a few seconds) and falls back
+to a bank session with a friendly note when the LLM is unavailable (503).
 
 ---
 
@@ -166,10 +169,9 @@ GET  /progress/{id}            GET  /digest/{id}
 GET  /chat/{id}                POST /chat/{id}
 POST /homework                 GET  /homework/{id}        # no /confirm — staff reviewer is the human gate (§9)
 POST /parent/verify-pin        POST /parent/unlock-next   POST /parent/reset
-GET  /billing/status           POST /billing/checkout
 ```
 
-TanStack Query keys: `['me']`, `['units']`, `['session', id]`, `['progress', profileId]`, `['chat', profileId]`, `['billing']`.
+TanStack Query keys: `['me']`, `['units']`, `['session', id]`, `['progress', profileId]`, `['chat', profileId]`.
 Invalidate `['me']` (stars/streak) + `['progress']` + `['units']` after `/sessions/{id}/complete`.
 
 **Types are generated, never hand-written.** `src/lib/api.gen.ts` is produced from the backend OpenAPI via
@@ -177,8 +179,9 @@ Invalidate `['me']` (stars/streak) + `['progress']` + `['units']` after `/sessio
 drift gate). Never hand-edit `api.gen.ts` — change the backend Zod schema and regenerate. `api.ts` is the
 hand-written transport wrapper on top of those types.
 
-**402 handling:** a gated action returning 402 (no credits) → route the **parent** to the supporter/credit
-screen in `/parent`. Never surface payment to the child view.
+**429 handling:** ★ ops are free but capped per day (backend `LLM_SESSIONS_PER_DAY` / `CHAT_MESSAGES_PER_DAY`).
+Over cap the backend returns `429 RATE_LIMITED` with a kindgerechte message — surface it through the normal
+error paths (the message is written for the child); no special routing. Nothing in this app emits or handles 402.
 
 ---
 
@@ -186,12 +189,9 @@ screen in `/parent`. Never surface payment to the child view.
 
 - Reached from `/profil`; entry requires `POST /parent/verify-pin` → hold the returned parent token for ~15 min.
 - **Trainer actions:** unlock next unit, reset progress (confirm dialog — destructive).
-- **Supporter / billing section:**
-  - Show tier + (if pay-go) credit balance from `GET /billing/status`.
-  - "Förderer werden" / buy credit pack → `POST /billing/checkout` → redirect to `checkoutUrl`.
-  - Optional **pay-it-forward** amount field on checkout.
-  - **Transparency line:** "Diese Woche: AI-Nutzung ≈ €X · dein Beitrag hält die App am Laufen und fördert {n} Kinder."
-- No engagement/streak-pressure mechanics tied to payment anywhere.
+- **Homework:** upload + status tracking (§9) also live here, behind the PIN.
+- **No billing.** The app is free (approval-gated, ARCHITECTURE §1b/§9); there is no supporter/credit UI.
+- No engagement/streak-pressure mechanics tied to anything monetary, anywhere.
 
 ---
 
@@ -240,10 +240,10 @@ celebration (mascot + fanfare + confetti); **5 new exercise renderers** (`swipe`
 `sentence`, `build`) → **17 total**; parent area (PIN gate, set-PIN, child progress, two-step reset);
 profile tab Ton toggle wired end-to-end.
 
-**Phase 2 (after 1.5):**
-7. Chat (★ LLM).
-8. Parent area billing/supporter + homework "Foto & verbessern" upload + status tracking (parent-area only,
-   behind the PIN; no confirm UI — the staff reviewer portal owns review, §9).
+**Phase 2 (DONE):**
+7. Chat (★ LLM) + the ✨ generated-lecture entry on `/lernen` with the lesson intro card (§2/§7).
+8. Homework "Foto & verbessern" upload + status tracking (parent-area only, behind the PIN; no confirm UI —
+   the staff reviewer portal owns review, §9). No billing UI — the app is free.
 
 > The **staff reviewer portal** (`besserlesenschreiben/reviewer`, future `-review` repo) is a **separate
 > subproject** with its own milestones — see `../backend/SPEC.md` §12, Phase 2.5. It is **out of scope for this

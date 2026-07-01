@@ -9,8 +9,10 @@ import type { ChatRequest, LlmProvider, ProviderExtractRequest } from './llm.typ
  * at runtime. We never log prompts, child answers, or image bytes (CLAUDE.md §6) — identifiers + outcomes only.
  *
  * Notes for current models (Sonnet 5 / Opus 4.8): `temperature`/`top_p`/`top_k` are rejected (400) — we send
- * none and steer via the prompt. The (byte-stable) system prompt is sent as a cacheable block so repeated
- * calls read it from cache instead of re-billing it. Homework vision uses a stronger `visionModel`.
+ * none and steer via the prompt. Sonnet 5 runs **adaptive thinking by default** when `thinking` is omitted;
+ * thinking tokens count against `max_tokens`, so an omitted field can silently eat the chat/vision budget and
+ * truncate replies — we disable it explicitly (short, simple structured tasks; latency matters for kids).
+ * Homework vision uses a stronger `visionModel`.
  */
 export class AnthropicLlmProvider implements LlmProvider {
   readonly name = 'anthropic';
@@ -27,10 +29,35 @@ export class AnthropicLlmProvider implements LlmProvider {
     })());
   }
 
-  /** System prompt as a prompt-cacheable text block (stable prefix → cache reads on repeat calls). */
+  /**
+   * System prompt as a prompt-cacheable text block. Caching only kicks in above the model's minimum prefix
+   * (~2048–4096 tokens): the generation call qualifies (its huge tool schema counts toward the prefix), but
+   * the short chat/vision prompts are below the minimum and the marker is a harmless no-op there.
+   */
   private systemBlocks(system?: string): unknown[] | undefined {
     if (!system) return undefined;
     return [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
+  }
+
+  /**
+   * Cost visibility on a free app: token counts per call (input/output/cache) so spend per day is readable
+   * from logs before and after cutover. Counts + identifiers only — never prompt or reply content (§6).
+   */
+  private logUsage(op: 'chat' | 'extract', model: string, res: unknown): void {
+    const u = (res as { usage?: Record<string, number | null> })?.usage;
+    if (!u) return;
+    this.logger.log(
+      {
+        event: 'llm.usage',
+        op,
+        model,
+        inputTokens: u.input_tokens ?? 0,
+        outputTokens: u.output_tokens ?? 0,
+        cacheReadTokens: u.cache_read_input_tokens ?? 0,
+        cacheWriteTokens: u.cache_creation_input_tokens ?? 0,
+      },
+      'anthropic usage',
+    );
   }
 
   private wrap(err: unknown): never {
@@ -45,9 +72,11 @@ export class AnthropicLlmProvider implements LlmProvider {
       const res = await client.messages.create({
         model: this.opts.model,
         max_tokens: req.maxTokens ?? 1024,
+        thinking: { type: 'disabled' },
         ...(req.system ? { system: this.systemBlocks(req.system) } : {}),
         messages: req.messages.map((m) => ({ role: m.role, content: m.text })),
       });
+      this.logUsage('chat', this.opts.model, res);
       return (res.content as Array<{ type: string; text?: string }>)
         .filter((b) => b.type === 'text')
         .map((b) => b.text ?? '')
@@ -81,11 +110,22 @@ export class AnthropicLlmProvider implements LlmProvider {
       const res = await client.messages.create({
         model: req.image ? this.opts.visionModel : this.opts.model,
         max_tokens: req.maxTokens ?? 4096,
+        thinking: { type: 'disabled' },
         ...(req.system ? { system: this.systemBlocks(req.system) } : {}),
-        tools: [{ name: req.schemaName, description: `Return a single ${req.schemaName} object.`, input_schema: req.jsonSchema }],
+        // strict: the API guarantees tool input matches the schema exactly (Zod already emits
+        // `required`/`additionalProperties`, so the schema is strict-compatible as-is).
+        tools: [
+          {
+            name: req.schemaName,
+            description: `Return a single ${req.schemaName} object.`,
+            input_schema: req.jsonSchema,
+            strict: true,
+          },
+        ],
         tool_choice: { type: 'tool', name: req.schemaName },
         messages,
       });
+      this.logUsage('extract', req.image ? this.opts.visionModel : this.opts.model, res);
       const toolUse = (res.content as Array<{ type: string; input?: unknown }>).find((b) => b.type === 'tool_use');
       if (!toolUse) {
         throw new ApiException(502, 'PROVIDER_UNAVAILABLE', 'KI lieferte kein strukturiertes Ergebnis.');
