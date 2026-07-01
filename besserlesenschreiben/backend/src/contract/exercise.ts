@@ -1,9 +1,15 @@
 import { z } from 'zod';
+import { skillTagSchema } from './skills';
 
 /**
  * The wire `Exercise` discriminated union — the single source of truth for the 17 exercise types
  * (SPEC §8 / frontend SPEC §3). Used to (a) publish the OpenAPI the frontend types from, (b) drift-gate
- * the golden fixtures, and later (c) validate LLM-generated exercise content (`messages.parse`).
+ * the golden fixtures, and (c) validate LLM-generated exercise content.
+ *
+ * `exerciseSchema` is the pure discriminated union (the wire/OpenAPI shape). `solvableExerciseSchema`
+ * layers per-type SOLVABILITY refinements on top — the same schema guards seed content and LLM output, so
+ * a generated exercise whose answer isn't among its options (etc.) is rejected before it can reach a child.
+ * Solvability can't be expressed in JSON Schema, so it lives here as a runtime refinement, not on the wire.
  *
  * Field-name gotcha (intentional, do not unify): `count` uses `opts: number[]`; every other
  * single-choice type uses `options: string[]`.
@@ -14,7 +20,7 @@ const media = {
   id: z.string(),
   audioUrl: z.string().nullable(),
   syllableAudio: z.array(z.string()).nullable().optional(),
-  skillTags: z.array(z.string()),
+  skillTags: z.array(skillTagSchema).min(1),
   praise: z.string(),
 };
 
@@ -53,6 +59,75 @@ export const exerciseSchema = z.discriminatedUnion('type', [
   swipe, odd, listen, sentence, build,
 ]);
 export type Exercise = z.infer<typeof exerciseSchema>;
+
+/** True iff `superset` contains every element of `sub`, counting multiplicity (a multiset ⊆ check). */
+function isMultisetSubset(sub: readonly string[], superset: readonly string[]): boolean {
+  const counts = new Map<string, number>();
+  for (const s of superset) counts.set(s, (counts.get(s) ?? 0) + 1);
+  for (const s of sub) {
+    const n = counts.get(s) ?? 0;
+    if (n === 0) return false;
+    counts.set(s, n - 1);
+  }
+  return true;
+}
+
+/** Same multiset both ways — the tiles are exactly a reordering of the syllables. */
+function sameMultiset(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && isMultisetSubset(a, b);
+}
+
+/**
+ * The Exercise contract PLUS per-type solvability — every generated/seeded exercise must be unambiguously
+ * answerable. Use this to validate content (LLM output, seed rows, golden fixtures); use the plain
+ * `exerciseSchema` for the wire/OpenAPI shape (JSON Schema can't encode these cross-field rules).
+ */
+export const solvableExerciseSchema = exerciseSchema.superRefine((ex, ctx) => {
+  const fail = (message: string, path: (string | number)[] = []) =>
+    ctx.addIssue({ code: 'custom', message, path });
+
+  switch (ex.type) {
+    // Single-choice (string options): the correct answer must be selectable.
+    case 'gap':
+    case 'rhyme':
+    case 'initial':
+    case 'letter':
+    case 'case':
+    case 'nonsense':
+    case 'vowel':
+    case 'listen':
+      if (!ex.options.includes(ex.answer)) fail(`answer "${ex.answer}" is not among options`, ['answer']);
+      break;
+    case 'bd':
+      if (!ex.options.includes(ex.answer)) fail(`answer "${ex.answer}" is not among options`, ['answer']);
+      break;
+    case 'count':
+      if (!ex.opts.includes(ex.answer)) fail(`answer ${ex.answer} is not among opts`, ['answer']);
+      break;
+    // Tile-order: the shuffled tiles must be exactly a reordering of the target.
+    case 'order':
+    case 'arrange':
+      if (!sameMultiset(ex.tiles, ex.syll)) fail('tiles are not a permutation of syll', ['tiles']);
+      break;
+    case 'build':
+      if (!isMultisetSubset(ex.answer, ex.tiles)) fail('answer cannot be spelled from tiles', ['answer']);
+      break;
+    // Pair-match: both members of the pair must be present as tiles.
+    case 'pairs':
+      if (!ex.pair.every((p) => ex.tiles.includes(p))) fail('pair members must be among tiles', ['pair']);
+      break;
+    // Odd-one-out / sentence: the answer must be one of the presented tokens.
+    case 'odd':
+      if (!ex.words.includes(ex.answer)) fail(`answer "${ex.answer}" is not among words`, ['answer']);
+      break;
+    case 'sentence':
+      if (!ex.tokens.includes(ex.answer)) fail(`answer "${ex.answer}" is not among tokens`, ['answer']);
+      break;
+    // swipe: answer is a fixed enum (left|right) — always solvable.
+    case 'swipe':
+      break;
+  }
+});
 
 /** The exercise type discriminants, for tests/iteration. */
 export const EXERCISE_TYPES = [

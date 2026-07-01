@@ -964,7 +964,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -977,7 +977,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -988,7 +988,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -999,7 +999,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1011,7 +1011,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1024,7 +1024,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1036,7 +1036,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1047,7 +1047,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1058,7 +1058,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1068,7 +1068,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1079,7 +1079,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1092,7 +1092,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1105,7 +1105,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1116,7 +1116,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1128,7 +1128,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1139,7 +1139,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         } | {
                             /** @enum {string} */
@@ -1151,7 +1151,7 @@ export interface operations {
                             id: string;
                             audioUrl: string | null;
                             syllableAudio?: string[] | null;
-                            skillTags: string[];
+                            skillTags: ("syllable_count" | "syllable_segmentation" | "syllable_gap" | "syllable_order" | "rhyme" | "rhyme_pairs" | "phoneme_initial" | "phoneme_position" | "letter_sound" | "capitalization" | "word_class_noun" | "word_class_verb" | "letter_order" | "spelling" | "lexical_decision" | "letter_discrimination" | "vowel_ie" | "vowel_ei" | "vowel_spelling" | "binary_sort" | "odd_one_out" | "phonological_awareness" | "word_in_context")[];
                             praise: string;
                         })[];
                     };

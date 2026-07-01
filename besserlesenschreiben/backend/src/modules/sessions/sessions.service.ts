@@ -7,7 +7,7 @@ import { daysAgo, startOfUtcDay, startOfUtcWeek } from '../../common/dates';
 import { STARS_PER_SESSION, leagueFor, nextStreak, type League } from '../progress/gamification';
 import { LlmService } from '../../services/llm/llm.service';
 import { DigestService } from '../../services/digest/digest.service';
-import { exerciseSchema } from '../../contract/exercise';
+import { solvableExerciseSchema } from '../../contract/exercise';
 import { homeworkAnalysisSchema } from '../../contract/staff';
 import { Prisma } from '../../generated/prisma/client';
 import { toExercise } from './exercise.mapper';
@@ -20,9 +20,13 @@ const RECENT_ATTEMPT_LIMIT = 200;
 const LLM_ITEM_UNIT = 0; // sentinel: generated items live outside the curated unit catalogue (1..N)
 const LLM_SESSION_SIZE = 6;
 
-/** What the model returns: a batch of wire-shaped exercises (id/audioUrl are placeholders we overwrite). */
+/**
+ * What the model returns: a batch of wire-shaped exercises (id/audioUrl are placeholders we overwrite).
+ * Uses the SOLVABLE schema — a generated exercise whose answer isn't among its options (etc.) or that
+ * carries an unknown skill tag is rejected, never persisted.
+ */
 const generatedSessionSchema = z.object({
-  exercises: z.array(exerciseSchema).min(1).max(LLM_SESSION_SIZE),
+  exercises: z.array(solvableExerciseSchema).min(1).max(LLM_SESSION_SIZE),
 });
 
 const LLM_SYSTEM = [
