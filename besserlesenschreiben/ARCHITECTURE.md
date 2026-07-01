@@ -496,6 +496,11 @@ restore from the off-platform dumps) rather than the loss of every family's data
      required and Foundry's region/version doesn't fit — at the cost of a second cloud relationship.
   Whichever is chosen, the same rules hold: **DPA in place, send the digest not raw identifiers where possible,
   and document the data flow.** TTS (Azure AI Speech or external) follows the same DPA + minimal-data discipline.
+  - **Model policy (Anthropic-direct default):** `ANTHROPIC_MODEL` = `claude-sonnet-5` (generation/chat),
+    `ANTHROPIC_VISION_MODEL` = `claude-opus-4-8` (homework OCR — accuracy-critical). On current models
+    `temperature`/`top_p`/`top_k` are rejected (400): steer with the prompt (and output effort), not sampling
+    params. Stable system prompts are sent as prompt-cacheable blocks. Structured output is a forced tool over
+    the `src/contract` Zod→JSON-Schema, re-validated (incl. solvability) with a one-shot re-ask on a miss.
 - **Observability:** `requestId` threads request → logs → error envelope → support. Optional Sentry on both
   ends with PII scrubbing. Health checks drive Container Apps restarts.
 

@@ -14,6 +14,7 @@ import { AnthropicLlmProvider } from './anthropic.provider';
 export function createLlmProvider(opts: {
   apiKey: string;
   model: string;
+  visionModel?: string;
   isProd: boolean;
   residencyAck: boolean;
 }): LlmProvider {
@@ -23,7 +24,11 @@ export function createLlmProvider(opts: {
       'Anthropic-direct in production requires LLM_RESIDENCY_ACK=true (EU data-flow / DPA acknowledgement, ARCHITECTURE §8).',
     );
   }
-  return new AnthropicLlmProvider({ apiKey: opts.apiKey, model: opts.model });
+  return new AnthropicLlmProvider({
+    apiKey: opts.apiKey,
+    model: opts.model,
+    visionModel: opts.visionModel || opts.model,
+  });
 }
 
 /** Wires the selected provider + exports `LlmService` for feature modules (chat, homework, sessions). */
@@ -36,6 +41,7 @@ export function createLlmProvider(opts: {
         createLlmProvider({
           apiKey: config.get('ANTHROPIC_API_KEY', { infer: true }),
           model: config.get('ANTHROPIC_MODEL', { infer: true }),
+          visionModel: config.get('ANTHROPIC_VISION_MODEL', { infer: true }),
           isProd: config.get('NODE_ENV', { infer: true }) === 'production',
           residencyAck: config.get('LLM_RESIDENCY_ACK', { infer: true }) === 'true',
         }),
