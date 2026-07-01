@@ -7,7 +7,8 @@ import { daysAgo, startOfUtcDay, startOfUtcWeek } from '../../common/dates';
 import { STARS_PER_SESSION, leagueFor, nextStreak, type League } from '../progress/gamification';
 import { LlmService } from '../../services/llm/llm.service';
 import { DigestService } from '../../services/digest/digest.service';
-import { exerciseSchema } from '../../contract/exercise';
+import { solvableExerciseSchema } from '../../contract/exercise';
+import { SKILL_TAGS } from '../../contract/skills';
 import { homeworkAnalysisSchema } from '../../contract/staff';
 import { Prisma } from '../../generated/prisma/client';
 import { toExercise } from './exercise.mapper';
@@ -20,18 +21,46 @@ const RECENT_ATTEMPT_LIMIT = 200;
 const LLM_ITEM_UNIT = 0; // sentinel: generated items live outside the curated unit catalogue (1..N)
 const LLM_SESSION_SIZE = 6;
 
-/** What the model returns: a batch of wire-shaped exercises (id/audioUrl are placeholders we overwrite). */
+/**
+ * What the model returns: a batch of wire-shaped exercises (id/audioUrl are placeholders we overwrite).
+ * Uses the SOLVABLE schema — a generated exercise whose answer isn't among its options (etc.) or that
+ * carries an unknown skill tag is rejected, never persisted.
+ */
 const generatedSessionSchema = z.object({
-  exercises: z.array(exerciseSchema).min(1).max(LLM_SESSION_SIZE),
+  exercises: z.array(solvableExerciseSchema).min(1).max(LLM_SESSION_SIZE),
+});
+
+// One compact, valid exemplar per common type — few-shot examples are the biggest lever on structured
+// generation quality. Kept byte-stable so the system prompt can be prompt-cached across calls.
+const FEW_SHOT = JSON.stringify({
+  exercises: [
+    { type: 'count', word: 'Banane', syll: ['Ba', 'na', 'ne'], answer: 3, opts: [2, 3, 4], skillTags: ['syllable_count'], praise: 'Toll gezählt!', id: 'x', audioUrl: null },
+    { type: 'rhyme', word: 'Haus', options: ['Maus', 'Tisch', 'Ball'], answer: 'Maus', skillTags: ['rhyme'], praise: 'Das reimt sich!', id: 'x', audioUrl: null },
+    { type: 'order', word: 'Sonne', syll: ['Son', 'ne'], tiles: ['ne', 'Son'], skillTags: ['syllable_order'], praise: 'Super sortiert!', id: 'x', audioUrl: null },
+  ],
 });
 
 const LLM_SYSTEM = [
   'Du generierst deutsche Grundschul-Übungen zum Lesen und Schreiben.',
-  `Erzeuge bis zu ${LLM_SESSION_SIZE} abwechslungsreiche Übungen, die GENAU auf die genannten Förderschwerpunkte zielen.`,
-  'Jede Übung muss eindeutig korrekt lösbar sein: bei "count" ist answer die richtige Silbenzahl und in opts enthalten;',
-  'bei "order"/"arrange" entsprechen tiles genau den syll; bei "pairs" reimt sich das pair; Optionen enthalten die richtige Antwort.',
-  'Setze skillTags aus den Schwerpunkten und einen kurzen, motivierenden deutschen praise. id darf ein Platzhalter sein, audioUrl=null.',
+  `Erzeuge bis zu ${LLM_SESSION_SIZE} abwechslungsreiche Übungen, die GENAU auf die genannten Förderschwerpunkte und die Klassenstufe zielen.`,
+  'Jede Übung MUSS eindeutig korrekt lösbar sein: bei "count" ist answer die richtige Silbenzahl und in opts enthalten;',
+  'bei "order"/"arrange" sind tiles genau die syll in anderer Reihenfolge; bei "pairs" sind beide pair-Wörter in tiles und reimen sich;',
+  'bei allen Auswahlübungen ist answer in options enthalten; bei "build" lässt sich answer aus tiles legen.',
+  `Verwende in skillTags NUR Werte aus dieser Liste: ${SKILL_TAGS.join(', ')}.`,
+  'Setze einen kurzen, motivierenden deutschen praise. id darf ein Platzhalter sein, audioUrl=null.',
+  `Beispiel für gültiges JSON:\n${FEW_SHOT}`,
 ].join(' ');
+
+/**
+ * A coarse difficulty band from the child's current unit (unlockedUnit 1..N). Sent to the model so a
+ * grade-1 child and an advanced child get differently-calibrated content, and stored as the generated
+ * item's `difficulty` so bank selection can order it sensibly.
+ */
+function gradeBand(unlockedUnit: number): { label: string; difficulty: number } {
+  if (unlockedUnit <= 2) return { label: 'Anfang (erste Klasse, sehr einfach, kurze Wörter)', difficulty: 1 };
+  if (unlockedUnit <= 5) return { label: 'Mitte (zweite Klasse, mittlere Wörter)', difficulty: 2 };
+  return { label: 'Fortgeschritten (dritte Klasse, längere Wörter, kniffliger)', difficulty: 3 };
+}
 
 @Injectable()
 export class SessionsService {
@@ -157,10 +186,16 @@ export class SessionsService {
       /* digest is optional context */
     }
 
+    const band = gradeBand(profile.unlockedUnit);
     const focusLine = focus.length ? focus.join(', ') : 'Grundlagen: Silben, Anlaute, Reime';
     const generated = await this.llm.extract(generatedSessionSchema, 'generated_session', {
       system: LLM_SYSTEM,
-      messages: [{ role: 'user', text: `Förderschwerpunkte: ${focusLine}\n\nLernstand:\n${digestMd}` }],
+      messages: [
+        {
+          role: 'user',
+          text: `Klassenstufe: ${band.label}\nFörderschwerpunkte: ${focusLine}\n\nLernstand:\n${digestMd}`,
+        },
+      ],
     });
 
     // Persist the new items (unit 0 sentinel) + the session, then return the wire shape.
@@ -177,6 +212,7 @@ export class SessionsService {
               exerciseType: ex.type,
               payload: payload as Prisma.InputJsonValue,
               skillTags: ex.skillTags,
+              difficulty: band.difficulty,
               audioUrl: null,
               generatedBy: 'llm',
             },

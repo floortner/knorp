@@ -27,7 +27,13 @@ export const envSchema = z.object({
   EMAIL_FROM: z.string().default(''),
   // later milestones (optional for now)
   ANTHROPIC_API_KEY: z.string().default(''),
-  ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
+  // Default generation/chat model. Sonnet 5 = near-Opus quality for structured tasks at ~½ the price —
+  // the right default for a free app. (temperature/top_p/top_k are rejected on current models; steer via
+  // the prompt + output effort instead.)
+  ANTHROPIC_MODEL: z.string().default('claude-sonnet-5'),
+  // Homework vision uses a stronger model — child handwriting OCR is accuracy-critical and the draft is
+  // the reviewer's starting point.
+  ANTHROPIC_VISION_MODEL: z.string().default('claude-opus-4-8'),
   // EU data-residency / DPA acknowledgement for Anthropic-direct. Required in production before any LLM
   // call goes out (ARCHITECTURE §8): the app refuses to start with a key set but this unacknowledged.
   LLM_RESIDENCY_ACK: z.string().default(''),

@@ -565,15 +565,21 @@ retention; guard/flow tests; these docs.
 > so metering can be added later without a migration (ARCHITECTURE §9, deferred). Access control moves to the
 > **account lifecycle** (ARCHITECTURE §1b), which the owner drives from the staff portal.
 
-5. **`LlmService`** (abstracted; Anthropic-direct dev default via `@anthropic-ai/sdk` + `zodOutputFormat`
-   reusing `src/contract`; EU-residency gate before prod; canned/stub path when `ANTHROPIC_API_KEY` is unset).
-   No credit hook.
-6. **Chat** (free ★) + TTS pipeline.
-7. **Homework upload + vision draft (family side).** `POST /homework` → storage (EXIF strip, WebP) → Claude
+5. ✅ **`LlmService`** (abstracted; Anthropic-direct dev default; structured output via a forced tool whose
+   `input_schema` is the JSON Schema of the caller's `src/contract` Zod schema, re-validated against that
+   schema — incl. per-type **solvability** — with a one-shot re-ask on a contract miss; EU-residency gate
+   before prod; canned/stub path when `ANTHROPIC_API_KEY` is unset). No credit hook.
+   **Model policy:** `ANTHROPIC_MODEL` defaults to `claude-sonnet-5` (generation/chat), `ANTHROPIC_VISION_MODEL`
+   to `claude-opus-4-8` (homework OCR). `temperature`/`top_p`/`top_k` are **not sent** — rejected (400) on
+   current models; steer via the prompt (+ output effort). Stable system prompts are sent as prompt-cacheable
+   blocks.
+6. ✅ **Chat** (free ★). TTS pipeline deferred (Web Speech fallback in the client for now).
+7. ✅ **Homework upload + vision draft (family side).** `POST /homework` → storage (EXIF strip, WebP) → Claude
    vision → `llm_analysis` draft, `status='pending_review'`, enqueued for the (already-built) staff review
-   queue. **Nothing mutates the profile** until a reviewer approves. Needs storage + LlmService.
-8. **LLM session generation** (§8) — folds a reviewed upload's `reviewed_analysis.suggestedFocus` into the
-   next on-the-fly lecture.
+   queue. **Nothing mutates the profile** until a reviewer approves.
+8. ✅ **LLM session generation** (§8) — folds a reviewed upload's `reviewed_analysis.suggestedFocus` into the
+   next on-the-fly lecture; generated exercises are validated for solvability and stamped with a
+   grade-band difficulty.
 
 **Phase 2 access-control milestone — approval-gated signup + staff user-admin (ARCHITECTURE §1b):**
 9. **Account lifecycle.** `account.status` (`pending|active|deactivated`) + migration; silent

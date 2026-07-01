@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { exerciseSchema, EXERCISE_TYPES } from './exercise';
+import { exerciseSchema, solvableExerciseSchema, EXERCISE_TYPES } from './exercise';
 import { unitSchema } from './models';
 
 /**
@@ -21,6 +21,16 @@ describe('contract ↔ golden fixtures', () => {
     expect(items.length).toBeGreaterThan(0);
     for (const item of items) {
       const parsed = exerciseSchema.safeParse(item);
+      if (!parsed.success) {
+        throw new Error(`exercise ${(item as { id?: string }).id}: ${parsed.error.message}`);
+      }
+    }
+  });
+
+  it('every exercise in session.example.json is SOLVABLE (answer selectable, tiles permute, etc.)', () => {
+    const items = load('session.example.json').items as unknown[];
+    for (const item of items) {
+      const parsed = solvableExerciseSchema.safeParse(item);
       if (!parsed.success) {
         throw new Error(`exercise ${(item as { id?: string }).id}: ${parsed.error.message}`);
       }

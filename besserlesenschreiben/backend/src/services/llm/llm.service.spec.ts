@@ -51,9 +51,26 @@ describe('LlmService', () => {
     expect(arg.jsonSchema).toMatchObject({ type: 'object' });
   });
 
-  it('rejects an off-contract model reply with 502 (never returns junk)', async () => {
-    const svc = new LlmService(fakeProvider({ extractRaw: vi.fn(async () => ({ topic: 'x' /* missing score */ })) }));
+  it('re-asks ONCE with the validation error, then accepts the corrected reply', async () => {
+    const extractRaw = vi
+      .fn()
+      .mockResolvedValueOnce({ topic: 'x' /* missing score */ })
+      .mockResolvedValueOnce({ topic: 'Anlaute', score: 4 });
+    const svc = new LlmService(fakeProvider({ extractRaw }));
+    const out = await svc.extract(schema, 'analysis', { messages: [{ role: 'user', text: 'x' }] });
+    expect(out).toEqual({ topic: 'Anlaute', score: 4 });
+    expect(extractRaw).toHaveBeenCalledTimes(2);
+    // the retry carries the prior (bad) answer + a corrective user turn
+    const retryMessages = extractRaw.mock.calls[1][0].messages;
+    expect(retryMessages.at(-1)).toMatchObject({ role: 'user' });
+    expect(retryMessages.at(-1).text).toMatch(/ungültig/i);
+  });
+
+  it('rejects an off-contract reply with 502 after the retry also fails (never returns junk)', async () => {
+    const extractRaw = vi.fn(async () => ({ topic: 'x' /* always missing score */ }));
+    const svc = new LlmService(fakeProvider({ extractRaw }));
     expect(await statusOf(svc.extract(schema, 'analysis', { messages: [] }))).toBe(502);
+    expect(extractRaw).toHaveBeenCalledTimes(2);
   });
 });
 

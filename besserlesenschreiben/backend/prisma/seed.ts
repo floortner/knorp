@@ -29,6 +29,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { SKILL_TAG_SET } from "../src/contract/skills";
 
 const adapter = new PrismaPg(process.env.DATABASE_URL as string);
 const prisma = new PrismaClient({ adapter });
@@ -48,6 +49,15 @@ interface SeedItem {
 async function main(): Promise<void> {
   const file = join(__dirname, "..", "item_bank.seed.json");
   const { items } = JSON.parse(readFileSync(file, "utf-8")) as { items: SeedItem[] };
+
+  // Fail fast on skill-tag drift: every seeded tag must be in the taxonomy (src/contract/skills.ts),
+  // otherwise FSRS scheduling / digest / LLM targeting would silently ignore it.
+  const badTags = items.flatMap((row) =>
+    (row.skill_tags ?? []).filter((t) => !SKILL_TAG_SET.has(t)).map((t) => `${row.seed_key}: "${t}"`),
+  );
+  if (badTags.length) {
+    throw new Error(`Unknown skill tags in seed (not in taxonomy):\n  ${badTags.join("\n  ")}`);
+  }
 
   let inserted = 0;
   let updated = 0;
