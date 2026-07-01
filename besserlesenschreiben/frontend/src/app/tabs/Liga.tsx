@@ -1,5 +1,5 @@
 import { Flame, Star } from 'lucide-react';
-import { ApiError } from '@/lib/api';
+import { errorMessage } from '@/lib/api';
 import { useActiveProfile } from '@/features/profile/useMe';
 import { useProgress } from '@/features/progress/useProgress';
 import { Heatmap, LeagueCard, WeekBars } from '@/features/progress/components';
@@ -9,7 +9,7 @@ export function Liga() {
   const progress = useProgress(profile?.id);
 
   if (!profile || progress.isLoading) return <Note>Lädt …</Note>;
-  if (progress.isError) return <Note>{(progress.error as ApiError).message}</Note>;
+  if (progress.isError) return <Note>{errorMessage(progress.error)}</Note>;
   const p = progress.data!;
 
   return (

@@ -552,12 +552,11 @@ retention; guard/flow tests; these docs.
 - Parent area: PIN gate, set-PIN flow, child progress view, two-step progress reset.
 - Profile tab: Ton toggle wired end-to-end; removed Legasthenie-Schrift + Schriftgröße stubs.
 
-**Technical debt (Phase 1.6, to address before Phase 2):**
-- `parentApi.reset` sends `profileId` in the request body — violates "id from JWT only" rule. Fix: encode profileId in the parentToken JWT, or accept no body and reset all profiles on the account.
-- `apiFetch` has no per-request `Authorization` header override; `parentApi` works around this via a temporary global `setAuthToken` mutation. Fix: add an optional `token` param to `apiFetch`.
-- `sessionCompleteSchema` doesn't include `newUnlockedUnit` or `allUnitsComplete` — the frontend derives `allUnitsComplete` from `session.unit === TOTAL_UNITS` (a hardcoded constant). Fix: add `allUnitsComplete: boolean` to the complete response so the frontend is authoritative.
-- Unsafe `as ApiError` cast in `ParentScreen` error rendering — should use a type guard.
-- Parent area shows raw backend error strings; wrap with user-friendly messages.
+**Technical debt (Phase 1.6) — RESOLVED:**
+- ✅ Parent-scoped child id no longer comes from the request body: `verify-pin` binds the target `profileId` into the `parentToken` JWT (validated for ownership at issue time), and `reset`/`unlock-next` read it from the token via `@ParentProfileId()`. The destructive routes take no body id.
+- ✅ `apiFetch` takes a per-request `token` option; the global `setAuthToken` mutation is gone (`parentApi.reset` carries the `parentToken` per call).
+- ✅ `sessionCompleteSchema` now includes `allUnitsComplete: boolean` — the backend is authoritative; the frontend no longer derives it from a hardcoded `TOTAL_UNITS`.
+- ✅ Unsafe `as ApiError` casts replaced by an `isApiError` type guard + `errorMessage()` helper across the SPA (calm generic fallback for non-envelope errors).
 
 **Phase 2 — free AI features + approval-gated access (★, after 1.5).**
 > **Product decision (current):** the app is **free, including the AI features**. There is **no billing,

@@ -12,8 +12,20 @@ function ctxWith(tokenPayload: unknown): ExecutionContext {
 describe('ParentScopeGuard', () => {
   const guard = new ParentScopeGuard();
 
-  it('allows a parent-scoped token', () => {
-    expect(guard.canActivate(ctxWith({ sub: 'a', scope: 'parent' }))).toBe(true);
+  it('allows a parent-scoped token that carries a profileId', () => {
+    expect(guard.canActivate(ctxWith({ sub: 'a', scope: 'parent', profileId: 'p1' }))).toBe(true);
+  });
+
+  it('rejects a parent-scoped token with no bound profileId', () => {
+    const err = (() => {
+      try {
+        guard.canActivate(ctxWith({ sub: 'a', scope: 'parent' }));
+      } catch (e) {
+        return e as ApiException;
+      }
+    })();
+    expect(err!.getStatus()).toBe(403);
+    expect(err!.getResponse()).toMatchObject({ code: 'PARENT_SCOPE_REQUIRED' });
   });
 
   it('rejects a child (no scope) token with 403 PARENT_SCOPE_REQUIRED', () => {

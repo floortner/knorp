@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { ApiError } from '@/lib/api';
+import { errorMessage } from '@/lib/api';
 import type { Buddy } from '@/lib/endpoints';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,7 +61,7 @@ export function OnboardingScreen() {
 
       {createProfile.isError && (
         <p role="alert" className="mb-3 text-center text-sm text-orange-dark">
-          {(createProfile.error as ApiError).message}
+          {errorMessage(createProfile.error)}
         </p>
       )}
 

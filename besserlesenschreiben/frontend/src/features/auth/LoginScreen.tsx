@@ -2,7 +2,7 @@ import { type FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { authApi } from '@/lib/endpoints';
-import { ApiError } from '@/lib/api';
+import { errorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/Logo';
@@ -74,7 +74,7 @@ export function LoginScreen() {
             />
             {requestCode.isError && (
               <p role="alert" className="px-1 text-sm text-orange-dark">
-                {(requestCode.error as ApiError).message}
+                {errorMessage(requestCode.error)}
               </p>
             )}
             <Button type="submit" size="lg" disabled={requestCode.isPending}>

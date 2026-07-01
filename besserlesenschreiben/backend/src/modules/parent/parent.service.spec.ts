@@ -33,6 +33,8 @@ function setup(initial: Partial<AccountRow> = {}) {
         return { ...row };
       }),
     },
+    // verify-pin now binds the token to a child → it checks ownership first.
+    profile: { findFirst: vi.fn(async () => ({ id: 'p1', accountId: 'acc-1' })) },
   } as unknown as PrismaService;
   const jwt = { signAsync: vi.fn(async () => 'parent-token') } as unknown as JwtService;
   return { svc: new ParentService(prisma, jwt), row };
@@ -52,32 +54,32 @@ describe('ParentService durable PIN lockout', () => {
 
   it('returns a parent token on the correct PIN', async () => {
     const { svc } = setup();
-    await expect(svc.verifyPin('acc-1', '1234')).resolves.toEqual({ parentToken: 'parent-token' });
+    await expect(svc.verifyPin('acc-1', '1234', 'p1')).resolves.toEqual({ parentToken: 'parent-token' });
   });
 
   it('locks out (429) after 5 wrong attempts and blocks the correct PIN during the window', async () => {
     const { svc, row } = setup();
     for (let i = 0; i < 4; i++) {
-      expect(await statusOf(svc.verifyPin('acc-1', '0000'))).toBe(403);
+      expect(await statusOf(svc.verifyPin('acc-1', '0000', 'p1'))).toBe(403);
     }
     expect(row.pinAttempts).toBe(4);
     // 5th wrong attempt trips the lock
-    expect(await statusOf(svc.verifyPin('acc-1', '0000'))).toBe(403);
+    expect(await statusOf(svc.verifyPin('acc-1', '0000', 'p1'))).toBe(403);
     expect(row.pinLockedUntil).toBeInstanceOf(Date);
     // correct PIN is now refused with 429 while locked
-    expect(await statusOf(svc.verifyPin('acc-1', '1234'))).toBe(429);
+    expect(await statusOf(svc.verifyPin('acc-1', '1234', 'p1'))).toBe(429);
   });
 
   it('clears the lock counter on a successful verify', async () => {
     const { svc, row } = setup({ pinAttempts: 3 });
-    await svc.verifyPin('acc-1', '1234');
+    await svc.verifyPin('acc-1', '1234', 'p1');
     expect(row.pinAttempts).toBe(0);
     expect(row.pinLockedUntil).toBeNull();
   });
 
   it('409s when no PIN is set', async () => {
     const { svc } = setup({ parentPinHash: null });
-    expect(await statusOf(svc.verifyPin('acc-1', '1234'))).toBe(409);
+    expect(await statusOf(svc.verifyPin('acc-1', '1234', 'p1'))).toBe(409);
   });
 
   it('setPin clears any standing lockout', async () => {

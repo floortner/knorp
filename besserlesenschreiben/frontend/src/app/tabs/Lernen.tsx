@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ApiError } from '@/lib/api';
+import { errorMessage } from '@/lib/api';
 import { useActiveProfile, useMe } from '@/features/profile/useMe';
 import { useUnits } from '@/features/units/useUnits';
 import { useCreateSession } from '@/features/sessions/useCreateSession';
@@ -16,7 +16,7 @@ export function Lernen() {
   const createSession = useCreateSession();
 
   if (me.isLoading) return <CenterNote>Lädt …</CenterNote>;
-  if (me.isError) return <CenterNote>{(me.error as ApiError).message}</CenterNote>;
+  if (me.isError) return <CenterNote>{errorMessage(me.error)}</CenterNote>;
 
   // Authenticated but no child profile yet → send them through onboarding.
   if (!profile) {
@@ -51,7 +51,7 @@ export function Lernen() {
       </div>
 
       {units.isLoading && <CenterNote>Einheiten laden …</CenterNote>}
-      {units.isError && <CenterNote>{(units.error as ApiError).message}</CenterNote>}
+      {units.isError && <CenterNote>{errorMessage(units.error)}</CenterNote>}
 
       {units.data && (
         <div className="space-y-3">
@@ -63,7 +63,7 @@ export function Lernen() {
 
       {createSession.isError && (
         <p role="alert" className="text-center text-sm text-orange-dark">
-          {(createSession.error as ApiError).message}
+          {errorMessage(createSession.error)}
         </p>
       )}
 

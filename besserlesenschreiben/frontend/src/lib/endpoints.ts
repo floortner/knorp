@@ -1,4 +1,4 @@
-import { apiFetch, setAuthToken, uploadFile } from './api';
+import { apiFetch, uploadFile } from './api';
 import type {
   ChatHistory,
   ChatReply,
@@ -86,17 +86,18 @@ export const chatApi = {
     apiFetch<ChatReply>(`/chat/${encodeURIComponent(profileId)}`, { method: 'POST', body: { text } }),
 };
 
-/** Parent-area endpoints. parent-scoped calls (reset) send the parentToken as Bearer. */
+/**
+ * Parent-area endpoints. verify-pin binds the parentToken to ONE child (profileId is signed into the
+ * token), so the destructive calls just carry the token as a per-request Bearer — no profileId in the
+ * body, and no global token mutation.
+ */
 export const parentApi = {
   setPin: (pin: string) =>
     apiFetch<{ ok: true }>('/parent/set-pin', { method: 'POST', body: { pin } }),
 
-  verifyPin: (pin: string) =>
-    apiFetch<{ parentToken: string }>('/parent/verify-pin', { method: 'POST', body: { pin } }),
+  verifyPin: (pin: string, profileId: string) =>
+    apiFetch<{ parentToken: string }>('/parent/verify-pin', { method: 'POST', body: { pin, profileId } }),
 
-  reset: (profileId: string, parentToken: string) => {
-    setAuthToken(parentToken);
-    return apiFetch<{ ok: true }>('/parent/reset', { method: 'POST', body: { profileId } })
-      .finally(() => setAuthToken(null));
-  },
+  reset: (parentToken: string) =>
+    apiFetch<{ ok: true }>('/parent/reset', { method: 'POST', body: {}, token: parentToken }),
 };
