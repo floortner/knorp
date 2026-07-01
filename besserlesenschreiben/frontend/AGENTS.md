@@ -26,8 +26,9 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 3. **Every answered item emits exactly one `/attempts` call** with a real `timeMs` (start timer on item mount,
    stop on answer). Fire-and-forget; queue + retry offline; never block the child's UI on the network (SPEC §4).
 4. **No hardcoded lesson data.** Render all 17 types from backend-served JSON.
-5. **Payments/paywalls are parent-area only, behind the PIN.** A `402` from the API routes the **parent** to the
-   supporter screen — never show a price, paywall, or buy button in the child tabs.
+5. **The app is free — no payment UI, ever** (ARCHITECTURE §1b/§9). Never show a price, paywall, or buy button
+   anywhere; nothing emits or handles `402`. ★ ops are daily-capped server-side — a `429 RATE_LIMITED` carries a
+   kindgerechte message and surfaces through the normal error paths.
 6. **SVG-first media** (ARCHITECTURE §10): all app art/icons/mascots/badges are SVG. **Sanitize any
    non-hand-authored SVG** (LLM-generated/uploaded) with DOMPurify before inlining — never
    `dangerouslySetInnerHTML` on raw SVG. Homework photo is the only raster, handled by the backend.
@@ -37,7 +38,7 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 ## Conventions
 - Mobile-first: design at ~390px, scale up. The child user needs big targets and calm feedback.
 - TanStack Query for ALL server state; keys `['me']`,`['units']`,`['session',id]`,`['progress',pid]`,
-  `['chat',pid]`,`['billing']`. Invalidate `['me']`+`['progress']`+`['units']` after `/sessions/{id}/complete`.
+  `['chat',pid]`. Invalidate `['me']`+`['progress']`+`['units']` after `/sessions/{id}/complete`.
 - Auth: the backend's **httpOnly session cookie** is the source of truth (`credentials:'include'`); auth state
   is derived from a `/me` probe — never put a token in localStorage/JS.
 - Wrap risky subtrees in the `ErrorBoundary` (whole app + the `LessonRunner`); a renderer throw must never
@@ -54,8 +55,8 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 Phase 1 (shell/auth/onboarding/home/telemetry/12 renderers/progress) + Phase 1.5 (error boundary, offline
 caching, telemetry retention, query fixes, committed `api.gen.ts` + drift gate, flow tests) + Phase 1.6
 (content + UX polish: unit unlock, all-done celebration, 5 new exercise renderers → 17 total, parent area,
-profile tab) are **done**. Next is Phase 2: chat (★ LLM), then the parent billing/supporter + homework flow
-(parent-area only).
+profile tab) are **done**, as is Phase 2: chat (★ LLM), the ✨ generated-lecture entry + lesson intro card,
+and the homework "Foto & verbessern" flow (parent-area only). No billing — the app is free.
 
 ## Definition of done for a feature
 Renders from backend JSON; one `/attempts` per answer with sane timing; error codes map to the right UI;

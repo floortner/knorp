@@ -9,7 +9,7 @@ const TABS: Array<{ to: string; label: string; icon: LucideIcon }> = [
   { to: '/app/profil', label: 'Profil', icon: User },
 ];
 
-/** Mobile bottom tab bar (SPEC §2). Billing is never reachable from here — parent-only, PIN-gated. */
+/** Mobile bottom tab bar (SPEC §2). The parent area is never reachable from here — via /profil, PIN-gated. */
 export function BottomNav() {
   return (
     <nav

@@ -34,8 +34,9 @@ spine — see `SPEC.md` §4. Telemetry plumbing is its own milestone (4), built 
   actions, a11y toggles.
 - **Spec-only, NOT in the prototype** (build from `SPEC.md`, no visual reference yet — match the brand and the
   existing renderer patterns): the 5 Phase-1.6 exercise types (`swipe`, `odd`, `listen`, `sentence`, `build`);
-  the parent **billing/supporter** section (§8) and the **homework "Foto & verbessern"** flow (§9).
-  Billing + homework are parent-area only, behind the PIN. Never surface payment in the child tabs.
+  the ✨ **generated-lecture entry** on `/lernen` + the lesson **intro card** (§2) and the **homework
+  "Foto & verbessern"** flow (§9). The app is **free** — no billing/supporter UI anywhere (ARCHITECTURE §9);
+  homework upload is parent-area only, behind the PIN.
 
 ## Brand quick-reference
 

@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
+import type { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 import { assertProfileOwned } from '../../common/ownership';
@@ -73,6 +75,7 @@ export class SessionsService {
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
     private readonly digest: DigestService,
+    private readonly config: ConfigService<Env, true>,
   ) {}
 
   /** GET /units — the catalogue with live per-profile status + item counts. */
@@ -169,6 +172,21 @@ export class SessionsService {
     }
     const unit = dto.unit ?? profile.unlockedUnit;
     const now = new Date();
+
+    // Daily cap on the cost-bearing path (approval gates WHO gets in; this gates HOW MUCH). Counted from
+    // existing session rows — no extra bookkeeping. The FE surfaces the friendly message via its error path.
+    const cap = this.config.get('LLM_SESSIONS_PER_DAY', { infer: true });
+    const usedToday = await this.prisma.session.count({
+      where: { profileId: profile.id, source: 'llm', createdAt: { gte: startOfUtcDay(now) } },
+    });
+    if (usedToday >= cap) {
+      this.logger.log({ event: 'session.llm_capped', profileId: profile.id, cap }, 'daily llm-session cap hit');
+      throw new ApiException(
+        429,
+        'RATE_LIMITED',
+        'Nepo hat für heute genug neue Übungen gezaubert. Morgen gibt es wieder frische!',
+      );
+    }
 
     // WHAT to drill: recent weak skills + FSRS-due + the staff-validated homework focus.
     const recent = await this.prisma.attempt.findMany({

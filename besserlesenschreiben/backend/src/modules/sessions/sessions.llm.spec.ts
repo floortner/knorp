@@ -3,6 +3,8 @@ import { SessionsService } from './sessions.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { LlmService } from '../../services/llm/llm.service';
 import type { DigestService } from '../../services/digest/digest.service';
+import type { ConfigService } from '@nestjs/config';
+import type { Env } from '../../config/env';
 import { ApiException } from '../../common/exceptions/api-exception';
 
 const genExercise = {
@@ -17,7 +19,7 @@ const genExercise = {
   praise: 'Super!',
 };
 
-function setup(opts: { available?: boolean } = {}) {
+function setup(opts: { available?: boolean; usedToday?: number } = {}) {
   const itemCreates: Array<Record<string, unknown>> = [];
   let seq = 0;
   const prisma = {
@@ -38,7 +40,10 @@ function setup(opts: { available?: boolean } = {}) {
         };
       }),
     },
-    session: { create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({ id: 'ses-1', createdAt: new Date('2026-06-30T12:00:00Z'), ...data })) },
+    session: {
+      create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({ id: 'ses-1', createdAt: new Date('2026-06-30T12:00:00Z'), ...data })),
+      count: vi.fn(async () => opts.usedToday ?? 0),
+    },
     $transaction: vi.fn(async (cb: (tx: unknown) => unknown) => cb(prisma)),
   } as unknown as PrismaService;
   const llm = {
@@ -46,7 +51,8 @@ function setup(opts: { available?: boolean } = {}) {
     extract: vi.fn(async () => ({ intro: 'Merke: Klatsch die Silben mit!', exercises: [genExercise] })),
   } as unknown as LlmService;
   const digest = { generate: vi.fn(async () => ({ markdown: '## Lernstand' })) } as unknown as DigestService;
-  return { svc: new SessionsService(prisma, llm, digest), prisma, llm, digest, itemCreates };
+  const config = { get: () => 5 } as unknown as ConfigService<Env, true>; // LLM_SESSIONS_PER_DAY
+  return { svc: new SessionsService(prisma, llm, digest, config), prisma, llm, digest, itemCreates };
 }
 
 describe('SessionsService.createLlm', () => {
@@ -60,6 +66,18 @@ describe('SessionsService.createLlm', () => {
     } catch (e) {
       expect((e as ApiException).getStatus()).toBe(503);
     }
+  });
+
+  it('429s once the profile hit its daily LLM-session cap — no model call, nothing persisted', async () => {
+    const { svc, llm, prisma } = setup({ usedToday: 5 });
+    try {
+      await svc.createLlm('a1', { profileId: 'p1', source: 'llm' });
+      expect.unreachable('should have thrown');
+    } catch (e) {
+      expect((e as ApiException).getStatus()).toBe(429);
+    }
+    expect((llm.extract as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
+    expect((prisma.session.create as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
   });
 
   it('generates, stores items as generated_by=llm (unit 0), and returns a session', async () => {

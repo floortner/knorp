@@ -37,6 +37,10 @@ export const envSchema = z.object({
   // EU data-residency / DPA acknowledgement for Anthropic-direct. Required in production before any LLM
   // call goes out (ARCHITECTURE §8): the app refuses to start with a key set but this unacknowledged.
   LLM_RESIDENCY_ACK: z.string().default(''),
+  // Per-profile daily caps on cost-bearing ★ ops (the app is free — approval gates WHO, these gate HOW
+  // MUCH). Counted from existing rows (session/chat_message), UTC day. Over cap → friendly 429.
+  LLM_SESSIONS_PER_DAY: z.coerce.number().int().positive().default(5),
+  CHAT_MESSAGES_PER_DAY: z.coerce.number().int().positive().default(60),
   AZURE_STORAGE_ACCOUNT: z.string().default(''),
   AZURE_STORAGE_CONTAINER: z.string().default(''),
   // Dev-only: where the local-filesystem Blob fake writes per-user files until the Azure adapter lands.

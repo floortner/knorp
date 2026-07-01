@@ -13,7 +13,15 @@ const analysis = {
   suggestedFocus: ['vowel_ei'],
 };
 
-function setup(opts: { owned?: boolean; row?: Record<string, unknown> | null; resultRow?: Record<string, unknown> | null } = {}) {
+function setup(
+  opts: {
+    owned?: boolean;
+    row?: Record<string, unknown> | null;
+    resultRow?: Record<string, unknown> | null;
+    stuckRows?: Array<{ id: string }>;
+    llmAvailable?: boolean;
+  } = {},
+) {
   const owned = opts.owned ?? true;
   const updates: Array<Record<string, unknown>> = [];
   const prisma = {
@@ -22,6 +30,7 @@ function setup(opts: { owned?: boolean; row?: Record<string, unknown> | null; re
       create: vi.fn(async () => ({ id: 'up-1' })),
       findUnique: vi.fn(async () => opts.row ?? null),
       findFirst: vi.fn(async () => opts.resultRow ?? null),
+      findMany: vi.fn(async () => opts.stuckRows ?? []),
       updateMany: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
         updates.push(data);
         return { count: 1 };
@@ -32,7 +41,10 @@ function setup(opts: { owned?: boolean; row?: Record<string, unknown> | null; re
     writeUserBinary: vi.fn(async () => 'users/a1/p1/homework/x.webp'),
     readBinary: vi.fn(async () => Buffer.from('img')),
   } as unknown as StorageService;
-  const llm = { extract: vi.fn(async () => analysis) } as unknown as LlmService;
+  const llm = {
+    extract: vi.fn(async () => analysis),
+    available: opts.llmAvailable ?? true,
+  } as unknown as LlmService;
   return { svc: new HomeworkService(prisma, storage, llm), prisma, storage, llm, updates };
 }
 
@@ -89,6 +101,43 @@ describe('HomeworkService.analyze', () => {
     const { svc, llm } = setup({ row: { id: 'up-1', imageKey: 'k', status: 'reviewed' } });
     await svc.analyze('up-1');
     expect((llm.extract as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
+  });
+});
+
+describe('HomeworkService.sweepPending', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('re-drives rows stuck in pending_analysis through analyze()', async () => {
+    const { svc, prisma, llm, updates } = setup({
+      stuckRows: [{ id: 'up-1' }],
+      row: { id: 'up-1', imageKey: 'k', status: 'pending_analysis' },
+    });
+    expect(await svc.sweepPending()).toBe(1);
+
+    const query = (prisma.homeworkUpload.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(query.where.status).toBe('pending_analysis');
+    expect(query.where.createdAt.lt).toBeInstanceOf(Date); // only rows past the min-age grace window
+    expect((llm.extract as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
+    expect(updates[0]).toMatchObject({ status: 'pending_review' });
+  });
+
+  it('does nothing while the LLM is unavailable (rows stay retryable for after cutover)', async () => {
+    const { svc, prisma } = setup({ llmAvailable: false, stuckRows: [{ id: 'up-1' }] });
+    expect(await svc.sweepPending()).toBe(0);
+    expect((prisma.homeworkUpload.findMany as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
+  });
+
+  it('keeps sweeping after one row fails', async () => {
+    const { svc, prisma, llm } = setup({
+      stuckRows: [{ id: 'up-1' }, { id: 'up-2' }],
+      row: { id: 'up-1', imageKey: 'k', status: 'pending_analysis' },
+    });
+    (llm.extract as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(new ApiException(503, 'PROVIDER_UNAVAILABLE', 'down'))
+      .mockResolvedValueOnce(analysis);
+    expect(await svc.sweepPending()).toBe(1);
+    // both rows were attempted despite the first failure
+    expect((prisma.homeworkUpload.findUnique as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(2);
   });
 });
 

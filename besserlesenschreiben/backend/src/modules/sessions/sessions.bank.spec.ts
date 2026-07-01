@@ -3,6 +3,8 @@ import { SessionsService } from './sessions.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { LlmService } from '../../services/llm/llm.service';
 import type { DigestService } from '../../services/digest/digest.service';
+import type { ConfigService } from '@nestjs/config';
+import type { Env } from '../../config/env';
 
 /** A minimal ItemBank row the selector + mapper can digest. */
 function bankItem(id: string, unit: number, skillTags: string[], generatedBy = 'seed') {
@@ -51,7 +53,8 @@ function setup(opts: { weak?: boolean; generated?: ReturnType<typeof bankItem>[]
   } as unknown as PrismaService;
   const llm = { available: false } as unknown as LlmService;
   const digest = {} as unknown as DigestService;
-  return { svc: new SessionsService(prisma, llm, digest), prisma, findManyCalls };
+  const config = { get: () => 5 } as unknown as ConfigService<Env, true>;
+  return { svc: new SessionsService(prisma, llm, digest, config), prisma, findManyCalls };
 }
 
 describe('SessionsService.createBank — blending generated (unit 0) items', () => {

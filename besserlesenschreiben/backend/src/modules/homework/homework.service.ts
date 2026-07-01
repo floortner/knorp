@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -15,6 +15,13 @@ type HomeworkStatus = 'pending_analysis' | 'pending_review' | 'reviewed' | 'reje
 
 const ACCEPTED = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_DIM = 1600; // downscale for cost/speed before vision (ARCHITECTURE §10)
+
+// Retry sweep for uploads whose fire-and-forget analysis died (process restart, provider blip):
+// every SWEEP_INTERVAL_MS, re-drive rows still pending_analysis that are older than SWEEP_MIN_AGE_MS
+// (young rows are likely mid-flight), a bounded batch at a time.
+const SWEEP_INTERVAL_MS = 5 * 60_000;
+const SWEEP_MIN_AGE_MS = 2 * 60_000;
+const SWEEP_BATCH = 10;
 
 const VISION_SYSTEM = [
   'Du analysierst das Foto einer deutschen Grundschul-Hausübung (Lesen/Schreiben).',
@@ -33,14 +40,62 @@ const VISION_SYSTEM = [
  * bytes or analysis content (§6).
  */
 @Injectable()
-export class HomeworkService {
+export class HomeworkService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger('HomeworkService');
+  private sweepTimer: NodeJS.Timeout | null = null;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly llm: LlmService,
   ) {}
+
+  onModuleInit(): void {
+    this.sweepTimer = setInterval(() => {
+      void this.sweepPending().catch((err) =>
+        this.logger.warn({ event: 'homework.sweep_failed', name: (err as Error)?.name }, 'sweep failed'),
+      );
+    }, SWEEP_INTERVAL_MS);
+    this.sweepTimer.unref?.(); // never keep the process alive just for the sweep
+  }
+
+  onModuleDestroy(): void {
+    if (this.sweepTimer) clearInterval(this.sweepTimer);
+    this.sweepTimer = null;
+  }
+
+  /**
+   * Re-drive analyses stuck in pending_analysis (fire-and-forget lost to a crash/provider outage).
+   * Sequential + batch-capped so a backlog never bursts the provider; `analyze` itself re-checks the
+   * status, so racing an in-flight analysis is harmless. No-op while the LLM is unavailable (stub/no key)
+   * — retrying would fail identically and the rows stay retryable for after cutover.
+   */
+  async sweepPending(): Promise<number> {
+    if (!this.llm.available) return 0;
+
+    const stuck = await this.prisma.homeworkUpload.findMany({
+      where: { status: 'pending_analysis', createdAt: { lt: new Date(Date.now() - SWEEP_MIN_AGE_MS) } },
+      orderBy: { createdAt: 'asc' },
+      take: SWEEP_BATCH,
+      select: { id: true },
+    });
+    if (stuck.length === 0) return 0;
+
+    this.logger.log({ event: 'homework.sweep', count: stuck.length }, 'retrying stuck analyses');
+    let recovered = 0;
+    for (const row of stuck) {
+      try {
+        await this.analyze(row.id);
+        recovered += 1;
+      } catch (err) {
+        this.logger.warn(
+          { event: 'homework.analyze_failed', uploadId: row.id, name: (err as Error)?.name },
+          'sweep retry failed',
+        );
+      }
+    }
+    return recovered;
+  }
 
   /** Accept a photo, store a sanitised WebP, create the row, and kick async analysis. */
   async upload(
