@@ -3,6 +3,7 @@ import type { SessionResponse } from '@/lib/types';
 import { recordAttempt } from '@/lib/telemetry';
 import { useSoundOn } from '@/features/settings/a11y';
 import { useCompleteSession } from '@/features/sessions/useCompleteSession';
+import { Button } from '@/components/ui/button';
 import { ExerciseView } from './ExerciseView';
 import { LessonComplete } from './LessonComplete';
 import { promptAndExpected } from './derive';
@@ -19,6 +20,8 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
   const items = session.items;
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
+  // Generated lectures open with a short teaching card (session.intro); bank sessions have none.
+  const [showIntro, setShowIntro] = useState(Boolean(session.intro));
   const attemptNo = useRef(1);
   const startedAt = useRef(0);
 
@@ -38,6 +41,21 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
       allUnitsComplete={complete.data?.allUnitsComplete ?? false}
     />
   );
+
+  if (showIntro && session.intro) {
+    return (
+      <IntroCard
+        text={session.intro}
+        onStart={() => {
+          // The first exercise becomes visible NOW — restart its timer so timeMs never
+          // includes intro-reading time (telemetry invariant, SPEC §4).
+          startedAt.current = performance.now();
+          attemptNo.current = 1;
+          setShowIntro(false);
+        }}
+      />
+    );
+  }
 
   const onAttempt = (given: string, isCorrect: boolean) => {
     const { prompt, expected } = promptAndExpected(ex);
@@ -72,6 +90,21 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
       <ProgressBar index={index} total={items.length} />
       {/* key forces a fresh item state machine per exercise */}
       <ExerciseView key={ex.id} ex={ex} onAttempt={onAttempt} onSolved={onSolved} soundOn={soundOn} />
+    </div>
+  );
+}
+
+/** The lecture's teaching moment: mascot + Merksatz, dismissed by the child when ready. */
+function IntroCard({ text, onStart }: { text: string; onStart: () => void }) {
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 py-8 text-center">
+      <img src="/nepo.svg" alt="" className="h-24 w-24" />
+      <div className="max-w-sm rounded-card bg-teal-tint/70 p-5">
+        <p className="font-display text-lg font-bold text-ink">{text}</p>
+      </div>
+      <Button size="lg" onClick={onStart}>
+        Los geht's!
+      </Button>
     </div>
   );
 }

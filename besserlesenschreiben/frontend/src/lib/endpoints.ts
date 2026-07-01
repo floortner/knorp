@@ -53,10 +53,11 @@ export const coreApi = {
   units: (profileId: string) =>
     apiFetch<Unit[]>(`/units?profileId=${encodeURIComponent(profileId)}`),
 
-  createSession: (profileId: string, unit?: number) =>
+  /** `source:'llm'` requests a generated lecture (teaching intro + fresh exercises); default is bank. */
+  createSession: (profileId: string, unit?: number, source?: 'bank' | 'llm') =>
     apiFetch<SessionResponse>('/sessions', {
       method: 'POST',
-      body: { profileId, ...(unit !== undefined ? { unit } : {}) },
+      body: { profileId, ...(unit !== undefined ? { unit } : {}), ...(source ? { source } : {}) },
     }),
 
   completeSession: (sessionId: string) =>

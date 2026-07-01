@@ -22,17 +22,19 @@ const LLM_ITEM_UNIT = 0; // sentinel: generated items live outside the curated u
 const LLM_SESSION_SIZE = 6;
 
 /**
- * What the model returns: a batch of wire-shaped exercises (id/audioUrl are placeholders we overwrite).
- * Uses the SOLVABLE schema — a generated exercise whose answer isn't among its options (etc.) or that
- * carries an unknown skill tag is rejected, never persisted.
+ * What the model returns: a short teaching intro ("Merke: …") plus a batch of wire-shaped exercises
+ * (id/audioUrl are placeholders we overwrite). Uses the SOLVABLE schema — a generated exercise whose
+ * answer isn't among its options (etc.) or that carries an unknown skill tag is rejected, never persisted.
  */
 const generatedSessionSchema = z.object({
+  intro: z.string().min(1).max(300),
   exercises: z.array(solvableExerciseSchema).min(1).max(LLM_SESSION_SIZE),
 });
 
 // One compact, valid exemplar per common type — few-shot examples are the biggest lever on structured
 // generation quality. Kept byte-stable so the system prompt can be prompt-cached across calls.
 const FEW_SHOT = JSON.stringify({
+  intro: 'Merke: Jede Silbe hat einen Klinger (a, e, i, o, u). Klatsch mit — dann hörst du die Silben!',
   exercises: [
     { type: 'count', word: 'Banane', syll: ['Ba', 'na', 'ne'], answer: 3, opts: [2, 3, 4], skillTags: ['syllable_count'], praise: 'Toll gezählt!', id: 'x', audioUrl: null },
     { type: 'rhyme', word: 'Haus', options: ['Maus', 'Tisch', 'Ball'], answer: 'Maus', skillTags: ['rhyme'], praise: 'Das reimt sich!', id: 'x', audioUrl: null },
@@ -41,8 +43,9 @@ const FEW_SHOT = JSON.stringify({
 });
 
 const LLM_SYSTEM = [
-  'Du generierst deutsche Grundschul-Übungen zum Lesen und Schreiben.',
-  `Erzeuge bis zu ${LLM_SESSION_SIZE} abwechslungsreiche Übungen, die GENAU auf die genannten Förderschwerpunkte und die Klassenstufe zielen.`,
+  'Du generierst eine kleine deutsche Grundschul-Lektion zum Lesen und Schreiben.',
+  'Beginne mit intro: 1–2 kurze, kindgerechte Sätze, die die Regel oder den Trick zu den Förderschwerpunkten erklären (z. B. "Merke: …"). Kein Gruß, keine Frage.',
+  `Erzeuge dann bis zu ${LLM_SESSION_SIZE} abwechslungsreiche Übungen, die GENAU auf die genannten Förderschwerpunkte und die Klassenstufe zielen.`,
   'Jede Übung MUSS eindeutig korrekt lösbar sein: bei "count" ist answer die richtige Silbenzahl und in opts enthalten;',
   'bei "order"/"arrange" sind tiles genau die syll in anderer Reihenfolge; bei "pairs" sind beide pair-Wörter in tiles und reimen sich;',
   'bei allen Auswahlübungen ist answer in options enthalten; bei "build" lässt sich answer aus tiles legen.',
@@ -123,7 +126,18 @@ export class SessionsService {
     });
     const priority = new Set<string>([...weakSkills(recent), ...due.map((d) => d.skillTag)]);
 
-    const selected = selectBankItems(items, priority);
+    // Amortize LLM-generated content: validated unit-0 items matching the weak/due skills join the
+    // candidate pool (item_bank is global by design, so one child's generated lecture benefits all).
+    // The selector already ranks purely on skillTags/difficulty/id, so no change there.
+    const generated = priority.size
+      ? await this.prisma.itemBank.findMany({
+          where: { unit: LLM_ITEM_UNIT, generatedBy: 'llm', skillTags: { hasSome: [...priority] } },
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+        })
+      : [];
+
+    const selected = selectBankItems([...items, ...generated], priority);
     const session = await this.prisma.session.create({
       data: { profileId: profile.id, unit, itemIds: selected.map((i) => i.id), source: 'bank' },
     });
@@ -235,6 +249,7 @@ export class SessionsService {
       profileId: profile.id,
       unit,
       generatedAt: created.session.createdAt,
+      intro: generated.intro,
       items: created.items.map(toExercise),
     };
   }

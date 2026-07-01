@@ -67,6 +67,10 @@ export const sessionResponseSchema = z.object({
   profileId: z.string(),
   unit: z.number().int(),
   generatedAt: z.string(),
+  // Short teaching text ("Merke: …") shown as a card before the first exercise. Only LLM-generated
+  // lectures carry one; bank sessions omit it. Must live in this schema or the ZodResponseInterceptor
+  // strips it from the wire.
+  intro: z.string().optional(),
   items: z.array(exerciseSchema),
 });
 

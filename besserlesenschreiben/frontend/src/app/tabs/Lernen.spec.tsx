@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -29,6 +29,8 @@ vi.mock('@/lib/endpoints', () => ({
 
 // Imported after the mock is registered.
 const { Lernen } = await import('./Lernen');
+const { coreApi } = await import('@/lib/endpoints');
+const { ApiError } = await import('@/lib/api');
 
 function renderHome() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -42,6 +44,8 @@ function renderHome() {
 }
 
 describe('Lernen home', () => {
+  beforeEach(() => vi.mocked(coreApi.createSession).mockReset());
+
   it('renders the profile, stars and unit cards from live data', async () => {
     renderHome();
     expect(await screen.findByText('Mia')).toBeInTheDocument();
@@ -51,5 +55,31 @@ describe('Lernen home', () => {
     // The current unit exposes a start button; locked units do not.
     expect(screen.getByRole('button', { name: /Einheit 1 üben/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Einheit 2 üben/i })).not.toBeInTheDocument();
+  });
+
+  it('✨ card requests a generated lecture (source: llm)', async () => {
+    const { userEvent } = await import('@testing-library/user-event').then((m) => ({ userEvent: m.default }));
+    vi.mocked(coreApi.createSession).mockResolvedValue({ sessionId: 's1', items: [] } as never);
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(await screen.findByRole('button', { name: /Neue Übungen für dich/i }));
+    expect(coreApi.createSession).toHaveBeenCalledWith('prof-1', undefined, 'llm');
+  });
+
+  it('falls back to a bank session with a friendly note when the LLM is unavailable (503)', async () => {
+    const { userEvent } = await import('@testing-library/user-event').then((m) => ({ userEvent: m.default }));
+    vi.mocked(coreApi.createSession)
+      .mockRejectedValueOnce(new ApiError(503, 'PROVIDER_UNAVAILABLE', 'KI nicht verfügbar.'))
+      .mockResolvedValueOnce({ sessionId: 's2', items: [] } as never);
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(await screen.findByRole('button', { name: /Neue Übungen für dich/i }));
+
+    expect(await screen.findByText(/Zauber-Übungen machen gerade Pause/i)).toBeInTheDocument();
+    // second call is the bank fallback (no source)
+    expect(coreApi.createSession).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(coreApi.createSession).mock.calls[1]).toEqual(['prof-1', undefined, undefined]);
   });
 });

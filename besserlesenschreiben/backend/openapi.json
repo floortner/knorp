@@ -1006,6 +1006,9 @@
                     "generatedAt": {
                       "type": "string"
                     },
+                    "intro": {
+                      "type": "string"
+                    },
                     "items": {
                       "type": "array",
                       "items": {

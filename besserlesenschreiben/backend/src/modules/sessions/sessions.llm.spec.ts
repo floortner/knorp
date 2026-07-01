@@ -43,7 +43,7 @@ function setup(opts: { available?: boolean } = {}) {
   } as unknown as PrismaService;
   const llm = {
     available: opts.available ?? true,
-    extract: vi.fn(async () => ({ exercises: [genExercise] })),
+    extract: vi.fn(async () => ({ intro: 'Merke: Klatsch die Silben mit!', exercises: [genExercise] })),
   } as unknown as LlmService;
   const digest = { generate: vi.fn(async () => ({ markdown: '## Lernstand' })) } as unknown as DigestService;
   return { svc: new SessionsService(prisma, llm, digest), prisma, llm, digest, itemCreates };
@@ -77,6 +77,7 @@ describe('SessionsService.createLlm', () => {
     expect((prisma.session.create as ReturnType<typeof vi.fn>).mock.calls[0][0].data).toMatchObject({ source: 'llm', unit: 2 });
     // wire item is reconstructed via the mapper: fresh id + type + payload fields
     expect(res.items[0]).toMatchObject({ id: 'item-1', type: 'count', word: 'Sonne', audioUrl: null });
-    expect(res).toMatchObject({ profileId: 'p1', unit: 2 });
+    // the teaching intro rides on the session response (lecture card before exercise 1)
+    expect(res).toMatchObject({ profileId: 'p1', unit: 2, intro: 'Merke: Klatsch die Silben mit!' });
   });
 });
