@@ -102,17 +102,34 @@ async function main(): Promise<void> {
 
   console.log(`item_bank seeded: ${inserted} inserted, ${updated} updated, ${items.length} total`);
 
-  // Prune content that no longer exists in the program: seed rows dropped from the file, and any row
-  // whose exercise type left the contract (e.g. the pre-Vokaltraining types, incl. old LLM unit-0 items).
-  // Serving such a row would hit the client's unknown-type guard, so removal is the safe default.
+  // Prune content that no longer exists in the program. Two cases, handled differently because
+  // `attempt.item` is an optional relation (SetNull on delete): deleting a referenced item nulls those
+  // attempts' item_id and collapses them onto the sentinel in the functional unique index
+  // `(session_id, COALESCE(item_id, …), attempt_no)` → P2002.
+  //
+  // 1. Off-contract TYPES (e.g. the pre-refactor taxonomy) are unrenderable AND fail the session response
+  //    contract, so they MUST go regardless of history. Delete their attempts first (an attempt on a type
+  //    the program no longer has is defunct), then the rows — no SetNull, no collision.
+  const offContractIds = (
+    await prisma.itemBank.findMany({
+      where: { exerciseType: { notIn: [...EXERCISE_TYPES] } },
+      select: { id: true },
+    })
+  ).map((r) => r.id);
+  const prunedAttempts = offContractIds.length
+    ? (await prisma.attempt.deleteMany({ where: { itemId: { in: offContractIds } } })).count
+    : 0;
+  const pruneTypes = await prisma.itemBank.deleteMany({ where: { id: { in: offContractIds } } });
+
+  // 2. Stale SEED rows whose type is still VALID stay renderable — only drop the unreferenced ones so a
+  //    routine re-seed never destroys telemetry for content that's still serveable.
   const pruneSeed = await prisma.itemBank.deleteMany({
-    where: { generatedBy: "seed", seedKey: { notIn: items.map((r) => r.seed_key) } },
-  });
-  const pruneTypes = await prisma.itemBank.deleteMany({
-    where: { exerciseType: { notIn: [...EXERCISE_TYPES] } },
+    where: { generatedBy: "seed", seedKey: { notIn: items.map((r) => r.seed_key) }, attempts: { none: {} } },
   });
   if (pruneSeed.count || pruneTypes.count) {
-    console.log(`item_bank pruned: ${pruneSeed.count} stale seed rows, ${pruneTypes.count} off-contract rows`);
+    console.log(
+      `item_bank pruned: ${pruneSeed.count} stale seed rows, ${pruneTypes.count} off-contract rows (+${prunedAttempts} defunct attempts)`,
+    );
   }
 
   // Admin bootstrap (ARCHITECTURE §1b): there is no staff self-signup, so the first admin reviewer must
