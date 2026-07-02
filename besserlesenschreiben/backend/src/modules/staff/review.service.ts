@@ -216,7 +216,10 @@ export class ReviewService {
         data: { profileId: upload.profileId, source: 'homework', itemIds: [] },
         select: { id: true },
       });
-      for (const item of reviewed.items) {
+      // Each homework item is a distinct evidence row in the same session with itemId=null. The attempt
+      // unique index keys on (session_id, COALESCE(item_id, sentinel), attempt_no), so a shared attemptNo
+      // collapses every null-item row onto one key → P2002 on the 2nd item. Index them to stay distinct.
+      for (const [i, item] of reviewed.items.entries()) {
         await tx.attempt.create({
           data: {
             profileId: upload.profileId,
@@ -228,7 +231,7 @@ export class ReviewService {
             given: item.childAnswer,
             isCorrect: item.correct,
             timeMs: 0,
-            attemptNo: 1,
+            attemptNo: i + 1,
             skillTags: item.errorType ? [item.errorType] : [],
           },
         });
