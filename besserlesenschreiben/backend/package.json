@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "seed": "prisma db seed",
     "openapi:export": "tsx scripts/export-openapi.ts",
+    "llm:smoke": "tsx scripts/llm-smoke.ts",
     "prisma:generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",

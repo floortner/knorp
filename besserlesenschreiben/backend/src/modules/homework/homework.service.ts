@@ -23,7 +23,8 @@ const SWEEP_INTERVAL_MS = 5 * 60_000;
 const SWEEP_MIN_AGE_MS = 2 * 60_000;
 const SWEEP_BATCH = 10;
 
-const VISION_SYSTEM = [
+// Exported so the cutover smoke script (scripts/llm-smoke.ts) probes the real vision prompt.
+export const VISION_SYSTEM = [
   'Du analysierst das Foto einer deutschen Grundschul-Hausübung (Lesen/Schreiben).',
   'Erkenne die einzelnen Aufgaben und die Antworten des Kindes. Markiere je Aufgabe, ob sie korrekt ist,',
   'und benenne bei Fehlern eine knappe Fehlerkategorie (z. B. "vowel_length", "dehnung_h", "double_consonant").',

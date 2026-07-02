@@ -17,6 +17,8 @@ export function createLlmProvider(opts: {
   visionModel?: string;
   isProd: boolean;
   residencyAck: boolean;
+  /** Optional per-call usage tap (token counts only) — used by scripts/llm-smoke.ts. */
+  onUsage?: ConstructorParameters<typeof AnthropicLlmProvider>[0]['onUsage'];
 }): LlmProvider {
   if (!opts.apiKey) return new StubLlmProvider();
   if (opts.isProd && !opts.residencyAck) {
@@ -28,6 +30,7 @@ export function createLlmProvider(opts: {
     apiKey: opts.apiKey,
     model: opts.model,
     visionModel: opts.visionModel || opts.model,
+    onUsage: opts.onUsage,
   });
 }
 
