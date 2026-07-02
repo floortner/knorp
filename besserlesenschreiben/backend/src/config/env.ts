@@ -15,6 +15,10 @@ export const envSchema = z.object({
   STAFF_JWT_SECRET: z.string().min(8),
   // Staff portal origin for CORS (credentials on). Empty → CORS reflects any origin (dev default).
   REVIEWER_ORIGIN: z.string().default(''),
+  // Public base URL of this API incl. the /api/v1 prefix. Used to build capability URLs the browser loads
+  // directly — e.g. serving homework images from the filesystem store (no Azure SAS). Empty →
+  // http://localhost:${PORT}/api/v1 (dev default).
+  PUBLIC_API_URL: z.string().default(''),
   // Admin bootstrap (ARCHITECTURE §1b): comma-separated emails upserted as active admin reviewers by the
   // seed (no staff self-signup). Empty in dev; set to the owner's email so someone can approve families.
   STAFF_ADMIN_EMAILS: z.string().default(''),

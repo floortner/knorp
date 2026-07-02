@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { BlobServiceClient, ContainerClient, UserDelegationKey } from '@azure/storage-blob';
 import type { Env } from '../../config/env';
 
@@ -26,6 +27,10 @@ export class StorageService {
   private readonly container: string;
   private readonly localRoot: string;
   private readonly useAzure: boolean;
+  // Filesystem-store image serving (dev / no-Azure): sign short-lived capability tokens for the
+  // homework-image endpoint, and know our own public base to build the URL the reviewer's <img> loads.
+  private readonly imageSecret: string;
+  private readonly publicApiBase: string;
   private blobServicePromise: Promise<BlobServiceClient> | null = null;
   // A user-delegation key is valid for days and signs many SAS tokens — cache it instead of fetching one
   // per blob (the review queue signs up to 50 URLs per page load).
@@ -36,6 +41,10 @@ export class StorageService {
     this.container = config.get('AZURE_STORAGE_CONTAINER', { infer: true });
     this.useAzure = this.account.length > 0;
     this.localRoot = config.get('STORAGE_LOCAL_DIR', { infer: true }) || join(tmpdir(), 'blsb-dev-blob');
+    this.imageSecret = config.get('STAFF_JWT_SECRET', { infer: true });
+    this.publicApiBase =
+      config.get('PUBLIC_API_URL', { infer: true }) ||
+      `http://localhost:${config.get('PORT', { infer: true })}/api/v1`;
 
     if (this.useAzure && !this.container) {
       throw new Error('AZURE_STORAGE_ACCOUNT is set but AZURE_STORAGE_CONTAINER is missing.');
@@ -217,9 +226,39 @@ export class StorageService {
       ).toString();
       return `https://${this.account}.blob.core.windows.net/${this.container}/${encodeURI(key)}?${sas}`;
     }
-    // Dev (no Blob): there is no real object store and no homework-upload pipeline yet, so the queue is
-    // empty in practice. Return a stable dev placeholder URL; local image serving lands with the homework
-    // upload milestone (Phase 2, SPEC §10).
-    return `${this.localRoot}/${key}`;
+    // Filesystem store (no Azure): serve the bytes over HTTP from our own signed endpoint. The token is a
+    // short-lived capability (SAS-equivalent) so a cross-origin <img> on the reviewer needs no cookie; the
+    // bytes come from readBinary(key) on the local blob fake. See StorageController.
+    const exp = Date.now() + ttlSeconds * 1000;
+    const payload = Buffer.from(JSON.stringify({ k: key, e: exp })).toString('base64url');
+    const token = `${payload}.${this.signImageToken(payload)}`;
+    return `${this.publicApiBase}/storage/homework-image?token=${encodeURIComponent(token)}`;
+  }
+
+  private signImageToken(payload: string): string {
+    return createHmac('sha256', this.imageSecret).update(payload).digest('base64url');
+  }
+
+  /**
+   * Verify a homework-image capability token → the stored key it authorises, or null if the signature is
+   * wrong or it has expired. Used by StorageController to gate filesystem-store image reads.
+   */
+  verifyHomeworkImageToken(token: string): string | null {
+    const dot = token.indexOf('.');
+    if (dot < 0) return null;
+    const payload = token.slice(0, dot);
+    const sig = Buffer.from(token.slice(dot + 1));
+    const expected = Buffer.from(this.signImageToken(payload));
+    if (sig.length !== expected.length || !timingSafeEqual(sig, expected)) return null;
+    try {
+      const { k, e } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8')) as {
+        k: unknown;
+        e: unknown;
+      };
+      if (typeof k !== 'string' || typeof e !== 'number' || Date.now() > e) return null;
+      return k;
+    } catch {
+      return null;
+    }
   }
 }
