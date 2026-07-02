@@ -8,14 +8,14 @@ import type { Env } from '../../config/env';
 import { ApiException } from '../../common/exceptions/api-exception';
 
 const genExercise = {
-  type: 'count',
-  word: 'Sonne',
-  syll: ['Son', 'ne'],
-  answer: 2,
-  opts: [2, 3],
+  type: 'fixvowel',
+  pseudo: 'Sunne',
+  vowel: 'o',
+  options: ['Sonne', 'Wand', 'Dach'],
+  answer: 'Sonne',
   id: 'placeholder',
   audioUrl: null,
-  skillTags: ['syllable_count'],
+  skillTags: ['vowel_substitution'],
   praise: 'Super!',
 };
 
@@ -86,15 +86,15 @@ describe('SessionsService.createLlm', () => {
 
     expect((llm.extract as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
     // item persisted with the backend-owned fields (id/audioUrl stripped from payload)
-    expect(itemCreates[0]).toMatchObject({ unit: 0, exerciseType: 'count', generatedBy: 'llm', audioUrl: null });
-    expect(itemCreates[0].skillTags).toEqual(['syllable_count']);
+    expect(itemCreates[0]).toMatchObject({ unit: 0, exerciseType: 'fixvowel', generatedBy: 'llm', audioUrl: null });
+    expect(itemCreates[0].skillTags).toEqual(['vowel_substitution']);
     expect((itemCreates[0].payload as Record<string, unknown>).id).toBeUndefined();
-    expect((itemCreates[0].payload as Record<string, unknown>).word).toBe('Sonne');
+    expect((itemCreates[0].payload as Record<string, unknown>).pseudo).toBe('Sunne');
     expect((itemCreates[0].payload as Record<string, unknown>).praise).toBe('Super!');
 
     expect((prisma.session.create as ReturnType<typeof vi.fn>).mock.calls[0][0].data).toMatchObject({ source: 'llm', unit: 2 });
     // wire item is reconstructed via the mapper: fresh id + type + payload fields
-    expect(res.items[0]).toMatchObject({ id: 'item-1', type: 'count', word: 'Sonne', audioUrl: null });
+    expect(res.items[0]).toMatchObject({ id: 'item-1', type: 'fixvowel', pseudo: 'Sunne', audioUrl: null });
     // the teaching intro rides on the session response (lecture card before exercise 1)
     expect(res).toMatchObject({ profileId: 'p1', unit: 2, intro: 'Merke: Klatsch die Silben mit!' });
   });

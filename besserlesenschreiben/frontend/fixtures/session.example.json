@@ -1,26 +1,258 @@
 {
-  "_comment": "GOLDEN FIXTURE — the example POST /sessions response the frontend must render. Covers all 12 exercise types (one each) with real content extracted from the prototype's LESSONS[]. Use this as (a) the backend's example payload, (b) the frontend's render target, (c) the snapshot-test fixture AGENTS.md asks for. Field shapes mirror backend SPEC.md §6 and the Exercise union in frontend SPEC.md §3. skillTags use the snake_case taxonomy from backend scripts/build-seed.ts (primary skill first). audioUrl is null here so the client falls back to Web Speech (de-DE); the backend may populate audioUrl / syllableAudio with pre-generated voice.",
-  "sessionId": "sess_demo_0001",
-  "profileId": "prof_mia_0001",
+  "_comment": "Golden example session payload — exactly one exercise of each of the 14 Vokaltraining types (frontend SPEC §3). Drift-gated against the backend contract by backend/src/contract/contract.spec.ts.",
+  "sessionId": "ses_example_0001",
+  "profileId": "prof_example_0001",
   "unit": 1,
-  "generatedAt": "2026-06-25T09:00:00Z",
+  "generatedAt": "2026-07-01T12:00:00.000Z",
   "items": [
-    { "id": "ex_count_001", "type": "count", "word": "Sommer", "syll": ["Som", "mer"], "answer": 2, "opts": [2, 3, 4], "praise": "Richtig! Som·mer – zwei Silben.", "audioUrl": null, "syllableAudio": null, "skillTags": ["syllable_count", "syllable_segmentation"] },
-    { "id": "ex_gap_001", "type": "gap", "word": "Banane", "syll": ["Ba", "na", "ne"], "gapIndex": 1, "answer": "na", "options": ["na", "mo", "le"], "praise": "Genau! Ba·na·ne ist komplett.", "audioUrl": null, "skillTags": ["syllable_gap", "syllable_segmentation"] },
-    { "id": "ex_order_001", "type": "order", "word": "Schmetterling", "syll": ["Schmet", "ter", "ling"], "tiles": ["ter", "Schmet", "ling"], "praise": "Super! Schmet·ter·ling sitzt.", "audioUrl": null, "skillTags": ["syllable_order", "syllable_segmentation"] },
-    { "id": "ex_rhyme_001", "type": "rhyme", "word": "Maus", "options": ["Haus", "Tisch", "Ball"], "answer": "Haus", "praise": "Genau! Maus reimt sich auf Haus.", "audioUrl": null, "skillTags": ["rhyme"] },
-    { "id": "ex_initial_001", "type": "initial", "word": "Apfel", "emoji": "🍎", "answer": "A", "options": ["A", "E", "O"], "praise": "Richtig! Apfel beginnt mit A.", "audioUrl": null, "skillTags": ["phoneme_initial", "letter_sound"] },
-    { "id": "ex_letter_001", "type": "letter", "word": "Sonne", "letters": ["S", "o", "n", "n", "e"], "gapIndex": 2, "answer": "n", "options": ["n", "m", "r"], "praise": "Genau! In Sonne fehlt das n.", "audioUrl": null, "skillTags": ["phoneme_position", "letter_sound"] },
-    { "id": "ex_case_001", "type": "case", "word": "Hund", "emoji": "🐶", "answer": "Hund", "options": ["Hund", "hund"], "praise": "Richtig! Hund ist ein Nomen – groß.", "audioUrl": null, "skillTags": ["capitalization", "word_class_noun"] },
-    { "id": "ex_arrange_001", "type": "arrange", "word": "Maus", "syll": ["M", "a", "u", "s"], "tiles": ["a", "s", "M", "u"], "praise": "Super! M·a·u·s – richtig geordnet.", "audioUrl": null, "skillTags": ["letter_order", "spelling"] },
-    { "id": "ex_nonsense_001", "type": "nonsense", "word": "Lomp", "answer": "Quatschwort", "options": ["Echtes Wort", "Quatschwort"], "praise": "Genau! Lomp ist ein Quatschwort.", "audioUrl": null, "skillTags": ["lexical_decision"] },
-    { "id": "ex_pairs_001", "type": "pairs", "tiles": ["Haus", "Tisch", "Maus", "Ball"], "pair": ["Haus", "Maus"], "praise": "Super! Haus und Maus reimen sich.", "audioUrl": null, "skillTags": ["rhyme_pairs", "rhyme"] },
-    { "id": "ex_bd_001", "type": "bd", "glyph": "d", "answer": "d", "options": ["b", "d", "p"], "praise": "Richtig! Das ist ein d – der Bauch zeigt nach rechts.", "audioUrl": null, "skillTags": ["letter_discrimination"] },
-    { "id": "ex_vowel_001", "type": "vowel", "word": "Liebe", "letters": ["L", "ie", "b", "e"], "gapIndex": 1, "answer": "ie", "options": ["ie", "ei", "eu"], "praise": "Genau! Liebe schreibt man mit ie.", "audioUrl": null, "skillTags": ["vowel_ie", "vowel_spelling", "spelling"] },
-    { "id": "ex_swipe_001", "type": "swipe", "word": "Sommer", "leftLabel": "1 Silbe", "rightLabel": "2 Silben", "answer": "right", "praise": "Richtig! Sommer hat 2 Silben.", "audioUrl": null, "skillTags": ["syllable_count"] },
-    { "id": "ex_odd_001", "type": "odd", "words": ["Haus", "Maus", "Baum", "Laus"], "answer": "Baum", "instruction": "Welches Wort reimt sich nicht?", "praise": "Richtig! Baum passt nicht zu den anderen.", "audioUrl": null, "skillTags": ["rhyme"] },
-    { "id": "ex_listen_001", "type": "listen", "word": "Schmetterling", "instruction": "Wie viele Silben hörst du?", "options": ["2", "3", "4"], "answer": "3", "praise": "Richtig! Schmet·ter·ling – drei Silben.", "audioUrl": null, "skillTags": ["syllable_count", "phonological_awareness"] },
-    { "id": "ex_sentence_001", "type": "sentence", "tokens": ["Der", "Hund", "läuft", "schnell", "."], "instruction": "Tippe das Nomen (Hauptwort) an.", "answer": "Hund", "praise": "Richtig! Hund ist ein Nomen.", "audioUrl": null, "skillTags": ["capitalization", "word_class_noun"] },
-    { "id": "ex_build_001", "type": "build", "emoji": "🐱", "word": "Katze", "tiles": ["t", "K", "a", "z", "e"], "answer": ["K", "a", "t", "z", "e"], "praise": "Super! K·a·t·z·e – richtig buchstabiert!", "audioUrl": null, "skillTags": ["spelling", "letter_order"] }
+    {
+      "id": "ex_raster_001",
+      "type": "raster",
+      "word": "Schnur",
+      "onset": "Schn",
+      "vowel": "u",
+      "coda": "r",
+      "tiles": [
+        "u",
+        "r",
+        "Schn"
+      ],
+      "praise": "Super! Schn · u · r = Schnur.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "word_raster",
+        "vowel_identify"
+      ]
+    },
+    {
+      "id": "ex_findvowel_002",
+      "type": "findvowel",
+      "word": "Schal",
+      "letters": [
+        "S",
+        "c",
+        "h",
+        "a",
+        "l"
+      ],
+      "answer": "a",
+      "praise": "Genau! Der Selbstlaut in Schal ist a.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "vowel_identify"
+      ]
+    },
+    {
+      "id": "ex_realword_003",
+      "type": "realword",
+      "word": "Tür",
+      "answer": "wort",
+      "praise": "Super gefunden!",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "lexical_decision"
+      ]
+    },
+    {
+      "id": "ex_fixvowel_004",
+      "type": "fixvowel",
+      "pseudo": "Hend",
+      "vowel": "a",
+      "options": [
+        "Hand",
+        "Ball",
+        "Wand"
+      ],
+      "answer": "Hand",
+      "praise": "Richtig! Hend wird zu Hand.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "vowel_substitution",
+        "lexical_decision"
+      ]
+    },
+    {
+      "id": "ex_swapvowel_005",
+      "type": "swapvowel",
+      "word": "Hand",
+      "options": [
+        "u",
+        "o",
+        "i"
+      ],
+      "answers": [
+        "u"
+      ],
+      "praise": "Ein neues Wort ist entstanden!",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "vowel_substitution"
+      ]
+    },
+    {
+      "id": "ex_length_006",
+      "type": "length",
+      "word": "liegt",
+      "vowel": "ie",
+      "answer": "lang",
+      "hint": "ie ist ein Längezeichen",
+      "praise": "Richtig! ie ist ein Längezeichen.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "vowel_length",
+        "dehnung_h"
+      ]
+    },
+    {
+      "id": "ex_sylvalid_007",
+      "type": "sylvalid",
+      "syllable": "pan",
+      "answer": "ja",
+      "praise": "Super gefunden!",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "syllable_validity",
+        "vowel_identify"
+      ]
+    },
+    {
+      "id": "ex_insertvowel_008",
+      "type": "insertvowel",
+      "pattern": "B_ch",
+      "word": "Buch",
+      "options": [
+        "u",
+        "e",
+        "i"
+      ],
+      "answer": "u",
+      "praise": "Richtig! Buch.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "vowel_identify",
+        "vowel_substitution"
+      ]
+    },
+    {
+      "id": "ex_paircheck_009",
+      "type": "paircheck",
+      "left": "pla",
+      "right": "pla",
+      "answer": "gleich",
+      "praise": "Super gefunden!",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "visual_discrimination"
+      ]
+    },
+    {
+      "id": "ex_pickword_010",
+      "type": "pickword",
+      "options": [
+        "Berof",
+        "Berit",
+        "Beref",
+        "Beruf",
+        "Berat",
+        "Berif"
+      ],
+      "answer": "Beruf",
+      "praise": "Genau, Beruf ist das echte Wort!",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "lexical_decision",
+        "vowel_substitution"
+      ]
+    },
+    {
+      "id": "ex_sentencefix_011",
+      "type": "sentencefix",
+      "tokens": [
+        "Die",
+        "Schöle",
+        "ist",
+        "aus."
+      ],
+      "answer": "Schöle",
+      "correction": "Schule",
+      "praise": "Gefunden! Richtig heißt es: Schule.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "vowel_substitution",
+        "sentence_context"
+      ]
+    },
+    {
+      "id": "ex_compound_012",
+      "type": "compound",
+      "word": "Holztreppe",
+      "parts": [
+        "Holz",
+        "Treppe"
+      ],
+      "options": [
+        "der",
+        "die",
+        "das"
+      ],
+      "answer": "die",
+      "praise": "Richtig! die Treppe → die Holztreppe.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "compound_word",
+        "article"
+      ]
+    },
+    {
+      "id": "ex_family_013",
+      "type": "family",
+      "stem": "fahr-",
+      "options": [
+        "Fahrrad",
+        "Wohnung",
+        "Zahlung"
+      ],
+      "answer": "Fahrrad",
+      "praise": "Genau! Fahrrad gehört zur Familie fahr- – einmal h, immer h.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "word_family",
+        "dehnung_h"
+      ]
+    },
+    {
+      "id": "ex_sylarrange_014",
+      "type": "sylarrange",
+      "word": "Gleichgewicht",
+      "syll": [
+        "Gleich",
+        "ge",
+        "wicht"
+      ],
+      "tiles": [
+        "ge",
+        "wicht",
+        "Gleich"
+      ],
+      "praise": "Super! Gleich·ge·wicht.",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": [
+        "syllable_segmentation"
+      ]
+    }
   ]
 }

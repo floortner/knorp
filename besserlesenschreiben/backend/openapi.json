@@ -1019,209 +1019,24 @@
                               "type": {
                                 "type": "string",
                                 "enum": [
-                                  "count"
+                                  "raster"
                                 ]
                               },
                               "word": {
                                 "type": "string"
                               },
-                              "syll": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "answer": {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
-                              },
-                              "opts": {
-                                "type": "array",
-                                "items": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                }
-                              },
-                              "id": {
+                              "onset": {
                                 "type": "string"
                               },
-                              "audioUrl": {
-                                "nullable": true,
+                              "vowel": {
                                 "type": "string"
                               },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
+                              "coda": {
                                 "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "word",
-                              "syll",
-                              "answer",
-                              "opts",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "gap"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
-                              "syll": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "gapIndex": {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
-                              },
-                              "answer": {
-                                "type": "string"
-                              },
-                              "options": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "word",
-                              "syll",
-                              "gapIndex",
-                              "answer",
-                              "options",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "order"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
-                              "syll": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
                               },
                               "tiles": {
+                                "minItems": 3,
+                                "maxItems": 3,
                                 "type": "array",
                                 "items": {
                                   "type": "string"
@@ -1247,29 +1062,20 @@
                                 "items": {
                                   "type": "string",
                                   "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
                                     "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
                                   ]
                                 }
                               },
@@ -1280,7 +1086,9 @@
                             "required": [
                               "type",
                               "word",
-                              "syll",
+                              "onset",
+                              "vowel",
+                              "coda",
                               "tiles",
                               "id",
                               "audioUrl",
@@ -1295,177 +1103,7 @@
                               "type": {
                                 "type": "string",
                                 "enum": [
-                                  "rhyme"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
-                              "options": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "answer": {
-                                "type": "string"
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "word",
-                              "options",
-                              "answer",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "initial"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
-                              "emoji": {
-                                "type": "string"
-                              },
-                              "answer": {
-                                "type": "string"
-                              },
-                              "options": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "word",
-                              "emoji",
-                              "answer",
-                              "options",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "letter"
+                                  "findvowel"
                                 ]
                               },
                               "word": {
@@ -1477,19 +1115,8 @@
                                   "type": "string"
                                 }
                               },
-                              "gapIndex": {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
-                              },
                               "answer": {
                                 "type": "string"
-                              },
-                              "options": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
                               },
                               "id": {
                                 "type": "string"
@@ -1511,29 +1138,20 @@
                                 "items": {
                                   "type": "string",
                                   "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
                                     "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
                                   ]
                                 }
                               },
@@ -1545,9 +1163,7 @@
                               "type",
                               "word",
                               "letters",
-                              "gapIndex",
                               "answer",
-                              "options",
                               "id",
                               "audioUrl",
                               "skillTags",
@@ -1561,16 +1177,84 @@
                               "type": {
                                 "type": "string",
                                 "enum": [
-                                  "case"
+                                  "realword"
                                 ]
                               },
                               "word": {
                                 "type": "string"
                               },
-                              "emoji": {
+                              "answer": {
+                                "type": "string",
+                                "enum": [
+                                  "wort",
+                                  "quatsch"
+                                ]
+                              },
+                              "id": {
                                 "type": "string"
                               },
-                              "answer": {
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
+                                    "lexical_decision",
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
+                                  ]
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "fixvowel"
+                                ]
+                              },
+                              "pseudo": {
+                                "type": "string"
+                              },
+                              "vowel": {
                                 "type": "string"
                               },
                               "options": {
@@ -1579,167 +1263,73 @@
                                   "type": "string"
                                 }
                               },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "word",
-                              "answer",
-                              "options",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "arrange"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
-                              "syll": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "tiles": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "word",
-                              "syll",
-                              "tiles",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "nonsense"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
                               "answer": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
+                                    "lexical_decision",
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
+                                  ]
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "pseudo",
+                              "vowel",
+                              "options",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "swapvowel"
+                                ]
+                              },
+                              "word": {
                                 "type": "string"
                               },
                               "options": {
@@ -1748,6 +1338,13 @@
                                   "type": "string"
                                 }
                               },
+                              "answers": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
                               "id": {
                                 "type": "string"
                               },
@@ -1768,29 +1365,20 @@
                                 "items": {
                                   "type": "string",
                                   "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
                                     "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
                                   ]
                                 }
                               },
@@ -1801,8 +1389,8 @@
                             "required": [
                               "type",
                               "word",
-                              "answer",
                               "options",
+                              "answers",
                               "id",
                               "audioUrl",
                               "skillTags",
@@ -1816,16 +1404,460 @@
                               "type": {
                                 "type": "string",
                                 "enum": [
-                                  "pairs"
+                                  "length"
                                 ]
                               },
-                              "tiles": {
+                              "word": {
+                                "type": "string"
+                              },
+                              "vowel": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string",
+                                "enum": [
+                                  "kurz",
+                                  "lang"
+                                ]
+                              },
+                              "hint": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
                                 "type": "array",
                                 "items": {
                                   "type": "string"
                                 }
                               },
-                              "pair": {
+                              "skillTags": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
+                                    "lexical_decision",
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
+                                  ]
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "word",
+                              "vowel",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "sylvalid"
+                                ]
+                              },
+                              "syllable": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string",
+                                "enum": [
+                                  "ja",
+                                  "nein"
+                                ]
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
+                                    "lexical_decision",
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
+                                  ]
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "syllable",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "insertvowel"
+                                ]
+                              },
+                              "pattern": {
+                                "type": "string"
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
+                                    "lexical_decision",
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
+                                  ]
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "pattern",
+                              "word",
+                              "options",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "paircheck"
+                                ]
+                              },
+                              "left": {
+                                "type": "string"
+                              },
+                              "right": {
+                                "type": "string"
+                              },
+                              "answer": {
+                                "type": "string",
+                                "enum": [
+                                  "gleich",
+                                  "anders"
+                                ]
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
+                                    "lexical_decision",
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
+                                  ]
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "left",
+                              "right",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "pickword"
+                                ]
+                              },
+                              "options": {
+                                "minItems": 3,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
+                                    "lexical_decision",
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
+                                  ]
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "options",
+                              "answer",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "sentencefix"
+                                ]
+                              },
+                              "tokens": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "answer": {
+                                "type": "string"
+                              },
+                              "correction": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "audioUrl": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "syllableAudio": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skillTags": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
+                                    "lexical_decision",
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
+                                  ]
+                                }
+                              },
+                              "praise": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "tokens",
+                              "answer",
+                              "correction",
+                              "id",
+                              "audioUrl",
+                              "skillTags",
+                              "praise"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "compound"
+                                ]
+                              },
+                              "word": {
+                                "type": "string"
+                              },
+                              "parts": {
                                 "type": "array",
                                 "items": {
                                   "anyOf": [
@@ -1840,182 +1872,15 @@
                                 "minItems": 2,
                                 "maxItems": 2
                               },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "tiles",
-                              "pair",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "bd"
-                                ]
-                              },
-                              "glyph": {
-                                "type": "string"
-                              },
-                              "answer": {
-                                "type": "string"
-                              },
                               "options": {
                                 "type": "array",
                                 "items": {
                                   "type": "string"
                                 }
                               },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "glyph",
-                              "answer",
-                              "options",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "vowel"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
-                              "letters": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "gapIndex": {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
-                              },
                               "answer": {
                                 "type": "string"
                               },
-                              "options": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
                               "id": {
                                 "type": "string"
                               },
@@ -2036,29 +1901,20 @@
                                 "items": {
                                   "type": "string",
                                   "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
                                     "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
                                   ]
                                 }
                               },
@@ -2069,97 +1925,8 @@
                             "required": [
                               "type",
                               "word",
-                              "letters",
-                              "gapIndex",
-                              "answer",
+                              "parts",
                               "options",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "swipe"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
-                              "leftLabel": {
-                                "type": "string"
-                              },
-                              "rightLabel": {
-                                "type": "string"
-                              },
-                              "answer": {
-                                "type": "string",
-                                "enum": [
-                                  "left",
-                                  "right"
-                                ]
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "word",
-                              "leftLabel",
-                              "rightLabel",
                               "answer",
                               "id",
                               "audioUrl",
@@ -2174,111 +1941,10 @@
                               "type": {
                                 "type": "string",
                                 "enum": [
-                                  "odd"
+                                  "family"
                                 ]
                               },
-                              "words": {
-                                "type": "array",
-                                "items": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "string"
-                                    }
-                                  ]
-                                },
-                                "minItems": 4,
-                                "maxItems": 4
-                              },
-                              "answer": {
-                                "type": "string"
-                              },
-                              "instruction": {
-                                "type": "string"
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "words",
-                              "answer",
-                              "instruction",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "listen"
-                                ]
-                              },
-                              "word": {
-                                "type": "string"
-                              },
-                              "instruction": {
+                              "stem": {
                                 "type": "string"
                               },
                               "options": {
@@ -2310,29 +1976,20 @@
                                 "items": {
                                   "type": "string",
                                   "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
                                     "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
                                   ]
                                 }
                               },
@@ -2342,8 +1999,7 @@
                             },
                             "required": [
                               "type",
-                              "word",
-                              "instruction",
+                              "stem",
                               "options",
                               "answer",
                               "id",
@@ -2359,97 +2015,17 @@
                               "type": {
                                 "type": "string",
                                 "enum": [
-                                  "sentence"
+                                  "sylarrange"
                                 ]
-                              },
-                              "tokens": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "instruction": {
-                                "type": "string"
-                              },
-                              "answer": {
-                                "type": "string"
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "audioUrl": {
-                                "nullable": true,
-                                "type": "string"
-                              },
-                              "syllableAudio": {
-                                "nullable": true,
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "skillTags": {
-                                "minItems": 1,
-                                "type": "array",
-                                "items": {
-                                  "type": "string",
-                                  "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
-                                    "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
-                                  ]
-                                }
-                              },
-                              "praise": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "type",
-                              "tokens",
-                              "instruction",
-                              "answer",
-                              "id",
-                              "audioUrl",
-                              "skillTags",
-                              "praise"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "build"
-                                ]
-                              },
-                              "emoji": {
-                                "type": "string"
                               },
                               "word": {
                                 "type": "string"
+                              },
+                              "syll": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "tiles": {
                                 "type": "array",
@@ -2457,12 +2033,6 @@
                                   "type": "string"
                                 }
                               },
-                              "answer": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
                               "id": {
                                 "type": "string"
                               },
@@ -2483,29 +2053,20 @@
                                 "items": {
                                   "type": "string",
                                   "enum": [
-                                    "syllable_count",
-                                    "syllable_segmentation",
-                                    "syllable_gap",
-                                    "syllable_order",
-                                    "rhyme",
-                                    "rhyme_pairs",
-                                    "phoneme_initial",
-                                    "phoneme_position",
-                                    "letter_sound",
-                                    "capitalization",
-                                    "word_class_noun",
-                                    "word_class_verb",
-                                    "letter_order",
-                                    "spelling",
+                                    "vowel_identify",
+                                    "vowel_length",
+                                    "vowel_substitution",
+                                    "word_raster",
                                     "lexical_decision",
-                                    "letter_discrimination",
-                                    "vowel_ie",
-                                    "vowel_ei",
-                                    "vowel_spelling",
-                                    "binary_sort",
-                                    "odd_one_out",
-                                    "phonological_awareness",
-                                    "word_in_context"
+                                    "syllable_validity",
+                                    "syllable_segmentation",
+                                    "visual_discrimination",
+                                    "compound_word",
+                                    "word_family",
+                                    "article",
+                                    "sentence_context",
+                                    "dehnung_h",
+                                    "double_consonant"
                                   ]
                                 }
                               },
@@ -2515,10 +2076,9 @@
                             },
                             "required": [
                               "type",
-                              "emoji",
                               "word",
+                              "syll",
                               "tiles",
-                              "answer",
                               "id",
                               "audioUrl",
                               "skillTags",

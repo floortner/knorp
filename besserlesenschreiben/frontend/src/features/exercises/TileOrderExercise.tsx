@@ -4,10 +4,12 @@ import type { Exercise } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ChoiceTile, ExerciseCard } from './ExerciseCard';
 import { useAnswer } from './useAnswer';
+import { BigWord } from './parts';
 
 /**
- * Tile-order renderer (order, arrange): tap the tiles in sequence to rebuild the word; the result is
- * compared to `syll.join('|')`. Reset clears a wrong attempt (SPEC §3).
+ * Tile-order renderer (sylarrange): read the whole word, then rebuild it from its shuffled syllable
+ * tiles — the program's "Ganzes → Silben → Ganzes" drill. The result is compared to `syll.join('|')`.
+ * Reset clears a wrong attempt (SPEC §3).
  */
 export function TileOrderExercise({
   ex,
@@ -15,7 +17,7 @@ export function TileOrderExercise({
   onSolved,
   soundOn,
 }: {
-  ex: Extract<Exercise, { type: 'order' | 'arrange' }>;
+  ex: Extract<Exercise, { type: 'sylarrange' }>;
   onAttempt: (given: string, isCorrect: boolean) => void;
   onSolved: () => void;
   soundOn: boolean;
@@ -41,7 +43,8 @@ export function TileOrderExercise({
 
   return (
     <ExerciseCard
-      instruction="Tippe die Teile in der richtigen Reihenfolge an."
+      instruction="Lies das Wort und baue es aus den Silben nach. Sprich mit!"
+      prompt={<BigWord>{ex.word}</BigWord>}
       status={status}
       praise={ex.praise}
     >

@@ -16,55 +16,55 @@ describe('weakSkills', () => {
 
   it('flags a skill below the correct-rate threshold', () => {
     const weak = weakSkills([
-      sig(['vowel_ie'], false),
-      sig(['vowel_ie'], false),
-      sig(['vowel_ie'], true),
+      sig(['vowel_length'], false),
+      sig(['vowel_length'], false),
+      sig(['vowel_length'], true),
     ]);
-    expect(weak.has('vowel_ie')).toBe(true);
+    expect(weak.has('vowel_length')).toBe(true);
   });
 
   it('does not flag a well-performed skill', () => {
-    const weak = weakSkills([sig(['rhyme'], true), sig(['rhyme'], true), sig(['rhyme'], true)]);
-    expect(weak.has('rhyme')).toBe(false);
+    const weak = weakSkills([sig(['lexical_decision'], true), sig(['lexical_decision'], true), sig(['lexical_decision'], true)]);
+    expect(weak.has('lexical_decision')).toBe(false);
   });
 
   it('flags a skill that is answered correctly but slowly', () => {
-    const weak = weakSkills([sig(['count'], true, 20_000), sig(['count'], true, 18_000)]);
-    expect(weak.has('count')).toBe(true);
+    const weak = weakSkills([sig(['word_raster'], true, 20_000), sig(['word_raster'], true, 18_000)]);
+    expect(weak.has('word_raster')).toBe(true);
   });
 });
 
 describe('selectBankItems', () => {
   it('prioritises items that drill a weak/due skill', () => {
     const items = [
-      item('a', ['rhyme'], 1),
-      item('b', ['vowel_ie'], 2),
-      item('c', ['count'], 1),
+      item('a', ['lexical_decision'], 1),
+      item('b', ['vowel_length'], 2),
+      item('c', ['word_raster'], 1),
     ];
-    const chosen = selectBankItems(items, new Set(['vowel_ie']), 1);
+    const chosen = selectBankItems(items, new Set(['vowel_length']), 1);
     expect(chosen.map((i) => i.id)).toEqual(['b']);
   });
 
   it('orders the returned session easy→hard', () => {
     const items = [
-      item('hard', ['vowel_ie'], 3),
-      item('easy', ['vowel_ie'], 1),
-      item('mid', ['vowel_ie'], 2),
+      item('hard', ['vowel_length'], 3),
+      item('easy', ['vowel_length'], 1),
+      item('mid', ['vowel_length'], 2),
     ];
-    const chosen = selectBankItems(items, new Set(['vowel_ie']), 3);
+    const chosen = selectBankItems(items, new Set(['vowel_length']), 3);
     expect(chosen.map((i) => i.difficulty)).toEqual([1, 2, 3]);
   });
 
   it('mixes in mastered items for confidence when there is weak work', () => {
     const items = [
-      item('w1', ['vowel_ie'], 1),
-      item('w2', ['vowel_ie'], 1),
-      item('w3', ['vowel_ie'], 1),
-      item('m1', ['rhyme'], 1),
-      item('m2', ['rhyme'], 1),
+      item('w1', ['vowel_length'], 1),
+      item('w2', ['vowel_length'], 1),
+      item('w3', ['vowel_length'], 1),
+      item('m1', ['lexical_decision'], 1),
+      item('m2', ['lexical_decision'], 1),
     ];
-    const chosen = selectBankItems(items, new Set(['vowel_ie']), 4);
-    const mastered = chosen.filter((i) => i.skillTags.includes('rhyme'));
+    const chosen = selectBankItems(items, new Set(['vowel_length']), 4);
+    const mastered = chosen.filter((i) => i.skillTags.includes('lexical_decision'));
     expect(mastered.length).toBeGreaterThanOrEqual(1);
     expect(chosen.length).toBe(4);
   });

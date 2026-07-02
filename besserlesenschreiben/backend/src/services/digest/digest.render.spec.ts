@@ -25,19 +25,19 @@ function at(daysBack: number, skillTags: string[], isCorrect: boolean, timeMs: n
 
 // Dataset chosen so every digest branch is exercised; the golden file is its exact rendering.
 const ATTEMPTS: DigestAttempt[] = [
-  at(12, ['vowel_ie'], false, 9000, 'Liebe', 'Liebe', 'Leibe'), // old half → 0% old
-  at(2, ['vowel_ie'], false, 9000, 'Liebe', 'Liebe', 'Leibe'), // new half
-  at(2, ['vowel_ie'], true, 9000, 'Wiese', 'Wiese', 'Wiese'), // new half → 50% new ⇒ trend ↑
-  at(1, ['syllable_count'], true, 4000, 'Sommer', '2', '2'),
-  at(1, ['syllable_count'], true, 4000, 'Banane', '3', '3'),
-  at(1, ['syllable_count'], false, 4000, 'Sommer', '2', '3'),
-  at(1, ['rhyme'], true, 2000, 'Maus', 'Haus', 'Haus'),
-  at(1, ['rhyme'], true, 3000, 'Ball', 'Wall', 'Wall'),
+  at(12, ['vowel_length'], false, 9000, 'Liebe', 'Liebe', 'Leibe'), // old half → 0% old
+  at(2, ['vowel_length'], false, 9000, 'Liebe', 'Liebe', 'Leibe'), // new half
+  at(2, ['vowel_length'], true, 9000, 'Wiese', 'Wiese', 'Wiese'), // new half → 50% new ⇒ trend ↑
+  at(1, ['word_raster'], true, 4000, 'Sommer', '2', '2'),
+  at(1, ['word_raster'], true, 4000, 'Banane', '3', '3'),
+  at(1, ['word_raster'], false, 4000, 'Sommer', '2', '3'),
+  at(1, ['lexical_decision'], true, 2000, 'Maus', 'Haus', 'Haus'),
+  at(1, ['lexical_decision'], true, 3000, 'Ball', 'Wall', 'Wall'),
 ];
 
 const DUE: DueRow[] = [
-  { skill: 'vowel_ie', examples: ['Liebe', 'Wiese'] },
-  { skill: 'rhyme', examples: ['Maus'] },
+  { skill: 'vowel_length', examples: ['Liebe', 'Wiese'] },
+  { skill: 'lexical_decision', examples: ['Maus'] },
 ];
 
 describe('digest', () => {
@@ -49,7 +49,7 @@ describe('digest', () => {
 
   it('aggregates skills weakest-first with correct rate, avg time and trend', () => {
     const { skills } = buildDigestData(PROFILE, ATTEMPTS, DUE, NOW, 14);
-    expect(skills.map((s) => s.skill)).toEqual(['vowel_ie', 'syllable_count', 'rhyme']);
+    expect(skills.map((s) => s.skill)).toEqual(['vowel_length', 'word_raster', 'lexical_decision']);
     expect(skills[0]).toMatchObject({ attempts: 3, correctPct: 33, avgMs: 9000, trend: 'up' });
     expect(skills[2]).toMatchObject({ correctPct: 100, trend: 'flat' });
   });

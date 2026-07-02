@@ -12,9 +12,9 @@ const item: QueueItem = {
   uploadId: 'u1',
   profileHandle: 'Lerner-4821',
   gradeBand: '1. Klasse',
-  skillTags: ['vowel_ei'],
+  skillTags: ['vowel_length'],
   imageUrl: 'https://example.test/u1.webp',
-  llmAnalysis: { topic: 'Anlaute', exerciseType: 'initial', items: [], suggestedFocus: ['vowel_ei'] },
+  llmAnalysis: { topic: 'Anlaute', exerciseType: 'fixvowel', items: [], suggestedFocus: ['vowel_length'] },
   createdAt: '2026-06-29T10:00:00.000Z',
 };
 

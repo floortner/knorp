@@ -11,8 +11,8 @@ function bankItem(id: string, unit: number, skillTags: string[], generatedBy = '
   return {
     id,
     unit,
-    exerciseType: 'rhyme',
-    payload: { word: 'Haus', options: ['Maus', 'Baum'], answer: 'Maus', praise: 'Super!' },
+    exerciseType: 'realword',
+    payload: { word: 'Horn', answer: 'wort', praise: 'Super!' },
     audioUrl: null,
     syllableAudio: null,
     skillTags,
@@ -24,8 +24,8 @@ function bankItem(id: string, unit: number, skillTags: string[], generatedBy = '
 function setup(opts: { weak?: boolean; generated?: ReturnType<typeof bankItem>[] } = {}) {
   const findManyCalls: Array<Record<string, unknown>> = [];
   const unitItems = [
-    bankItem('seed-1', 1, ['syllable_count']),
-    bankItem('seed-2', 1, ['capitalization']),
+    bankItem('seed-1', 1, ['syllable_validity']),
+    bankItem('seed-2', 1, ['visual_discrimination']),
   ];
   const prisma = {
     profile: { findFirst: vi.fn(async () => ({ id: 'p1', accountId: 'a1', unlockedUnit: 1 })) },
@@ -38,7 +38,7 @@ function setup(opts: { weak?: boolean; generated?: ReturnType<typeof bankItem>[]
     attempt: {
       findMany: vi.fn(async () =>
         opts.weak
-          ? Array.from({ length: 4 }, () => ({ skillTags: ['rhyme'], isCorrect: false, timeMs: 5000 }))
+          ? Array.from({ length: 4 }, () => ({ skillTags: ['lexical_decision'], isCorrect: false, timeMs: 5000 }))
           : [],
       ),
     },
@@ -61,7 +61,7 @@ describe('SessionsService.createBank — blending generated (unit 0) items', () 
   beforeEach(() => vi.clearAllMocks());
 
   it('blends validated unit-0 LLM items matching weak skills into the candidate pool', async () => {
-    const gen = bankItem('gen-1', 0, ['rhyme'], 'llm');
+    const gen = bankItem('gen-1', 0, ['lexical_decision'], 'llm');
     const { svc, findManyCalls } = setup({ weak: true, generated: [gen] });
 
     const res = await svc.createBank('a1', { profileId: 'p1' });
@@ -70,7 +70,7 @@ describe('SessionsService.createBank — blending generated (unit 0) items', () 
     const genQuery = findManyCalls.find((w) => w.unit === 0) as Record<string, any>;
     expect(genQuery).toBeDefined();
     expect(genQuery.generatedBy).toBe('llm');
-    expect(genQuery.skillTags).toEqual({ hasSome: ['rhyme'] });
+    expect(genQuery.skillTags).toEqual({ hasSome: ['lexical_decision'] });
     // the priority-matching generated item wins selection
     expect(res.items.map((i) => i.id)).toContain('gen-1');
   });

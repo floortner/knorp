@@ -32,12 +32,12 @@ describe('monthlyHeatmap', () => {
 describe('skillBreakdown', () => {
   it('rolls up attempts per skill with correct % and due flag, weakest first', () => {
     const attempts = [
-      at(1, ['vowel_ie'], false),
-      at(1, ['vowel_ie'], false),
-      at(1, ['rhyme'], true),
+      at(1, ['vowel_length'], false),
+      at(1, ['vowel_length'], false),
+      at(1, ['lexical_decision'], true),
     ];
-    const out = skillBreakdown(attempts, new Set(['vowel_ie']), now);
-    expect(out[0]).toEqual({ skill: 'vowel_ie', attempts: 2, correctPct: 0, due: true });
-    expect(out[1]).toEqual({ skill: 'rhyme', attempts: 1, correctPct: 100, due: false });
+    const out = skillBreakdown(attempts, new Set(['vowel_length']), now);
+    expect(out[0]).toEqual({ skill: 'vowel_length', attempts: 2, correctPct: 0, due: true });
+    expect(out[1]).toEqual({ skill: 'lexical_decision', attempts: 1, correctPct: 100, due: false });
   });
 });

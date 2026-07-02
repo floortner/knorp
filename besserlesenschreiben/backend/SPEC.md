@@ -106,7 +106,7 @@ item_bank(
   id            uuid pk,
   seed_key      text unique,            -- stable natural key for idempotent seeding (§12); null for generated_by='llm'
   unit          int not null,           -- which unit/Einheit (1..N)
-  exercise_type text not null,          -- count|gap|order|rhyme|initial|letter|case|arrange|nonsense|pairs|bd|vowel|swipe|odd|listen|sentence|build
+  exercise_type text not null,          -- raster|findvowel|realword|fixvowel|swapvowel|length|sylvalid|insertvowel|paircheck|pickword|sentencefix|compound|family|sylarrange
   payload       jsonb not null,         -- the exercise spec (see §8 for per-type shape)
   audio_url     text,                   -- pre-generated TTS for the word (SAS at read time)
   syllable_audio jsonb,                 -- optional per-syllable audio urls
@@ -455,7 +455,8 @@ Two mechanisms — **most sessions never touch the LLM:**
 1. Query `attempt` for this profile: skills with low recent `is_correct` or high `time_ms`, weighted by recency.
 2. Cross-reference `review_state` for FSRS-due skills.
 3. Select `item_bank` rows matching weak/due `skill_tags`, mixed with some mastered items for confidence. Order easy→hard.
-4. Return as a `session` (`source='bank'`).
+4. Return as a `session` (`source='bank'`), carrying the unit's **Merksatz** as `intro` — the teaching layer
+   of the Vokaltraining program (units.catalog.ts), rendered as the lesson's intro card.
 
 **FSRS:** use the `ts-fsrs` package (or SM-2 as a simpler fallback). Schedule **per skill_tag**, not per word. Update `review_state` on `/attempts`.
 

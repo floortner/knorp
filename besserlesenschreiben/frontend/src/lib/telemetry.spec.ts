@@ -6,7 +6,7 @@ function attempt(over: Partial<CreateAttemptBody> = {}): CreateAttemptBody {
   return {
     sessionId: 's1',
     itemId: 'i1',
-    exerciseType: 'count',
+    exerciseType: 'findvowel',
     prompt: 'Sommer',
     expected: '2',
     given: '2',

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Exercise } from '@/lib/types';
 import { cn } from '@/lib/cn';
 import { ChoiceTile, ExerciseCard } from './ExerciseCard';
@@ -7,11 +7,14 @@ import { useAnswer } from './useAnswer';
 export interface Choice {
   key: string;
   label: ReactNode;
+  /** Telemetry value when the key must be made unique (e.g. duplicate letters). Defaults to `key`. */
+  value?: string;
 }
 
 /**
- * Single-choice renderer (count, gap, rhyme, initial, letter, case, nonsense, bd, vowel): tap one
- * option → correct/wrong. `correctKey` is the answer stringified to match an option's `key`.
+ * Single-choice renderer (findvowel, fixvowel, swapvowel, insertvowel, pickword, compound, family):
+ * tap one option → correct/wrong. Either a single `correctKey`, or `correctKeys` when several options
+ * are acceptable (swapvowel: more than one vowel makes a real word).
  */
 export function SingleChoiceExercise({
   ex,
@@ -19,6 +22,7 @@ export function SingleChoiceExercise({
   prompt,
   options,
   correctKey,
+  correctKeys,
   columns = 3,
   onAttempt,
   onSolved,
@@ -28,17 +32,22 @@ export function SingleChoiceExercise({
   instruction: string;
   prompt?: ReactNode;
   options: Choice[];
-  correctKey: string;
+  correctKey?: string;
+  correctKeys?: string[];
   columns?: 2 | 3;
   onAttempt: (given: string, isCorrect: boolean) => void;
   onSolved: () => void;
   soundOn: boolean;
 }) {
-  const { status, given, submit } = useAnswer(ex, onAttempt, onSolved, soundOn);
+  const { status, submit } = useAnswer(ex, onAttempt, onSolved, soundOn);
+  // The tapped option KEY (for tile highlighting) — `given` in useAnswer holds the telemetry value,
+  // which differs from the key when options carry an explicit `value`.
+  const [lastKey, setLastKey] = useState<string | null>(null);
+  const accepted = correctKeys ?? (correctKey !== undefined ? [correctKey] : []);
 
   const tileState = (key: string) => {
-    if (status === 'correct' && key === correctKey) return 'correct' as const;
-    if (status === 'wrong' && key === given) return 'wrong' as const;
+    if (status === 'correct' && key === lastKey) return 'correct' as const;
+    if (status === 'wrong' && key === lastKey) return 'wrong' as const;
     return 'idle' as const;
   };
 
@@ -51,7 +60,10 @@ export function SingleChoiceExercise({
             label={o.label}
             state={tileState(o.key)}
             disabled={status === 'correct'}
-            onClick={() => submit(o.key, o.key === correctKey)}
+            onClick={() => {
+              setLastKey(o.key);
+              submit(o.value ?? o.key, accepted.includes(o.key));
+            }}
           />
         ))}
       </div>

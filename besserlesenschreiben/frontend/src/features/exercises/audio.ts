@@ -7,11 +7,24 @@ import type { Exercise } from '@/lib/types';
  */
 
 function wordOf(ex: Exercise): string {
-  if (ex.type === 'pairs') return ex.tiles.join(', ');
-  if (ex.type === 'bd') return ex.glyph;
-  if (ex.type === 'odd') return ex.answer;
-  if (ex.type === 'sentence') return ex.answer;
-  return ex.word;
+  switch (ex.type) {
+    case 'sylvalid':
+      return ex.syllable;
+    case 'paircheck':
+      return `${ex.left}, ${ex.right}`;
+    case 'fixvowel':
+    case 'pickword':
+      return ex.answer; // speak the REAL word, not the Quatschwort
+    case 'sentencefix':
+      return ex.correction;
+    case 'family':
+      return ex.answer;
+    case 'insertvowel':
+      return ex.word;
+    default:
+      // raster | findvowel | realword | swapvowel | length | compound | sylarrange
+      return ex.word;
+  }
 }
 
 export function speak(ex: Exercise, soundOn: boolean): void {
