@@ -27,8 +27,9 @@ const LLM_SESSION_SIZE = 6;
  * What the model returns: a short teaching intro ("Merke: …") plus a batch of wire-shaped exercises
  * (id/audioUrl are placeholders we overwrite). Uses the SOLVABLE schema — a generated exercise whose
  * answer isn't among its options (etc.) or that carries an unknown skill tag is rejected, never persisted.
+ * Exported (with LLM_SYSTEM) so the cutover smoke script (scripts/llm-smoke.ts) probes the REAL pipeline.
  */
-const generatedSessionSchema = z.object({
+export const generatedSessionSchema = z.object({
   intro: z.string().min(1).max(300),
   exercises: z.array(solvableExerciseSchema).min(1).max(LLM_SESSION_SIZE),
 });
@@ -44,7 +45,7 @@ const FEW_SHOT = JSON.stringify({
   ],
 });
 
-const LLM_SYSTEM = [
+export const LLM_SYSTEM = [
   'Du generierst eine kleine deutsche Vokaltraining-Lektion (Rechtschreibförderung, FRESCH-Methode).',
   'Beginne mit intro: 1–2 kurze, kindgerechte Sätze, die die Regel oder den Trick zu den Förderschwerpunkten erklären (z. B. "Merke: …"). Kein Gruß, keine Frage.',
   `Erzeuge dann bis zu ${LLM_SESSION_SIZE} abwechslungsreiche Übungen, die GENAU auf die genannten Förderschwerpunkte und die Klassenstufe zielen.`,
