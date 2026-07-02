@@ -90,8 +90,45 @@ The app boots and milestones 1–4 are exercisable with **no external accounts**
 |---|---|---|
 | Login email | `EMAIL_PROVIDER=console` — prints the code to stdout | milestone 1 (prod provider) |
 | Object storage (Blob) | local-filesystem fake under a temp dir | milestone 5/6 |
-| LLM (Anthropic) | canned responses | milestone 5 (chat), 6 (vision) |
+| LLM (Anthropic) | canned chat; ★ structured calls 503 | set `ANTHROPIC_API_KEY` — see "LLM cutover" below |
 | TTS | canned / Web-Speech fallback on the client | milestone 5 |
+
+## LLM cutover (switching from the stub to real Claude)
+
+The LLM layer runs on a stub until `ANTHROPIC_API_KEY` is set (chat gets canned replies; ★ structured
+calls return 503, and the frontend falls back to bank sessions with a friendly note). Cutover:
+
+**1. Dev smoke (no database needed):**
+
+```bash
+# in backend/.env:  ANTHROPIC_API_KEY=sk-ant-…
+npm run llm:smoke             # chat probe + generation probe ×2 (asserts a prompt-cache hit)
+npm run llm:smoke -- --vision # additionally probes homework vision (Opus call — costs more)
+```
+
+The generation probe validates the model's output against the REAL contract (`generatedSessionSchema`
+incl. per-type solvability) — if it passes, LLM lectures are safe to serve. The summary prints token
+counts and a rough € cost per call.
+
+**2. Full-app smoke (local DB):** start `../dev.sh`, then check:
+- ✨ „Neue Übungen für dich" generates a real lecture — intro card, then solvable exercises.
+- The 6th ✨ session of the day returns the friendly cap message (`LLM_SESSIONS_PER_DAY=5`).
+- Chat answers as Angelika (capped at `CHAT_MESSAGES_PER_DAY=60`).
+- A homework photo upload produces a draft in the reviewer queue within ~a minute.
+
+**3. Production:** set `ANTHROPIC_API_KEY` **and** `LLM_RESIDENCY_ACK=true` via Key Vault — the app
+refuses to boot with a key but no residency acknowledgement (ARCHITECTURE §8). Watch the `llm.usage`
+log lines (token counts per call) for daily cost.
+
+**Troubleshooting**
+
+| Symptom | Meaning |
+|---|---|
+| ★ endpoints return 503 | no key → stub selected (or provider/network failure — see logs) |
+| ★ endpoints return 502 | model output failed the schema twice (re-ask included) — check few-shots/prompt |
+| our `429 RATE_LIMITED` | the per-profile daily cap, not Anthropic — kindgerecht by design |
+| truncated chat replies | verify `thinking: {type:'disabled'}` is still set (Sonnet 5 defaults to adaptive thinking, which eats `max_tokens`) |
+| smoke fails the cache assert | `LLM_SYSTEM` must stay byte-stable between calls; check the `cache_control` marker |
 
 ## Reset the database
 

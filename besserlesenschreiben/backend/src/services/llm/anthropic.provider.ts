@@ -2,6 +2,16 @@ import { Logger } from '@nestjs/common';
 import { ApiException } from '../../common/exceptions/api-exception';
 import type { ChatRequest, LlmProvider, ProviderExtractRequest } from './llm.types';
 
+/** Token counts of one Anthropic call — identifiers + counts only, never content (CLAUDE.md rule 6). */
+export interface LlmUsage {
+  op: 'chat' | 'extract';
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+}
+
 /**
  * Anthropic-direct provider (ARCHITECTURE §8). Structured output is done with a single **forced tool** whose
  * `input_schema` is the JSON Schema of the caller's Zod schema — version-stable across SDK releases and the
@@ -20,7 +30,15 @@ export class AnthropicLlmProvider implements LlmProvider {
   private readonly logger = new Logger('AnthropicLlmProvider');
   private clientPromise: Promise<any> | null = null;
 
-  constructor(private readonly opts: { apiKey: string; model: string; visionModel: string }) {}
+  constructor(
+    private readonly opts: {
+      apiKey: string;
+      model: string;
+      visionModel: string;
+      /** Optional per-call usage tap (token counts only) — used by the cutover smoke script. */
+      onUsage?: (u: LlmUsage) => void;
+    },
+  ) {}
 
   private client(): Promise<any> {
     return (this.clientPromise ??= (async () => {
@@ -46,18 +64,16 @@ export class AnthropicLlmProvider implements LlmProvider {
   private logUsage(op: 'chat' | 'extract', model: string, res: unknown): void {
     const u = (res as { usage?: Record<string, number | null> })?.usage;
     if (!u) return;
-    this.logger.log(
-      {
-        event: 'llm.usage',
-        op,
-        model,
-        inputTokens: u.input_tokens ?? 0,
-        outputTokens: u.output_tokens ?? 0,
-        cacheReadTokens: u.cache_read_input_tokens ?? 0,
-        cacheWriteTokens: u.cache_creation_input_tokens ?? 0,
-      },
-      'anthropic usage',
-    );
+    const usage: LlmUsage = {
+      op,
+      model,
+      inputTokens: u.input_tokens ?? 0,
+      outputTokens: u.output_tokens ?? 0,
+      cacheReadTokens: u.cache_read_input_tokens ?? 0,
+      cacheWriteTokens: u.cache_creation_input_tokens ?? 0,
+    };
+    this.logger.log({ event: 'llm.usage', ...usage }, 'anthropic usage');
+    this.opts.onUsage?.(usage);
   }
 
   private wrap(err: unknown): never {
