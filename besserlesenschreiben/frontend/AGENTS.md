@@ -14,7 +14,7 @@ Node 24 LTS · TypeScript 5.x · React 19.2.x · Vite 8.1.x (+ @vitejs/plugin-re
 vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grotesque (display).
 
 ## Read order before coding
-1. `./SPEC.md` §3 (the 17 exercise renderers + the `Exercise` union) and §4 (telemetry).
+1. `./SPEC.md` §3 (the 14 Vokaltraining exercise renderers + the `Exercise` union) and §4 (telemetry).
 2. `../ARCHITECTURE.md` §4 (API rules), §5 (errors → UI behaviour), §10 (SVG-first media).
 
 ## Golden rules (do not violate)
@@ -25,7 +25,7 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 2. **`lib/api.ts` is transport only** — no JSX, no UI. Components never hand-roll fetch or error parsing.
 3. **Every answered item emits exactly one `/attempts` call** with a real `timeMs` (start timer on item mount,
    stop on answer). Fire-and-forget; queue + retry offline; never block the child's UI on the network (SPEC §4).
-4. **No hardcoded lesson data.** Render all 17 types from backend-served JSON.
+4. **No hardcoded lesson data.** Render all 14 types from backend-served JSON.
 5. **The app is free — no payment UI, ever** (ARCHITECTURE §1b/§9). Never show a price, paywall, or buy button
    anywhere; nothing emits or handles `402`. ★ ops are daily-capped server-side — a `429 RATE_LIMITED` carries a
    kindgerechte message and surfaces through the normal error paths.
@@ -54,9 +54,10 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 ## Build milestones (SPEC §11)
 Phase 1 (shell/auth/onboarding/home/telemetry/12 renderers/progress) + Phase 1.5 (error boundary, offline
 caching, telemetry retention, query fixes, committed `api.gen.ts` + drift gate, flow tests) + Phase 1.6
-(content + UX polish: unit unlock, all-done celebration, 5 new exercise renderers → 17 total, parent area,
-profile tab) are **done**, as is Phase 2: chat (★ LLM), the ✨ generated-lecture entry + lesson intro card,
-and the homework "Foto & verbessern" flow (parent-area only). No billing — the app is free.
+(content + UX polish: unit unlock, all-done celebration, parent area, profile tab) are **done**, as is
+Phase 2: chat (★ LLM), the ✨ generated-lecture entry + lesson intro card, and the homework
+"Foto & verbessern" flow (parent-area only). No billing — the app is free. The exercise set has since been
+**replaced by the 14-type Vokaltraining program** (SPEC §3) with a new 7-unit progression and ~360 seed items.
 
 ## Definition of done for a feature
 Renders from backend JSON; one `/attempts` per answer with sane timing; error codes map to the right UI;

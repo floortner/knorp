@@ -5,11 +5,11 @@ import { toExercise } from './exercise.mapper';
 function bankItem(over: Partial<ItemBankModel>): ItemBankModel {
   return {
     id: 'item-1',
-    exerciseType: 'count',
-    payload: { word: 'Sommer', syll: ['Som', 'mer'], answer: 2, opts: [2, 3, 4], praise: 'Richtig!' },
+    exerciseType: 'findvowel',
+    payload: { word: 'Hand', letters: ['H', 'a', 'n', 'd'], answer: 'a', praise: 'Richtig!' },
     audioUrl: null,
     syllableAudio: null,
-    skillTags: ['syllable_count'],
+    skillTags: ['vowel_identify'],
     ...over,
   } as unknown as ItemBankModel;
 }
@@ -19,11 +19,11 @@ describe('toExercise', () => {
     const ex = toExercise(bankItem({}));
     expect(ex).toMatchObject({
       id: 'item-1',
-      type: 'count',
-      word: 'Sommer',
-      answer: 2,
+      type: 'findvowel',
+      word: 'Hand',
+      answer: 'a',
       audioUrl: null,
-      skillTags: ['syllable_count'],
+      skillTags: ['vowel_identify'],
     });
   });
 

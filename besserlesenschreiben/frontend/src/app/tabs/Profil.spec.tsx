@@ -15,7 +15,7 @@ const me: Me = {
 const progress: Progress = {
   streakDays: 3, stars: 240, weeklyActivity: [0, 0, 0, 0, 0, 0, 1],
   monthlyHeatmap: [], league: { tier: 'bronze', starsWeek: 15, starsToNext: 85 },
-  skillBreakdown: [{ skill: 'rhyme', attempts: 3, correctPct: 100, due: false }],
+  skillBreakdown: [{ skill: 'vowel_length', attempts: 3, correctPct: 100, due: false }],
 };
 const updateSettings = vi.fn().mockResolvedValue({ profile: me.profiles[0] });
 
@@ -49,7 +49,7 @@ describe('Profil', () => {
     renderProfil();
     expect(await screen.findByText('Mia')).toBeInTheDocument();
     expect(screen.getByText(/aktiv seit/)).toBeInTheDocument();
-    expect(await screen.findByText('rhyme')).toBeInTheDocument();
+    expect(await screen.findByText('vowel_length')).toBeInTheDocument();
   });
 
   it('toggles sound off via PATCH settings', async () => {

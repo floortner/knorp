@@ -30,8 +30,9 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (child u
 /onboarding       welcome (buddy intro) → choose buddy (Nepo|Stella) → choose weekly goal
 /app
   ├ /lernen       home: greeting, unit cards (title/subtitle/status), ✨ generated-lecture card, reward strip, START
-  │   └ /lesson   exercise runner (17 renderers), feedback, confetti on complete; generated lectures
-  │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!")
+  │   └ /lesson   exercise runner (14 renderers), feedback, confetti on complete; sessions
+  │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!") —
+  │               bank sessions carry the unit's Merksatz, generated lectures their own intro
   ├ /liga         league (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
   ├ /profil       name, buddy, "aktiv seit", streak, stars, weekly activity, progress rows, contact-trainer CTA
   └ /chat         message thread with trainer Angelika + input
@@ -48,49 +49,47 @@ to a bank session with a friendly note when the LLM is unavailable (503).
 
 ## 3. Exercise renderers (the core)
 
-The backend serves a `session` = ordered `Exercise[]`. Render one at a time. **17 types** — the original 12
-(ported from the prototype's `LESSONS[]`) plus 5 added in Phase 1.6 (`swipe`, `odd`, `listen`, `sentence`,
-`build`; not in the prototype). The source of truth is the backend Zod union in
-`backend/src/contract/exercise.ts`. Each renderer: shows the prompt, captures the answer, gives feedback,
-**emits telemetry**.
+The backend serves a `session` = ordered `Exercise[]`. Render one at a time. **14 types** — the owner's
+**Vokaltraining program** (FRESCH-style: Wortraster, kurz/lang-Vokal, Quatschwörter, Komposita,
+Wortfamilien). The source of truth is the backend Zod union in `backend/src/contract/exercise.ts`.
+Each renderer: shows the prompt, captures the answer, gives feedback, **emits telemetry**.
 
 Discriminated union on `type`:
 
 ```ts
 type Exercise =
-  | { type:'count';    id; word; syll:string[]; answer:number; opts:number[]; praise }      // count syllables
-  | { type:'gap';      id; word; syll:string[]; gapIndex; answer:string; options:string[]; praise } // fill missing syllable
-  | { type:'order';    id; word; syll:string[]; tiles:string[]; praise }                     // order syllable tiles
-  | { type:'rhyme';    id; word; options:string[]; answer:string; praise }                   // pick the rhyme
-  | { type:'initial';  id; word; emoji; answer:string; options:string[]; praise }            // initial letter/sound
-  | { type:'letter';   id; word; letters:string[]; gapIndex; answer:string; options:string[]; praise } // missing letter
-  | { type:'case';     id; word; emoji?; answer:string; options:string[]; praise }           // Nomen groß / Tunwort klein
-  | { type:'arrange';  id; word; syll:string[]; tiles:string[]; praise }                     // arrange letters
-  | { type:'nonsense'; id; word; answer:string; options:string[]; praise }                   // echtes Wort vs Quatschwort
-  | { type:'pairs';    id; tiles:string[]; pair:[string,string]; praise }                    // match rhyming pair
-  | { type:'bd';       id; glyph:string; answer:string; options:string[]; praise }           // b/d/p/q discrimination
-  | { type:'vowel';    id; word; letters:string[]; gapIndex; answer:string; options:string[]; praise } // ie/ei/eu
-  // ── added in Phase 1.6 ──
-  | { type:'swipe';    id; word; leftLabel:string; rightLabel:string; answer:'left'|'right'; praise }   // swipe a card to categorise
-  | { type:'odd';      id; words:[string,string,string,string]; answer:string; instruction:string; praise } // tap the odd one out
-  | { type:'listen';   id; word; instruction:string; options:string[]; answer:string; praise }          // audio auto-plays, word hidden
-  | { type:'sentence'; id; tokens:string[]; instruction:string; answer:string; praise }                 // tap the word in the sentence
-  | { type:'build';    id; emoji:string; word; tiles:string[]; answer:string[]; praise }                // spell the emoji's word from tiles
+  | { type:'raster';      id; word; onset; vowel; coda; tiles:string[3]; praise }            // Wortraster: Anfang · Vokal · Ende
+  | { type:'findvowel';   id; word; letters:string[]; answer:string; praise }                // tap the Selbstlaut in the word
+  | { type:'realword';    id; word; answer:'wort'|'quatsch'; praise }                        // echtes Wort oder Quatschwort?
+  | { type:'fixvowel';    id; pseudo; vowel; options:string[]; answer:string; praise }       // Hend + a → Hand
+  | { type:'swapvowel';   id; word; options:string[]; answers:string[]; praise }             // swap the vowel; ANY of answers is correct
+  | { type:'length';      id; word; vowel; answer:'kurz'|'lang'; hint?; praise }             // kurzer oder langer Vokal?
+  | { type:'sylvalid';    id; syllable; answer:'ja'|'nein'; praise }                         // kann die Silbe klingen (hat sie einen Vokal)?
+  | { type:'insertvowel'; id; pattern; word; options:string[]; answer:string; praise }       // B_ch → u → Buch
+  | { type:'paircheck';   id; left; right; answer:'gleich'|'anders'; praise }                // Silbenpaare exakt vergleichen
+  | { type:'pickword';    id; options:string[]; answer:string; praise }                      // one real word among vowel variants
+  | { type:'sentencefix'; id; tokens:string[]; answer:string; correction:string; praise }    // tap the misspelled word in the sentence
+  | { type:'compound';    id; word; parts:[string,string]; options:string[]; answer:string; praise } // pick the Grundwort's article
+  | { type:'family';      id; stem; options:string[]; answer:string; praise }                // which word belongs to the Wortfamilie?
+  | { type:'sylarrange';  id; word; syll:string[]; tiles:string[]; praise }                  // rebuild a multi-syllable word from tiles
 ```
 
 Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice.
 
-> **Field-name gotcha:** `count` uniquely uses `opts:number[]` (numeric syllable counts); every other
-> single-choice type uses `options:string[]`. This is intentional — keep them distinct, don't unify.
+> **Gotcha:** `swapvowel` uses `answers: string[]` — several vowels can make a real word (Wind → Wand/wund)
+> and tapping ANY of them is correct. Every other choice type has a single `answer`.
 
-**Interaction patterns** (from prototype handlers, extended for the Phase-1.6 types):
-- Single-choice (`count, rhyme, initial, case, nonsense, bd, gap, letter, vowel`, plus `odd`, `listen`,
-  `sentence`): tap option/word → correct/wrong. `odd` taps the word that doesn't fit; `listen` auto-plays
-  audio with the word hidden; `sentence` taps the token in the sentence matching `instruction`.
-- Tile-order (`order, arrange`): tap tiles in sequence; compare to `syll.join('|')`; reset button.
-  `build` is also tile-order but spells the emoji's word and compares to `answer` (string[]).
-- Pair-match (`pairs`): tap two tiles; correct if both in `pair`.
-- Swipe (`swipe`): swipe/tap a card left or right; correct if the side matches `answer` (`'left'|'right'`).
+**Interaction patterns:**
+- Single-choice (`findvowel, fixvowel, swapvowel, insertvowel, pickword, compound, family`): tap one
+  option → correct/wrong. `findvowel` offers the word's letters as chips; `compound` shows the split
+  (`Holz · Treppe`) and asks der/die/das.
+- Binary choice (`realword, length, sylvalid, paircheck`): a large prompt card with two labelled sides —
+  Echtes Wort/Quatschwort, kurz/lang, ja/nein, gleich/anders.
+- Wortraster (`raster`): the program's signature visual — grey line (Anfang) · **yellow circle** (Vokal,
+  "die Sonne") · grey line (Ende); tap the three shuffled parts into their slots.
+- Tile-order (`sylarrange`): tap syllable tiles in sequence; compare to `syll.join('|')`; reset button.
+- Sentence (`sentencefix`): the sentence as tappable tokens; tap the word with the wrong vowel; the praise
+  reveals the `correction`.
 - States: `idle | correct | wrong`. On correct: chime + speak word + `praise`, advance. On wrong: buzz + "Nochmal versuchen", allow retry. Confetti/fanfare on session complete.
 
 ---
@@ -103,15 +102,15 @@ Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice.
 // start a timer when the item mounts/becomes visible
 const startedAt = performance.now();
 
-// Derive prompt + expected per type. Some types have no scalar `word`/`answer`:
-// `pairs` has no word/glyph; `order`/`arrange`/`pairs` have no scalar answer.
-// The backend stores both columns NOT NULL, so never emit undefined.
-const prompt =
-  ex.word ?? ex.glyph ?? (ex.tiles ? ex.tiles.join(' ') : '');
-const expected =
-  ex.type === 'order' || ex.type === 'arrange' ? ex.syll.join('|')   // correct tile order
-  : ex.type === 'pairs'                        ? ex.pair.join('+')   // the matching pair
-  :                                              String(ex.answer);
+// Derive prompt + expected per type (see features/exercises/derive.ts — pure and total over the union).
+// Some types have no scalar `word`/`answer`; the backend stores both columns NOT NULL, so never emit
+// undefined. Examples:
+//   raster      → prompt = word,          expected = `${onset}|${vowel}|${coda}`
+//   sylarrange  → prompt = word,          expected = syll.join('|')
+//   swapvowel   → prompt = word,          expected = answers.join('/')
+//   sentencefix → prompt = tokens.join(' '), expected = the misspelled token
+//   everything else → prompt = word/pseudo/pattern/stem, expected = answer
+const { prompt, expected } = promptAndExpected(ex);
 
 // on answer:
 postAttempt({
@@ -136,7 +135,7 @@ postAttempt({
 
 ## 5. Voice playback
 
-- If `ex.audioUrl` present → play it (and `syllableAudio[i]` for syllable clapping in `count`/`order`).
+- If `ex.audioUrl` present → play it (and `syllableAudio[i]` for syllable-wise playback in `sylarrange`).
 - Else fall back to **Web Speech API** (`SpeechSynthesisUtterance`, `lang='de-DE'`, `rate≈0.85`) — same as prototype.
 - Respect `settings.soundOn`. Gate audio init behind first user gesture (mobile autoplay rules).
 
@@ -236,14 +235,17 @@ VITE_PWA=true
 correctness fixes; committed `api.gen.ts` + drift gate; flow tests.
 
 **Phase 1.6 — content + UX polish (DONE):** auto-unlock next unit on complete; all-units-complete
-celebration (mascot + fanfare + confetti); **5 new exercise renderers** (`swipe`, `odd`, `listen`,
-`sentence`, `build`) → **17 total**; parent area (PIN gate, set-PIN, child progress, two-step reset);
+celebration (mascot + fanfare + confetti); parent area (PIN gate, set-PIN, child progress, two-step reset);
 profile tab Ton toggle wired end-to-end.
 
 **Phase 2 (DONE):**
 7. Chat (★ LLM) + the ✨ generated-lecture entry on `/lernen` with the lesson intro card (§2/§7).
 8. Homework "Foto & verbessern" upload + status tracking (parent-area only, behind the PIN; no confirm UI —
    the staff reviewer portal owns review, §9). No billing UI — the app is free.
+
+**Vokaltraining pivot (DONE):** the exercise set was replaced with the owner's program — the **14 types**
+of §3 (Wortraster, Selbstlaute, kurz/lang, Quatschwörter, Komposita, Wortfamilien), a new 7-unit
+progression with per-unit Merksatz intro cards, and a ~360-item seed bank extracted from the program docs.
 
 > The **staff reviewer portal** (`besserlesenschreiben/reviewer`, future `-review` repo) is a **separate
 > subproject** with its own milestones — see `../backend/SPEC.md` §12, Phase 2.5. It is **out of scope for this
@@ -252,7 +254,7 @@ profile tab Ton toggle wired end-to-end.
 
 ## 12. Acceptance checks
 - Every answered item produces exactly one `/attempts` call with a sane `timeMs`.
-- App renders all 17 exercise types from backend-served JSON with no hardcoded lesson data.
+- App renders all 14 exercise types from backend-served JSON with no hardcoded lesson data.
 - `dyslexicFont` + `fontScale` visibly change rendering; `soundOn` mutes all audio.
 - No price/paywall/buy control is reachable from the child tabs — only from `/parent` behind the PIN.
 - Works installed as a PWA; attempts queue and sync after an offline blip.

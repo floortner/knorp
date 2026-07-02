@@ -36,21 +36,24 @@ const generatedSessionSchema = z.object({
 // One compact, valid exemplar per common type — few-shot examples are the biggest lever on structured
 // generation quality. Kept byte-stable so the system prompt can be prompt-cached across calls.
 const FEW_SHOT = JSON.stringify({
-  intro: 'Merke: Jede Silbe hat einen Klinger (a, e, i, o, u). Klatsch mit — dann hörst du die Silben!',
+  intro: 'Merke: Tauschst du den Selbstlaut aus, entsteht oft ein neues Wort. Sprich laut mit — welcher Vokal macht ein echtes Wort?',
   exercises: [
-    { type: 'count', word: 'Banane', syll: ['Ba', 'na', 'ne'], answer: 3, opts: [2, 3, 4], skillTags: ['syllable_count'], praise: 'Toll gezählt!', id: 'x', audioUrl: null },
-    { type: 'rhyme', word: 'Haus', options: ['Maus', 'Tisch', 'Ball'], answer: 'Maus', skillTags: ['rhyme'], praise: 'Das reimt sich!', id: 'x', audioUrl: null },
-    { type: 'order', word: 'Sonne', syll: ['Son', 'ne'], tiles: ['ne', 'Son'], skillTags: ['syllable_order'], praise: 'Super sortiert!', id: 'x', audioUrl: null },
+    { type: 'fixvowel', pseudo: 'Wond', vowel: 'a', options: ['Wand', 'Tag', 'Dach'], answer: 'Wand', skillTags: ['vowel_substitution'], praise: 'Richtig! Wond wird zu Wand.', id: 'x', audioUrl: null },
+    { type: 'length', word: 'Ball', vowel: 'a', answer: 'kurz', hint: 'll = Stopper (Doppelkonsonant)', skillTags: ['vowel_length', 'double_consonant'], praise: 'Genau — kurzes a!', id: 'x', audioUrl: null },
+    { type: 'raster', word: 'Tor', onset: 'T', vowel: 'o', coda: 'r', tiles: ['o', 'r', 'T'], skillTags: ['word_raster', 'vowel_identify'], praise: 'Super zerlegt!', id: 'x', audioUrl: null },
   ],
 });
 
 const LLM_SYSTEM = [
-  'Du generierst eine kleine deutsche Grundschul-Lektion zum Lesen und Schreiben.',
+  'Du generierst eine kleine deutsche Vokaltraining-Lektion (Rechtschreibförderung, FRESCH-Methode).',
   'Beginne mit intro: 1–2 kurze, kindgerechte Sätze, die die Regel oder den Trick zu den Förderschwerpunkten erklären (z. B. "Merke: …"). Kein Gruß, keine Frage.',
   `Erzeuge dann bis zu ${LLM_SESSION_SIZE} abwechslungsreiche Übungen, die GENAU auf die genannten Förderschwerpunkte und die Klassenstufe zielen.`,
-  'Jede Übung MUSS eindeutig korrekt lösbar sein: bei "count" ist answer die richtige Silbenzahl und in opts enthalten;',
-  'bei "order"/"arrange" sind tiles genau die syll in anderer Reihenfolge; bei "pairs" sind beide pair-Wörter in tiles und reimen sich;',
-  'bei allen Auswahlübungen ist answer in options enthalten; bei "build" lässt sich answer aus tiles legen.',
+  'Jede Übung MUSS eindeutig korrekt lösbar sein: bei "fixvowel"/"pickword"/"family"/"insertvowel"/"compound" ist answer in options enthalten;',
+  'bei "raster" ergeben onset+vowel+coda GENAU das Wort und tiles sind genau diese drei Teile gemischt;',
+  'bei "findvowel" buchstabieren die letters genau das Wort und answer ist einer der letters;',
+  'bei "insertvowel" hat pattern genau einen Unterstrich "_" und ergibt mit answer das Wort;',
+  'bei "sylarrange" sind tiles genau die syll in anderer Reihenfolge; bei "swapvowel" sind alle answers in options enthalten;',
+  'bei "paircheck" stimmt answer mit dem Vergleich von left und right überein; bei "sentencefix" ist answer eines der tokens (das falsch geschriebene Wort).',
   `Verwende in skillTags NUR Werte aus dieser Liste: ${SKILL_TAGS.join(', ')}.`,
   'Setze einen kurzen, motivierenden deutschen praise. id darf ein Platzhalter sein, audioUrl=null.',
   `Beispiel für gültiges JSON:\n${FEW_SHOT}`,
@@ -155,6 +158,8 @@ export class SessionsService {
       profileId: profile.id,
       unit,
       generatedAt: session.createdAt,
+      // The unit's Merksatz — the teaching layer of the Vokaltraining program (strategy card before ex. 1).
+      intro: UNIT_CATALOG[unit - 1]?.intro,
       items: selected.map(toExercise),
     };
   }

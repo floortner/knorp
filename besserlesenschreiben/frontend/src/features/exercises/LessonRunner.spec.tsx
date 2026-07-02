@@ -18,10 +18,10 @@ vi.mock('@/features/sessions/useCompleteSession', () => ({
   }),
 }));
 
-const countItem = (session as unknown as { items: Exercise[] }).items.find((i) => i.type === 'count')!;
+const realwordItem = (session as unknown as { items: Exercise[] }).items.find((i) => i.type === 'realword')!;
 
 function oneItemSession(): SessionResponse {
-  return { sessionId: 'sess-1', items: [countItem] } as unknown as SessionResponse;
+  return { sessionId: 'sess-1', items: [realwordItem] } as unknown as SessionResponse;
 }
 
 describe('LessonRunner', () => {
@@ -35,10 +35,10 @@ describe('LessonRunner', () => {
       </MemoryRouter>,
     );
 
-    // count fixture: 2 syllables → correct option is "2"
-    await user.click(screen.getByRole('button', { name: '2' }));
+    // realword fixture: "Tür" is a real word → tap "Echtes Wort"
+    await user.click(screen.getByRole('button', { name: /Echtes Wort/ }));
     expect(recordAttempt).toHaveBeenCalledWith(
-      expect.objectContaining({ sessionId: 'sess-1', itemId: countItem.id, isCorrect: true }),
+      expect.objectContaining({ sessionId: 'sess-1', itemId: realwordItem.id, isCorrect: true }),
     );
 
     // after the ~900ms post-solve delay the session completes and the reward screen shows
@@ -58,12 +58,12 @@ describe('LessonRunner', () => {
 
     // intro card first — no exercise visible, nothing emitted
     expect(screen.getByText('Merke: Klatsch die Silben mit!')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '2' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Echtes Wort/ })).not.toBeInTheDocument();
     expect(recordAttempt).not.toHaveBeenCalled();
 
     // dismiss → first exercise appears; answering still emits exactly one attempt
     await user.click(screen.getByRole('button', { name: /Los geht's/i }));
-    await user.click(screen.getByRole('button', { name: '2' }));
+    await user.click(screen.getByRole('button', { name: /Echtes Wort/ }));
     expect(recordAttempt).toHaveBeenCalledTimes(1);
   });
 
@@ -74,6 +74,6 @@ describe('LessonRunner', () => {
       </MemoryRouter>,
     );
     expect(screen.queryByText(/Los geht's/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Echtes Wort/ })).toBeInTheDocument();
   });
 });

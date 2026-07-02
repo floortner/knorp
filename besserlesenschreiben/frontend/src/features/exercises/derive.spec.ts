@@ -8,8 +8,8 @@ const items = (session as unknown as { items: Exercise[] }).items;
 const byType = (t: string) => items.find((i) => i.type === t)!;
 
 describe('promptAndExpected', () => {
-  it('derives prompt + expected for every one of the 17 fixture types without throwing', () => {
-    expect(items).toHaveLength(17);
+  it('derives prompt + expected for every one of the 14 fixture types without throwing', () => {
+    expect(items).toHaveLength(14);
     for (const ex of items) {
       const { prompt, expected } = promptAndExpected(ex);
       expect(typeof prompt).toBe('string');
@@ -19,18 +19,32 @@ describe('promptAndExpected', () => {
     }
   });
 
-  it('uses the answer for single-choice types', () => {
-    expect(promptAndExpected(byType('count'))).toEqual({ prompt: 'Sommer', expected: '2' });
-    expect(promptAndExpected(byType('rhyme'))).toEqual({ prompt: 'Maus', expected: 'Haus' });
-    expect(promptAndExpected(byType('bd'))).toEqual({ prompt: 'd', expected: 'd' });
+  it('uses the answer for choice types', () => {
+    expect(promptAndExpected(byType('findvowel'))).toEqual({ prompt: 'Schal', expected: 'a' });
+    expect(promptAndExpected(byType('fixvowel'))).toEqual({ prompt: 'Hend→a', expected: 'Hand' });
+    expect(promptAndExpected(byType('pickword'))).toEqual({
+      prompt: 'Berof Berit Beref Beruf Berat Berif',
+      expected: 'Beruf',
+    });
+    expect(promptAndExpected(byType('compound'))).toEqual({ prompt: 'Holztreppe', expected: 'die' });
   });
 
-  it('uses the joined syllable order for tile-order types', () => {
-    expect(promptAndExpected(byType('order'))).toEqual({ prompt: 'Schmetterling', expected: 'Schmet|ter|ling' });
-    expect(promptAndExpected(byType('arrange'))).toEqual({ prompt: 'Maus', expected: 'M|a|u|s' });
+  it('joins the structural parts for raster and sylarrange', () => {
+    expect(promptAndExpected(byType('raster'))).toEqual({ prompt: 'Schnur', expected: 'Schn|u|r' });
+    expect(promptAndExpected(byType('sylarrange'))).toEqual({
+      prompt: 'Gleichgewicht',
+      expected: 'Gleich|ge|wicht',
+    });
   });
 
-  it('uses the joined pair for pair-match', () => {
-    expect(promptAndExpected(byType('pairs'))).toEqual({ prompt: 'Haus Tisch Maus Ball', expected: 'Haus+Maus' });
+  it('joins all accepted vowels for swapvowel', () => {
+    expect(promptAndExpected(byType('swapvowel'))).toEqual({ prompt: 'Hand', expected: 'u' });
+  });
+
+  it('uses the sentence and the wrong token for sentencefix', () => {
+    expect(promptAndExpected(byType('sentencefix'))).toEqual({
+      prompt: 'Die Schöle ist aus.',
+      expected: 'Schöle',
+    });
   });
 });

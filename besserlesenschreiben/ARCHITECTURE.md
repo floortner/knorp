@@ -200,7 +200,7 @@ src/
     telemetry.ts          # attempt timing + emit (frontend SPEC §4)
   routes/                 # login, onboarding, app(lernen|liga|profil|chat), parent
   features/
-    exercises/            # the 17 renderers + the Exercise union type + audio.ts (audio_url playback + Web Speech fallback)
+    exercises/            # the 14 Vokaltraining renderers + the Exercise union type + audio.ts (audio_url playback + Web Speech fallback)
     progress/  chat/  parent/  billing/
   components/ui/          # shadcn components
   hooks/  styles/theme.css (@theme tokens)

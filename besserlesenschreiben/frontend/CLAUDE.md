@@ -9,31 +9,32 @@ reports what happened. No lesson logic lives here.
 
 ## Contents
 
-- **`docs/knorp.html`** — the interactive design prototype. **Visual + interaction source of truth.** Open it in a
-  browser to see every screen, the original 12 exercise interactions, feedback, and the brand (the 5 types added in
-  Phase 1.6 — `swipe`, `odd`, `listen`, `sentence`, `build` — are **not** in the prototype). **Recreate** it in the
-  real stack (React + TS + Tailwind + shadcn) — do **not** paste the prototype's HTML/inline styles into the app.
-- **`fixtures/`** — golden example API payloads (`session.example.json` = all 17 exercise types;
-  `units.example.json` = the 7 units + theme colors). Build renderers and snapshot tests against these.
+- **`docs/knorp.html`** — the interactive design prototype. Visual source of truth for the **shell, screens
+  and brand** (login, onboarding, tabs, feedback, parent area). Its exercise interactions document the
+  **legacy pre-Vokaltraining type set** — the current 14 exercise types live in `SPEC.md` §3 and the built
+  renderers, not in the prototype. **Recreate** looks in the real stack (React + TS + Tailwind + shadcn) —
+  do **not** paste the prototype's HTML/inline styles into the app.
+- **`fixtures/`** — golden example API payloads (`session.example.json` = all 14 exercise types;
+  `units.example.json` = the 7 Vokaltraining units + theme colors). Build renderers and snapshot tests
+  against these.
 - **`docs/screens/`** — a screenshot of each screen, as a quick visual index.
 - **`monster-pets/`** — SVG mascot characters (Nepo, Stella, and others) in four emotional states each
   (`froehlich`, `traurig`, `cool`, `ueberrascht`).
-- **`SPEC.md`** — the contract: screen map, the 17-type `Exercise` union, telemetry, API endpoints, a11y.
+- **`SPEC.md`** — the contract: screen map, the 14-type `Exercise` union, telemetry, API endpoints, a11y.
 - **`AGENTS.md`** — the golden rules you must not violate.
 
 ## The one thing that matters most
 
 Every answered item emits **exactly one `/attempts`** call with a real `timeMs`. Telemetry is the product's
-spine — see `SPEC.md` §4. Telemetry plumbing is its own milestone (4), built before the 17 renderers
-(milestone 5) — together the bulk of the work (`SPEC.md` §3).
+spine — see `SPEC.md` §4. Telemetry plumbing was built before the renderers — together the bulk of the work
+(`SPEC.md` §3).
 
 ## Prototype vs spec (what to copy vs build fresh)
 
 - **In the prototype** (recreate the look/interactions): login + code entry, onboarding, `/lernen` home,
-  the original 12 exercise renderers, feedback/confetti, `/liga`, `/profil`, `/chat`, parent PIN gate + trainer
-  actions, a11y toggles.
-- **Spec-only, NOT in the prototype** (build from `SPEC.md`, no visual reference yet — match the brand and the
-  existing renderer patterns): the 5 Phase-1.6 exercise types (`swipe`, `odd`, `listen`, `sentence`, `build`);
+  feedback/confetti, `/liga`, `/profil`, `/chat`, parent PIN gate + trainer actions, a11y toggles.
+- **Spec-only, NOT in the prototype** (build from `SPEC.md` — match the brand and the existing renderer
+  patterns): **all 14 Vokaltraining exercise types** (the prototype shows only the legacy set);
   the ✨ **generated-lecture entry** on `/lernen` + the lesson **intro card** (§2) and the **homework
   "Foto & verbessern"** flow (§9). The app is **free** — no billing/supporter UI anywhere (ARCHITECTURE §9);
   homework upload is parent-area only, behind the PIN.
@@ -45,18 +46,21 @@ spine — see `SPEC.md` §4. Telemetry plumbing is its own milestone (4), built 
 - Fonts: **Atkinson Hyperlegible** (body) + **Bricolage Grotesque** (display).
 - Mobile-first at ~390px, large tap targets, calm feedback.
 
-## The 17 exercise types at a glance
+## The 14 exercise types at a glance (Vokaltraining)
 
 All render from backend JSON (`fixtures/session.example.json` has one of each). Discriminated union on `type`
 — full shapes in `SPEC.md` §3.
 
-- **Single-choice** (tap one option/word → correct/wrong): `count`, `gap`, `rhyme`, `initial`, `letter`, `case`,
-  `nonsense`, `bd`, `vowel`, `odd` (tap the word that doesn't fit), `listen` (audio auto-plays, word hidden),
-  `sentence` (tap the word in the sentence that fits the `instruction`).
-- **Tile-order** (tap tiles in sequence; reset button): `order`, `arrange` (compare to `syll.join('|')`),
-  `build` (spell the emoji's word; compare to `answer[]`).
-- **Pair-match** (tap two tiles; correct if both in `pair`): `pairs`.
-- **Swipe** (tap/swipe a card left or right; `answer` is `'left' | 'right'`): `swipe`.
+- **Single-choice** (tap one option → correct/wrong): `findvowel` (tap the Selbstlaut among the word's
+  letters), `fixvowel` (Hend + a → Hand), `swapvowel` (ANY vowel in `answers` is correct), `insertvowel`
+  (B_ch → u), `pickword` (the one real word in a row of vowel variants), `compound` (der/die/das from the
+  Grundwort), `family` (which word belongs to the Wortfamilie).
+- **Binary choice** (two labelled sides): `realword` (Echtes Wort/Quatschwort), `length` (kurz/lang),
+  `sylvalid` (ja/nein — kann die Silbe klingen?), `paircheck` (gleich/anders).
+- **Wortraster** (`raster`): grey line · yellow circle (the vowel = "die Sonne") · grey line; place the
+  three shuffled parts.
+- **Tile-order** (`sylarrange`): rebuild a multi-syllable word from shuffled syllable tiles; reset button.
+- **Sentence** (`sentencefix`): tap the misspelled word; praise reveals the correction.
 
 State machine per item: `idle → correct | wrong`. On correct: chime + speak the word + show `praise`, advance.
 On wrong: buzz + "Nochmal versuchen", allow retry (increment `attemptNo`). Confetti on session complete.

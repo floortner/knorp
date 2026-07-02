@@ -8,9 +8,9 @@ import { ApiException } from '../../common/exceptions/api-exception';
 
 const analysis = {
   topic: 'Anlaute',
-  exerciseType: 'initial',
+  exerciseType: 'fixvowel',
   items: [{ prompt: 'Apfel', childAnswer: 'Apfel', correct: true, errorType: null }],
-  suggestedFocus: ['vowel_ei'],
+  suggestedFocus: ['vowel_length'],
 };
 
 function setup(

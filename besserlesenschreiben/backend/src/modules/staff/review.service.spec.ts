@@ -9,9 +9,9 @@ import { ApiException } from '../../common/exceptions/api-exception';
 
 const analysis = {
   topic: 'Anlaute',
-  exerciseType: 'initial',
+  exerciseType: 'fixvowel',
   items: [{ prompt: 'Apfel', childAnswer: 'Apfel', correct: true, errorType: null }],
-  suggestedFocus: ['vowel_ei', 'letter_discrimination'],
+  suggestedFocus: ['vowel_length', 'dehnung_h'],
 };
 
 function setup(overrides: {
@@ -79,7 +79,7 @@ describe('ReviewService.queue (pseudonymisation)', () => {
     expect(items[0].profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
     expect(items[0].profileHandle).not.toContain('prof-1234');
     expect(items[0].gradeBand).toBe('Einheit 3');
-    expect(items[0].skillTags).toEqual(['vowel_ei', 'letter_discrimination']);
+    expect(items[0].skillTags).toEqual(['vowel_length', 'dehnung_h']);
     expect(items[0].imageUrl).toBe('https://example.test/sas');
     expect(JSON.stringify(items[0])).not.toMatch(/name|email/i);
     expect(nextCursor).toBeNull();

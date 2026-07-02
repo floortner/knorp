@@ -7,21 +7,33 @@ import type { Exercise } from '@/lib/types';
  */
 export function promptAndExpected(ex: Exercise): { prompt: string; expected: string } {
   switch (ex.type) {
-    case 'order':
-    case 'arrange':
-      return { prompt: ex.word, expected: ex.syll.join('|') };
-    case 'pairs':
-      return { prompt: ex.tiles.join(' '), expected: ex.pair.join('+') };
-    case 'bd':
-      return { prompt: ex.glyph, expected: String(ex.answer) };
-    case 'odd':
-      return { prompt: ex.words.join(' '), expected: ex.answer };
-    case 'sentence':
+    case 'raster':
+      return { prompt: ex.word, expected: [ex.onset, ex.vowel, ex.coda].join('|') };
+    case 'findvowel':
+      return { prompt: ex.word, expected: ex.answer };
+    case 'realword':
+      return { prompt: ex.word, expected: ex.answer };
+    case 'fixvowel':
+      return { prompt: `${ex.pseudo}→${ex.vowel}`, expected: ex.answer };
+    case 'swapvowel':
+      return { prompt: ex.word, expected: ex.answers.join('/') };
+    case 'length':
+      return { prompt: ex.word, expected: ex.answer };
+    case 'sylvalid':
+      return { prompt: ex.syllable, expected: ex.answer };
+    case 'insertvowel':
+      return { prompt: ex.pattern, expected: ex.answer };
+    case 'paircheck':
+      return { prompt: `${ex.left} ↔ ${ex.right}`, expected: ex.answer };
+    case 'pickword':
+      return { prompt: ex.options.join(' '), expected: ex.answer };
+    case 'sentencefix':
       return { prompt: ex.tokens.join(' '), expected: ex.answer };
-    case 'build':
-      return { prompt: ex.emoji, expected: ex.answer.join('') };
-    default:
-      // count | gap | rhyme | initial | letter | case | nonsense | vowel | swipe | listen
-      return { prompt: ex.word, expected: String(ex.answer) };
+    case 'compound':
+      return { prompt: ex.word, expected: ex.answer };
+    case 'family':
+      return { prompt: ex.stem, expected: ex.answer };
+    case 'sylarrange':
+      return { prompt: ex.word, expected: ex.syll.join('|') };
   }
 }

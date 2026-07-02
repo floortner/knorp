@@ -30,6 +30,7 @@ import { join } from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { SKILL_TAG_SET } from "../src/contract/skills";
+import { EXERCISE_TYPES } from "../src/contract/exercise";
 
 const adapter = new PrismaPg(process.env.DATABASE_URL as string);
 const prisma = new PrismaClient({ adapter });
@@ -100,6 +101,19 @@ async function main(): Promise<void> {
   }
 
   console.log(`item_bank seeded: ${inserted} inserted, ${updated} updated, ${items.length} total`);
+
+  // Prune content that no longer exists in the program: seed rows dropped from the file, and any row
+  // whose exercise type left the contract (e.g. the pre-Vokaltraining types, incl. old LLM unit-0 items).
+  // Serving such a row would hit the client's unknown-type guard, so removal is the safe default.
+  const pruneSeed = await prisma.itemBank.deleteMany({
+    where: { generatedBy: "seed", seedKey: { notIn: items.map((r) => r.seed_key) } },
+  });
+  const pruneTypes = await prisma.itemBank.deleteMany({
+    where: { exerciseType: { notIn: [...EXERCISE_TYPES] } },
+  });
+  if (pruneSeed.count || pruneTypes.count) {
+    console.log(`item_bank pruned: ${pruneSeed.count} stale seed rows, ${pruneTypes.count} off-contract rows`);
+  }
 
   // Admin bootstrap (ARCHITECTURE §1b): there is no staff self-signup, so the first admin reviewer must
   // be provisioned here. STAFF_ADMIN_EMAILS (comma-separated) are upserted as active admins, giving the

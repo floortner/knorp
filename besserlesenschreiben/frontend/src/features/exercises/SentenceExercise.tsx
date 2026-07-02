@@ -5,8 +5,9 @@ import { ExerciseCard } from './ExerciseCard';
 import { useAnswer } from './useAnswer';
 
 /**
- * Sentence renderer: a full sentence is shown as tappable word tokens. Child taps the word
- * that satisfies the instruction (e.g. the noun, the word starting with a specific sound).
+ * Sentence renderer (sentencefix): the sentence is shown as tappable word tokens and exactly one word
+ * carries a wrong vowel — the child plays proofreader and taps it. The praise text carries the
+ * correction ("Richtig heißt es: …"), so the fix is shown on solve.
  */
 export function SentenceExercise({
   ex,
@@ -14,7 +15,7 @@ export function SentenceExercise({
   onSolved,
   soundOn,
 }: {
-  ex: Extract<Exercise, { type: 'sentence' }>;
+  ex: Extract<Exercise, { type: 'sentencefix' }>;
   onAttempt: (given: string, isCorrect: boolean) => void;
   onSolved: () => void;
   soundOn: boolean;
@@ -26,7 +27,7 @@ export function SentenceExercise({
   const isPunct = (t: string) => /^[.,!?;:]$/.test(t);
 
   return (
-    <ExerciseCard instruction={ex.instruction} status={status} praise={ex.praise}>
+    <ExerciseCard instruction="Ein Wort ist falsch geschrieben. Tippe es an!" status={status} praise={ex.praise}>
       <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-3 rounded-2xl bg-white px-6 py-8 shadow-sm ring-1 ring-black/5">
         {ex.tokens.map((token, i) => {
           if (isPunct(token)) {

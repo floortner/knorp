@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Exercise } from '@/lib/types';
 import session from '../../../fixtures/session.example.json';
@@ -10,7 +10,7 @@ const items = (session as unknown as { items: Exercise[] }).items;
 const noop = () => {};
 
 describe('ExerciseView golden render', () => {
-  // Pins the rendering contract for all 17 types against the golden fixture.
+  // Pins the rendering contract for all 14 Vokaltraining types against the golden fixture.
   for (const ex of items) {
     it(`renders ${ex.type} from backend JSON`, () => {
       const { container } = render(
@@ -32,67 +32,136 @@ describe('renderer safety', () => {
   });
 });
 
-describe('single-choice interaction (count)', () => {
-  const count = items.find((i) => i.type === 'count')!;
+describe('single-choice interaction (fixvowel)', () => {
+  const fixvowel = items.find((i) => i.type === 'fixvowel')!;
 
   it('reports each attempt and solves only on the correct option', async () => {
     const user = userEvent.setup();
     const onAttempt = vi.fn();
     const onSolved = vi.fn();
-    render(<ExerciseView ex={count} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
+    render(<ExerciseView ex={fixvowel} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
 
-    await user.click(screen.getByRole('button', { name: '3' })); // wrong
-    expect(onAttempt).toHaveBeenLastCalledWith('3', false);
+    // fixvowel fixture: Hend + a → Hand; distractors Ball, Wand
+    await user.click(screen.getByRole('button', { name: 'Ball' })); // wrong
+    expect(onAttempt).toHaveBeenLastCalledWith('Ball', false);
     expect(onSolved).not.toHaveBeenCalled();
     expect(screen.getByText(/Nochmal versuchen/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '2' })); // correct
-    expect(onAttempt).toHaveBeenLastCalledWith('2', true);
+    await user.click(screen.getByRole('button', { name: 'Hand' })); // correct
+    expect(onAttempt).toHaveBeenLastCalledWith('Hand', true);
     expect(onSolved).toHaveBeenCalledOnce();
   });
 });
 
-describe('pair-match interaction (pairs)', () => {
-  const pairs = items.find((i) => i.type === 'pairs')!;
+describe('binary interaction (realword)', () => {
+  const realword = items.find((i) => i.type === 'realword')!;
 
-  it('solves when both rhyming tiles are picked; a wrong pair clears for a retry', async () => {
+  it('solves on the correct side and reports the plain answer key', async () => {
     const user = userEvent.setup();
     const onAttempt = vi.fn();
     const onSolved = vi.fn();
-    render(<ExerciseView ex={pairs} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
+    render(<ExerciseView ex={realword} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
 
-    // pairs fixture: tiles Haus/Tisch/Maus/Ball, correct pair Haus+Maus
-    await user.click(screen.getByRole('button', { name: 'Haus' }));
-    await user.click(screen.getByRole('button', { name: 'Tisch' })); // wrong second pick
-    expect(onAttempt).toHaveBeenLastCalledWith('Haus+Tisch', false);
+    // realword fixture: "Tür" is a real word
+    await user.click(screen.getByRole('button', { name: /Quatschwort/ })); // wrong
+    expect(onAttempt).toHaveBeenLastCalledWith('quatsch', false);
     expect(onSolved).not.toHaveBeenCalled();
 
-    // the wrong-pair selection clears after ~700ms; wait it out, then the correct pair solves
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 750));
-    });
-    await user.click(screen.getByRole('button', { name: 'Haus' }));
-    await user.click(screen.getByRole('button', { name: 'Maus' }));
-    expect(onAttempt).toHaveBeenLastCalledWith('Haus+Maus', true);
+    await user.click(screen.getByRole('button', { name: /Echtes Wort/ }));
+    expect(onAttempt).toHaveBeenLastCalledWith('wort', true);
     expect(onSolved).toHaveBeenCalledOnce();
   });
 });
 
-describe('tile-order interaction (order)', () => {
-  const order = items.find((i) => i.type === 'order')!;
+describe('findvowel: duplicate letters stay tappable, telemetry gets the plain letter', () => {
+  const findvowel = items.find((i) => i.type === 'findvowel')!;
+
+  it('reports the letter value (not the indexed key)', async () => {
+    const user = userEvent.setup();
+    const onAttempt = vi.fn();
+    const onSolved = vi.fn();
+    render(<ExerciseView ex={findvowel} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
+
+    // findvowel fixture: Schal → vowel a
+    await user.click(screen.getByRole('button', { name: 'a' }));
+    expect(onAttempt).toHaveBeenLastCalledWith('a', true);
+    expect(onSolved).toHaveBeenCalledOnce();
+  });
+});
+
+describe('swapvowel: any accepted vowel solves', () => {
+  const swapvowel = items.find((i) => i.type === 'swapvowel')!;
+
+  it('accepts a vowel from answers and rejects one outside it', async () => {
+    const user = userEvent.setup();
+    const onAttempt = vi.fn();
+    const onSolved = vi.fn();
+    render(<ExerciseView ex={swapvowel} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
+
+    // swapvowel fixture: Hand → only u makes a real word (Hund); o/i do not
+    await user.click(screen.getByRole('button', { name: 'o' }));
+    expect(onAttempt).toHaveBeenLastCalledWith('o', false);
+
+    await user.click(screen.getByRole('button', { name: 'u' }));
+    expect(onAttempt).toHaveBeenLastCalledWith('u', true);
+    expect(onSolved).toHaveBeenCalledOnce();
+  });
+});
+
+describe('raster interaction', () => {
+  const raster = items.find((i) => i.type === 'raster')!;
+
+  it('solves when the parts are placed as Anfang → Vokal → Ende', async () => {
+    const user = userEvent.setup();
+    const onAttempt = vi.fn();
+    const onSolved = vi.fn();
+    render(<ExerciseView ex={raster} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
+
+    // raster fixture: Schnur = Schn · u · r
+    await user.click(screen.getByRole('button', { name: 'Schn' }));
+    await user.click(screen.getByRole('button', { name: 'u' }));
+    await user.click(screen.getByRole('button', { name: 'r' }));
+
+    expect(onAttempt).toHaveBeenCalledWith('Schn|u|r', true);
+    expect(onSolved).toHaveBeenCalledOnce();
+  });
+});
+
+describe('tile-order interaction (sylarrange)', () => {
+  const sylarrange = items.find((i) => i.type === 'sylarrange')!;
 
   it('solves when tiles are tapped in the syllable order', async () => {
     const user = userEvent.setup();
     const onAttempt = vi.fn();
     const onSolved = vi.fn();
-    render(<ExerciseView ex={order} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
+    render(<ExerciseView ex={sylarrange} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
 
-    // order fixture: word Schmetterling, syll [Schmet, ter, ling]
-    await user.click(screen.getByRole('button', { name: 'Schmet' }));
-    await user.click(screen.getByRole('button', { name: 'ter' }));
-    await user.click(screen.getByRole('button', { name: 'ling' }));
+    // sylarrange fixture: Gleichgewicht, syll [Gleich, ge, wicht]
+    await user.click(screen.getByRole('button', { name: 'Gleich' }));
+    await user.click(screen.getByRole('button', { name: 'ge' }));
+    await user.click(screen.getByRole('button', { name: 'wicht' }));
 
-    expect(onAttempt).toHaveBeenCalledWith('Schmet|ter|ling', true);
+    expect(onAttempt).toHaveBeenCalledWith('Gleich|ge|wicht', true);
     expect(onSolved).toHaveBeenCalledOnce();
+  });
+});
+
+describe('sentencefix interaction', () => {
+  const sentencefix = items.find((i) => i.type === 'sentencefix')!;
+
+  it('solves when the misspelled word is tapped and shows the correction', async () => {
+    const user = userEvent.setup();
+    const onAttempt = vi.fn();
+    const onSolved = vi.fn();
+    render(<ExerciseView ex={sentencefix} onAttempt={onAttempt} onSolved={onSolved} soundOn={false} />);
+
+    // sentencefix fixture: "Die Schöle ist aus." → Schöle (richtig: Schule)
+    await user.click(screen.getByRole('button', { name: 'ist' }));
+    expect(onAttempt).toHaveBeenLastCalledWith('ist', false);
+
+    await user.click(screen.getByRole('button', { name: 'Schöle' }));
+    expect(onAttempt).toHaveBeenLastCalledWith('Schöle', true);
+    expect(onSolved).toHaveBeenCalledOnce();
+    expect(screen.getByText(/Richtig heißt es: Schule/)).toBeInTheDocument();
   });
 });
