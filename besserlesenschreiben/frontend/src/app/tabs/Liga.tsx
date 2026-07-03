@@ -1,15 +1,15 @@
 import { Flame, Star } from 'lucide-react';
-import { errorMessage } from '@/lib/api';
 import { useActiveProfile } from '@/features/profile/useMe';
 import { useProgress } from '@/features/progress/useProgress';
 import { Heatmap, LeagueCard, WeekBars } from '@/features/progress/components';
+import { ErrorRetry } from '@/app/components/ErrorRetry';
 
 export function Liga() {
   const profile = useActiveProfile();
   const progress = useProgress(profile?.id);
 
   if (!profile || progress.isLoading) return <Note>Lädt …</Note>;
-  if (progress.isError) return <Note>{errorMessage(progress.error)}</Note>;
+  if (progress.isError) return <ErrorRetry error={progress.error} onRetry={() => void progress.refetch()} />;
   const p = progress.data!;
 
   return (
