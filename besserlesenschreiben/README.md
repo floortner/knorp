@@ -18,7 +18,7 @@ besserlesenschreiben/
 │   └── scripts/build-seed.ts ← regenerates the seed JSON from source
 ├── frontend/            ← the family SPA / PWA  (TypeScript · React · Vite · Tailwind)
 │   ├── AGENTS.md        ← Claude Code: read this FIRST when working in frontend/
-│   └── SPEC.md          ← screens, the 12 exercise renderers, telemetry
+│   └── SPEC.md          ← screens, the 14 Vokaltraining exercise renderers, telemetry
 └── reviewer/            ← internal STAFF portal for homework review  (React · Vite · Tailwind)
     ├── AGENTS.md        ← Claude Code: read this FIRST when working in reviewer/
     └── README.md        ← what it is, layout, the review flow
@@ -37,10 +37,10 @@ a subfolder to build one at a time. Either way, the agent should read, in order:
 Suggested order of work (each project's milestones are in its SPEC; cross-cutting build order in
 `backend/SPEC.md §12`):
 1. **Backend first** — auth + profiles + parent PIN (the security boundary everything depends on), then the
-   item bank (load `item_bank.seed.json`), sessions + attempts, progress, digest, chat, homework, billing,
-   then the **staff realm** (reviewer auth, review queue, authoritative apply — Phase 2.5).
-2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, then the 12 renderers +
-   telemetry (the bulk), then progress/voice/accessibility, chat, and the parent area + billing.
+   item bank (load `item_bank.seed.json`), sessions + attempts, progress, digest, chat, homework, then the
+   **staff realm** (reviewer auth, review queue, authoritative apply — Phase 2.5). No billing — the app is free.
+2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, then the 14 renderers +
+   telemetry (the bulk), then progress/voice/accessibility, chat, and the parent area (homework upload).
 3. **Reviewer portal** — staff login, the pending-review queue, and the two-pane review screen. Builds on the
    backend `/staff/*` routes; until those land it runs against a **provisional** contract
    (`reviewer/src/lib/contract.ts`).

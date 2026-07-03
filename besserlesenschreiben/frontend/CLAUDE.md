@@ -74,5 +74,5 @@ On wrong: buzz + "Nochmal versuchen", allow retry (increment `attemptNo`). Confe
 > relevant. Stop after the shell so we can review.
 
 Drive it milestone by milestone (`SPEC.md` §11). Build the telemetry pipeline (milestone 4) first, then the
-17 renderers (milestone 5) — together ~half the work. Give the renderers their own focused sessions, one or
+14 renderers (milestone 5) — together ~half the work. Give the renderers their own focused sessions, one or
 two exercise types at a time, each with a golden snapshot test against `fixtures/session.example.json`.
