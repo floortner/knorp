@@ -17,8 +17,26 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
-    { bufferLogs: true },
+    // Disable Nest's built-in JSON body parser so we can register one that tolerates an empty body
+    // (see below); multipart is registered separately via @fastify/multipart.
+    { bufferLogs: true, bodyParser: false },
   );
+
+  // Fastify's built-in JSON parser 400s on an empty body sent with `content-type: application/json`
+  // ("Body cannot be empty…"). Our clients set that header on every request, incl. bodyless POSTs
+  // (/sessions/:id/complete, /auth/logout, /parent/*), so an empty body must mean "no body", not a 400.
+  // Non-empty bodies parse as before; malformed JSON still 400s.
+  const fastify = app.getHttpAdapter().getInstance();
+  fastify.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, body: string, done) => {
+    if (body === '' || body == null) return done(null, {});
+    try {
+      done(null, JSON.parse(body));
+    } catch {
+      const err = new Error('Invalid JSON body') as Error & { statusCode?: number };
+      err.statusCode = 400;
+      done(err, undefined);
+    }
+  });
 
   app.useLogger(app.get(PinoLogger));
   app.setGlobalPrefix('api/v1');
