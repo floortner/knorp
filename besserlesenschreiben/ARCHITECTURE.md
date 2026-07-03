@@ -165,13 +165,13 @@ src/
   prisma/
     prisma.service.ts     # PrismaClient lifecycle (OnModuleInit/Destroy)
   common/
-    guards/               # JwtAuthGuard · ParentScopeGuard · EntitlementGuard
+    guards/               # JwtAuthGuard (family) · ParentScopeGuard · StaffAuthGuard (staff, §1a) + admin-role check
     filters/              # all-exceptions filter → the §5 error envelope
     interceptors/         # requestId + logging
     security/             # JWT, argon2 PIN hashing, rate limiting
   modules/                # one folder per resource: controller (HTTP) + service + Zod DTOs
     auth/  profiles/  sessions/  attempts/  progress/
-    chat/  homework/  parent/  billing/
+    chat/  homework/  parent/         # (no billing/ module — billing deferred, §9; schema kept dormant)
     staff/                # STAFF realm (§1a): reviewer auth + review queue + verdict submit
   common/guards/          # … + StaffAuthGuard (aud:"staff") — disjoint from JwtAuthGuard (family realm)
   services/               # DOMAIN logic only — plain injectables, NO controllers/HTTP here (dtctl lesson)
@@ -259,9 +259,9 @@ media rule, and the security-boundary invariants. It measurably improves agent o
   DB columns use snake_case; the backend maps between them. Pick one and never mix on the wire: **camelCase wins.**
 - **Status codes:** `200` ok · `201` created · `204` no body · `400` malformed · `401` unauthenticated ·
   `403` authenticated-but-forbidden (incl. missing parent scope) · `404` · `409` conflict ·
-  `402` payment required (no credits / tier) · `422` validation · `429` rate-limited · `5xx` server.
-- **Idempotency:** `POST /attempts` and `POST /billing/webhook` must be idempotent. Attempts dedupe on
-  `(session_id, item_id, attempt_no)`; webhooks on the provider event id.
+  `422` validation · `429` rate-limited · `5xx` server. (`402` is **deferred** — reserved for paid tiers, §9.)
+- **Idempotency:** `POST /attempts` must be idempotent (dedupe on `(session_id, item_id, attempt_no)`).
+  The billing webhook's idempotency (on the provider event id) is preserved but **deferred** (§9).
 - **Correlation:** the backend assigns an `X-Request-Id` per request (or echoes the client's). It appears in
   every log line and in error envelopes. The frontend generates one per user action and sends it.
 - **Pagination:** cursor-based where lists can grow (`?limit=&cursor=`); responses carry `nextCursor`.
@@ -315,7 +315,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 | 401 | `UNAUTHENTICATED` / `SESSION_EXPIRED` | route to `/login`, show "Sitzung abgelaufen" |
 | 403 | `PARENT_SCOPE_REQUIRED` | prompt parent PIN |
 | 403 | `FORBIDDEN` | generic "not allowed" |
-| 402 | `INSUFFICIENT_CREDITS` / `TIER_REQUIRED` | route **parent** to supporter screen (never child) |
+| 402 | `INSUFFICIENT_CREDITS` / `TIER_REQUIRED` | **deferred (§9)** — not emitted today; the app is free |
 | 422 | `VALIDATION_ERROR` | field-level messages from `details[]` |
 | 429 | `RATE_LIMITED` | back off using `Retry-After`; soft message |
 | 404 | `NOT_FOUND` | — |
@@ -506,51 +506,20 @@ restore from the off-platform dumps) rather than the loss of every family's data
 
 ---
 
-## 9. Payments — **DEFERRED (not in the current build)**
+## 9. Payments — **DEFERRED (not built; the app is free)**
 
-> **Status (current product decision): the app is FREE, including the AI features** (chat, homework vision,
-> LLM-generated lessons, premium TTS). Access is **gated by staff approval, not payment** (see §1b). Nothing in
-> this section is built: there is **no** billing module, checkout, webhook, `EntitlementGuard`, or credit
-> enforcement. The `entitlement` / `credits_ledger` / `processed_webhook` tables are kept in the schema
-> **dormant** so paid tiers remain a clean future option — flip them on without a migration. The `★` marker
-> on endpoints means "AI-backed / cost-bearing op" (so it could be metered later); today `★` ops are simply
-> free for any **approved, active** account. The rest of this section is the **future option**, preserved for
-> when/if metering is introduced — treat it as not-current.
+Current product decision: **free, including the AI features** (chat, homework vision, LLM-generated lessons,
+premium TTS). Access is **gated by staff approval, not payment** (§1b). There is **no** billing module, checkout,
+webhook, `EntitlementGuard`, credit enforcement, or billing UI anywhere. `★` on an endpoint just marks an
+"AI-backed / cost-bearing op" — free today for any approved, active account; the marker only flags what *could*
+be metered later. The former dormant `entitlement` / `credits_ledger` / `processed_webhook` tables have been
+**dropped** from the schema (they were dead weight for an unbuilt feature).
 
-**Approach:** a **Merchant of Record (MoR)** — **Lemon Squeezy or Paddle** — is the legal seller. It hosts the
-checkout, takes the card, and **files EU VAT/OSS for you** — the single biggest reason a solo operator should
-not use a raw payment gateway here. Card data **never touches our backend** (PCI scope ≈ zero). This also keeps
-us inside the platform's prohibited-action boundary: the backend stores **no** card or financial credentials.
-
-**Model (per the earlier design):** free core (unlimited bank practice, scheduling, progress, Web-Speech voice)
-+ **Supporter** tier and/or **credit packs** for the genuinely expensive AI ops (LLM sessions, chat, homework
-vision, premium neural TTS) + **pay-it-forward** so payers can subsidise families who can't. All billing UI is
-**parent-area only, behind the PIN** — the child never sees a price, paywall, or buy button. No
-lives/energy/loot mechanics anywhere.
-
-**Flow (card data never reaches us):**
-```
-parent area ──POST /billing/checkout──▶ backend creates MoR checkout ──▶ returns hosted checkoutUrl
-parent pays on MoR-hosted page (PCI handled by MoR)
-MoR ──webhook (signed)──▶ POST /api/v1/billing/webhook ──▶ verify signature ──▶ update entitlement + credits_ledger
-```
-
-**Backend responsibilities**
-- `entitlement(account)` = `free | supporter` (status, renews_at); `credits_ledger` is append-only, balance =
-  `sum(delta)`. Gated (★) endpoints check entitlement/credits **before** doing paid work; `0` credits → `402
-  INSUFFICIENT_CREDITS` (frontend routes the **parent** to the supporter screen, never the child).
-- **Webhook is the source of truth for entitlement** — verify the provider signature, and make it **idempotent
-  on the provider event id** (per API rule §4). Never trust client-reported payment success.
-- **Pay-it-forward:** `checkout` accepts `payItForwardAmount`; on payment, credit a **subsidy pool**
-  (`reason='pay_it_forward_gift'`) and grant pool credits to flagged free accounts (`reason='subsidy_grant'`).
-- **Transparency:** `GET /billing/status` returns tier, credit balance, and the funded count, feeding the
-  parent-area line "AI-Nutzung ≈ €X · dein Beitrag fördert N Kinder."
-- **Refunds/chargebacks/cancellations** arrive as webhooks too — handle them to revoke entitlement / reverse
-  ledger entries.
-
-**Entity/VAT:** confirm with your tax advisor which entity is the contracting party behind the MoR and whether
-a GmbH or a Verein best fits a cost-recovery (non-profit-leaning) intent. **RevenueCat** is *not* used for the
-web PWA — revisit only if you later ship via the app stores, where IAP rules and 15–30% fees apply.
+**Reserved seam (only if metering is ever introduced — its own milestone, not current):** use a **Merchant of
+Record** (Lemon Squeezy / Paddle) so card data never touches the backend and EU VAT/OSS is filed for you — a
+hosted checkout, a signed **idempotent** `POST /billing/webhook` (on the provider event id) that updates an
+`entitlement` + append-only `credits_ledger` (re-added by migration), billing UI **parent-area-only** (never
+shown to a child), and an optional pay-it-forward subsidy. No lives/energy/loot mechanics, ever.
 
 ---
 

@@ -24,10 +24,10 @@ Currently one **monorepo** for fast cross-cutting iteration; the subprojects are
 
 ## Commands
 
-### Run both at once (local dev)
+### Run locally (dev)
 ```bash
-besserlesenschreiben/dev.sh          # start backend (:3000) + frontend (:5173), Ctrl-C stops both
-besserlesenschreiben/dev.sh api      # backend only   ·   dev.sh web = frontend only
+besserlesenschreiben/dev.sh all      # backend (:3000) + family (:5173) + reviewer (:5174), Ctrl-C stops all
+besserlesenschreiben/dev.sh          # backend + family only  ·  api / web / review = one subproject at a time
 ```
 Copies missing `.env` files from `.env.example` and installs deps on first run. It does **not** set up
 Postgres — do the one-time DB setup in `besserlesenschreiben/backend/README.md` first.
@@ -56,6 +56,9 @@ npm test                        # golden snapshot tests for Exercise rendering c
 npm test -- src/path/to/spec.ts # run a single test file
 npm run gen:api                 # regenerate api.ts types from backend OpenAPI (openapi-typescript)
 ```
+
+### Reviewer (`besserlesenschreiben/reviewer/`)
+Same commands as the frontend (`npm install` · `npm run dev` on **:5174** · `build` · `test` · `gen:api`), typed from the backend's `/staff/*` OpenAPI. Internal staff portal — desktop/tablet, no PWA.
 
 ## Architecture overview
 
@@ -102,11 +105,11 @@ The database decides *what* to drill — informed by telemetry **and the staff-v
 Homework photos are uploaded by the family but validated by an **internal staff reviewer**, not the parent (ARCHITECTURE §11, backend SPEC §10). Vision produces a **draft** (`homework_upload.llm_analysis`) that is **never applied on its own**; a reviewer approves/corrects/rejects in the staff portal, and only the **authoritative** `reviewed_analysis` mutates `attempt`/`review_state` and feeds the next lecture. Review is **async** (the child is never blocked) and the queue is **pseudonymised** (image + draft + skill tags + grade band only). The old `POST /homework/{id}/confirm` parent step is **removed**.
 
 ### Build status
-Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest), Phase 1.5 (hardening), Phase 1.6 (content + UX polish), and the **staff realm + professional homework review** (`reviewer`/`homework_review` tables, `StaffAuthGuard`, `/staff/*` queue + authoritative apply, reviewer portal) are **done**. Technical debt from 1.6 is tracked in `backend/SPEC.md §12`.
+Everything through the current roadmap is **done**: Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest), Phase 1.5 (hardening), Phase 1.6 (content + UX polish), **Phase 2** (free AI: `LlmService` → chat → homework upload + vision draft → LLM session generation), the **approval-gated access** milestone (`account.status` `pending|active|deactivated`, silent pending-on-first-code signup, admin user-management), and **Phase 2.5** (staff realm + professional homework review: `reviewer`/`homework_review` tables, `StaffAuthGuard`, `/staff/*` queue + authoritative apply, reviewer portal). The Phase-1.6 technical debt is **resolved** (`backend/SPEC.md §12`).
 
 **Product decision — the app is FREE, including the AI features; access is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred** and not built: no `EntitlementGuard`, credits, or `402` gating. The `entitlement`/`credits_ledger` tables stay dormant so metering stays a future option; `★` means "AI-backed / cost-bearing op," free for any approved active account.
 
-Phase 2 is next: **`LlmService`** (Anthropic-direct, abstracted) → **chat** → **homework upload + vision draft** (feeds the existing staff queue) → **LLM session generation**, all free. Plus the **approval-gated access** milestone: `account.status` (`pending|active|deactivated`), silent pending-on-first-code signup, and **staff admin user-management** (approve / deactivate / delete, admin-role-only) — backend SPEC §12.
+**Remaining work:** the **TTS pipeline** (deferred — Web-Speech fallback on the client for now) and **deployment + hardening** (Azure infra has not been stood up). Billing stays deferred unless the product decision changes.
 
 ## Non-negotiable security rules
 

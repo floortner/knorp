@@ -25,10 +25,8 @@ model Account {
   pinLockedUntil DateTime? @map("pin_locked_until") @db.Timestamptz(6)
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  profiles    Profile[]
-  loginCodes  LoginCode[]
-  entitlement Entitlement?
-  credits     CreditsLedger[]
+  profiles   Profile[]
+  loginCodes LoginCode[]
 
   @@map("account")
 }
@@ -265,40 +263,5 @@ model ChatMessage {
   @@map("chat_message")
 }
 
-// ── BILLING: entitlements + credits ledger ───────────────────────────────────
-model Entitlement {
-  accountId   String    @id @map("account_id") @db.Uuid
-  tier        String    @default("free") // free | supporter
-  status      String    @default("inactive") // active|inactive|past_due
-  renewsAt    DateTime? @map("renews_at") @db.Timestamptz(6)
-  provider    String? // lemonsqueezy|paddle
-  providerRef String?   @map("provider_ref")
-
-  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  @@map("entitlement")
-}
-
-model CreditsLedger {
-  id          String   @id @default(uuid()) @db.Uuid
-  accountId   String   @map("account_id") @db.Uuid
-  delta       Int
-  reason      String // 'purchase'|'homework_scan'|'llm_session'|'pay_it_forward_gift'|'subsidy_grant'
-  beneficiary String?  @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  @@index([accountId])
-  @@map("credits_ledger")
-}
-
-// ── WEBHOOK idempotency (one row per provider event) ─────────────────────────
-model ProcessedWebhook {
-  provider    String
-  eventId     String   @map("event_id")
-  processedAt DateTime @default(now()) @map("processed_at") @db.Timestamptz(6)
-
-  @@id([provider, eventId])
-  @@map("processed_webhook")
-}
+// Billing (entitlement / credits_ledger / processed_webhook) is DEFERRED and its tables were dropped
+// (ARCHITECTURE §9). Re-add them by migration if metering is ever introduced.

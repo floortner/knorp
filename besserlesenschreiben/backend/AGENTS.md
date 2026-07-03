@@ -21,11 +21,15 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 ## Golden rules (do not violate)
 1. **`user_id` / `profile_id` come ONLY from the JWT** — never from a request body or path. Grep for this.
 2. **Blob access = user-delegation SAS scoped to the caller's prefix.** Never expose container keys/paths.
-3. **Parent-scoped and billing routes require a fresh `parent` claim.** Reset/delete are destructive — gate them
-   with a `ParentScopeGuard`.
-4. **Gated AI endpoints check entitlement/credits BEFORE doing paid work** (an `EntitlementGuard`/interceptor).
-   0 credits → `402`, do nothing paid.
-5. **The webhook is the source of truth for billing**, verified by signature, idempotent on the provider event id.
+3. **Parent-scoped routes require a fresh `parent` claim** (`ParentScopeGuard`). Reset/unlock are destructive.
+4. **Access is gated by account status, not payment.** The family `JwtAuthGuard` requires `account.status='active'`
+   (a per-request check → immediate revocation). AI (`★`) endpoints are **free** — no entitlement/credit/`402`
+   check (billing deferred, ARCHITECTURE §9). Signup is silent pending-on-first-code: a first `/auth/request-code`
+   creates a `pending` account and emails nothing until a **staff admin** approves it (still `200`, no enumeration).
+5. **Two disjoint auth realms (ARCHITECTURE §1a).** `/staff/*` requires a staff cookie (`aud:'staff'`,
+   `StaffAuthGuard`, signed with `STAFF_JWT_SECRET` ≠ `JWT_SECRET`); a family JWT never validates there and vice
+   versa. The reviewer queue is **pseudonymised** (image + LLM draft + skill tags + grade band only). Staff
+   user-administration (approve/deactivate/delete real emails) is **admin-role-only**, separate from the queue.
 6. **Never log** child answers, homework/OCR content, emails, login codes, PIN/hash, JWTs, SAS URLs, or bodies.
    Log identifiers + outcomes only (ARCHITECTURE §6).
 7. **Errors use the one envelope** (`{error:{code,message,requestId,details}}`) via a global exception filter —
@@ -48,7 +52,9 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
   (`zodOutputFormat` + `messages.parse`) so the digest/homework JSON stays typed end-to-end.
 - Session generation: **the database decides *what* to drill (deterministic, free); the LLM only generates new
   content + conversation** (SPEC §8). Most sessions must make zero LLM calls.
-- Homework analysis must **not** mutate the learning profile before the parent confirms (SPEC §10).
+- Homework analysis must **not** mutate the learning profile before a **staff reviewer** approves. Vision writes
+  `homework_upload.llm_analysis` (a draft); only the reviewer's authoritative `reviewed_analysis` mutates
+  `attempt`/`review_state` and feeds the next lecture (SPEC §10, ARCHITECTURE §11). No parent-confirm step.
 
 ## Commands (create these as you scaffold)
 - Install: `npm ci`   ·   Run: `npm run start:dev`
@@ -59,10 +65,12 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 - Seed: `npm run seed` (`prisma db seed` → `prisma/seed.ts`)
 - Full local-dev setup (local Postgres, env, first run, calling the API): see [`./README.md`](./README.md).
 
-## Build milestones (SPEC §12)
-Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest) + Phase 1.5 hardening (response validation,
-cookie auth, durable PIN lockout, prod email/storage adapters, 201 statuses, FSRS `learning_steps`, tests) are
-**done**. Next is Phase 2 (★ gated): EntitlementGuard → LlmService → chat → homework vision → billing.
+## Build milestones (backend SPEC §12)
+Phases 1, 1.5, 1.6, **Phase 2** (`LlmService`, chat, homework upload + vision draft, LLM session generation —
+all **free**, no billing), and **Phase 2.5** (staff realm: `reviewer`/`homework_review` tables, `StaffAuthGuard`,
+`/staff/*` queue + authoritative apply, approval-gated account lifecycle + admin user-management) are **done**.
+Billing is **deferred** — schema (`entitlement`/`credits_ledger`/`processed_webhook`) kept dormant (ARCHITECTURE §9).
+Remaining: **TTS pipeline** (deferred — Web-Speech fallback on the client for now) and **deploy/hardening**.
 
 ## Definition of done for a feature
 Endpoint matches `SPEC.md §6`; `user_id` from token; correct error codes; structured logs with `requestId`

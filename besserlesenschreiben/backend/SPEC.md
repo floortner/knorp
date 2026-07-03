@@ -26,7 +26,7 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
 1. `user_id` / `profile_id` is **always derived from the JWT**, never from a client-supplied path or body field.
 2. All Blob access is via **user-delegation SAS scoped to the authenticated user's prefix**. Container keys/paths are never exposed.
 3. Parent-scoped and billing endpoints require a valid **parent elevation claim** (§4).
-4. Expensive AI endpoints require an **entitlement check** (§7) before doing any paid work.
+4. AI endpoints (`★`) are **free** — no entitlement/credit/`402` check (billing deferred, ARCHITECTURE §9); access is gated by `account.status='active'` instead (§4).
 
 ---
 
@@ -37,7 +37,6 @@ the parent email authenticates the household; the PIN re-gates parent controls a
 
 ```
 account (1) ───< profile (N children)
-account (1) ───< credits_ledger
 profile (1) ───< session ───< attempt
 profile (1) ───< homework_upload ───< homework_review
 profile (1) ───< chat_message
@@ -217,35 +216,9 @@ chat_message(
   created_at   timestamptz default now()
 )
 
--- BILLING: entitlements + credits ledger
-entitlement(
-  account_id   uuid pk fk -> account,
-  tier         text default 'free',     -- free | supporter
-  status       text default 'inactive', -- active|inactive|past_due
-  renews_at    timestamptz,
-  provider     text,                     -- lemonsqueezy|paddle
-  provider_ref text
-)
-
-credits_ledger(
-  id           uuid pk,
-  account_id   uuid fk -> account,
-  delta        int not null,            -- +N purchased / gifted, -1 per paid op consumed
-  reason       text not null,           -- 'purchase'|'homework_scan'|'llm_session'|'pay_it_forward_gift'|'subsidy_grant'
-  beneficiary  uuid,                    -- for pay-it-forward: which account received the gift
-  created_at   timestamptz default now()
-)
-
--- WEBHOOK idempotency: one row per provider event so billing webhooks dedupe replays (§7, ARCHITECTURE §4)
-processed_webhook(
-  provider     text not null,           -- lemonsqueezy | paddle
-  event_id     text not null,           -- the provider's unique event id
-  processed_at timestamptz default now(),
-  primary key (provider, event_id)
-)
+-- BILLING (entitlement / credits_ledger / processed_webhook): DEFERRED — tables DROPPED (§7, ARCHITECTURE §9).
+-- The app is free; re-add these by migration only if metering is ever introduced.
 ```
-
-`credits balance = SELECT sum(delta) FROM credits_ledger WHERE account_id = ?`
 
 ---
 
@@ -298,7 +271,7 @@ Postgres holds metadata + pointers; Blob holds markdown + media. Reads/writes vi
 
 ## 6. API contract  *(shared boundary with frontend)*
 
-All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*`. `‡` = requires parent scope. `★` = entitlement/credit gated (Phase 2; checks credits **before** any paid work, `402` on zero).
+All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*`. `‡` = requires parent scope. `★` = AI-backed / cost-bearing op — **free** today (no credit gating; billing deferred, ARCHITECTURE §9); the marker only flags what *could* be metered later.
 
 This contract is **generated, not hand-written**: Zod schemas in `src/contract/*` → `openapi.json` (`npm run openapi:export`) → frontend `api.gen.ts` (`npm run gen:api`), with a CI drift gate. Every 2xx response is also validated at runtime against its Zod schema by a global `ZodResponseInterceptor` (dev: throws on mismatch; prod: logs + strips), so the documented shape can't drift from the served one.
 

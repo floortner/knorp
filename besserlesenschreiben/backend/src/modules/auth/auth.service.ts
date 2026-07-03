@@ -32,7 +32,7 @@ export class AuthService {
     if (!account) {
       // First contact for an unknown email → create the account in `pending`, awaiting staff approval.
       // No code, no email; the family UI shows "we'll review and email you soon".
-      await this.prisma.account.create({ data: { email, status: 'pending', entitlement: { create: {} } } });
+      await this.prisma.account.create({ data: { email, status: 'pending' } });
       this.logger.log({ event: 'auth.signup_pending' }, 'pending account created (awaiting approval)');
       return { ok: true };
     }
