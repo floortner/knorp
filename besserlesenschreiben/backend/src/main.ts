@@ -41,7 +41,13 @@ async function bootstrap(): Promise<void> {
   app.useLogger(app.get(PinoLogger));
   app.setGlobalPrefix('api/v1');
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.enableCors({ origin: true, credentials: true });
+  // @fastify/cors defaults Access-Control-Allow-Methods to GET,HEAD,POST only (unlike the Express `cors`
+  // package), which silently blocks every cross-origin PATCH/PUT/DELETE preflight — enumerate them.
+  app.enableCors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  });
   await app.register(fastifyCookie); // session JWT delivered as an httpOnly cookie (SPEC §4)
   // Homework photo upload (multipart). 10 MB cap, one file per request (SPEC §10 / ARCHITECTURE §10).
   await app.register(fastifyMultipart, { limits: { fileSize: 10 * 1024 * 1024, files: 1 } });
