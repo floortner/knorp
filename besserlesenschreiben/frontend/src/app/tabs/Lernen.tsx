@@ -8,6 +8,7 @@ import { UnitCard } from '@/features/units/UnitCard';
 import { Button } from '@/components/ui/button';
 import { TopBar } from '@/app/components/TopBar';
 import { WeekStrip } from '@/app/components/WeekStrip';
+import { ErrorRetry } from '@/app/components/ErrorRetry';
 
 export function Lernen() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export function Lernen() {
   const [lectureNote, setLectureNote] = useState<string | null>(null);
 
   if (me.isLoading) return <CenterNote>Lädt …</CenterNote>;
-  if (me.isError) return <CenterNote>{errorMessage(me.error)}</CenterNote>;
+  if (me.isError) return <ErrorRetry error={me.error} onRetry={() => void me.refetch()} />;
 
   // Authenticated but no child profile yet → send them through onboarding.
   if (!profile) {
@@ -96,7 +97,7 @@ export function Lernen() {
       )}
 
       {units.isLoading && <CenterNote>Einheiten laden …</CenterNote>}
-      {units.isError && <CenterNote>{errorMessage(units.error)}</CenterNote>}
+      {units.isError && <ErrorRetry error={units.error} onRetry={() => void units.refetch()} />}
 
       {units.data && (
         <div className="space-y-3">
