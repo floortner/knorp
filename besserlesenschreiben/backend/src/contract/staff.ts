@@ -97,6 +97,8 @@ export const lexemeSchema = z.object({
   syllableCount: z.number().int(),
   forms: z.string().nullable(),
   separablePrefix: z.string().nullable(),
+  familyStem: z.string().nullable(), // shared root grouping a Wortfamilie → `family` exercises
+  compoundParts: z.array(z.string()), // ordered compound parts (["Holz","Treppe"]); [] = not a compound
   features: lexemeFeaturesSchema,
   skillTags: z.array(z.string()),
   isLernwort: z.boolean(),

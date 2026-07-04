@@ -3419,6 +3419,16 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "familyStem": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "compoundParts": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
                           "features": {
                             "type": "object",
                             "additionalProperties": {
@@ -3462,6 +3472,8 @@
                           "syllableCount",
                           "forms",
                           "separablePrefix",
+                          "familyStem",
+                          "compoundParts",
                           "features",
                           "skillTags",
                           "isLernwort",
@@ -3546,6 +3558,16 @@
                     "nullable": true,
                     "type": "string"
                   },
+                  "familyStem": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "compoundParts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
                   "features": {
                     "type": "object",
                     "additionalProperties": {
@@ -3586,6 +3608,8 @@
                   "syllableCount",
                   "forms",
                   "separablePrefix",
+                  "familyStem",
+                  "compoundParts",
                   "features",
                   "skillTags",
                   "isLernwort",
@@ -3643,6 +3667,16 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "familyStem": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "compoundParts": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "features": {
                       "type": "object",
                       "additionalProperties": {
@@ -3686,6 +3720,8 @@
                     "syllableCount",
                     "forms",
                     "separablePrefix",
+                    "familyStem",
+                    "compoundParts",
                     "features",
                     "skillTags",
                     "isLernwort",
@@ -3971,6 +4007,16 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "familyStem": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "compoundParts": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "features": {
                       "type": "object",
                       "additionalProperties": {
@@ -4014,6 +4060,8 @@
                     "syllableCount",
                     "forms",
                     "separablePrefix",
+                    "familyStem",
+                    "compoundParts",
                     "features",
                     "skillTags",
                     "isLernwort",
@@ -4076,6 +4124,16 @@
                   "separablePrefix": {
                     "nullable": true,
                     "type": "string"
+                  },
+                  "familyStem": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "compoundParts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
                   },
                   "features": {
                     "type": "object",
@@ -4157,6 +4215,16 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "familyStem": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "compoundParts": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "features": {
                       "type": "object",
                       "additionalProperties": {
@@ -4200,6 +4268,8 @@
                     "syllableCount",
                     "forms",
                     "separablePrefix",
+                    "familyStem",
+                    "compoundParts",
                     "features",
                     "skillTags",
                     "isLernwort",

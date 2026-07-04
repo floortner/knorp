@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Modal } from '@/components/ui/modal';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/cn';
 import type { Lexeme } from '@/lib/contract';
 import { useLexemeActions } from './useLexemes';
-import { SKILL_TAGS } from './LexemesScreen';
+import { SKILL_TAGS } from './skills';
+import { SkillsHelp } from './SkillsHelp';
 
 interface Form {
   lemma: string;
@@ -20,6 +21,8 @@ interface Form {
   syllableCount: string;
   forms: string;
   separablePrefix: string;
+  familyStem: string;
+  compoundParts: string; // edited as "Holz + Treppe"; split on "+" into string[] on save
   skillTags: string[];
   isLernwort: boolean;
   isTrennbar: boolean;
@@ -38,6 +41,8 @@ function initForm(l: Lexeme | null): Form {
     syllableCount: String(l?.syllableCount ?? 1),
     forms: l?.forms ?? '',
     separablePrefix: l?.separablePrefix ?? '',
+    familyStem: l?.familyStem ?? '',
+    compoundParts: (l?.compoundParts ?? []).join(' + '),
     skillTags: l?.skillTags ?? [],
     isLernwort: l?.isLernwort ?? false,
     isTrennbar: l?.isTrennbar ?? false,
@@ -90,6 +95,8 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
       syllableCount,
       forms: f.forms || null,
       separablePrefix: f.separablePrefix || null,
+      familyStem: f.familyStem.trim() || null,
+      compoundParts: f.compoundParts.split('+').map((s) => s.trim()).filter(Boolean),
       features: features as Lexeme['features'],
       skillTags: f.skillTags,
       isLernwort: f.isLernwort,
@@ -102,15 +109,12 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
   };
 
   return (
-    <div className="fixed inset-0 z-20 grid place-items-center bg-black/30 p-4" role="dialog" aria-modal>
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-card bg-surface p-6 shadow-xl ring-1 ring-line">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-ink">{isNew ? 'Neues Wort' : `„${lexeme.lemma}“ bearbeiten`}</h2>
-          <button onClick={onClose} aria-label="Schließen" className="text-ink-soft hover:text-ink">
-            <X className="size-5" aria-hidden />
-          </button>
-        </div>
-
+    <Modal
+      onClose={onClose}
+      dismissable={false}
+      size="2xl"
+      title={isNew ? 'Neues Wort' : `„${lexeme.lemma}“ bearbeiten`}
+    >
         <div className="grid grid-cols-2 gap-4">
           <Field label="Wort (Lemma)">
             <Input
@@ -153,10 +157,28 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
           <Field label="Trennbares Präfix">
             <Input value={f.separablePrefix} onChange={(e) => set('separablePrefix', e.target.value)} />
           </Field>
+          <Field label="Wortfamilie-Stamm">
+            <Input
+              value={f.familyStem}
+              onChange={(e) => set('familyStem', e.target.value)}
+              placeholder="z. B. fahr"
+              aria-label="Wortfamilie-Stamm"
+            />
+          </Field>
+          <Field label="Kompositum-Teile (mit + trennen)">
+            <Input
+              value={f.compoundParts}
+              onChange={(e) => set('compoundParts', e.target.value)}
+              placeholder="z. B. Holz + Treppe"
+              aria-label="Kompositum-Teile"
+            />
+          </Field>
         </div>
 
         <div className="mt-4">
-          <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-ink-soft">Skills</p>
+          <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-ink-soft">
+            Skills <SkillsHelp />
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {SKILL_TAGS.map((t) => (
               <button
@@ -187,7 +209,7 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
         </div>
 
         <div className="mt-4">
-          <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-ink-soft">
+          <p className="mb-1.5 text-xs font-medium text-ink-soft">
             Features (rohe Rechtschreib-Merkmale, JSON)
           </p>
           <Textarea
@@ -228,15 +250,14 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-soft">{label}</span>
+      <span className="mb-1 block text-xs font-medium text-ink-soft">{label}</span>
       {children}
     </label>
   );

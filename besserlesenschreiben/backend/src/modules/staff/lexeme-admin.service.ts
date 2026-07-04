@@ -33,6 +33,8 @@ function toWire(r: LexemeRow) {
     syllableCount: r.syllableCount,
     forms: r.forms,
     separablePrefix: r.separablePrefix,
+    familyStem: r.familyStem,
+    compoundParts: r.compoundParts,
     features: (r.features ?? {}) as Record<string, string | boolean>,
     skillTags: r.skillTags,
     isLernwort: r.isLernwort,

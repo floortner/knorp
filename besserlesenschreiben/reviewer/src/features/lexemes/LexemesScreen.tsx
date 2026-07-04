@@ -8,13 +8,8 @@ import type { Lexeme, LexemeStats } from '@/lib/contract';
 import type { LexemeFilters } from '@/lib/endpoints';
 import { useLexemes, useLexemeStats, useLexemeActions } from './useLexemes';
 import { LexemeEditor } from './LexemeEditor';
-
-// Mirrors backend src/contract/skills.ts (SKILL_TAGS). The backend validates, so drift → a 400.
-export const SKILL_TAGS = [
-  'vowel_identify', 'vowel_length', 'vowel_substitution', 'word_raster', 'lexical_decision',
-  'syllable_validity', 'syllable_segmentation', 'visual_discrimination', 'compound_word',
-  'word_family', 'article', 'sentence_context', 'dehnung_h', 'double_consonant',
-] as const;
+import { SkillsHelp } from './SkillsHelp';
+import { SKILL_TAGS } from './skills';
 
 const POS_OPTIONS = ['N', 'V', 'ADJ', 'ADV', 'PRO', 'KONJ', 'ART', 'PREP', 'PTK', 'NUM', 'ADJ / ADV'];
 // The orthographic Lernstellen keys in `features` (from the parser).
@@ -86,7 +81,7 @@ export function LexemesScreen() {
             aria-label="Wort suchen"
           />
         </Ctrl>
-        <Ctrl label="Skill">
+        <Ctrl label="Skill" help={<SkillsHelp />}>
           <Filter value={filters.skill} onChange={(v) => setF({ skill: v })} options={[...SKILL_TAGS]} allLabel="Alle Skills" />
         </Ctrl>
         <Ctrl label="Wortart">
@@ -137,13 +132,13 @@ export function LexemesScreen() {
       ) : (
         <div className="overflow-hidden rounded-card bg-surface shadow-sm ring-1 ring-line">
           <table className="w-full text-sm">
-            <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-soft">
+            <thead className="border-b border-line text-left text-xs text-ink-soft">
               <tr>
                 <th className="px-4 py-2 font-medium">Wort</th>
                 <th className="px-4 py-2 font-medium">HK</th>
                 <th className="px-4 py-2 font-medium">Wortart</th>
                 <th className="px-4 py-2 font-medium">Silben</th>
-                <th className="px-4 py-2 font-medium">Skills</th>
+                <th className="px-4 py-2 font-medium">Skills <SkillsHelp /></th>
                 <th className="px-4 py-2" />
               </tr>
             </thead>
@@ -193,10 +188,13 @@ export function LexemesScreen() {
   );
 }
 
-function Ctrl({ label, children }: { label: string; children: React.ReactNode }) {
+function Ctrl({ label, help, children }: { label: string; help?: React.ReactNode; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium uppercase tracking-wide text-ink-soft">{label}</span>
+      <span className="flex items-center gap-1 text-xs font-medium text-ink-soft">
+        {label}
+        {help}
+      </span>
       {children}
     </label>
   );
@@ -267,18 +265,29 @@ function StatsPanel({ s }: { s: LexemeStats }) {
           <StatRow label="Wortart" items={s.byPos} />
           <StatRow label="Genus" items={s.byGenus} />
           <StatRow label="Quelle" items={s.bySource} />
-          <StatRow label="Skills" items={s.bySkill} />
+          <StatRow label="Skills" items={s.bySkill} help={<SkillsHelp />} />
         </div>
       )}
     </div>
   );
 }
 
-function StatRow({ label, items }: { label: string; items: { value: string; count: number }[] }) {
+function StatRow({
+  label,
+  items,
+  help,
+}: {
+  label: string;
+  items: { value: string; count: number }[];
+  help?: React.ReactNode;
+}) {
   if (!items.length) return null;
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="w-16 shrink-0 text-xs font-medium uppercase tracking-wide text-ink-soft">{label}</span>
+      <span className="flex min-w-16 shrink-0 items-center gap-1 text-xs font-medium text-ink-soft">
+        {label}
+        {help}
+      </span>
       {items.slice(0, 12).map((i) => (
         <span key={i.value} className="rounded-full bg-black/[0.04] px-2 py-0.5 text-xs text-ink-soft">
           {i.value} <span className="font-semibold text-ink">{i.count}</span>

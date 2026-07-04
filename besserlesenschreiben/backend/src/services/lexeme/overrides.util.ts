@@ -7,7 +7,8 @@
 
 export const LEXEME_OVERRIDE_FIELDS = [
   'hk', 'pos', 'genus', 'morphemeCount', 'ipa', 'syllabification', 'syllableCount',
-  'forms', 'separablePrefix', 'features', 'skillTags', 'isLernwort', 'isTrennbar', 'isMerkwort',
+  'forms', 'separablePrefix', 'familyStem', 'compoundParts', 'features', 'skillTags',
+  'isLernwort', 'isTrennbar', 'isMerkwort',
 ] as const;
 
 export type LexemeField = (typeof LEXEME_OVERRIDE_FIELDS)[number];
@@ -23,6 +24,8 @@ export interface LexemeRecord {
   syllableCount: number;
   forms: string | null;
   separablePrefix: string | null;
+  familyStem: string | null;
+  compoundParts: string[];
   features: unknown;
   skillTags: string[];
   isLernwort: boolean;
@@ -42,6 +45,9 @@ export const OVERRIDES_COMMENT =
 
 /** Order-independent canonical string: sorts object keys (jsonb key order isn't stable) and skill-tag sets. */
 function canon(field: string, v: unknown): string {
+  // Treat "absent" consistently: an empty array (a DB column default, e.g. compoundParts/skillTags) and
+  // null/undefined canonicalize the same, so a base row lacking the key never yields a spurious `[]` edit.
+  if (v == null || (Array.isArray(v) && v.length === 0)) return 'null';
   if (field === 'skillTags' && Array.isArray(v)) return JSON.stringify([...v].sort());
   const walk = (x: unknown): unknown => {
     if (Array.isArray(x)) return x.map(walk);
