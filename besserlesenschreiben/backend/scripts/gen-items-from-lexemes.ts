@@ -21,7 +21,9 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
+import type { ItemBankModel } from '../src/generated/prisma/models';
 import { solvableExerciseSchema } from '../src/contract/exercise';
+import { toExercise } from '../src/modules/sessions/exercise.mapper';
 import type { SkillTag } from '../src/contract/skills';
 
 const BACKEND_ROOT = join(__dirname, '..');
@@ -80,22 +82,45 @@ function shuffle<T>(arr: readonly T[], rng: () => number): T[] {
   return a;
 }
 
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+/** Shuffle that avoids returning the input order, so tile-order exercises aren't emitted pre-solved. */
+function shuffleDistinct<T>(arr: readonly T[], rng: () => number): T[] {
+  if (arr.length < 2) return [...arr];
+  const original = JSON.stringify(arr);
+  for (let i = 0; i < 8; i++) {
+    const out = shuffle(arr, rng); // rng is stateful, so each retry advances it → a different draw
+    if (JSON.stringify(out) !== original) return out;
+  }
+  // Deterministic fallback: rotate by one — guaranteed distinct unless every tile is identical.
+  const rotated = [...arr.slice(1), arr[0]];
+  return JSON.stringify(rotated) !== original ? rotated : [...arr];
+}
+
+// Transliterate umlauts/ß so diacritics don't collapse to the same slug (fällen ≠ füllen); the caller
+// also de-duplicates seed keys, so a residual collision (e.g. leben/Leben) never silently drops a row.
+const slug = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 const difficultyFromHk = (hk: number) => Math.max(1, Math.min(5, Math.round(hk / 3)));
 const feat = (l: Lex, key: string) => l.features?.[key] != null && l.features[key] !== false;
+// Wortfamilie stems are stored with a trailing dash in item_bank (e.g. "fahr-"); match that convention.
+const familyStemLabel = (stem: string) => (stem.endsWith('-') ? stem : `${stem}-`);
 
 type Candidate = { type: string; skill: SkillTag; payload: Record<string, unknown> };
 interface Ctx {
-  byLemma: Map<string, Lex>;
-  byStem: Map<string, Lex[]>;
-  distractors: (stem: string, n: number, rng: () => number) => string[];
+  byLemmaCI: Map<string, Lex>; // lemma (lower-cased) → lexeme, for tolerant Grundwort lookup
+  familyRep: Map<string, string>; // familyStem → representative lemma (lowest HK) — one exercise per family
+  curatedLemmas: { lemma: string; stem: string }[]; // lemmas that HAVE a familyStem (the distractor pool)
 }
 
 // ── syllable_segmentation → sylarrange ──
 function genSylarrange(l: Lex): Candidate | null {
   const syll = l.syllabification.split('-').filter(Boolean);
   if (syll.length < 2) return null;
-  const tiles = shuffle(syll, mulberry32(hashStr(l.lemma)));
+  const tiles = shuffleDistinct(syll, mulberry32(hashStr(l.lemma)));
+  if (JSON.stringify(tiles) === JSON.stringify(syll)) return null; // all-identical tiles (e.g. nen-nen) → degenerate
   return {
     type: 'sylarrange',
     skill: 'syllable_segmentation',
@@ -103,24 +128,24 @@ function genSylarrange(l: Lex): Candidate | null {
   };
 }
 
-// ── word_family → family (one exercise per curated family; representative = lowest-HK member) ──
+// ── word_family → family (one exercise per curated family, from its representative member) ──
 function genFamily(l: Lex, ctx: Ctx): Candidate | null {
-  if (!l.familyStem) return null;
-  const fam = ctx.byStem.get(l.familyStem);
-  if (!fam || fam.length < 2) return null; // a real family, not a singleton
-  const rep = [...fam].sort((a, b) => a.hk - b.hk || a.lemma.localeCompare(b.lemma))[0];
-  if (rep.lemma !== l.lemma) return null; // emit once per family, from the representative
+  if (!l.familyStem || ctx.familyRep.get(l.familyStem) !== l.lemma) return null; // emit once, from the rep
   const rng = mulberry32(hashStr(l.familyStem));
-  const distractors = ctx.distractors(l.familyStem, 3, rng); // words from OTHER families (unambiguous)
-  if (distractors.length < 3) return null;
+  // Distractors ONLY from OTHER curated families — never an untagged word that might be a true relative,
+  // which would make the item have two correct answers.
+  const pool = ctx.curatedLemmas.filter((x) => x.stem !== l.familyStem).map((x) => x.lemma);
+  const distractors = shuffle(pool, rng).slice(0, 3);
+  if (distractors.length < 3) return null; // need enough OTHER families to build an unambiguous item
+  const bare = l.familyStem.replace(/-$/, '');
   return {
     type: 'family',
     skill: 'word_family',
     payload: {
-      stem: l.familyStem,
+      stem: familyStemLabel(l.familyStem),
       options: shuffle([l.lemma, ...distractors], rng),
       answer: l.lemma,
-      praise: `Richtig! ${l.lemma} gehört zur Wortfamilie „${l.familyStem}“.`,
+      praise: `Richtig! ${l.lemma} gehört zur Wortfamilie „${bare}“.`,
     },
   };
 }
@@ -128,9 +153,9 @@ function genFamily(l: Lex, ctx: Ctx): Candidate | null {
 // ── compound_word + article → compound (article of the Grundwort, looked up in the pool) ──
 function genCompound(l: Lex, ctx: Ctx): Candidate | null {
   if (l.compoundParts.length !== 2) return null;
-  const [a, b] = l.compoundParts;
+  const [a, b] = l.compoundParts.map((p) => p.trim());
   if ((a + b).toLowerCase() !== l.lemma.toLowerCase()) return null; // parts must spell the word
-  const grund = ctx.byLemma.get(b);
+  const grund = ctx.byLemmaCI.get(b.toLowerCase()); // case-insensitive so 'treppe' still finds 'Treppe'
   if (!grund?.genus) return null; // need the Grundwort's der/die/das
   return {
     type: 'compound',
@@ -140,7 +165,7 @@ function genCompound(l: Lex, ctx: Ctx): Candidate | null {
       parts: [a, b],
       options: ['der', 'die', 'das'],
       answer: grund.genus,
-      praise: `Genau! „${b}“ ist ${grund.genus} — also ${grund.genus} ${l.lemma}.`,
+      praise: `Genau! „${grund.lemma}“ ist ${grund.genus} — also ${grund.genus} ${l.lemma}.`,
     },
   };
 }
@@ -152,8 +177,8 @@ function genLength(l: Lex): Candidate | null {
   const isLang = l.skillTags.includes('dehnung_h') || feat(l, 'stummesH') || feat(l, 'silbischesH');
   if (isKurz === isLang) return null; // need exactly one unambiguous signal
   const vowel = isKurz
-    ? lw.match(/([aeiouäöü])([bcdfghjklmnpqrstvwxyz])\2/)?.[1] // vowel before a doubled consonant
-    : lw.match(/([aeiouäöü])h/)?.[1]; // vowel before a (silent) h
+    ? lw.match(/([aeiouäöü])([bcdfghjklmnpqrstvwxyz])\2/)?.[1] // short vowel before a doubled consonant
+    : lw.match(/(ie|ei|au|eu|äu|ai|aa|ee|oo|[aeiouäöü])h/)?.[1]; // long vowel/diphthong before a silent h
   if (!vowel) return null;
   return {
     type: 'length',
@@ -177,10 +202,9 @@ const GENERATORS: ((l: Lex, ctx: Ctx) => Candidate | null)[] = [
 
 /** Reuse the unit that existing seed items of each type live in (fallback 1). */
 function unitByType(): Record<string, number> {
-  const seed = JSON.parse(readFileSync(SEED_FILE, 'utf-8')) as { items?: Row[] } | Row[];
-  const rows = Array.isArray(seed) ? seed : (seed.items ?? []);
+  const { items } = JSON.parse(readFileSync(SEED_FILE, 'utf-8')) as { items: Row[] };
   const tally: Record<string, Map<number, number>> = {};
-  for (const r of rows) {
+  for (const r of items) {
     (tally[r.exercise_type] ??= new Map()).set(r.unit, ((tally[r.exercise_type].get(r.unit) ?? 0) + 1));
   }
   return Object.fromEntries(
@@ -198,12 +222,21 @@ async function main() {
       },
     })) as unknown as Lex[];
 
-    const byLemma = new Map(lex.map((l) => [l.lemma, l]));
+    const byLemmaCI = new Map(lex.map((l) => [l.lemma.toLowerCase(), l]));
+    // Group curated lexemes by family stem, then pick each family's representative (lowest HK) once.
     const byStem = new Map<string, Lex[]>();
-    for (const l of lex) if (l.familyStem) (byStem.get(l.familyStem) ?? byStem.set(l.familyStem, []).get(l.familyStem)!).push(l);
-    const distractors = (stem: string, n: number, rng: () => number) =>
-      shuffle(lex.filter((l) => l.familyStem !== stem).map((l) => l.lemma), rng).slice(0, n);
-    const ctx: Ctx = { byLemma, byStem, distractors };
+    for (const l of lex) {
+      if (!l.familyStem) continue;
+      let g = byStem.get(l.familyStem);
+      if (!g) byStem.set(l.familyStem, (g = []));
+      g.push(l);
+    }
+    const familyRep = new Map<string, string>();
+    for (const [stem, members] of byStem) {
+      familyRep.set(stem, [...members].sort((a, b) => a.hk - b.hk || a.lemma.localeCompare(b.lemma))[0].lemma);
+    }
+    const curatedLemmas = lex.filter((l) => l.familyStem).map((l) => ({ lemma: l.lemma, stem: l.familyStem! }));
+    const ctx: Ctx = { byLemmaCI, familyRep, curatedLemmas };
     const units = unitByType();
 
     const rows: Row[] = [];
@@ -215,15 +248,29 @@ async function main() {
       for (const gen of GENERATORS) {
         const c = gen(l, ctx);
         if (!c) continue;
-        // Validate against the SAME guard as seed content — build the full wire Exercise.
-        const wire = { type: c.type, ...c.payload, id: 'gen', audioUrl: null, skillTags: [c.skill] };
+        // Validate against the SAME guard as seed content, via the SAME assembler the serving path uses
+        // (exercise.mapper.toExercise) — so the gate can't drift from what sessions actually render.
+        const wire = toExercise({
+          id: 'gen',
+          exerciseType: c.type,
+          payload: c.payload,
+          audioUrl: null,
+          syllableAudio: null,
+          skillTags: [c.skill],
+        } as unknown as ItemBankModel);
         const parsed = solvableExerciseSchema.safeParse(wire);
         if (!parsed.success) {
           rejected.push({ lemma: l.lemma, type: c.type, reason: parsed.error.issues[0]?.message ?? 'invalid' });
           continue;
         }
-        const seedKey = `gen-${c.type}-${slug(l.lemma)}`;
-        if (seen.has(seedKey)) continue;
+        // Collision-safe seed key: distinct lemmas that slug to the same skeleton (leben/Leben) each get a
+        // suffix instead of the second being silently dropped by the `seen` set.
+        let seedKey = `gen-${c.type}-${slug(l.lemma)}`;
+        if (seen.has(seedKey)) {
+          let n = 2;
+          while (seen.has(`${seedKey}-${n}`)) n++;
+          seedKey = `${seedKey}-${n}`;
+        }
         seen.add(seedKey);
         rows.push({
           seed_key: seedKey,

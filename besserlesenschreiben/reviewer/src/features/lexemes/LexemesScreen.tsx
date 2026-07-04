@@ -9,13 +9,7 @@ import type { LexemeFilters } from '@/lib/endpoints';
 import { useLexemes, useLexemeStats, useLexemeActions } from './useLexemes';
 import { LexemeEditor } from './LexemeEditor';
 import { SkillsHelp } from './SkillsHelp';
-
-// Mirrors backend src/contract/skills.ts (SKILL_TAGS). The backend validates, so drift → a 400.
-export const SKILL_TAGS = [
-  'vowel_identify', 'vowel_length', 'vowel_substitution', 'word_raster', 'lexical_decision',
-  'syllable_validity', 'syllable_segmentation', 'visual_discrimination', 'compound_word',
-  'word_family', 'article', 'sentence_context', 'dehnung_h', 'double_consonant',
-] as const;
+import { SKILL_TAGS } from './skills';
 
 const POS_OPTIONS = ['N', 'V', 'ADJ', 'ADV', 'PRO', 'KONJ', 'ART', 'PREP', 'PTK', 'NUM', 'ADJ / ADV'];
 // The orthographic Lernstellen keys in `features` (from the parser).

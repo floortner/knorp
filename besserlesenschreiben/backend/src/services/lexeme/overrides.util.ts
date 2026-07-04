@@ -45,6 +45,9 @@ export const OVERRIDES_COMMENT =
 
 /** Order-independent canonical string: sorts object keys (jsonb key order isn't stable) and skill-tag sets. */
 function canon(field: string, v: unknown): string {
+  // Treat "absent" consistently: an empty array (a DB column default, e.g. compoundParts/skillTags) and
+  // null/undefined canonicalize the same, so a base row lacking the key never yields a spurious `[]` edit.
+  if (v == null || (Array.isArray(v) && v.length === 0)) return 'null';
   if (field === 'skillTags' && Array.isArray(v)) return JSON.stringify([...v].sort());
   const walk = (x: unknown): unknown => {
     if (Array.isArray(x)) return x.map(walk);

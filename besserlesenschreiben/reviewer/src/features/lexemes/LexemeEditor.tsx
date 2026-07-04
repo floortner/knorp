@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Modal } from '@/components/ui/modal';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/cn';
 import type { Lexeme } from '@/lib/contract';
 import { useLexemeActions } from './useLexemes';
-import { SKILL_TAGS } from './LexemesScreen';
+import { SKILL_TAGS } from './skills';
 import { SkillsHelp } from './SkillsHelp';
 
 interface Form {
@@ -109,15 +109,12 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
   };
 
   return (
-    <div className="fixed inset-0 z-20 grid place-items-center bg-black/30 p-4" role="dialog" aria-modal>
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-card bg-surface p-6 shadow-xl ring-1 ring-line">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-ink">{isNew ? 'Neues Wort' : `„${lexeme.lemma}“ bearbeiten`}</h2>
-          <button onClick={onClose} aria-label="Schließen" className="text-ink-soft hover:text-ink">
-            <X className="size-5" aria-hidden />
-          </button>
-        </div>
-
+    <Modal
+      onClose={onClose}
+      dismissable={false}
+      size="2xl"
+      title={isNew ? 'Neues Wort' : `„${lexeme.lemma}“ bearbeiten`}
+    >
         <div className="grid grid-cols-2 gap-4">
           <Field label="Wort (Lemma)">
             <Input
@@ -253,8 +250,7 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
