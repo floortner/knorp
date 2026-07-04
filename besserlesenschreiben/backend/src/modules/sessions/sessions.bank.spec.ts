@@ -2,9 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SessionsService } from './sessions.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { LlmService } from '../../services/llm/llm.service';
+import type { LexemeService } from '../../services/lexeme/lexeme.service';
 import type { DigestService } from '../../services/digest/digest.service';
 import type { ConfigService } from '@nestjs/config';
 import type { Env } from '../../config/env';
+
+// createBank doesn't touch the lexeme foundation; a no-op stub satisfies the constructor.
+const lexemeStub = { wordPoolFor: async () => '', pickForSkill: async () => [] } as unknown as LexemeService;
 
 /** A minimal ItemBank row the selector + mapper can digest. */
 function bankItem(id: string, unit: number, skillTags: string[], generatedBy = 'seed') {
@@ -54,7 +58,7 @@ function setup(opts: { weak?: boolean; generated?: ReturnType<typeof bankItem>[]
   const llm = { available: false } as unknown as LlmService;
   const digest = {} as unknown as DigestService;
   const config = { get: () => 5 } as unknown as ConfigService<Env, true>;
-  return { svc: new SessionsService(prisma, llm, digest, config), prisma, findManyCalls };
+  return { svc: new SessionsService(prisma, llm, digest, lexemeStub, config), prisma, findManyCalls };
 }
 
 describe('SessionsService.createBank — blending generated (unit 0) items', () => {

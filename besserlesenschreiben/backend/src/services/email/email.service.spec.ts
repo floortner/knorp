@@ -21,6 +21,14 @@ describe('EmailService construction', () => {
     expect(() => new EmailService(cfg({ EMAIL_PROVIDER: 'resend' }))).toThrow(/requires EMAIL_KEY and EMAIL_FROM/);
     expect(() => new EmailService(cfg({ EMAIL_PROVIDER: 'resend', EMAIL_KEY: 'k' }))).toThrow();
   });
+
+  it('permits the capture provider ONLY under NODE_ENV=test — a mis-set dev/prod env cannot enable it', () => {
+    expect(() => new EmailService(cfg({ EMAIL_PROVIDER: 'capture', NODE_ENV: 'test' }))).not.toThrow();
+    expect(new EmailService(cfg({ EMAIL_PROVIDER: 'capture', NODE_ENV: 'test' })).captureEnabled()).toBe(true);
+    for (const env of ['development', 'production'] as const) {
+      expect(() => new EmailService(cfg({ EMAIL_PROVIDER: 'capture', NODE_ENV: env }))).toThrow(/NODE_ENV=test/);
+    }
+  });
 });
 
 describe('EmailService.sendLoginCode', () => {

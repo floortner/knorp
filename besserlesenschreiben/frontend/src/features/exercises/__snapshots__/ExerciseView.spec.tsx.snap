@@ -43,18 +43,21 @@ exports[`ExerciseView golden render > renders compound from backend JSON 1`] = `
       >
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           der
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           die
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           das
@@ -85,18 +88,21 @@ exports[`ExerciseView golden render > renders family from backend JSON 1`] = `
       >
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Fahrrad
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Wohnung
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Zahlung
@@ -136,30 +142,35 @@ exports[`ExerciseView golden render > renders findvowel from backend JSON 1`] = 
       >
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           S
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           c
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           h
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           a
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           l
@@ -199,18 +210,21 @@ exports[`ExerciseView golden render > renders fixvowel from backend JSON 1`] = `
       >
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Hand
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Ball
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Wand
@@ -250,18 +264,21 @@ exports[`ExerciseView golden render > renders insertvowel from backend JSON 1`] 
       >
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           u
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           e
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           i
@@ -467,36 +484,42 @@ exports[`ExerciseView golden render > renders pickword from backend JSON 1`] = `
       >
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Berof
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Berit
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Beref
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Beruf
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Berat
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           Berif
@@ -569,18 +592,21 @@ exports[`ExerciseView golden render > renders raster from backend JSON 1`] = `
         >
           <button
             class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            data-testid="choice-tile"
             type="button"
           >
             u
           </button>
           <button
             class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            data-testid="choice-tile"
             type="button"
           >
             r
           </button>
           <button
             class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            data-testid="choice-tile"
             type="button"
           >
             Schn
@@ -752,18 +778,21 @@ exports[`ExerciseView golden render > renders swapvowel from backend JSON 1`] = 
       >
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           u
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           o
         </button>
         <button
           class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+          data-testid="choice-tile"
           type="button"
         >
           i
@@ -815,18 +844,21 @@ exports[`ExerciseView golden render > renders sylarrange from backend JSON 1`] =
         >
           <button
             class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            data-testid="choice-tile"
             type="button"
           >
             ge
           </button>
           <button
             class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            data-testid="choice-tile"
             type="button"
           >
             wicht
           </button>
           <button
             class="flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100 bg-white text-ink ring-black/5 hover:bg-black/[0.02]"
+            data-testid="choice-tile"
             type="button"
           >
             Gleich

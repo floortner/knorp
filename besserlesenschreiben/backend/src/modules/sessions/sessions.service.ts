@@ -8,6 +8,7 @@ import { assertProfileOwned } from '../../common/ownership';
 import { daysAgo, startOfUtcDay, startOfUtcWeek } from '../../common/dates';
 import { STARS_PER_SESSION, leagueFor, nextStreak, type League } from '../progress/gamification';
 import { LlmService } from '../../services/llm/llm.service';
+import { LexemeService } from '../../services/lexeme/lexeme.service';
 import { DigestService } from '../../services/digest/digest.service';
 import { solvableExerciseSchema } from '../../contract/exercise';
 import { SKILL_TAGS } from '../../contract/skills';
@@ -79,6 +80,7 @@ export class SessionsService {
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
     private readonly digest: DigestService,
+    private readonly lexeme: LexemeService,
     private readonly config: ConfigService<Env, true>,
   ) {}
 
@@ -226,12 +228,25 @@ export class SessionsService {
 
     const band = gradeBand(profile.unlockedUnit);
     const focusLine = focus.length ? focus.join(', ') : 'Grundlagen: Silben, Anlaute, Reime';
+
+    // Ground generation in real, frequency-appropriate words that actually carry the target orthographic
+    // feature (lexeme foundation). Best-effort context: an empty pool just drops the section.
+    let wordPool = '';
+    try {
+      wordPool = await this.lexeme.wordPoolFor(focus);
+    } catch {
+      /* the word pool is optional grounding */
+    }
+    const poolBlock = wordPool
+      ? `\nEchte Beispielwörter zum jeweiligen Schwerpunkt (nutze bevorzugt diese Wörter):\n${wordPool}\n`
+      : '';
+
     const generated = await this.llm.extract(generatedSessionSchema, 'generated_session', {
       system: LLM_SYSTEM,
       messages: [
         {
           role: 'user',
-          text: `Klassenstufe: ${band.label}\nFörderschwerpunkte: ${focusLine}\n\nLernstand:\n${digestMd}`,
+          text: `Klassenstufe: ${band.label}\nFörderschwerpunkte: ${focusLine}\n${poolBlock}\nLernstand:\n${digestMd}`,
         },
       ],
     });

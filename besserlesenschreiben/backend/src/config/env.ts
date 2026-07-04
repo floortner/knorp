@@ -29,6 +29,13 @@ export const envSchema = z.object({
   // Sender identity for real email providers (e.g. "besserlesenschreiben <login@blesen.app>").
   // Required when EMAIL_PROVIDER is not 'console'.
   EMAIL_FROM: z.string().default(''),
+  // Local dev convenience accounts (seed.ts). Seeded ACTIVE so you can log straight into the family app /
+  // reviewer portal without the pending→staff-approval flow. Login stays passwordless — request a code,
+  // read it from the backend console. Requires BOTH an explicit SEED_DEV_ACCOUNTS=true opt-in AND
+  // NODE_ENV != production, so a stray DEV_* var (e.g. a copied .env) can never seed a backdoor account.
+  SEED_DEV_ACCOUNTS: z.string().default(''),
+  DEV_FAMILY_EMAIL: z.string().default(''),
+  DEV_REVIEWER_EMAIL: z.string().default(''),
   // later milestones (optional for now)
   ANTHROPIC_API_KEY: z.string().default(''),
   // Default generation/chat model. Sonnet 5 = near-Opus quality for structured tasks at ~½ the price —

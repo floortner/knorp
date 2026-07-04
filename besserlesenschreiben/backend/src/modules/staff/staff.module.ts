@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { StaffController } from './staff.controller';
 import { StaffUsersController } from './staff-users.controller';
+import { StaffLexemesController } from './staff-lexemes.controller';
 import { StaffAuthService } from './staff-auth.service';
 import { ReviewService } from './review.service';
 import { UserAdminService } from './user-admin.service';
+import { LexemeAdminService } from './lexeme-admin.service';
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
 import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
 
@@ -14,7 +16,7 @@ import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
  * wires its own controllers/services/guards.
  */
 @Module({
-  controllers: [StaffController, StaffUsersController],
-  providers: [StaffAuthService, ReviewService, UserAdminService, StaffAuthGuard, StaffAdminGuard],
+  controllers: [StaffController, StaffUsersController, StaffLexemesController],
+  providers: [StaffAuthService, ReviewService, UserAdminService, LexemeAdminService, StaffAuthGuard, StaffAdminGuard],
 })
 export class StaffModule {}

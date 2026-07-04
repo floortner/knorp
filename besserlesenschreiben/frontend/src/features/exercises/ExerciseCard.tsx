@@ -45,6 +45,7 @@ export function ChoiceTile({
   return (
     <button
       type="button"
+      data-testid="choice-tile"
       onClick={onClick}
       disabled={disabled}
       className={cn(
