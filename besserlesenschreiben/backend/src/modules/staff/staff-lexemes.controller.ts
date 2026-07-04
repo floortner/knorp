@@ -2,11 +2,35 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Use
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { ApiZodBody, ApiZodResponse } from '../../common/zod-openapi';
-import { lexemeExportResultSchema, lexemePageSchema, lexemeSchema } from '../../contract/staff';
+import { lexemeExportResultSchema, lexemePageSchema, lexemeSchema, lexemeStatsSchema } from '../../contract/staff';
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
 import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
-import { LexemeAdminService } from './lexeme-admin.service';
+import { LexemeAdminService, type LexemeFilters } from './lexeme-admin.service';
 import { LexemeCreateDto, LexemeEditDto } from './staff.dto';
+
+type RawQuery = Record<string, string | undefined>;
+
+/** Parse the raw query strings into typed filters — shared by the list + stats endpoints. */
+function toFilters(q: RawQuery): LexemeFilters {
+  const bool = (v?: string) => (v === 'true' ? true : v === 'false' ? false : undefined);
+  const int = (v?: string) => {
+    const n = v ? Number.parseInt(v, 10) : NaN;
+    return Number.isFinite(n) ? n : undefined;
+  };
+  return {
+    search: q.search || undefined,
+    skill: q.skill || undefined,
+    pos: q.pos || undefined,
+    genus: q.genus || undefined,
+    source: q.source || undefined,
+    feature: q.feature || undefined,
+    hkMin: int(q.hkMin),
+    hkMax: int(q.hkMax),
+    lernwort: bool(q.lernwort),
+    trennbar: bool(q.trennbar),
+    merkwort: bool(q.merkwort),
+  };
+}
 
 /**
  * Lexeme foundation CURATION (STAFF realm, ADMIN role). `@Public()` skips the family JwtAuthGuard; then
@@ -22,17 +46,18 @@ export class StaffLexemesController {
 
   @Get()
   @ApiZodResponse(lexemePageSchema)
-  list(
-    @Query('search') search?: string,
-    @Query('skill') skill?: string,
-    @Query('limit') limit?: string,
-    @Query('cursor') cursor?: string,
-  ) {
-    const n = limit ? Number.parseInt(limit, 10) : 50;
-    return this.lexemes.list({ search, skill, limit: Number.isFinite(n) ? n : 50, cursor });
+  list(@Query() q: RawQuery) {
+    const n = q.limit ? Number.parseInt(q.limit, 10) : 50;
+    return this.lexemes.list({ ...toFilters(q), limit: Number.isFinite(n) ? n : 50, cursor: q.cursor });
   }
 
-  // Export must precede :lemma so "/export" isn't captured as a lemma.
+  // Static routes must precede :lemma so "stats"/"export" aren't captured as a lemma.
+  @Get('stats')
+  @ApiZodResponse(lexemeStatsSchema)
+  stats(@Query() q: RawQuery) {
+    return this.lexemes.stats(toFilters(q));
+  }
+
   @Post('export')
   @HttpCode(200)
   @ApiZodResponse(lexemeExportResultSchema)

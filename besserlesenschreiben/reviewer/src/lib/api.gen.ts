@@ -532,6 +532,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/staff/lexemes/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffLexemesController_stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/staff/lexemes/export": {
         parameters: {
             query?: never;
@@ -1810,6 +1826,53 @@ export interface operations {
                         isTrennbar: boolean;
                         isMerkwort: boolean;
                         source: string;
+                    };
+                };
+            };
+        };
+    };
+    StaffLexemesController_stats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        total: number;
+                        byPos: {
+                            value: string;
+                            count: number;
+                        }[];
+                        byGenus: {
+                            value: string;
+                            count: number;
+                        }[];
+                        bySource: {
+                            value: string;
+                            count: number;
+                        }[];
+                        bySkill: {
+                            value: string;
+                            count: number;
+                        }[];
+                        flags: {
+                            lernwort: number;
+                            trennbar: number;
+                            merkwort: number;
+                        };
+                        hk: {
+                            min: number;
+                            max: number;
+                            avg: number;
+                        };
                     };
                 };
             };

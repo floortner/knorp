@@ -9,6 +9,7 @@ import type {
   LexemeEditBody,
   LexemeExportResult,
   LexemePage,
+  LexemeStats,
   QueuePage,
   ReviewSubmitBody,
   ReviewSubmitResponse,
@@ -100,16 +101,36 @@ export const usersApi = {
  * grounds lecture generation. Edits land in the live table immediately; `export` persists the change-set
  * to the committed lexeme.overrides.json so corrections survive reseeds and reproduce in any fresh DB.
  */
+/** Filter params for the lexeme browser + stats (all optional; empty values are dropped). */
+export interface LexemeFilters {
+  search?: string;
+  skill?: string;
+  pos?: string;
+  genus?: string; // der | die | das | none
+  source?: string; // rwe2015 | reviewer
+  feature?: string; // an orthographic feature key that must be present
+  hkMin?: string;
+  hkMax?: string;
+  lernwort?: string; // '' | 'true' | 'false'
+  trennbar?: string;
+  merkwort?: string;
+}
+
+function toQuery(params: object): string {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '') q.set(k, String(v));
+  }
+  const s = q.toString();
+  return s ? `?${s}` : '';
+}
+
 export const lexemesApi = {
-  list: (params: { search?: string; skill?: string; limit?: number; cursor?: string } = {}) => {
-    const q = new URLSearchParams();
-    if (params.search) q.set('search', params.search);
-    if (params.skill) q.set('skill', params.skill);
-    if (params.limit !== undefined) q.set('limit', String(params.limit));
-    if (params.cursor) q.set('cursor', params.cursor);
-    const qs = q.toString();
-    return apiFetch<LexemePage>(`/staff/lexemes${qs ? `?${qs}` : ''}`);
-  },
+  list: (params: LexemeFilters & { limit?: number; cursor?: string } = {}) =>
+    apiFetch<LexemePage>(`/staff/lexemes${toQuery(params)}`),
+
+  /** Aggregate stats over the same filter — total + breakdowns by property. */
+  stats: (filters: LexemeFilters = {}) => apiFetch<LexemeStats>(`/staff/lexemes/stats${toQuery(filters)}`),
 
   /** Field-level edit — only the provided fields change. */
   edit: (lemma: string, body: LexemeEditBody) =>
