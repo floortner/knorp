@@ -34,6 +34,11 @@ export type AdminUserPage = ResponseOf<operations['StaffUsersController_list']>;
 export type AdminUser = AdminUserPage['items'][number];
 export type AccountStatus = AdminUser['status'];
 
+/** Learner progress (admin role only). Identity-bearing per account; pseudonymised per upload. */
+export type UserProgress = ResponseOf<operations['StaffUsersController_accountProgress']>;
+export type QueueProgress = ResponseOf<operations['StaffController_queueProgress']>;
+export type ProfileProgress = UserProgress['profiles'][number];
+
 /** Lexeme foundation curation (admin role only; backend SPEC §6). */
 export type LexemePage = ResponseOf<operations['StaffLexemesController_list']>;
 export type Lexeme = LexemePage['items'][number];

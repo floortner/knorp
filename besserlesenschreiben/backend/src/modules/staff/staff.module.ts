@@ -6,6 +6,7 @@ import { StaffAuthService } from './staff-auth.service';
 import { ReviewService } from './review.service';
 import { UserAdminService } from './user-admin.service';
 import { LexemeAdminService } from './lexeme-admin.service';
+import { StaffProgressService } from './staff-progress.service';
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
 import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
 
@@ -17,6 +18,6 @@ import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
  */
 @Module({
   controllers: [StaffController, StaffUsersController, StaffLexemesController],
-  providers: [StaffAuthService, ReviewService, UserAdminService, LexemeAdminService, StaffAuthGuard, StaffAdminGuard],
+  providers: [StaffAuthService, ReviewService, UserAdminService, LexemeAdminService, StaffProgressService, StaffAuthGuard, StaffAdminGuard],
 })
 export class StaffModule {}

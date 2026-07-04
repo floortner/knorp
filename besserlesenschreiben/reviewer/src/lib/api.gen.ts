@@ -420,6 +420,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/staff/queue/{uploadId}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffController_queueProgress"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/staff/queue/{uploadId}/claim": {
         parameters: {
             query?: never;
@@ -460,6 +476,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["StaffUsersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users/{id}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffUsersController_accountProgress"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1568,6 +1600,58 @@ export interface operations {
                             createdAt: string;
                         }[];
                         nextCursor: string | null;
+                        total: number;
+                    };
+                };
+            };
+        };
+    };
+    StaffController_queueProgress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        summary: {
+                            unit: number;
+                            streakDays: number;
+                            stars: number;
+                            lastActive: string | null;
+                            league: {
+                                /** @enum {string} */
+                                tier: "bronze" | "silber" | "gold";
+                                starsWeek: number;
+                                starsToNext: number;
+                            };
+                        };
+                        skills: {
+                            skill: string;
+                            attempts: number;
+                            correctPct: number;
+                            due: boolean;
+                        }[];
+                        activity: {
+                            totalAttempts: number;
+                            sessions7d: number;
+                            sessions30d: number;
+                            homework: {
+                                uploadId: string;
+                                createdAt: string;
+                                status: string;
+                                decision: string | null;
+                                reviewedAt: string | null;
+                            }[];
+                        };
+                        profileHandle: string;
                     };
                 };
             };
@@ -1661,6 +1745,61 @@ export interface operations {
                             lastActive: string | null;
                         }[];
                         nextCursor: string | null;
+                        total: number;
+                    };
+                };
+            };
+        };
+    };
+    StaffUsersController_accountProgress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        profiles: {
+                            summary: {
+                                unit: number;
+                                streakDays: number;
+                                stars: number;
+                                lastActive: string | null;
+                                league: {
+                                    /** @enum {string} */
+                                    tier: "bronze" | "silber" | "gold";
+                                    starsWeek: number;
+                                    starsToNext: number;
+                                };
+                            };
+                            skills: {
+                                skill: string;
+                                attempts: number;
+                                correctPct: number;
+                                due: boolean;
+                            }[];
+                            activity: {
+                                totalAttempts: number;
+                                sessions7d: number;
+                                sessions30d: number;
+                                homework: {
+                                    uploadId: string;
+                                    createdAt: string;
+                                    status: string;
+                                    decision: string | null;
+                                    reviewedAt: string | null;
+                                }[];
+                            };
+                            profileId: string;
+                            name: string;
+                        }[];
                     };
                 };
             };
@@ -1866,6 +2005,14 @@ export interface operations {
                             count: number;
                         }[];
                         bySkill: {
+                            value: string;
+                            count: number;
+                        }[];
+                        bySyllableCount: {
+                            value: string;
+                            count: number;
+                        }[];
+                        byMorpheme: {
                             value: string;
                             count: number;
                         }[];

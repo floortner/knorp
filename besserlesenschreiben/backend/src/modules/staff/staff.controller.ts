@@ -9,15 +9,18 @@ import { okSchema } from '../../contract/models';
 import {
   claimResponseSchema,
   queuePageSchema,
+  queueProgressSchema,
   reviewSubmitResponseSchema,
   staffMeSchema,
 } from '../../contract/staff';
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
+import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
 import { CurrentReviewer, type AuthReviewer } from '../../common/decorators/current-reviewer.decorator';
 import { STAFF_COOKIE, clearStaffCookie, staffCookieOptions } from '../../common/staff-cookie';
 import type { Env } from '../../config/env';
 import { StaffAuthService } from './staff-auth.service';
 import { ReviewService } from './review.service';
+import { StaffProgressService } from './staff-progress.service';
 import { ReviewSubmitDto, StaffRequestCodeDto, StaffVerifyDto } from './staff.dto';
 
 /**
@@ -34,6 +37,7 @@ export class StaffController {
   constructor(
     private readonly auth: StaffAuthService,
     private readonly review: ReviewService,
+    private readonly progress: StaffProgressService,
     private readonly config: ConfigService<Env, true>,
   ) {}
 
@@ -83,6 +87,14 @@ export class StaffController {
   queue(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
     const n = limit ? Number.parseInt(limit, 10) : 50;
     return this.review.queue(Number.isFinite(n) ? n : 50, cursor);
+  }
+
+  /** Pseudonymised learner progress for a queued upload (ADMIN only) — review context, never a name. */
+  @Get('queue/:uploadId/progress')
+  @UseGuards(StaffAdminGuard)
+  @ApiZodResponse(queueProgressSchema)
+  queueProgress(@Param('uploadId') uploadId: string) {
+    return this.progress.forUpload(uploadId);
   }
 
   @Post('queue/:uploadId/claim')

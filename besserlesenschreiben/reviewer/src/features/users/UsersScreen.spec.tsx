@@ -41,7 +41,7 @@ beforeEach(() => {
 
 describe('UsersScreen', () => {
   it('lists pending accounts with their real email and an approve action', async () => {
-    vi.mocked(usersApi.list).mockResolvedValue({ items: [pendingUser], nextCursor: null });
+    vi.mocked(usersApi.list).mockResolvedValue({ items: [pendingUser], nextCursor: null, total: 1 });
     vi.mocked(usersApi.approve).mockResolvedValue({ accountId: 'a1', status: 'active' });
     const user = userEvent.setup();
     renderUsers();
@@ -52,7 +52,7 @@ describe('UsersScreen', () => {
   });
 
   it('requires a confirm step before deleting', async () => {
-    vi.mocked(usersApi.list).mockResolvedValue({ items: [pendingUser], nextCursor: null });
+    vi.mocked(usersApi.list).mockResolvedValue({ items: [pendingUser], nextCursor: null, total: 1 });
     vi.mocked(usersApi.remove).mockResolvedValue(undefined);
     const user = userEvent.setup();
     renderUsers();

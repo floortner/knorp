@@ -11,9 +11,11 @@ import type {
   LexemePage,
   LexemeStats,
   QueuePage,
+  QueueProgress,
   ReviewSubmitBody,
   ReviewSubmitResponse,
   StaffMe,
+  UserProgress,
 } from './contract';
 
 /**
@@ -60,6 +62,10 @@ export const reviewApi = {
       method: 'POST',
       body,
     }),
+
+  /** Pseudonymised learner progress for a queued upload (admin only) — review context, never a name. */
+  progress: (uploadId: string) =>
+    apiFetch<QueueProgress>(`/staff/queue/${encodeURIComponent(uploadId)}/progress`),
 };
 
 /**
@@ -94,6 +100,10 @@ export const usersApi = {
   /** Permanent erasure: DB rows + the account's blobs. Returns 204. */
   remove: (accountId: string) =>
     apiFetch<void>(`/staff/users/${encodeURIComponent(accountId)}`, { method: 'DELETE' }),
+
+  /** Identity-bearing learner progress for one account's children (admin only). */
+  progress: (accountId: string) =>
+    apiFetch<UserProgress>(`/staff/users/${encodeURIComponent(accountId)}/progress`),
 };
 
 /**
@@ -111,6 +121,8 @@ export interface LexemeFilters {
   feature?: string; // an orthographic feature key that must be present
   hkMin?: string;
   hkMax?: string;
+  syl?: string; // exact syllable count
+  morph?: string; // exact morpheme count
   lernwort?: string; // '' | 'true' | 'false'
   trennbar?: string;
   merkwort?: string;

@@ -26,6 +26,8 @@ function toFilters(q: RawQuery): LexemeFilters {
     feature: q.feature || undefined,
     hkMin: int(q.hkMin),
     hkMax: int(q.hkMax),
+    syllableCount: int(q.syl),
+    morphemeCount: int(q.morph),
     lernwort: bool(q.lernwort),
     trennbar: bool(q.trennbar),
     merkwort: bool(q.merkwort),

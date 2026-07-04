@@ -14,6 +14,28 @@ export function useUsers(status?: AccountStatus, enabled = true) {
   });
 }
 
+/**
+ * Count of accounts awaiting approval, for the nav badge. Keyed under the 'staff-users' prefix, so a
+ * user-admin action (which invalidates ['staff-users']) refreshes the badge too.
+ */
+export function usePendingUserCount(enabled = true) {
+  return useQuery({
+    queryKey: ['staff-users', 'count', 'pending'],
+    queryFn: () => usersApi.list({ status: 'pending', limit: 1 }),
+    select: (r) => r.total,
+    enabled,
+  });
+}
+
+/** Per-child progress for one account (admin only). Lazy — pass `enabled` from the panel's open state. */
+export function useUserProgress(accountId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['staff-user-progress', accountId],
+    queryFn: () => usersApi.progress(accountId),
+    enabled,
+  });
+}
+
 /** approve / deactivate / delete — each refreshes every user list after it lands. */
 export function useUserActions() {
   const qc = useQueryClient();

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ShieldAlert, Users } from 'lucide-react';
+import { ChevronDown, ChevronRight, ShieldAlert } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { Button } from '@/components/ui/button';
+import { ProgressPanel } from '@/features/progress/ProgressPanel';
 import { cn } from '@/lib/cn';
 import type { AccountStatus, AdminUser } from '@/lib/contract';
-import { useUsers, useUserActions } from './useUsers';
+import { useUsers, useUserActions, useUserProgress } from './useUsers';
 
 const FILTERS: { value: AccountStatus | 'all'; label: string }[] = [
   { value: 'pending', label: 'Wartet auf Freigabe' },
@@ -47,11 +48,6 @@ export function UsersScreen() {
 
   return (
     <section>
-      <div className="mb-4 flex items-center gap-2">
-        <Users className="size-5 text-teal-dark" aria-hidden />
-        <h1 className="text-lg font-semibold text-ink">Nutzerverwaltung</h1>
-      </div>
-
       <div className="mb-4 flex flex-wrap gap-2" role="tablist" aria-label="Status filtern">
         {FILTERS.map((f) => (
           <button
@@ -95,63 +91,87 @@ export function UsersScreen() {
 function UserRow({ user }: { user: AdminUser }) {
   const { approve, deactivate, remove } = useUserActions();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
+  const progress = useUserProgress(user.accountId, showProgress);
   const busy = approve.isPending || deactivate.isPending || remove.isPending;
 
   return (
-    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4">
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-ink">{user.email}</p>
-        <p className="text-sm text-ink-soft">
-          {user.profileCount} {user.profileCount === 1 ? 'Kind' : 'Kinder'} · seit{' '}
-          {new Date(user.createdAt).toLocaleDateString('de-AT')}
-          {user.lastActive && ` · zuletzt aktiv ${new Date(user.lastActive).toLocaleDateString('de-AT')}`}
-        </p>
-      </div>
+    <li>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4">
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium text-ink">{user.email}</p>
+          <p className="text-sm text-ink-soft">
+            {user.profileCount} {user.profileCount === 1 ? 'Kind' : 'Kinder'} · seit{' '}
+            {new Date(user.createdAt).toLocaleDateString('de-AT')}
+            {user.lastActive && ` · zuletzt aktiv ${new Date(user.lastActive).toLocaleDateString('de-AT')}`}
+          </p>
+        </div>
 
-      <span
-        className={cn('shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold', STATUS_BADGE[user.status])}
-      >
-        {STATUS_LABEL[user.status]}
-      </span>
+        <span
+          className={cn('shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold', STATUS_BADGE[user.status])}
+        >
+          {STATUS_LABEL[user.status]}
+        </span>
 
-      <div className="flex shrink-0 items-center gap-2">
-        {(user.status === 'pending' || user.status === 'deactivated') && (
-          <Button variant="good" size="sm" disabled={busy} onClick={() => approve.mutate(user.accountId)}>
-            {user.status === 'pending' ? 'Freigeben' : 'Reaktivieren'}
+        <div className="flex shrink-0 items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setShowProgress((v) => !v)} aria-expanded={showProgress}>
+            {showProgress ? <ChevronDown className="size-4" aria-hidden /> : <ChevronRight className="size-4" aria-hidden />}
+            Fortschritt
           </Button>
-        )}
-        {user.status === 'active' && (
-          <Button variant="ghost" size="sm" disabled={busy} onClick={() => deactivate.mutate(user.accountId)}>
-            Deaktivieren
-          </Button>
-        )}
+          {(user.status === 'pending' || user.status === 'deactivated') && (
+            <Button variant="good" size="sm" disabled={busy} onClick={() => approve.mutate(user.accountId)}>
+              {user.status === 'pending' ? 'Freigeben' : 'Reaktivieren'}
+            </Button>
+          )}
+          {user.status === 'active' && (
+            <Button variant="ghost" size="sm" disabled={busy} onClick={() => deactivate.mutate(user.accountId)}>
+              Deaktivieren
+            </Button>
+          )}
 
-        {confirmingDelete ? (
-          <>
+          {confirmingDelete ? (
+            <>
+              <Button variant="danger" size="sm" disabled={busy} onClick={() => remove.mutate(user.accountId)}>
+                Endgültig löschen
+              </Button>
+              <Button variant="link" size="sm" disabled={busy} onClick={() => setConfirmingDelete(false)}>
+                Abbrechen
+              </Button>
+            </>
+          ) : (
             <Button
-              variant="danger"
+              variant="link"
               size="sm"
               disabled={busy}
-              onClick={() => remove.mutate(user.accountId)}
+              className="text-danger"
+              onClick={() => setConfirmingDelete(true)}
             >
-              Endgültig löschen
+              Löschen
             </Button>
-            <Button variant="link" size="sm" disabled={busy} onClick={() => setConfirmingDelete(false)}>
-              Abbrechen
-            </Button>
-          </>
-        ) : (
-          <Button
-            variant="link"
-            size="sm"
-            disabled={busy}
-            className="text-danger"
-            onClick={() => setConfirmingDelete(true)}
-          >
-            Löschen
-          </Button>
-        )}
+          )}
+        </div>
       </div>
+
+      {showProgress && (
+        <div className="border-t border-line bg-black/[0.015] px-5 py-4">
+          {progress.isPending ? (
+            <p className="text-sm text-ink-soft">Lädt Fortschritt …</p>
+          ) : progress.isError ? (
+            <p className="text-sm text-danger">Fortschritt konnte nicht geladen werden.</p>
+          ) : progress.data.profiles.length === 0 ? (
+            <p className="text-sm text-ink-soft">Keine Kinderprofile.</p>
+          ) : (
+            <div className="space-y-4">
+              {progress.data.profiles.map((p) => (
+                <div key={p.profileId}>
+                  <p className="mb-1.5 font-semibold text-ink">{p.name}</p>
+                  <ProgressPanel data={p} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </li>
   );
 }

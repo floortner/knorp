@@ -10,7 +10,7 @@ import { computeOverrides, overridesFile, type LexemeRecord } from '../../servic
 import type { Env } from '../../config/env';
 import type { LexemeCreateInput, LexemeEditInput } from './staff.dto';
 
-const MAX_LIMIT = 200;
+const MAX_LIMIT = 5000; // admin curation view renders the full filtered pool (no practical paging cap)
 // Resolve the repo-checkout data files relative to THIS module (backend root), not process.cwd() —
 // robust to the launch directory and consistent with prisma/seed.ts + scripts/export-overrides.ts.
 // __dirname is <backend>/src/modules/staff (dev) or <backend>/dist/modules/staff (built) → up 3 = backend.
@@ -54,6 +54,8 @@ export interface LexemeFilters {
   feature?: string; // an orthographic feature key that must be present in `features`
   hkMin?: number;
   hkMax?: number;
+  syllableCount?: number; // exact number of syllables
+  morphemeCount?: number; // exact number of morphemes
   lernwort?: boolean;
   trennbar?: boolean;
   merkwort?: boolean;
@@ -66,6 +68,8 @@ function whereFrom(f: LexemeFilters): Prisma.LexemeWhereInput {
   if (f.pos) w.pos = f.pos;
   if (f.genus) w.genus = f.genus === 'none' ? null : f.genus;
   if (f.source) w.source = f.source;
+  if (f.syllableCount !== undefined) w.syllableCount = f.syllableCount;
+  if (f.morphemeCount !== undefined) w.morphemeCount = f.morphemeCount;
   if (f.lernwort !== undefined) w.isLernwort = f.lernwort;
   if (f.trennbar !== undefined) w.isTrennbar = f.trennbar;
   if (f.merkwort !== undefined) w.isMerkwort = f.merkwort;
@@ -123,6 +127,7 @@ export class LexemeAdminService {
       where: whereFrom(f),
       select: {
         pos: true, genus: true, source: true, hk: true, skillTags: true,
+        syllableCount: true, morphemeCount: true,
         isLernwort: true, isTrennbar: true, isMerkwort: true,
       },
     });
@@ -131,6 +136,12 @@ export class LexemeAdminService {
       const m = new Map<string, number>();
       for (const v of vals) m.set(v ?? '—', (m.get(v ?? '—') ?? 0) + 1);
       return [...m.entries()].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count);
+    };
+    // Ordinal counts (Silbenzahl/Morpheme): keep the natural numeric order, not count-desc.
+    const tallyNum = (vals: number[]) => {
+      const m = new Map<number, number>();
+      for (const v of vals) m.set(v, (m.get(v) ?? 0) + 1);
+      return [...m.entries()].sort((a, b) => a[0] - b[0]).map(([v, count]) => ({ value: String(v), count }));
     };
     const skill = new Map<string, number>();
     for (const r of rows) for (const t of r.skillTags) skill.set(t, (skill.get(t) ?? 0) + 1);
@@ -141,6 +152,8 @@ export class LexemeAdminService {
       byGenus: tally(rows.map((r) => r.genus)),
       bySource: tally(rows.map((r) => r.source)),
       bySkill: [...skill.entries()].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count),
+      bySyllableCount: tallyNum(rows.map((r) => r.syllableCount)),
+      byMorpheme: tallyNum(rows.map((r) => r.morphemeCount)),
       flags: {
         lernwort: rows.filter((r) => r.isLernwort).length,
         trennbar: rows.filter((r) => r.isTrennbar).length,

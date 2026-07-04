@@ -2,10 +2,11 @@ import { Controller, Delete, Get, HttpCode, Param, Post, Query, UseGuards } from
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { ApiZodResponse } from '../../common/zod-openapi';
-import { adminUserPageSchema, adminUserStatusSchema } from '../../contract/staff';
+import { adminUserPageSchema, adminUserStatusSchema, userProgressSchema } from '../../contract/staff';
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
 import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
 import { UserAdminService } from './user-admin.service';
+import { StaffProgressService } from './staff-progress.service';
 
 /**
  * Staff USER ADMINISTRATION routes (SPEC §6, ARCHITECTURE §1b). `@Public()` skips the GLOBAL family
@@ -18,7 +19,10 @@ import { UserAdminService } from './user-admin.service';
 @ApiTags('staff')
 @Controller('staff/users')
 export class StaffUsersController {
-  constructor(private readonly users: UserAdminService) {}
+  constructor(
+    private readonly users: UserAdminService,
+    private readonly progress: StaffProgressService,
+  ) {}
 
   @Get()
   @ApiZodResponse(adminUserPageSchema)
@@ -31,6 +35,13 @@ export class StaffUsersController {
     const validStatus =
       status === 'pending' || status === 'active' || status === 'deactivated' ? status : undefined;
     return this.users.list(Number.isFinite(n) ? n : 50, validStatus, cursor);
+  }
+
+  /** Identity-bearing learner progress for one account's children (Nutzer oversight). */
+  @Get(':id/progress')
+  @ApiZodResponse(userProgressSchema)
+  accountProgress(@Param('id') id: string) {
+    return this.progress.forAccount(id);
   }
 
   @Post(':id/approve')
