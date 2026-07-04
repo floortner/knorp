@@ -45,6 +45,7 @@ export const queueItemSchema = z.object({
 export const queuePageSchema = z.object({
   items: z.array(queueItemSchema),
   nextCursor: z.string().nullable(),
+  total: z.number().int(), // count of open (unclaimed/lease-expired) pending-review items — drives the nav badge
 });
 
 export const claimResponseSchema = z.object({
@@ -73,7 +74,57 @@ export const adminUserSchema = z.object({
 export const adminUserPageSchema = z.object({
   items: z.array(adminUserSchema),
   nextCursor: z.string().nullable(),
+  total: z.number().int(), // count of accounts matching the status filter — drives the nav badge
 });
+
+// ── Learner progress (STAFF realm, ADMIN role only) ───────────────────────────────────────────────
+// The same progress payload is served two ways: identity-bearing per account (Nutzer oversight) and
+// PSEUDONYMISED per homework upload (review context) — the latter carries only the opaque handle.
+export const skillMasterySchema = z.object({
+  skill: z.string(),
+  attempts: z.number().int(),
+  correctPct: z.number().int(), // 0..100
+  due: z.boolean(), // FSRS flags this skill as due
+});
+
+export const homeworkHistoryItemSchema = z.object({
+  uploadId: z.string(),
+  createdAt: z.string(),
+  status: z.string(), // pending_analysis | pending_review | reviewed | …
+  decision: z.string().nullable(), // approved | corrected | rejected | null (not yet reviewed)
+  reviewedAt: z.string().nullable(),
+});
+
+export const leagueSchema = z.object({
+  tier: z.enum(['bronze', 'silber', 'gold']),
+  starsWeek: z.number().int(),
+  starsToNext: z.number().int(),
+});
+
+export const profileProgressSchema = z.object({
+  summary: z.object({
+    unit: z.number().int(),
+    streakDays: z.number().int(),
+    stars: z.number().int(),
+    lastActive: z.string().nullable(),
+    league: leagueSchema,
+  }),
+  skills: z.array(skillMasterySchema), // weakest-first
+  activity: z.object({
+    totalAttempts: z.number().int(),
+    sessions7d: z.number().int(),
+    sessions30d: z.number().int(),
+    homework: z.array(homeworkHistoryItemSchema), // most recent first
+  }),
+});
+
+// Identity-bearing (Nutzer): every profile of an account, with its real name.
+export const userProgressSchema = z.object({
+  profiles: z.array(profileProgressSchema.extend({ profileId: z.string(), name: z.string() })),
+});
+
+// Pseudonymised (review queue): the upload's learner by opaque handle only — never a name.
+export const queueProgressSchema = profileProgressSchema.extend({ profileHandle: z.string() });
 
 export const adminUserStatusSchema = z.object({
   accountId: z.string(),
@@ -133,6 +184,8 @@ export const lexemeStatsSchema = z.object({
   byGenus: z.array(lexemeCountSchema),
   bySource: z.array(lexemeCountSchema),
   bySkill: z.array(lexemeCountSchema),
+  bySyllableCount: z.array(lexemeCountSchema),
+  byMorpheme: z.array(lexemeCountSchema),
   flags: z.object({ lernwort: z.number().int(), trennbar: z.number().int(), merkwort: z.number().int() }),
   hk: z.object({ min: z.number().int(), max: z.number().int(), avg: z.number() }),
 });

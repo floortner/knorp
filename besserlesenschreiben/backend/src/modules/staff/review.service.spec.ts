@@ -31,6 +31,7 @@ function setup(overrides: {
   const prisma = {
     homeworkUpload: {
       findMany: vi.fn(async () => overrides.findMany ?? []),
+      count: vi.fn(async () => (overrides.findMany ?? []).length),
       findUnique: vi.fn(async () => overrides.uploadRow ?? null),
       updateMany: vi.fn(async () => ({ count: overrides.updateManyCount ?? 1 })),
       update: calls.uploadUpdate,
@@ -74,8 +75,9 @@ describe('ReviewService.queue (pseudonymisation)', () => {
         { id: 'up-1', profileId: 'prof-1234', imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { unlockedUnit: 3 } },
       ],
     });
-    const { items, nextCursor } = await svc.queue(50);
+    const { items, nextCursor, total } = await svc.queue(50);
     expect(items).toHaveLength(1);
+    expect(total).toBe(1);
     expect(items[0].profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
     expect(items[0].profileHandle).not.toContain('prof-1234');
     expect(items[0].gradeBand).toBe('Einheit 3');

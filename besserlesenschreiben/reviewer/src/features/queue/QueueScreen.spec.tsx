@@ -33,7 +33,7 @@ beforeEach(() => vi.clearAllMocks());
 
 describe('QueueScreen', () => {
   it('lists pending items by pseudonymous handle, never a name', async () => {
-    vi.mocked(reviewApi.queue).mockResolvedValue({ items: [item], nextCursor: null });
+    vi.mocked(reviewApi.queue).mockResolvedValue({ items: [item], nextCursor: null, total: 1 });
     renderQueue();
     expect(await screen.findByText(/Lerner-4821/)).toBeInTheDocument();
     expect(screen.getByText(/Anlaute/)).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe('QueueScreen', () => {
   });
 
   it('shows an empty state when the queue is clear', async () => {
-    vi.mocked(reviewApi.queue).mockResolvedValue({ items: [], nextCursor: null });
+    vi.mocked(reviewApi.queue).mockResolvedValue({ items: [], nextCursor: null, total: 0 });
     renderQueue();
     expect(await screen.findByText(/Keine offenen Hausübungen/)).toBeInTheDocument();
   });

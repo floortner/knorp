@@ -45,24 +45,28 @@ export class ReviewService {
   }
 
   /** Stable opaque pseudonym for a profile — never reveals the child's name (ARCHITECTURE §1a). */
-  private static handle(profileId: string): string {
+  static handle(profileId: string): string {
     return `L-${createHash('sha256').update(profileId).digest('hex').slice(0, 6)}`;
   }
 
   /** Pending-review items available to pick up: not claimed, or with an expired lease. Cursor-paged. */
-  async queue(limit: number, cursor?: string): Promise<{ items: QueueItem[]; nextCursor: string | null }> {
+  async queue(limit: number, cursor?: string): Promise<{ items: QueueItem[]; nextCursor: string | null; total: number }> {
     const take = Math.min(Math.max(limit, 1), MAX_LIMIT);
     const now = new Date();
-    const rows = await this.prisma.homeworkUpload.findMany({
-      where: {
-        status: 'pending_review',
-        OR: [{ claimedBy: null }, { claimedUntil: { lt: now } }],
-      },
-      orderBy: { createdAt: 'asc' },
-      take: take + 1, // one extra to know if there's a next page
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      include: { profile: { select: { unlockedUnit: true } } },
-    });
+    const where = {
+      status: 'pending_review' as const,
+      OR: [{ claimedBy: null }, { claimedUntil: { lt: now } }],
+    };
+    const [rows, total] = await Promise.all([
+      this.prisma.homeworkUpload.findMany({
+        where,
+        orderBy: { createdAt: 'asc' },
+        take: take + 1, // one extra to know if there's a next page
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+        include: { profile: { select: { unlockedUnit: true } } },
+      }),
+      this.prisma.homeworkUpload.count({ where }),
+    ]);
 
     const page = rows.slice(0, take);
     // Parse first (a malformed draft shouldn't break the whole queue — skip it, surface the id for
@@ -89,7 +93,7 @@ export class ReviewService {
     );
 
     const nextCursor = rows.length > take ? page[page.length - 1].id : null;
-    return { items, nextCursor };
+    return { items, nextCursor, total };
   }
 
   /** Soft-lock an item so two reviewers don't grade it twice. 409 if another holds a live lease. */

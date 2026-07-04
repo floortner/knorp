@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookMarked, Download, Plus, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Download, Plus, RotateCcw, ShieldAlert } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,17 +55,13 @@ export function LexemesScreen() {
 
   return (
     <section>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <BookMarked className="size-5 text-teal-dark" aria-hidden />
-        <h1 className="text-lg font-semibold text-ink">Wortschatz</h1>
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="sm" disabled={exportOverrides.isPending} onClick={runExport}>
-            <Download className="size-4" aria-hidden /> Korrekturen exportieren
-          </Button>
-          <Button size="sm" onClick={() => setEditing('new')}>
-            <Plus className="size-4" aria-hidden /> Neues Wort
-          </Button>
-        </div>
+      <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+        <Button variant="ghost" size="sm" disabled={exportOverrides.isPending} onClick={runExport}>
+          <Download className="size-4" aria-hidden /> Korrekturen exportieren
+        </Button>
+        <Button size="sm" onClick={() => setEditing('new')}>
+          <Plus className="size-4" aria-hidden /> Neues Wort
+        </Button>
       </div>
 
       {exportMsg && <p className="mb-3 text-sm text-ink-soft">{exportMsg}</p>}
@@ -108,6 +104,12 @@ export function LexemesScreen() {
         <Ctrl label="HK bis">
           <Input className="w-16" type="number" value={filters.hkMax ?? ''} onChange={(e) => setF({ hkMax: e.target.value })} />
         </Ctrl>
+        <Ctrl label="Silbenzahl">
+          <Input className="w-16" type="number" value={filters.syl ?? ''} onChange={(e) => setF({ syl: e.target.value })} />
+        </Ctrl>
+        <Ctrl label="Morpheme">
+          <Input className="w-16" type="number" value={filters.morph ?? ''} onChange={(e) => setF({ morph: e.target.value })} />
+        </Ctrl>
         <FlagSelect label="Lernwort" value={filters.lernwort} onChange={(v) => setF({ lernwort: v })} />
         <FlagSelect label="Trennbar" value={filters.trennbar} onChange={(v) => setF({ trennbar: v })} />
         <FlagSelect label="Merkwort" value={filters.merkwort} onChange={(v) => setF({ merkwort: v })} />
@@ -138,6 +140,8 @@ export function LexemesScreen() {
                 <th className="px-4 py-2 font-medium">HK</th>
                 <th className="px-4 py-2 font-medium">Wortart</th>
                 <th className="px-4 py-2 font-medium">Silben</th>
+                <th className="px-4 py-2 font-medium">Silbenzahl</th>
+                <th className="px-4 py-2 font-medium">Morpheme</th>
                 <th className="px-4 py-2 font-medium">Skills <SkillsHelp /></th>
                 <th className="px-4 py-2" />
               </tr>
@@ -157,6 +161,8 @@ export function LexemesScreen() {
                   <td className="px-4 py-2 text-ink-soft">{w.hk}</td>
                   <td className="px-4 py-2 text-ink-soft">{w.pos}</td>
                   <td className="px-4 py-2 text-ink-soft">{w.syllabification}</td>
+                  <td className="px-4 py-2 text-ink-soft">{w.syllableCount}</td>
+                  <td className="px-4 py-2 text-ink-soft">{w.morphemeCount}</td>
                   <td className="px-4 py-2">
                     <div className="flex flex-wrap gap-1">
                       {w.skillTags.map((t) => (
@@ -265,6 +271,8 @@ function StatsPanel({ s }: { s: LexemeStats }) {
           <StatRow label="Wortart" items={s.byPos} />
           <StatRow label="Genus" items={s.byGenus} />
           <StatRow label="Quelle" items={s.bySource} />
+          <StatRow label="Silbenzahl" items={s.bySyllableCount} />
+          <StatRow label="Morpheme" items={s.byMorpheme} />
           <StatRow label="Skills" items={s.bySkill} help={<SkillsHelp />} />
         </div>
       )}

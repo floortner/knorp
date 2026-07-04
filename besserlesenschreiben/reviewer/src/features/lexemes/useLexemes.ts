@@ -6,7 +6,8 @@ import type { LexemeCreateBody, LexemeEditBody } from '@/lib/contract';
 export function useLexemes(filters: LexemeFilters, enabled = true) {
   return useQuery({
     queryKey: ['staff-lexemes', filters],
-    queryFn: () => lexemesApi.list({ ...filters, limit: 100 }),
+    // No practical cap — the curation table shows the whole filtered pool (backend MAX_LIMIT guards it).
+    queryFn: () => lexemesApi.list({ ...filters, limit: 5000 }),
     enabled,
   });
 }

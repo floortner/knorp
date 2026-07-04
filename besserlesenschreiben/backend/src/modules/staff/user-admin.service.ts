@@ -32,20 +32,24 @@ export class UserAdminService {
   /** Identity-bearing account list (real email), newest first, optionally filtered by status. Cursor-paged. */
   async list(limit: number, status?: AccountStatus, cursor?: string) {
     const take = Math.min(Math.max(limit, 1), MAX_LIMIT);
-    const rows = await this.prisma.account.findMany({
-      where: status ? { status } : undefined,
-      orderBy: { createdAt: 'desc' },
-      take: take + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      select: {
-        id: true,
-        email: true,
-        status: true,
-        createdAt: true,
-        _count: { select: { profiles: true } },
-        profiles: { orderBy: { lastActive: 'desc' }, take: 1, select: { lastActive: true } },
-      },
-    });
+    const where = status ? { status } : undefined;
+    const [rows, total] = await Promise.all([
+      this.prisma.account.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: take + 1,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+        select: {
+          id: true,
+          email: true,
+          status: true,
+          createdAt: true,
+          _count: { select: { profiles: true } },
+          profiles: { orderBy: { lastActive: 'desc' }, take: 1, select: { lastActive: true } },
+        },
+      }),
+      this.prisma.account.count({ where }),
+    ]);
 
     const page = rows.slice(0, take);
     const items = page.map((a) => ({
@@ -57,7 +61,7 @@ export class UserAdminService {
       lastActive: a.profiles[0]?.lastActive?.toISOString() ?? null,
     }));
     const nextCursor = rows.length > take ? page[page.length - 1].id : null;
-    return { items, nextCursor };
+    return { items, nextCursor, total };
   }
 
   /** Approve (pending|deactivated → active) and release the first login code by email. Idempotent. */

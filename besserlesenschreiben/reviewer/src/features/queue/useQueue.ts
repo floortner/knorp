@@ -10,3 +10,25 @@ export function useQueue() {
     refetchInterval: 30_000,
   });
 }
+
+/**
+ * Just the count of open requests, for the nav badge. Keyed under the 'staff-queue' prefix, so submitting a
+ * review (which invalidates ['staff-queue']) refreshes the badge too.
+ */
+export function useOpenRequestCount() {
+  return useQuery({
+    queryKey: ['staff-queue', 'count'],
+    queryFn: () => reviewApi.queue({ limit: 1 }),
+    select: (r) => r.total,
+    refetchInterval: 30_000,
+  });
+}
+
+/** Pseudonymised learner progress for a queued upload (admin only). Lazy — `enabled` from the panel state. */
+export function useQueueProgress(uploadId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['staff-queue-progress', uploadId],
+    queryFn: () => reviewApi.progress(uploadId),
+    enabled,
+  });
+}

@@ -3035,11 +3035,202 @@
                     "nextCursor": {
                       "nullable": true,
                       "type": "string"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
                     }
                   },
                   "required": [
                     "items",
-                    "nextCursor"
+                    "nextCursor",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/queue/{uploadId}/progress": {
+      "get": {
+        "operationId": "StaffController_queueProgress",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "summary": {
+                      "type": "object",
+                      "properties": {
+                        "unit": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "streakDays": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "stars": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "lastActive": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "league": {
+                          "type": "object",
+                          "properties": {
+                            "tier": {
+                              "type": "string",
+                              "enum": [
+                                "bronze",
+                                "silber",
+                                "gold"
+                              ]
+                            },
+                            "starsWeek": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "starsToNext": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "tier",
+                            "starsWeek",
+                            "starsToNext"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "unit",
+                        "streakDays",
+                        "stars",
+                        "lastActive",
+                        "league"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "skills": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "skill": {
+                            "type": "string"
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "correctPct": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "due": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "skill",
+                          "attempts",
+                          "correctPct",
+                          "due"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "activity": {
+                      "type": "object",
+                      "properties": {
+                        "totalAttempts": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "sessions7d": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "sessions30d": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "homework": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "uploadId": {
+                                "type": "string"
+                              },
+                              "createdAt": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "decision": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "reviewedAt": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "uploadId",
+                              "createdAt",
+                              "status",
+                              "decision",
+                              "reviewedAt"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "totalAttempts",
+                        "sessions7d",
+                        "sessions30d",
+                        "homework"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "profileHandle": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "summary",
+                    "skills",
+                    "activity",
+                    "profileHandle"
                   ],
                   "additionalProperties": false
                 }
@@ -3254,11 +3445,218 @@
                     "nextCursor": {
                       "nullable": true,
                       "type": "string"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
                     }
                   },
                   "required": [
                     "items",
-                    "nextCursor"
+                    "nextCursor",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/users/{id}/progress": {
+      "get": {
+        "operationId": "StaffUsersController_accountProgress",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "summary": {
+                            "type": "object",
+                            "properties": {
+                              "unit": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "streakDays": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "stars": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "lastActive": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "league": {
+                                "type": "object",
+                                "properties": {
+                                  "tier": {
+                                    "type": "string",
+                                    "enum": [
+                                      "bronze",
+                                      "silber",
+                                      "gold"
+                                    ]
+                                  },
+                                  "starsWeek": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "starsToNext": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "tier",
+                                  "starsWeek",
+                                  "starsToNext"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "unit",
+                              "streakDays",
+                              "stars",
+                              "lastActive",
+                              "league"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "skills": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "skill": {
+                                  "type": "string"
+                                },
+                                "attempts": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "correctPct": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "due": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "skill",
+                                "attempts",
+                                "correctPct",
+                                "due"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "activity": {
+                            "type": "object",
+                            "properties": {
+                              "totalAttempts": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "sessions7d": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "sessions30d": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "homework": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "uploadId": {
+                                      "type": "string"
+                                    },
+                                    "createdAt": {
+                                      "type": "string"
+                                    },
+                                    "status": {
+                                      "type": "string"
+                                    },
+                                    "decision": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "reviewedAt": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "uploadId",
+                                    "createdAt",
+                                    "status",
+                                    "decision",
+                                    "reviewedAt"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "totalAttempts",
+                              "sessions7d",
+                              "sessions30d",
+                              "homework"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "profileId": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "summary",
+                          "skills",
+                          "activity",
+                          "profileId",
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "profiles"
                   ],
                   "additionalProperties": false
                 }
@@ -3841,6 +4239,48 @@
                         "additionalProperties": false
                       }
                     },
+                    "bySyllableCount": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "byMorpheme": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
                     "flags": {
                       "type": "object",
                       "properties": {
@@ -3898,6 +4338,8 @@
                     "byGenus",
                     "bySource",
                     "bySkill",
+                    "bySyllableCount",
+                    "byMorpheme",
                     "flags",
                     "hk"
                   ],

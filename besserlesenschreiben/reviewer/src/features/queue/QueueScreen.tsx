@@ -22,11 +22,6 @@ export function QueueScreen() {
 
   return (
     <section>
-      <div className="mb-4 flex items-baseline justify-between">
-        <h1 className="text-lg font-semibold text-ink">Zu prüfen</h1>
-        <span className="text-sm text-ink-soft">{items.length} offen</span>
-      </div>
-
       {items.length === 0 ? (
         <div className="grid place-items-center rounded-card border border-dashed border-line py-20 text-ink-soft">
           <Inbox className="mb-2 size-7" aria-hidden />

@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import type { HomeworkAnalysis } from '@/lib/contract';
 import { ApiError } from '@/lib/api';
+import { useStaffAuth } from '@/features/auth/auth-context';
+import { ProgressPanel } from '@/features/progress/ProgressPanel';
+import { useQueueProgress } from '@/features/queue/useQueue';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AnalysisEditor } from './AnalysisEditor';
@@ -19,9 +22,13 @@ export function ReviewScreen() {
   const { data: item, isPending, isError } = useQueueItem(uploadId);
   const claim = useClaim();
   const submit = useSubmitReview(uploadId);
+  const { reviewer } = useStaffAuth();
+  const isAdmin = reviewer?.role === 'admin';
 
   const [draft, setDraft] = useState<HomeworkAnalysis | null>(null);
   const [notes, setNotes] = useState('');
+  const [showProgress, setShowProgress] = useState(false);
+  const progress = useQueueProgress(uploadId, isAdmin && showProgress);
 
   // Claim the item + seed the editable draft once the item is known.
   useEffect(() => {
@@ -80,6 +87,27 @@ export function ReviewScreen() {
           </span>
         )}
       </div>
+
+      {/* Admin-only learner progress — pseudonymised context for grading (rule 10: handle, never a name). */}
+      {isAdmin && (
+        <div className="mb-4">
+          <Button variant="ghost" size="sm" onClick={() => setShowProgress((v) => !v)} aria-expanded={showProgress}>
+            {showProgress ? <ChevronDown className="size-4" aria-hidden /> : <ChevronRight className="size-4" aria-hidden />}
+            Lernfortschritt
+          </Button>
+          {showProgress && (
+            <div className="mt-2 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line">
+              {progress.isPending ? (
+                <p className="text-sm text-ink-soft">Lädt Fortschritt …</p>
+              ) : progress.isError ? (
+                <p className="text-sm text-danger">Fortschritt konnte nicht geladen werden.</p>
+              ) : progress.data ? (
+                <ProgressPanel data={progress.data} />
+              ) : null}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Two-pane landscape: image | analysis (stacks only on small/portrait, which is out of scope). */}
       <div className="grid gap-5 lg:grid-cols-2">
