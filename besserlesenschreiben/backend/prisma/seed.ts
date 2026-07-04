@@ -59,6 +59,8 @@ interface LexemeSeed {
   syllableCount: number;
   forms: string | null;
   separablePrefix: string | null;
+  familyStem: string | null;
+  compoundParts: string[];
   features: Record<string, unknown>;
   skillTags: string[];
   isLernwort: boolean;
@@ -90,6 +92,8 @@ function lexemeData(r: LexemeSeed) {
     syllableCount: r.syllableCount,
     forms: r.forms ?? null,
     separablePrefix: r.separablePrefix ?? null,
+    familyStem: r.familyStem ?? null,
+    compoundParts: r.compoundParts ?? [],
     features: (r.features ?? {}) as Prisma.InputJsonValue,
     skillTags: r.skillTags ?? [],
     isLernwort: r.isLernwort,

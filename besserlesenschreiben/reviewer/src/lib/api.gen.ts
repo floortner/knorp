@@ -1755,6 +1755,8 @@ export interface operations {
                             syllableCount: number;
                             forms: string | null;
                             separablePrefix: string | null;
+                            familyStem: string | null;
+                            compoundParts: string[];
                             features: {
                                 [key: string]: string | boolean;
                             };
@@ -1791,6 +1793,8 @@ export interface operations {
                     syllableCount: number;
                     forms: string | null;
                     separablePrefix: string | null;
+                    familyStem: string | null;
+                    compoundParts: string[];
                     features: {
                         [key: string]: string | boolean;
                     };
@@ -1818,6 +1822,8 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        familyStem: string | null;
+                        compoundParts: string[];
                         features: {
                             [key: string]: string | boolean;
                         };
@@ -1926,6 +1932,8 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        familyStem: string | null;
+                        compoundParts: string[];
                         features: {
                             [key: string]: string | boolean;
                         };
@@ -1975,6 +1983,8 @@ export interface operations {
                     syllableCount?: number;
                     forms?: string | null;
                     separablePrefix?: string | null;
+                    familyStem?: string | null;
+                    compoundParts?: string[];
                     features?: {
                         [key: string]: string | boolean;
                     };
@@ -2002,6 +2012,8 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        familyStem: string | null;
+                        compoundParts: string[];
                         features: {
                             [key: string]: string | boolean;
                         };

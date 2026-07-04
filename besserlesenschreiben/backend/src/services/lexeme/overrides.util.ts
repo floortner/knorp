@@ -7,7 +7,8 @@
 
 export const LEXEME_OVERRIDE_FIELDS = [
   'hk', 'pos', 'genus', 'morphemeCount', 'ipa', 'syllabification', 'syllableCount',
-  'forms', 'separablePrefix', 'features', 'skillTags', 'isLernwort', 'isTrennbar', 'isMerkwort',
+  'forms', 'separablePrefix', 'familyStem', 'compoundParts', 'features', 'skillTags',
+  'isLernwort', 'isTrennbar', 'isMerkwort',
 ] as const;
 
 export type LexemeField = (typeof LEXEME_OVERRIDE_FIELDS)[number];
@@ -23,6 +24,8 @@ export interface LexemeRecord {
   syllableCount: number;
   forms: string | null;
   separablePrefix: string | null;
+  familyStem: string | null;
+  compoundParts: string[];
   features: unknown;
   skillTags: string[];
   isLernwort: boolean;
