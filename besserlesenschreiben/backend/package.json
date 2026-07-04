@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed": "prisma db seed",
+    "seed:e2e": "tsx scripts/seed-e2e.ts",
+    "export:overrides": "tsx scripts/export-overrides.ts",
     "openapi:export": "tsx scripts/export-openapi.ts",
     "llm:smoke": "tsx scripts/llm-smoke.ts",
     "prisma:generate": "prisma generate",

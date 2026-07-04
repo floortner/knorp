@@ -1,0 +1,18 @@
+{
+  "name": "besserlesenschreiben-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "End-to-end tests (Playwright) — family frontend + backend, local and CI",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "typecheck": "tsc --noEmit",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^24",
+    "typescript": "^5"
+  }
+}

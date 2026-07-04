@@ -2,10 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SessionsService } from './sessions.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { LlmService } from '../../services/llm/llm.service';
+import type { LexemeService } from '../../services/lexeme/lexeme.service';
 import type { DigestService } from '../../services/digest/digest.service';
 import type { ConfigService } from '@nestjs/config';
 import type { Env } from '../../config/env';
 import { ApiException } from '../../common/exceptions/api-exception';
+
+// The lecture prompt requests a word pool; an empty stub keeps generation deterministic in tests
+// (empty pool → the section is dropped, so the prompt is unchanged).
+const lexemeStub = { wordPoolFor: async () => '', pickForSkill: async () => [] } as unknown as LexemeService;
 
 const genExercise = {
   type: 'fixvowel',
@@ -52,7 +57,7 @@ function setup(opts: { available?: boolean; usedToday?: number } = {}) {
   } as unknown as LlmService;
   const digest = { generate: vi.fn(async () => ({ markdown: '## Lernstand' })) } as unknown as DigestService;
   const config = { get: () => 5 } as unknown as ConfigService<Env, true>; // LLM_SESSIONS_PER_DAY
-  return { svc: new SessionsService(prisma, llm, digest, config), prisma, llm, digest, itemCreates };
+  return { svc: new SessionsService(prisma, llm, digest, lexemeStub, config), prisma, llm, digest, itemCreates };
 }
 
 describe('SessionsService.createLlm', () => {

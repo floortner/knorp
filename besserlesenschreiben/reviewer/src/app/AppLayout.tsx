@@ -29,10 +29,15 @@ export function AppLayout() {
               <NavLink to="/queue" className={navClass}>
                 Warteschlange
               </NavLink>
-              {/* User administration is admin-only (backend SPEC §6); hide it from plain reviewers. */}
+              {/* User administration + lexeme curation are admin-only (backend SPEC §6); hidden from plain reviewers. */}
               {isAdmin && (
                 <NavLink to="/users" className={navClass}>
                   Nutzer
+                </NavLink>
+              )}
+              {isAdmin && (
+                <NavLink to="/lexemes" className={navClass}>
+                  Wortschatz
                 </NavLink>
               )}
             </nav>

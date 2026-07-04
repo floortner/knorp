@@ -79,3 +79,46 @@ export const adminUserStatusSchema = z.object({
   accountId: z.string(),
   status: accountStatusEnum,
 });
+
+// ── Lexeme foundation curation (STAFF realm, ADMIN role; SPEC §6) ────────────────────────────────
+// Edit the annotated word pool that grounds lecture generation. Corrections are layered over the
+// PDF-extracted base and exported to the committed lexeme.overrides.json (so they survive reseeds and
+// reproduce in any fresh DB). Raw orthographic flags (v-Schreibung, Silbengelenk, …) → string|boolean.
+export const lexemeFeaturesSchema = z.record(z.string(), z.union([z.string(), z.boolean()]));
+
+export const lexemeSchema = z.object({
+  lemma: z.string(),
+  hk: z.number().int(),
+  pos: z.string(),
+  genus: z.string().nullable(),
+  morphemeCount: z.number().int(),
+  ipa: z.string(),
+  syllabification: z.string(),
+  syllableCount: z.number().int(),
+  forms: z.string().nullable(),
+  separablePrefix: z.string().nullable(),
+  features: lexemeFeaturesSchema,
+  skillTags: z.array(z.string()),
+  isLernwort: z.boolean(),
+  isTrennbar: z.boolean(),
+  isMerkwort: z.boolean(),
+  source: z.string(),
+});
+
+export const lexemePageSchema = z.object({
+  items: z.array(lexemeSchema),
+  nextCursor: z.string().nullable(),
+  total: z.number().int(),
+});
+
+// Edit = sparse patch (only changed fields). lemma is the path key; source is server-owned.
+export const lexemeEditSchema = lexemeSchema.omit({ lemma: true, source: true }).partial();
+
+// Add = a full new word (source defaulted to 'reviewer' by the server).
+export const lexemeCreateSchema = lexemeSchema.omit({ source: true });
+
+export const lexemeExportResultSchema = z.object({
+  edits: z.number().int(),
+  adds: z.number().int(),
+  deletes: z.number().int(),
+});

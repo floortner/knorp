@@ -33,3 +33,10 @@ export type ReviewDecision = NonNullable<ReviewSubmitBody['decision']>;
 export type AdminUserPage = ResponseOf<operations['StaffUsersController_list']>;
 export type AdminUser = AdminUserPage['items'][number];
 export type AccountStatus = AdminUser['status'];
+
+/** Lexeme foundation curation (admin role only; backend SPEC §6). */
+export type LexemePage = ResponseOf<operations['StaffLexemesController_list']>;
+export type Lexeme = LexemePage['items'][number];
+export type LexemeEditBody = BodyOf<operations['StaffLexemesController_edit']>;
+export type LexemeCreateBody = BodyOf<operations['StaffLexemesController_add']>;
+export type LexemeExportResult = ResponseOf<operations['StaffLexemesController_export']>;

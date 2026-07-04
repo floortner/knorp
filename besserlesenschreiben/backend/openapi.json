@@ -3362,6 +3362,701 @@
           "staff"
         ]
       }
+    },
+    "/api/v1/staff/lexemes": {
+      "get": {
+        "operationId": "StaffLexemesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "lemma": {
+                            "type": "string"
+                          },
+                          "hk": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "pos": {
+                            "type": "string"
+                          },
+                          "genus": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "morphemeCount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "ipa": {
+                            "type": "string"
+                          },
+                          "syllabification": {
+                            "type": "string"
+                          },
+                          "syllableCount": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "forms": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "separablePrefix": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "features": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "boolean"
+                                }
+                              ]
+                            }
+                          },
+                          "skillTags": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "isLernwort": {
+                            "type": "boolean"
+                          },
+                          "isTrennbar": {
+                            "type": "boolean"
+                          },
+                          "isMerkwort": {
+                            "type": "boolean"
+                          },
+                          "source": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "lemma",
+                          "hk",
+                          "pos",
+                          "genus",
+                          "morphemeCount",
+                          "ipa",
+                          "syllabification",
+                          "syllableCount",
+                          "forms",
+                          "separablePrefix",
+                          "features",
+                          "skillTags",
+                          "isLernwort",
+                          "isTrennbar",
+                          "isMerkwort",
+                          "source"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "nextCursor": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor",
+                    "total"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      },
+      "post": {
+        "operationId": "StaffLexemesController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lemma": {
+                    "type": "string"
+                  },
+                  "hk": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "pos": {
+                    "type": "string"
+                  },
+                  "genus": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "morphemeCount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "ipa": {
+                    "type": "string"
+                  },
+                  "syllabification": {
+                    "type": "string"
+                  },
+                  "syllableCount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "forms": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "separablePrefix": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "features": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "boolean"
+                        }
+                      ]
+                    }
+                  },
+                  "skillTags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "isLernwort": {
+                    "type": "boolean"
+                  },
+                  "isTrennbar": {
+                    "type": "boolean"
+                  },
+                  "isMerkwort": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "lemma",
+                  "hk",
+                  "pos",
+                  "genus",
+                  "morphemeCount",
+                  "ipa",
+                  "syllabification",
+                  "syllableCount",
+                  "forms",
+                  "separablePrefix",
+                  "features",
+                  "skillTags",
+                  "isLernwort",
+                  "isTrennbar",
+                  "isMerkwort"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "lemma": {
+                      "type": "string"
+                    },
+                    "hk": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "pos": {
+                      "type": "string"
+                    },
+                    "genus": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "morphemeCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "ipa": {
+                      "type": "string"
+                    },
+                    "syllabification": {
+                      "type": "string"
+                    },
+                    "syllableCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "forms": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "separablePrefix": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "features": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    },
+                    "skillTags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "isLernwort": {
+                      "type": "boolean"
+                    },
+                    "isTrennbar": {
+                      "type": "boolean"
+                    },
+                    "isMerkwort": {
+                      "type": "boolean"
+                    },
+                    "source": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "lemma",
+                    "hk",
+                    "pos",
+                    "genus",
+                    "morphemeCount",
+                    "ipa",
+                    "syllabification",
+                    "syllableCount",
+                    "forms",
+                    "separablePrefix",
+                    "features",
+                    "skillTags",
+                    "isLernwort",
+                    "isTrennbar",
+                    "isMerkwort",
+                    "source"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/lexemes/export": {
+      "post": {
+        "operationId": "StaffLexemesController_export",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "edits": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "adds": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "deletes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "edits",
+                    "adds",
+                    "deletes"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/lexemes/{lemma}": {
+      "get": {
+        "operationId": "StaffLexemesController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "lemma": {
+                      "type": "string"
+                    },
+                    "hk": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "pos": {
+                      "type": "string"
+                    },
+                    "genus": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "morphemeCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "ipa": {
+                      "type": "string"
+                    },
+                    "syllabification": {
+                      "type": "string"
+                    },
+                    "syllableCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "forms": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "separablePrefix": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "features": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    },
+                    "skillTags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "isLernwort": {
+                      "type": "boolean"
+                    },
+                    "isTrennbar": {
+                      "type": "boolean"
+                    },
+                    "isMerkwort": {
+                      "type": "boolean"
+                    },
+                    "source": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "lemma",
+                    "hk",
+                    "pos",
+                    "genus",
+                    "morphemeCount",
+                    "ipa",
+                    "syllabification",
+                    "syllableCount",
+                    "forms",
+                    "separablePrefix",
+                    "features",
+                    "skillTags",
+                    "isLernwort",
+                    "isTrennbar",
+                    "isMerkwort",
+                    "source"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      },
+      "patch": {
+        "operationId": "StaffLexemesController_edit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "hk": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "pos": {
+                    "type": "string"
+                  },
+                  "genus": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "morphemeCount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "ipa": {
+                    "type": "string"
+                  },
+                  "syllabification": {
+                    "type": "string"
+                  },
+                  "syllableCount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "forms": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "separablePrefix": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "features": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "boolean"
+                        }
+                      ]
+                    }
+                  },
+                  "skillTags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "isLernwort": {
+                    "type": "boolean"
+                  },
+                  "isTrennbar": {
+                    "type": "boolean"
+                  },
+                  "isMerkwort": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "lemma": {
+                      "type": "string"
+                    },
+                    "hk": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "pos": {
+                      "type": "string"
+                    },
+                    "genus": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "morphemeCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "ipa": {
+                      "type": "string"
+                    },
+                    "syllabification": {
+                      "type": "string"
+                    },
+                    "syllableCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "forms": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "separablePrefix": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "features": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    },
+                    "skillTags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "isLernwort": {
+                      "type": "boolean"
+                    },
+                    "isTrennbar": {
+                      "type": "boolean"
+                    },
+                    "isMerkwort": {
+                      "type": "boolean"
+                    },
+                    "source": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "lemma",
+                    "hk",
+                    "pos",
+                    "genus",
+                    "morphemeCount",
+                    "ipa",
+                    "syllabification",
+                    "syllableCount",
+                    "forms",
+                    "separablePrefix",
+                    "features",
+                    "skillTags",
+                    "isLernwort",
+                    "isTrennbar",
+                    "isMerkwort",
+                    "source"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      },
+      "delete": {
+        "operationId": "StaffLexemesController_remove",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
     }
   },
   "info": {
