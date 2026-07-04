@@ -3704,6 +3704,178 @@
         ]
       }
     },
+    "/api/v1/staff/lexemes/stats": {
+      "get": {
+        "operationId": "StaffLexemesController_stats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "byPos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "byGenus": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "bySource": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "bySkill": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "flags": {
+                      "type": "object",
+                      "properties": {
+                        "lernwort": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "trennbar": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "merkwort": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "lernwort",
+                        "trennbar",
+                        "merkwort"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "hk": {
+                      "type": "object",
+                      "properties": {
+                        "min": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "max": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "avg": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "min",
+                        "max",
+                        "avg"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "byPos",
+                    "byGenus",
+                    "bySource",
+                    "bySkill",
+                    "flags",
+                    "hk"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
     "/api/v1/staff/lexemes/export": {
       "post": {
         "operationId": "StaffLexemesController_export",

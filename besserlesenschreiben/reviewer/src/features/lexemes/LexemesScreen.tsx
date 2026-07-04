@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { BookMarked, Download, Plus, ShieldAlert } from 'lucide-react';
+import { BookMarked, Download, Plus, RotateCcw, ShieldAlert } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { cn } from '@/lib/cn';
-import type { Lexeme } from '@/lib/contract';
-import { useLexemes, useLexemeActions } from './useLexemes';
+import type { Lexeme, LexemeStats } from '@/lib/contract';
+import type { LexemeFilters } from '@/lib/endpoints';
+import { useLexemes, useLexemeStats, useLexemeActions } from './useLexemes';
 import { LexemeEditor } from './LexemeEditor';
 
 // Mirrors backend src/contract/skills.ts (SKILL_TAGS). The backend validates, so drift → a 400.
@@ -16,23 +16,28 @@ export const SKILL_TAGS = [
   'word_family', 'article', 'sentence_context', 'dehnung_h', 'double_consonant',
 ] as const;
 
+const POS_OPTIONS = ['N', 'V', 'ADJ', 'ADV', 'PRO', 'KONJ', 'ART', 'PREP', 'PTK', 'NUM', 'ADJ / ADV'];
+// The orthographic Lernstellen keys in `features` (from the parser).
+const FEATURE_KEYS = [
+  'vSchreibung', 'stummesH', 'doppelvokalUmlaut', 'auslautverhaertung', 'ig',
+  'rSchreibung', 'schwaEnding', 'scharfesS', 'silbengelenk', 'silbischesH',
+];
+
 /**
- * Lexeme foundation curation (admin only; backend SPEC §6). Browse/search/filter the annotated word pool
- * and edit every column; add and delete words. Edits hit the live table immediately; "Export" persists the
- * change-set to the committed lexeme.overrides.json so corrections survive reseeds and reproduce anywhere.
+ * Lexeme foundation curation (admin only; backend SPEC §6). Filter the annotated word pool by ANY
+ * property, see live aggregate stats for the current filter, and edit/add/delete words. Edits hit the
+ * live table immediately; "Export" persists the change-set to the committed lexeme.overrides.json.
  */
 export function LexemesScreen() {
   const { reviewer } = useStaffAuth();
   const isAdmin = reviewer?.role === 'admin';
-  const [search, setSearch] = useState('');
-  const [skill, setSkill] = useState('');
+  const [filters, setFilters] = useState<LexemeFilters>({});
   const [editing, setEditing] = useState<Lexeme | 'new' | null>(null);
   const [exportMsg, setExportMsg] = useState<string | null>(null);
+  const setF = (patch: Partial<LexemeFilters>) => setFilters((s) => ({ ...s, ...patch }));
 
-  const { data, isPending, isError, error } = useLexemes(
-    { search: search.trim() || undefined, skill: skill || undefined },
-    isAdmin,
-  );
+  const list = useLexemes(filters, isAdmin);
+  const stats = useLexemeStats(filters, isAdmin);
   const { exportOverrides } = useLexemeActions();
 
   if (reviewer && !isAdmin) {
@@ -70,35 +75,62 @@ export function LexemesScreen() {
 
       {exportMsg && <p className="mb-3 text-sm text-ink-soft">{exportMsg}</p>}
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Wort suchen …"
-          aria-label="Wort suchen"
-          className="w-64"
-        />
-        <Select
-          value={skill}
-          onChange={(e) => setSkill(e.target.value)}
-          aria-label="Nach Skill filtern"
-          className="w-auto"
-        >
-          <option value="">Alle Skills</option>
-          {SKILL_TAGS.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </Select>
-        {data && <span className="text-sm text-ink-soft">{data.total} Wörter</span>}
+      {/* ── Filter bar (every property) ── */}
+      <div className="mb-4 flex flex-wrap items-end gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line">
+        <Ctrl label="Suche">
+          <Input
+            className="w-56"
+            value={filters.search ?? ''}
+            onChange={(e) => setF({ search: e.target.value })}
+            placeholder="Wort …"
+            aria-label="Wort suchen"
+          />
+        </Ctrl>
+        <Ctrl label="Skill">
+          <Filter value={filters.skill} onChange={(v) => setF({ skill: v })} options={[...SKILL_TAGS]} allLabel="Alle Skills" />
+        </Ctrl>
+        <Ctrl label="Wortart">
+          <Filter value={filters.pos} onChange={(v) => setF({ pos: v })} options={POS_OPTIONS} allLabel="Alle" />
+        </Ctrl>
+        <Ctrl label="Genus">
+          <Select className="w-auto" value={filters.genus ?? ''} onChange={(e) => setF({ genus: e.target.value || undefined })}>
+            <option value="">Alle</option>
+            <option value="der">der</option>
+            <option value="die">die</option>
+            <option value="das">das</option>
+            <option value="none">kein Nomen</option>
+          </Select>
+        </Ctrl>
+        <Ctrl label="Merkmal">
+          <Filter value={filters.feature} onChange={(v) => setF({ feature: v })} options={FEATURE_KEYS} allLabel="Alle" />
+        </Ctrl>
+        <Ctrl label="Quelle">
+          <Filter value={filters.source} onChange={(v) => setF({ source: v })} options={['rwe2015', 'reviewer']} allLabel="Alle" />
+        </Ctrl>
+        <Ctrl label="HK von">
+          <Input className="w-16" type="number" value={filters.hkMin ?? ''} onChange={(e) => setF({ hkMin: e.target.value })} />
+        </Ctrl>
+        <Ctrl label="HK bis">
+          <Input className="w-16" type="number" value={filters.hkMax ?? ''} onChange={(e) => setF({ hkMax: e.target.value })} />
+        </Ctrl>
+        <FlagSelect label="Lernwort" value={filters.lernwort} onChange={(v) => setF({ lernwort: v })} />
+        <FlagSelect label="Trennbar" value={filters.trennbar} onChange={(v) => setF({ trennbar: v })} />
+        <FlagSelect label="Merkwort" value={filters.merkwort} onChange={(v) => setF({ merkwort: v })} />
+        <Button variant="ghost" size="sm" onClick={() => setFilters({})}>
+          <RotateCcw className="size-4" aria-hidden /> Zurücksetzen
+        </Button>
       </div>
 
-      {isPending ? (
+      {/* ── Aggregate stats for the current filter ── */}
+      {stats.data && <StatsPanel s={stats.data} />}
+
+      {list.isPending ? (
         <p className="py-16 text-center text-ink-soft">Lädt Wortschatz …</p>
-      ) : isError ? (
+      ) : list.isError ? (
         <p className="py-16 text-center text-danger">
-          Wortschatz konnte nicht geladen werden{error instanceof Error ? `: ${error.message}` : ''}.
+          Wortschatz konnte nicht geladen werden{list.error instanceof Error ? `: ${list.error.message}` : ''}.
         </p>
-      ) : data.items.length === 0 ? (
+      ) : list.data.items.length === 0 ? (
         <div className="grid place-items-center rounded-card border border-dashed border-line py-20 text-ink-soft">
           <p>Keine Wörter in dieser Ansicht.</p>
         </div>
@@ -116,7 +148,7 @@ export function LexemesScreen() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {data.items.map((w) => (
+              {list.data.items.map((w) => (
                 <tr key={w.lemma} className="hover:bg-black/[0.015]">
                   <td className="px-4 py-2 font-medium text-ink">
                     {w.lemma}
@@ -148,20 +180,110 @@ export function LexemesScreen() {
               ))}
             </tbody>
           </table>
-          {data.nextCursor && (
-            <p className={cn('border-t border-line px-4 py-2 text-center text-xs text-ink-soft')}>
-              Erste {data.items.length} von {data.total} — Suche eingrenzen, um mehr zu sehen.
+          {list.data.nextCursor && (
+            <p className="border-t border-line px-4 py-2 text-center text-xs text-ink-soft">
+              Erste {list.data.items.length} von {list.data.total} — Filter eingrenzen, um mehr zu sehen.
             </p>
           )}
         </div>
       )}
 
-      {editing && (
-        <LexemeEditor
-          lexeme={editing === 'new' ? null : editing}
-          onClose={() => setEditing(null)}
-        />
-      )}
+      {editing && <LexemeEditor lexeme={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
     </section>
+  );
+}
+
+function Ctrl({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-[11px] font-medium uppercase tracking-wide text-ink-soft">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+/** A "— all —" + options select bound to an optional filter value. */
+function Filter({
+  value,
+  onChange,
+  options,
+  allLabel,
+}: {
+  value?: string;
+  onChange: (v: string | undefined) => void;
+  options: string[];
+  allLabel: string;
+}) {
+  return (
+    <Select className="w-auto" value={value ?? ''} onChange={(e) => onChange(e.target.value || undefined)}>
+      <option value="">{allLabel}</option>
+      {options.map((o) => (
+        <option key={o} value={o}>{o}</option>
+      ))}
+    </Select>
+  );
+}
+
+/** Tri-state (Alle / ja / nein) for a boolean flag filter. */
+function FlagSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value?: string;
+  onChange: (v: string | undefined) => void;
+}) {
+  return (
+    <Ctrl label={label}>
+      <Select className="w-auto" value={value ?? ''} onChange={(e) => onChange(e.target.value || undefined)}>
+        <option value="">Alle</option>
+        <option value="true">ja</option>
+        <option value="false">nein</option>
+      </Select>
+    </Ctrl>
+  );
+}
+
+function StatsPanel({ s }: { s: LexemeStats }) {
+  return (
+    <div className="mb-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line">
+      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        <span className="text-2xl font-bold text-ink">{s.total.toLocaleString('de-AT')}</span>
+        <span className="text-ink-soft">Wörter im Filter</span>
+        {s.total > 0 && (
+          <>
+            <span className="text-sm text-ink-soft">
+              HK {s.hk.min}–{s.hk.max} · ⌀ {s.hk.avg}
+            </span>
+            <span className="text-sm text-ink-soft">
+              Lernwort {s.flags.lernwort} · Trennbar {s.flags.trennbar} · Merkwort {s.flags.merkwort}
+            </span>
+          </>
+        )}
+      </div>
+      {s.total > 0 && (
+        <div className="mt-3 space-y-2">
+          <StatRow label="Wortart" items={s.byPos} />
+          <StatRow label="Genus" items={s.byGenus} />
+          <StatRow label="Quelle" items={s.bySource} />
+          <StatRow label="Skills" items={s.bySkill} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatRow({ label, items }: { label: string; items: { value: string; count: number }[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="w-16 shrink-0 text-xs font-medium uppercase tracking-wide text-ink-soft">{label}</span>
+      {items.slice(0, 12).map((i) => (
+        <span key={i.value} className="rounded-full bg-black/[0.04] px-2 py-0.5 text-xs text-ink-soft">
+          {i.value} <span className="font-semibold text-ink">{i.count}</span>
+        </span>
+      ))}
+    </div>
   );
 }

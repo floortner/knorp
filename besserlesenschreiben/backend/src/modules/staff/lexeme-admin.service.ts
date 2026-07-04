@@ -42,6 +42,39 @@ function toWire(r: LexemeRow) {
   };
 }
 
+/** Full-property filter for the browser + the stats aggregate (shared `where`). */
+export interface LexemeFilters {
+  search?: string; // lemma contains (case-insensitive)
+  skill?: string; // skillTags has
+  pos?: string; // exact part of speech
+  genus?: string; // 'der' | 'die' | 'das' | 'none' (none → no genus, i.e. not a noun)
+  source?: string; // 'rwe2015' | 'reviewer'
+  feature?: string; // an orthographic feature key that must be present in `features`
+  hkMin?: number;
+  hkMax?: number;
+  lernwort?: boolean;
+  trennbar?: boolean;
+  merkwort?: boolean;
+}
+
+function whereFrom(f: LexemeFilters): Prisma.LexemeWhereInput {
+  const w: Prisma.LexemeWhereInput = {};
+  if (f.search) w.lemma = { contains: f.search, mode: 'insensitive' };
+  if (f.skill) w.skillTags = { has: f.skill };
+  if (f.pos) w.pos = f.pos;
+  if (f.genus) w.genus = f.genus === 'none' ? null : f.genus;
+  if (f.source) w.source = f.source;
+  if (f.lernwort !== undefined) w.isLernwort = f.lernwort;
+  if (f.trennbar !== undefined) w.isTrennbar = f.trennbar;
+  if (f.merkwort !== undefined) w.isMerkwort = f.merkwort;
+  if (f.hkMin !== undefined || f.hkMax !== undefined) {
+    w.hk = { ...(f.hkMin !== undefined ? { gte: f.hkMin } : {}), ...(f.hkMax !== undefined ? { lte: f.hkMax } : {}) };
+  }
+  // "feature present": the value at features->key is not DB-NULL (absent key → NULL → excluded).
+  if (f.feature) w.features = { path: [f.feature], not: Prisma.DbNull };
+  return w;
+}
+
 /**
  * Lexeme foundation CURATION (STAFF realm, ADMIN role; SPEC §6). Edits the annotated word pool that
  * grounds lecture generation. Writes land in the live `lexeme` table for immediate effect; `export()`
@@ -57,13 +90,10 @@ export class LexemeAdminService {
     private readonly config: ConfigService<Env, true>,
   ) {}
 
-  /** Search (lemma contains) + optional skill filter, ordered by lemma, cursor-paged; with a total count. */
-  async list(opts: { search?: string; skill?: string; limit: number; cursor?: string }) {
+  /** Full-property filter + search, ordered by lemma, cursor-paged; with a total count. */
+  async list(opts: LexemeFilters & { limit: number; cursor?: string }) {
     const take = Math.min(Math.max(opts.limit, 1), MAX_LIMIT);
-    const where: Prisma.LexemeWhereInput = {
-      ...(opts.search ? { lemma: { contains: opts.search, mode: 'insensitive' } } : {}),
-      ...(opts.skill ? { skillTags: { has: opts.skill } } : {}),
-    };
+    const where = whereFrom(opts);
     const [rows, total] = await Promise.all([
       this.prisma.lexeme.findMany({
         where,
@@ -78,6 +108,49 @@ export class LexemeAdminService {
       items: page.map(toWire),
       nextCursor: rows.length > take ? page[page.length - 1].lemma : null,
       total,
+    };
+  }
+
+  /**
+   * Aggregate stats over the SAME filter (how many words match, broken down by POS/genus/source/skill,
+   * the flag counts, and the HK range). Computed in JS from a small projection — this is an admin
+   * curation view, not a hot path, so a full scan of the (≤ a few thousand) matching rows is fine.
+   */
+  async stats(f: LexemeFilters) {
+    const rows = await this.prisma.lexeme.findMany({
+      where: whereFrom(f),
+      select: {
+        pos: true, genus: true, source: true, hk: true, skillTags: true,
+        isLernwort: true, isTrennbar: true, isMerkwort: true,
+      },
+    });
+    const total = rows.length;
+    const tally = (vals: (string | null)[]) => {
+      const m = new Map<string, number>();
+      for (const v of vals) m.set(v ?? '—', (m.get(v ?? '—') ?? 0) + 1);
+      return [...m.entries()].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count);
+    };
+    const skill = new Map<string, number>();
+    for (const r of rows) for (const t of r.skillTags) skill.set(t, (skill.get(t) ?? 0) + 1);
+    const hks = rows.map((r) => r.hk);
+    return {
+      total,
+      byPos: tally(rows.map((r) => r.pos)),
+      byGenus: tally(rows.map((r) => r.genus)),
+      bySource: tally(rows.map((r) => r.source)),
+      bySkill: [...skill.entries()].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count),
+      flags: {
+        lernwort: rows.filter((r) => r.isLernwort).length,
+        trennbar: rows.filter((r) => r.isTrennbar).length,
+        merkwort: rows.filter((r) => r.isMerkwort).length,
+      },
+      hk: total
+        ? {
+            min: Math.min(...hks),
+            max: Math.max(...hks),
+            avg: Math.round((hks.reduce((a, b) => a + b, 0) / total) * 10) / 10,
+          }
+        : { min: 0, max: 0, avg: 0 },
     };
   }
 

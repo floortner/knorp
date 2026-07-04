@@ -40,3 +40,4 @@ export type Lexeme = LexemePage['items'][number];
 export type LexemeEditBody = BodyOf<operations['StaffLexemesController_edit']>;
 export type LexemeCreateBody = BodyOf<operations['StaffLexemesController_add']>;
 export type LexemeExportResult = ResponseOf<operations['StaffLexemesController_export']>;
+export type LexemeStats = ResponseOf<operations['StaffLexemesController_stats']>;

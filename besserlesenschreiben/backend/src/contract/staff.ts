@@ -122,3 +122,15 @@ export const lexemeExportResultSchema = z.object({
   adds: z.number().int(),
   deletes: z.number().int(),
 });
+
+// Aggregate stats over the current filter (how many words match, broken down by property).
+const lexemeCountSchema = z.object({ value: z.string(), count: z.number().int() });
+export const lexemeStatsSchema = z.object({
+  total: z.number().int(),
+  byPos: z.array(lexemeCountSchema),
+  byGenus: z.array(lexemeCountSchema),
+  bySource: z.array(lexemeCountSchema),
+  bySkill: z.array(lexemeCountSchema),
+  flags: z.object({ lernwort: z.number().int(), trennbar: z.number().int(), merkwort: z.number().int() }),
+  hk: z.object({ min: z.number().int(), max: z.number().int(), avg: z.number() }),
+});
