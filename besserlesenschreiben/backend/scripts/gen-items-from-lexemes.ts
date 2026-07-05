@@ -119,6 +119,9 @@ interface Ctx {
 function genSylarrange(l: Lex): Candidate | null {
   const syll = l.syllabification.split('-').filter(Boolean);
   if (syll.length < 2) return null;
+  // Seed convention: a noun's FIRST syllable keeps its capital (Gleich·ge·wicht) — the stored
+  // syllabification is all-lowercase, so re-case tile 0 from the lemma.
+  if (l.lemma[0] === l.lemma[0].toUpperCase()) syll[0] = syll[0][0].toUpperCase() + syll[0].slice(1);
   const tiles = shuffleDistinct(syll, mulberry32(hashStr(l.lemma)));
   if (JSON.stringify(tiles) === JSON.stringify(syll)) return null; // all-identical tiles (e.g. nen-nen) → degenerate
   return {
