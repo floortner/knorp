@@ -60,9 +60,11 @@ async function bootstrap(): Promise<void> {
   // Request-level rate limiting (per IP): tight on the auth/code endpoints (email-sending cost +
   // brute-force surface), loose elsewhere. Domain-level counters (verify attempts, PIN lockout, daily
   // ★ caps) remain the precise guards — this is the blunt outer shell. Emits the §5 error envelope.
+  // Loopback addresses are skipped so e2e tests (all traffic from 127.0.0.1) are not throttled.
   const { default: fastifyRateLimit } = await import('@fastify/rate-limit');
   await app.register(fastifyRateLimit, {
     timeWindow: '1 minute',
+    allowList: (req: { ip?: string }) => req.ip === '127.0.0.1' || req.ip === '::1',
     max: (req: { url?: string }) => ((req.url ?? '').includes('/auth/') ? 10 : 300),
     errorResponseBuilder: (req: { id?: string }, context: { after: string }) => ({
       error: {
