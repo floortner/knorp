@@ -20,28 +20,35 @@ const progress: Progress = {
 };
 
 vi.mock('@/lib/endpoints', () => ({
-  coreApi: { me: () => Promise.resolve(me), progress: () => Promise.resolve(progress) },
+  coreApi: { me: () => Promise.resolve(me), progress: vi.fn(() => Promise.resolve(progress)) },
 }));
 
-const { Liga } = await import('./Liga');
+const { Erfolge } = await import('./Erfolge');
 
-function renderLiga() {
+function renderErfolge() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
       <MemoryRouter>
-        <Liga />
+        <Erfolge />
       </MemoryRouter>
     </QueryClientProvider>,
   );
 }
 
-describe('Liga', () => {
-  it('renders league standing, streak/stars and the activity views', async () => {
-    renderLiga();
-    expect(await screen.findByText('Silber-Liga')).toBeInTheDocument();
-    expect(screen.getByText(/noch 180 bis zur Gold-Liga/)).toBeInTheDocument();
+describe('Erfolge', () => {
+  it('renders achievement standing, streak/stars and the activity views', async () => {
+    renderErfolge();
+    expect(await screen.findByText('Silber-Stufe')).toBeInTheDocument();
+    expect(screen.getByText(/noch 180 bis zur Gold-Stufe/)).toBeInTheDocument();
     expect(screen.getByText('Diese Woche')).toBeInTheDocument();
     expect(screen.getByText('Letzte 30 Tage')).toBeInTheDocument();
+  });
+
+  it('shows warm restart card instead of 0 when streak is broken', async () => {
+    const { coreApi } = await import('@/lib/endpoints');
+    vi.mocked(coreApi.progress).mockResolvedValueOnce({ ...progress, streakDays: 0 });
+    renderErfolge();
+    expect(await screen.findByText('Heute neu starten!')).toBeInTheDocument();
   });
 });

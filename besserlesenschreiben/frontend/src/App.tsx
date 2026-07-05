@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/app/AppShell';
 import { Lernen } from '@/app/tabs/Lernen';
-import { Liga } from '@/app/tabs/Liga';
+import { Erfolge } from '@/app/tabs/Erfolge';
 import { Chat } from '@/app/tabs/Chat';
 import { Profil } from '@/app/tabs/Profil';
 import { LessonScreen } from '@/features/lessons/LessonScreen';
@@ -49,7 +49,7 @@ export function App() {
           <Route index element={<Navigate to="lernen" replace />} />
           <Route path="lernen" element={<Lernen />} />
           <Route path="lesson" element={<LessonScreen />} />
-          <Route path="liga" element={<Liga />} />
+          <Route path="erfolge" element={<Erfolge />} />
           <Route path="chat" element={<Chat />} />
           <Route path="profil" element={<Profil />} />
         </Route>

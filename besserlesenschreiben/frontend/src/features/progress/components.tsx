@@ -8,18 +8,18 @@ const TIER_LABEL: Record<string, string> = { bronze: 'Bronze', silber: 'Silber',
 const NEXT_TIER: Record<string, string | undefined> = { bronze: 'Silber', silber: 'Gold', gold: undefined };
 const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
-/** League standing: current tier + progress toward the next (SPEC §2 /liga). */
-export function LeagueCard({ league }: { league: League }) {
+/** Achievement standing: current tier + progress toward the next. */
+export function AchievementCard({ league }: { league: League }) {
   const next = NEXT_TIER[league.tier];
   return (
     <div className="rounded-card bg-white p-5 text-center shadow-sm ring-1 ring-black/5">
-      <p className="text-sm text-ink-soft">Deine Liga</p>
+      <p className="text-sm text-ink-soft">Dein Fortschritt</p>
       <p className="mt-1 font-display text-2xl font-bold text-amber-500">
-        {TIER_LABEL[league.tier] ?? league.tier}-Liga
+        {TIER_LABEL[league.tier] ?? league.tier}-Stufe
       </p>
       <p className="mt-2 text-sm text-ink-soft">
         {league.starsWeek} Sterne diese Woche
-        {next && league.starsToNext > 0 && ` · noch ${league.starsToNext} bis zur ${next}-Liga`}
+        {next && league.starsToNext > 0 && ` · noch ${league.starsToNext} bis zur ${next}-Stufe`}
       </p>
     </div>
   );

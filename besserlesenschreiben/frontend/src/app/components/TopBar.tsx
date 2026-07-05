@@ -10,7 +10,9 @@ export function TopBar({ name, streakDays, stars }: { name: string; streakDays: 
         <span className="font-display text-lg font-bold text-ink">{name}</span>
       </div>
       <div className="flex items-center gap-2">
-        <Pill icon={<Flame className="h-4 w-4 text-orange" aria-hidden />} value={streakDays} label="Tage in Folge" />
+        {streakDays > 0 && (
+          <Pill icon={<Flame className="h-4 w-4 text-orange" aria-hidden />} value={streakDays} label="Tage in Folge" />
+        )}
         <Pill icon={<Star className="h-4 w-4 text-amber-400" aria-hidden />} value={stars} label="Sterne" />
       </div>
     </header>
