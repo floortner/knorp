@@ -5,7 +5,6 @@ import { Liga } from '@/app/tabs/Liga';
 import { Chat } from '@/app/tabs/Chat';
 import { Profil } from '@/app/tabs/Profil';
 import { LessonScreen } from '@/features/lessons/LessonScreen';
-import { HomeworkScreen } from '@/features/homework/HomeworkScreen';
 import { LoginScreen } from '@/features/auth/LoginScreen';
 import { CodeScreen } from '@/features/auth/CodeScreen';
 import { RequireAuth } from '@/features/auth/RequireAuth';
@@ -35,15 +34,6 @@ export function App() {
           element={
             <RequireAuth>
               <ParentScreen />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/homework"
-          element={
-            <RequireAuth>
-              <HomeworkScreen />
             </RequireAuth>
           }
         />

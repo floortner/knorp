@@ -2,12 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChatService } from './chat.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { LlmService } from '../../services/llm/llm.service';
+import type { StorageService } from '../../services/storage/storage.service';
 import type { ConfigService } from '@nestjs/config';
 import type { Env } from '../../config/env';
 import { ApiException } from '../../common/exceptions/api-exception';
 
 function setup(
-  opts: { owned?: boolean; rows?: Array<{ role: string; text: string; createdAt: Date }>; sentToday?: number } = {},
+  opts: {
+    owned?: boolean;
+    rows?: Array<{ role: string; text: string; createdAt: Date }>;
+    sentToday?: number;
+    homework?: Array<{ imageKey: string; status: string; createdAt: Date; reviewedAnalysis: unknown }>;
+  } = {},
 ) {
   const owned = opts.owned ?? true;
   const created: Array<{ role: string; text: string }> = [];
@@ -21,13 +27,17 @@ function setup(
         return { ...data, createdAt: new Date('2026-06-30T10:00:00Z') };
       }),
     },
+    homeworkUpload: { findMany: vi.fn(async () => opts.homework ?? []) },
   } as unknown as PrismaService;
   const llm = {
     providerName: 'stub',
     chat: vi.fn(async () => 'Gut gemacht! Welches Wort möchtest du üben?'),
   } as unknown as LlmService;
   const config = { get: () => 60 } as unknown as ConfigService<Env, true>; // CHAT_MESSAGES_PER_DAY
-  return { svc: new ChatService(prisma, llm, config), prisma, llm, created };
+  const storage = {
+    signedHomeworkReadUrl: vi.fn(async () => 'https://example.test/hw.webp'),
+  } as unknown as StorageService;
+  return { svc: new ChatService(prisma, llm, config, storage), prisma, llm, created };
 }
 
 async function statusOf(p: Promise<unknown>): Promise<number | 'ok'> {
@@ -61,6 +71,30 @@ describe('ChatService', () => {
       { me: false, text: 'Hallo!', ts: '2026-06-30T09:00:00.000Z' },
       { me: true, text: 'Hi', ts: '2026-06-30T09:01:00.000Z' },
     ]);
+  });
+
+  it('surfaces homework uploads as durable chat bubbles (photo + verdict), the pair kept adjacent', async () => {
+    const { svc } = setup({
+      rows: [{ role: 'child', text: 'Hi', createdAt: new Date('2026-06-30T08:00:00Z') }],
+      homework: [
+        {
+          imageKey: 'k',
+          status: 'reviewed',
+          createdAt: new Date('2026-06-30T09:00:00Z'),
+          reviewedAnalysis: { topic: 'Anlaute', exerciseType: 'x', items: [], suggestedFocus: ['vowel_length'] },
+        },
+      ],
+    });
+    const { messages } = await svc.history('a1', 'p1');
+    expect(messages[0]).toEqual({ me: true, text: 'Hi', ts: '2026-06-30T08:00:00.000Z' });
+    // photo bubble: a read URL, no text
+    expect(messages[1]).toEqual({ me: true, text: '', ts: '2026-06-30T09:00:00.000Z', imageUrl: 'https://example.test/hw.webp' });
+    // status line shares the photo's timestamp (stays adjacent) and draws detail from reviewedAnalysis
+    expect(messages[2].ts).toBe('2026-06-30T09:00:00.000Z');
+    expect(messages[2].me).toBe(false);
+    expect(messages[2].text).toContain('geprüft');
+    expect(messages[2].text).toContain('Anlaute');
+    expect(messages[2].text).toContain('vowel_length');
   });
 
   it('send persists the child message + trainer reply and returns the reply', async () => {

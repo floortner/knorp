@@ -1,4 +1,7 @@
 import { apiFetch } from './api';
+
+/** Which slice of the review pipeline to list (mirrors the backend). */
+export type QueueFilter = 'open' | 'done' | 'all';
 import type {
   AccountStatus,
   AdminUser,
@@ -40,11 +43,12 @@ export const staffAuthApi = {
 };
 
 export const reviewApi = {
-  /** The pending_review queue, pseudonymised + cursor-paged (ARCHITECTURE §1a). */
-  queue: (params: { limit?: number; cursor?: string } = {}) => {
+  /** Review items, pseudonymised + cursor-paged (ARCHITECTURE §1a). `status`: open (default) | done | all. */
+  queue: (params: { limit?: number; cursor?: string; status?: QueueFilter } = {}) => {
     const q = new URLSearchParams();
     if (params.limit !== undefined) q.set('limit', String(params.limit));
     if (params.cursor) q.set('cursor', params.cursor);
+    if (params.status) q.set('status', params.status);
     const qs = q.toString();
     return apiFetch<QueuePage>(`/staff/queue${qs ? `?${qs}` : ''}`);
   },

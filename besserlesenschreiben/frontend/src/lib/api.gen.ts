@@ -1365,6 +1365,7 @@ export interface operations {
                             me: boolean;
                             text: string;
                             ts: string;
+                            imageUrl?: string;
                         }[];
                     };
                 };
@@ -1396,6 +1397,7 @@ export interface operations {
                             me: boolean;
                             text: string;
                             ts: string;
+                            imageUrl?: string;
                         };
                     };
                 };
@@ -1598,6 +1600,8 @@ export interface operations {
                                 suggestedFocus: string[];
                             };
                             createdAt: string;
+                            decision: string | null;
+                            reviewedAt: string | null;
                         }[];
                         nextCursor: string | null;
                         total: number;

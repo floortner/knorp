@@ -85,6 +85,29 @@ describe('ReviewService.queue (pseudonymisation)', () => {
     expect(items[0].imageUrl).toBe('https://example.test/sas');
     expect(JSON.stringify(items[0])).not.toMatch(/name|email/i);
     expect(nextCursor).toBeNull();
+    expect(items[0].decision).toBeNull(); // open item has no verdict yet
+  });
+
+  it('history (done) surfaces the verdict + reviewedAt, still pseudonymised', async () => {
+    const { svc } = setup({
+      findMany: [
+        {
+          id: 'up-2',
+          profileId: 'prof-9',
+          imageKey: 'k',
+          createdAt: new Date('2026-06-28T10:00:00Z'),
+          reviewDecision: 'corrected',
+          reviewedAt: new Date('2026-06-28T11:00:00Z'),
+          llmAnalysis: analysis,
+          profile: { unlockedUnit: 2 },
+        },
+      ],
+    });
+    const { items } = await svc.queue(50, undefined, 'done');
+    expect(items[0].decision).toBe('corrected');
+    expect(items[0].reviewedAt).toBe('2026-06-28T11:00:00.000Z');
+    expect(items[0].profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
+    expect(JSON.stringify(items[0])).not.toMatch(/prof-9|name|email/i);
   });
 });
 

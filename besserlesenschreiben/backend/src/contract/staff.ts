@@ -40,6 +40,9 @@ export const queueItemSchema = z.object({
   // The LLM DRAFT to validate against (never applied on its own).
   llmAnalysis: homeworkAnalysisSchema,
   createdAt: z.string(),
+  // Historical items (status=done): the reviewer's verdict + when. null while still open.
+  decision: z.string().nullable(),
+  reviewedAt: z.string().nullable(),
 });
 
 export const queuePageSchema = z.object({

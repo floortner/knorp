@@ -36,8 +36,10 @@ spine — see `SPEC.md` §4. Telemetry plumbing was built before the renderers �
 - **Spec-only, NOT in the prototype** (build from `SPEC.md` — match the brand and the existing renderer
   patterns): **all 14 Vokaltraining exercise types** (the prototype shows only the legacy set);
   the ✨ **generated-lecture entry** on `/lernen` + the lesson **intro card** (§2) and the **homework
-  "Foto & verbessern"** flow (§9). The app is **free** — no billing/supporter UI anywhere (ARCHITECTURE §9);
-  homework upload is parent-area only, behind the PIN.
+  "Foto & verbessern"** flow (§9). The app is **free** — no billing/supporter UI anywhere (ARCHITECTURE §9).
+  **Homework upload lives in the child Chat tab** (`tabs/Chat.tsx`): the photo is sent as a chat message and
+  the reviewer's verdict is echoed back in-chat — it is **not** PIN-gated. The professional-in-the-loop model
+  is unchanged (the photo still goes to the pseudonymised staff queue; the LLM never auto-applies it).
 
 ## Brand quick-reference
 
