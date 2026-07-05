@@ -11,8 +11,10 @@ import { join } from 'node:path';
  */
 export const BACKEND_PORT = 3100;
 export const FRONTEND_PORT = 5273;
+export const REVIEWER_PORT = 5274;
 export const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
 export const FRONTEND_URL = `http://localhost:${FRONTEND_PORT}`;
+export const REVIEWER_URL = `http://localhost:${REVIEWER_PORT}`;
 export const API_BASE = `${BACKEND_URL}/api/v1`;
 
 /** Test database. CI sets DATABASE_URL to the postgres service; locally, create this DB once. */
@@ -36,5 +38,9 @@ export const backendEnv: Record<string, string> = {
 };
 
 export const frontendEnv: Record<string, string> = {
+  VITE_API_BASE: API_BASE,
+};
+
+export const reviewerEnv: Record<string, string> = {
   VITE_API_BASE: API_BASE,
 };

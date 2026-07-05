@@ -24,6 +24,7 @@ export const E2E_PARENT_EMAILS = [
   E2E_PARENT_EMAIL,
   'e2e-parent-chromium@example.test',
   'e2e-parent-webkit@example.test',
+  'e2e-homework-parent@example.test', // cross-realm homework-loop spec (chromium-only)
 ];
 export const E2E_REVIEWER_EMAIL = 'e2e-reviewer@example.test';
 
