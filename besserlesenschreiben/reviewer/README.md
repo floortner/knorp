@@ -35,20 +35,23 @@ React Router 7 · Vitest + Testing Library. No PWA, no child fonts/mascots. Matc
 
 ```
 src/
-  main.tsx  App.tsx          # providers + routes (/login, /login/code, /queue, /review/:uploadId)
+  main.tsx  App.tsx          # providers + routes (/login, /login/code, /queue, /review/:uploadId, /users, /lexemes)
   index.css                  # neutral staff @theme tokens (teal accent, slate surface)
-  app/AppLayout.tsx          # top bar (reviewer identity + logout) over the routed Outlet
+  app/AppLayout.tsx          # top bar: (b) brand + reviewer name, nav with live count badges, logout
   lib/
     api.ts                   # transport only — staff cookie, error-envelope → ApiError
     api.gen.ts               # types GENERATED from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
     contract.ts              # ergonomic aliases over api.gen.ts `operations` (no hand-authored shapes)
-    endpoints.ts             # typed wrappers: staffAuthApi, reviewApi
-    cn.ts
+    endpoints.ts             # typed wrappers: staffAuthApi, reviewApi, usersApi, lexemesApi
+    decision.ts  cn.ts
   features/
     auth/                    # StaffAuthProvider, /staff/me probe, RequireStaff guard, login + code screens
-    queue/                   # QueueScreen + useQueue (pseudonymised pending list)
+    queue/                   # review list "Chats" (Offen | Erledigt | Alle) — pseudonymised rows
     review/                  # ReviewScreen (two-pane image | editable draft) + AnalysisEditor + claim/submit
-  components/ui/             # button, input, textarea
+    users/                   # ADMIN "Nutzer": account approval/deactivate/delete + per-child progress
+    lexemes/                 # ADMIN "Wortschatz": word-pool curation (filters, stats, editor, export)
+    progress/                # shared learner-progress panel (summary · skills · activity)
+  components/ui/             # button, input, select, textarea, modal, filter-chips
 ```
 
 ## Develop
@@ -56,17 +59,17 @@ src/
 ```bash
 cp .env.example .env         # VITE_API_BASE → local backend (/api/v1)
 npm install
-npm run dev                  # http://localhost:5173
+npm run dev                  # http://localhost:5174
 npm run lint                 # ESLint
 npm run build                # tsc -b && vite build
 npm test                     # Vitest
 npm run gen:api              # regenerate types from backend OpenAPI (committed; CI drift-gates it)
 ```
 
-> **Status:** wired to the live backend `staff/` module. Types are generated from the backend's published
+> **Status: shipped.** Wired to the live backend `staff/` module; types are generated from the published
 > `/staff/*` OpenAPI (`lib/api.gen.ts`, committed) and aliased in `lib/contract.ts`; CI fails on drift, same
-> as the family app. The portal itself is Phase 2.5 (`../backend/SPEC.md` §12) — auth, queue, and the
-> two-pane review/apply flow are scaffolded against the real contract.
+> as the family app. Beyond review, the portal carries the ADMIN surfaces: **Nutzer** (account lifecycle +
+> per-child learner progress) and **Wortschatz** (lexeme-foundation curation — see `../backend/SPEC.md` §6).
 
 ## The review flow (backend SPEC §10, ARCHITECTURE §11)
 

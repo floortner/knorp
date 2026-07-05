@@ -51,20 +51,21 @@ job. Comfortable tap targets for tablet are welcome.
    `401/SESSION_EXPIRED` clears auth and redirects to `/login` once.
 
 ## Conventions
-- TanStack Query for ALL server state; keys: `['staff-me']`, `['staff-queue']`.
+- TanStack Query for ALL server state; key prefixes: `['staff-me']`, `['staff-queue', …]`, `['staff-users', …]`, `['staff-lexemes', …]` (mutations invalidate by prefix).
 - Auth state is derived from a `/staff/me` probe (survives refresh); see `features/auth/`.
 - Brand accent is teal (shared), but the surface is neutral slate/white — see `src/index.css` `@theme`.
 - German UI copy (the staff are German/Austrian).
 
 ## Commands
-- Install: `npm install`  ·  Dev: `npm run dev`  ·  Build: `npm run build` (tsc -b + vite)
-- Lint: `npm run lint`  ·  Test: `npm test` (Vitest)  ·  Types from API: `npm run gen:api` (once `/staff/*` exists)
+- Install: `npm install`  ·  Dev: `npm run dev` (port **5174**)  ·  Build: `npm run build` (tsc -b + vite)
+- Lint: `npm run lint`  ·  Test: `npm test` (Vitest)  ·  Types from API: `npm run gen:api`
 
-## Build order (backend SPEC §12, Phase 2.5 — milestone 13)
-- **a. Shell + staff auth** (DONE in scaffold): app shell, `lib/api.ts`, email-code login, `/staff/me` gate, logout.
-- **b. Queue screen** (DONE in scaffold): pseudonymised list, claim on open.
-- **c. Review screen** (DONE in scaffold): two-pane image | editable draft, approve/correct/reject.
-Next: wire to the real backend `/staff/*` once it lands; regenerate types; add golden/flow tests per screen.
+## What's built (backend SPEC §12, Phase 2.5 + post-2.5 — all DONE)
+- Shell + staff auth · queue "Chats" with history filter (Offen | Erledigt | Alle) + nav count badges ·
+  two-pane review screen (claim, approve/correct/reject).
+- ADMIN surfaces: **Nutzer** (approve/deactivate/delete + per-child learner progress) and **Wortschatz**
+  (lexeme curation: full-property filters, aggregate stats, full-column editor, overrides export).
+Identity note: the ADMIN user administration shows real emails by design; the review queue never does.
 
 ## Definition of done for a feature
 Renders from backend JSON; shows no child-identifying data; claim/verdict flow maps backend status codes to

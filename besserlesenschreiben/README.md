@@ -13,7 +13,8 @@ besserlesenschreiben/
 ├── backend/             ← the API service  (TypeScript · NestJS · Postgres · AWS)
 │   ├── AGENTS.md        ← Claude Code: read this FIRST when working in backend/
 │   ├── SPEC.md          ← backend data model, endpoints, algorithms
-│   ├── item_bank.seed.json   ← starter exercise content (37 items, 7 units)
+│   ├── item_bank.seed.json   ← seeded exercise content (~360 items, 7 units)
+│   ├── lexeme.seed.json + lexeme.overrides.json ← the curated word foundation (2,127 words ⊕ reviewer change-set)
 │   ├── prisma/seed.ts   ← idempotent seed loader (prisma db seed)
 │   └── scripts/build-seed.ts ← regenerates the seed JSON from source
 ├── frontend/            ← the family SPA / PWA  (TypeScript · React · Vite · Tailwind)
@@ -41,9 +42,9 @@ Suggested order of work (each project's milestones are in its SPEC; cross-cuttin
    **staff realm** (reviewer auth, review queue, authoritative apply — Phase 2.5). No billing — the app is free.
 2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, then the 14 renderers +
    telemetry (the bulk), then progress/voice/accessibility, chat, and the parent area (homework upload).
-3. **Reviewer portal** — staff login, the pending-review queue, and the two-pane review screen. Builds on the
-   backend `/staff/*` routes; until those land it runs against a **provisional** contract
-   (`reviewer/src/lib/contract.ts`).
+3. **Reviewer portal** — staff login, the review queue + two-pane review screen, and the ADMIN surfaces
+   (account approval, learner progress, "Wortschatz" lexeme curation). Types are generated from the backend
+   `/staff/*` OpenAPI and drift-gated in CI.
 
 The frontends depend on the backend's API contract (`backend/SPEC.md §6`). Build the backend endpoints a
 feature needs before the frontend/portal feature that calls them.
@@ -59,7 +60,7 @@ feature needs before the frontend/portal feature that calls them.
   hashed + rate-limited. Staff see only a **pseudonymised** review queue — no child name, parent email, chat, or billing.
 - **This is a children's app.** The logging rules, the SVG-first media policy, EXIF stripping on photos, and
   EU data residency are part of the build, not afterthoughts.
-- **Payments** live in the parent area only, behind the PIN — never shown to a child.
+- **The app is free.** No payment UI exists anywhere (billing deferred — ARCHITECTURE §9); access is gated by staff approval.
 
 ## Hosting
 

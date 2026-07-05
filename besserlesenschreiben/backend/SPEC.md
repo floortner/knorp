@@ -19,7 +19,7 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
   `messages.parse` reuses the same Zod schemas. Model string configurable via env. See `../ARCHITECTURE.md` §8 for
   the LLM data-flow decision (Anthropic-direct, `inference_geo: "eu"`).
 - **TTS:** **Amazon Polly** neural voices (`de-DE`), pre-generated per item and cached in S3 — deferred (Web-Speech fallback in the client).
-- **Payments:** Merchant-of-Record (Lemon Squeezy or Paddle) via webhook → entitlements.
+- **Payments:** none — the app is **free** (billing deferred; ARCHITECTURE §9).
 - **Hosting:** small **AWS EC2** instance, region Frankfurt eu-central-1 (see `../ARCHITECTURE.md` §7; deployment is a future milestone). **Never rely on local disk for persistence.**
 
 **Hard rules (security boundary):**
@@ -42,6 +42,7 @@ profile (1) ───< homework_upload ───< homework_review
 profile (1) ───< chat_message
 profile (1) ───< review_state
 item_bank (global, shared) ──referenced by── attempt.item_id
+lexeme (global word foundation) ──grounds── exercise generation (gen:items, LLM lectures)
 
 # STAFF realm (disjoint identity — ARCHITECTURE §1a):
 reviewer (internal staff) ───< homework_review        # authoritative homework verdicts
@@ -109,11 +110,40 @@ item_bank(
   payload       jsonb not null,         -- the exercise spec (see §8 for per-type shape)
   audio_url     text,                   -- pre-generated TTS for the word (presigned at read time)
   syllable_audio jsonb,                 -- optional per-syllable audio urls
-  skill_tags    text[] not null,        -- e.g. {'vowel_ei','letter_discrimination','syllable_count'} (taxonomy: scripts/build-seed.ts)
+  skill_tags    text[] not null,        -- 14-tag taxonomy in src/contract/skills.ts (e.g. {'vowel_length','dehnung_h'})
   difficulty    int default 1,
   generated_by  text default 'seed',    -- seed | llm
   created_at    timestamptz default now()
 )
+
+-- LEXEME FOUNDATION (global, curated word pool — grounds exercise generation). EXTENSIBLE BY DESIGN:
+-- more word databases (new `source` values), new per-word properties (e.g. a future age band), and new
+-- exercise generators are expected additions — follow the schema→contract→overrides→editor pattern.
+lexeme(
+  id               uuid pk,
+  lemma            text unique not null,
+  hk               int not null,          -- Häufigkeitsklasse (frequency; lower = more common)
+  pos              text not null,         -- N | V | ADJ | ADV | …
+  genus            text,                  -- der | die | das (nouns)
+  morpheme_count   int not null,
+  ipa              text not null,
+  syllabification  text not null,         -- e.g. "was-ser"
+  syllable_count   int not null,
+  forms            text,                  -- inflections, best-effort
+  separable_prefix text,
+  family_stem      text,                  -- Wortfamilie grouping → family exercises
+  compound_parts   text[] default '{}',   -- ordered compound split → compound exercises
+  features         jsonb not null,        -- raw orthographic Lernstellen flags
+  skill_tags       text[] not null,       -- taxonomy: src/contract/skills.ts (GIN-indexed)
+  is_lernwort      bool default false,
+  is_trennbar      bool default false,
+  is_merkwort      bool default false,
+  source           text default 'rwe2015',-- which word database the row came from
+  created_at       timestamptz default now()
+)
+-- Seeded from lexeme.seed.json (extracted base) ⊕ lexeme.overrides.json (a COMMITTED reviewer change-set
+-- applied after the base, so human corrections survive reseeds). Curated in the reviewer portal
+-- ("Wortschatz", admin-only); `npm run gen:items` derives exercise candidates from the pool.
 
 -- SESSION (a generated training session = ordered list of items)
 session(
@@ -194,6 +224,17 @@ reviewer(
   created_at      timestamptz default now()
 )
 
+-- STAFF LOGIN CODES (staff-realm passwordless login; mirrors login_code)
+staff_login_code(
+  id          uuid pk,
+  email       text not null,
+  code_hash   text not null,
+  expires_at  timestamptz not null,
+  consumed_at timestamptz,
+  attempts    int default 0,
+  created_at  timestamptz default now()
+)
+
 -- HOMEWORK review audit (append-only): retains LLM draft + reviewer verdict to measure vision quality (§10)
 homework_review(
   id                uuid pk,
@@ -257,13 +298,12 @@ Prefix derived from the authenticated profile — **never** from client input.
 
 ```
 users/{account_id}/{profile_id}/
-  profile.md                 # preferences + settings, human/LLM legible
   digest.md                  # derived performance digest (§6 /digest)
-  attempts.jsonl             # optional append-only raw mirror of attempt rows
-  sessions/{date}.md         # each generated session, markdown
-  homework/{date}-{id}.webp  # uploaded photo (EXIF stripped, transcoded — ARCHITECTURE §10)
-  homework/{date}-{id}.md    # LLM analysis of that photo
+  homework/{uuid}.webp       # uploaded photo (EXIF stripped, transcoded — ARCHITECTURE §10)
 ```
+
+(Other per-user artifacts — profile.md, attempts.jsonl, per-session markdown — are possible future
+additions, not written today.)
 
 Postgres holds metadata + pointers; S3 holds markdown + media. Reads via presigned URLs scoped to one object.
 
@@ -316,9 +356,13 @@ GET /digest/{profileId}     -> {markdown}   # regenerated from attempt table on 
 
 ### Chat (trainer)
 ```
-GET  /chat/{profileId}                               -> {messages:[{me:bool, text, ts}]}
+GET  /chat/{profileId}                               -> {messages:[{me:bool, text, ts, imageUrl?}]}
 POST /chat/{profileId}      {text}                   -> {reply:{me:false, text}}   # ★ LLM
 ```
+- History also surfaces the profile's recent homework uploads as durable chat bubbles: the child's photo
+  (`imageUrl` = a short-lived presigned read URL of the family's OWN image) plus a trainer status line
+  reflecting the current review status — drawn from the authoritative `reviewedAnalysis`, never the LLM
+  draft. Display-only: homework never enters the LLM chat context.
 
 ### Homework (family realm)
 ```
@@ -327,8 +371,9 @@ GET  /homework/{id}        -> {status, reviewedAnalysis?}    # family sees the A
                                                              # and only once status='reviewed' (never the raw LLM draft)
 ```
 - The former `POST /homework/{id}/confirm` parent-confirm step is **removed**. The human gate is now the
-  **staff reviewer** (ARCHITECTURE §11). The family is notified when status flips to `reviewed`; there is no
-  family action to take and the child is never blocked.
+  **staff reviewer** (ARCHITECTURE §11). The upload happens from the family app's **Chat tab** (the photo
+  shows as a chat message); the verdict is echoed back as a chat status bubble. No family action to take;
+  the child is never blocked.
 
 ### Staff — homework review (STAFF realm only; `aud:"staff"` cookie, `StaffAuthGuard` — never a family JWT)
 ```
@@ -336,9 +381,15 @@ POST /staff/auth/request-code  {email}               -> 200 (always; no staff-en
 POST /staff/auth/verify        {email, code}         -> sets httpOnly staff cookie
 POST /staff/auth/logout                              -> clears staff cookie
 GET  /staff/me                                       -> {reviewerId, name, role}
-GET  /staff/queue           ?limit=&cursor=          -> {items:[{uploadId, profileHandle, gradeBand,
-                                                          skillTags, imageUrl, llmAnalysis, createdAt}], nextCursor}
+GET  /staff/queue           ?status=&limit=&cursor=  -> {items:[{uploadId, profileHandle, gradeBand,
+                                                          skillTags, imageUrl, llmAnalysis, createdAt,
+                                                          decision, reviewedAt}], nextCursor, total}
                                                         # PSEUDONYMISED: no name/email/chat/billing (ARCHITECTURE §1a)
+                                                        # status: open (default, pickable pending) | done
+                                                        #   (reviewed/rejected history, read-only) | all.
+                                                        #   decision/reviewedAt are null while open.
+GET  /staff/queue/{uploadId}/progress                -> pseudonymised learner progress (ADMIN only):
+                                                        {profileHandle, summary, skills, activity} — never a name
 POST /staff/queue/{uploadId}/claim                   -> {uploadId, claimedUntil}   # soft-lock; 409 if held by another
 POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
                                  reviewedAnalysis?, notes?}
@@ -357,7 +408,9 @@ Distinct from the pseudonymised review queue: these handle real account identity
 surface.
 ```
 GET    /staff/users          ?status=&limit=&cursor=   -> {items:[{accountId, email, status, createdAt,
-                                                            profileCount, lastActive}], nextCursor}
+                                                            profileCount, lastActive}], nextCursor, total}
+GET    /staff/users/{id}/progress                      -> {profiles:[{profileId, name, summary, skills,
+                                                            activity}]}   # identity-bearing per-child progress
 POST   /staff/users/{id}/approve                       -> {accountId, status:'active'}   # pending → active; releases the login code by email
 POST   /staff/users/{id}/deactivate                    -> {accountId, status:'deactivated'} # blocks login; data retained
 DELETE /staff/users/{id}                               -> 204   # erasure: DB cascade + blob prefix users/{account}/…
@@ -365,7 +418,24 @@ DELETE /staff/users/{id}                               -> 204   # erasure: DB ca
 - `approve` flips `pending → active` and triggers the welcome/login email (the first code release).
 - `deactivate` is reversible (a later `approve` reactivates); `DELETE` is permanent erasure (minors' data — also
   removes the account's blobs).
-- All four require the staff cookie **and** `role='admin'`; a plain reviewer gets `403`.
+- All routes here require the staff cookie **and** `role='admin'`; a plain reviewer gets `403`.
+
+### Staff — lexeme foundation curation (STAFF realm, **admin role only**)
+Curate the word pool that grounds exercise generation (§3 `lexeme`). Edits land in the live table
+immediately; `export` persists the diff-vs-base as the committed `lexeme.overrides.json` change-set so
+corrections survive reseeds (dev-only write; refused in production).
+```
+GET    /staff/lexemes         ?search=&skill=&pos=&genus=&feature=&source=&hkMin=&hkMax=&syl=&morph=
+                              &lernwort=&trennbar=&merkwort=&limit=&cursor=  -> {items, nextCursor, total}
+GET    /staff/lexemes/stats   ?…same filters…       -> aggregate counts over the filter (total, byPos,
+                                                       byGenus, bySource, bySkill, bySyllableCount,
+                                                       byMorpheme, flags, hk)
+GET    /staff/lexemes/{lemma}                       -> one lexeme
+POST   /staff/lexemes         {full record}         -> 201  # add a word (source='reviewer'; 409 on dup)
+PATCH  /staff/lexemes/{lemma} {sparse fields}       -> field-level edit
+DELETE /staff/lexemes/{lemma}                       -> 204
+POST   /staff/lexemes/export                        -> {edits, adds, deletes}  # writes lexeme.overrides.json
+```
 
 ### Parent
 ```
@@ -462,8 +532,8 @@ professionally-validated** homework focus; the LLM only generates *new content* 
 2. Send image to **Claude vision** with a structured prompt → **JSON only**:
    ```json
    {"topic":"...","exerciseType":"...","items":[
-     {"prompt":"...","childAnswer":"...","correct":true,"errorType":"vowel_ei"}],
-    "suggestedFocus":["vowel_ei","letter_discrimination"]}
+     {"prompt":"...","childAnswer":"...","correct":true,"errorType":"vowel_length"}],
+    "suggestedFocus":["vowel_length","dehnung_h"]}   // skill tags from src/contract/skills.ts
    ```
 3. Store the JSON as `llm_analysis` (a **DRAFT — never applied on its own**), `status='pending_review'`, and
    enqueue it on the shared staff review queue.
@@ -487,22 +557,28 @@ it, every reviewer action audit-logged (ids + outcome, never content — ARCHITE
 
 ## 11. Env vars
 Validated at boot by a Zod env schema (`@nestjs/config`); fail fast if any are missing.
+The authoritative list is `src/config/env.ts` (`.env.example` documents every var). Summary:
 ```
 NODE_ENV= PORT=
 DATABASE_URL=                    # Prisma connection string (Postgres)
 JWT_SECRET=                      # family realm (aud:"family")
-STAFF_JWT_SECRET=                # staff realm (aud:"staff") — DISTINCT from JWT_SECRET; realms never share keys
-WEB_ORIGIN=                      # family SPA origin(s), CORS allowlist (credentials on)
-REVIEWER_ORIGIN=                 # staff portal origin, CORS allowlist (credentials on) — separate from WEB_ORIGIN
+STAFF_JWT_SECRET=                # staff realm (aud:"staff") — DISTINCT from JWT_SECRET (boot-enforced)
+WEB_ORIGIN=                      # family SPA origin(s), CORS allowlist — REQUIRED in production
+REVIEWER_ORIGIN=                 # staff portal origin, CORS allowlist — separate from WEB_ORIGIN
+PUBLIC_API_URL=                  # public base URL of this API (capability URLs for the local image store)
+STAFF_ADMIN_EMAILS=              # comma-separated admin bootstrap (seeded as active admin reviewers)
 HOMEWORK_REVIEW_CLAIM_TTL=       # queue soft-lock lease, e.g. 900 (seconds)
 ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=                 # configurable; see ../ARCHITECTURE.md §8
-AWS_S3_BUCKET= AWS_REGION=          # auth via the IAM instance role (default credential chain), not keys in env
-TTS_PROVIDER= TTS_KEY=
-EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev) | resend (prod, needs KEY + FROM)
+ANTHROPIC_MODEL=                 # default claude-sonnet-4-6 (../ARCHITECTURE.md §8)
+ANTHROPIC_VISION_MODEL=          # default claude-opus-4-8 (homework OCR)
+LLM_RESIDENCY_ACK=               # required in prod when a key is set (EU residency/DPA acknowledgement)
+LLM_SESSIONS_PER_DAY= CHAT_MESSAGES_PER_DAY=   # per-profile daily caps on ★ ops (defaults 5 / 60)
+AWS_S3_BUCKET= AWS_REGION=       # object storage; auth via the IAM instance role, not keys in env
 STORAGE_LOCAL_DIR=               # dev-only local filesystem store; unused when AWS_S3_BUCKET is set
-BILLING_PROVIDER=                # lemonsqueezy|paddle
-BILLING_WEBHOOK_SECRET=
+TTS_PROVIDER= TTS_KEY=           # deferred (target: Amazon Polly)
+EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev) | resend (prod) | capture (tests only)
+SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_REVIEWER_EMAIL=   # dev-only seeded logins (never in production)
+BILLING_PROVIDER= BILLING_WEBHOOK_SECRET=   # dormant (billing deferred)
 ```
 
 ## 12. Build milestones (suggested order for Claude Code)
@@ -556,34 +632,50 @@ retention; guard/flow tests; these docs.
    grade-band difficulty.
 
 **Phase 2 access-control milestone — approval-gated signup + staff user-admin (ARCHITECTURE §1b):**
-9. **Account lifecycle.** `account.status` (`pending|active|deactivated`) + migration; silent
+9. ✅ **Account lifecycle.** `account.status` (`pending|active|deactivated`) + migration; silent
    pending-on-first-code (no email until approved; family UI "we'll email you soon"); family `JwtAuthGuard`
    requires `status='active'` (immediate deactivate/delete).
-10. **Staff user administration (admin role only).** `GET /staff/users`, approve / deactivate / delete
+10. ✅ **Staff user administration (admin role only).** `GET /staff/users`, approve / deactivate / delete
     (`§6`) — distinct from the pseudonymised reviewer queue; deletion erases DB + blobs. Reviewer-portal
     admin screens (`-review`).
 
 ~~Billing (entitlements, credits, webhook, pay-it-forward)~~ — **removed from the roadmap** (schema kept dormant; ARCHITECTURE §9).
 
-**Phase 2.5 — professional review + staff portal (★, the human gate that closes the homework loop).**
-Builds the entire staff realm and the `-review` portal; only here does reviewed homework start shaping lectures.
-10. **Staff realm foundation.** `reviewer` + `homework_review` tables; `StaffAuthGuard` (`aud:"staff"`,
+**Phase 2.5 — professional review + staff portal (DONE).**
+Built the entire staff realm and the `-review` portal; reviewed homework now shapes lectures.
+11. ✅ **Staff realm foundation.** `reviewer` + `homework_review` tables; `StaffAuthGuard` (`aud:"staff"`,
     disjoint key `STAFF_JWT_SECRET`, rejected on family routes and vice-versa); staff login (email code, own
     httpOnly cookie) + `GET /staff/me`; **~3 reviewers admin-seeded** (no self-signup).
-11. **Review queue + authoritative apply (closes milestone 8's loop).** `GET /staff/queue` (pseudonymised,
+12. ✅ **Review queue + authoritative apply (closes milestone 8's loop).** `GET /staff/queue` (pseudonymised,
     cursor-paged, per-upload short-lived presigned `imageUrl`); claim/lease (`409` if held); `POST /staff/reviews/{id}`
     that writes `reviewed_analysis`, derives `attempt` rows + adjusts `review_state`, sets `status='reviewed'`,
     and records the LLM-vs-reviewer diff (`agreed_with_llm`).
-12. **Lecture wiring + family status.** LLM session generation (§8) folds a reviewed upload's
+13. ✅ **Lecture wiring + family status.** LLM session generation (§8) folds a reviewed upload's
     `reviewed_analysis.suggestedFocus` into the next lecture; `-web` surfaces `pending_review → reviewed` and
     the read-only authoritative result (no confirm UI).
-13. **Reviewer portal** (`besserlesenschreiben/reviewer`, future `-review` repo) — thin client over `/staff/*`,
-    all enforcement in `staff/`; **desktop/tablet, landscape, not mobile-first** (ARCHITECTURE §1a/§11). Build
-    in order, each with golden/flow tests:
+14. ✅ **Reviewer portal** (`besserlesenschreiben/reviewer`, future `-review` repo) — thin client over `/staff/*`,
+    all enforcement in `staff/`; **desktop/tablet, landscape, not mobile-first** (ARCHITECTURE §1a/§11):
     - **a. Shell + staff auth:** app shell, `lib/api.ts` (staff routes), email-code login, `/staff/me` gate, logout.
     - **b. Queue screen:** pseudonymised list (`profileHandle`, grade band, skill tags, thumbnail), claim action.
     - **c. Review screen:** two-pane landscape (homework image | LLM draft), `approve` / `correct` (editable
       fields) / `reject`, submit → `POST /staff/reviews/{id}`; release claim on leave.
+
+**Post-2.5 (DONE) — append new milestones here as they ship:**
+- ✅ **Lexeme foundation** — `lexeme` table (2,127-word base from the Rechtschreibwortschatz 2015 extraction),
+  committed `lexeme.seed.json` ⊕ `lexeme.overrides.json` change-set (corrections survive reseeds), reviewer
+  **Wortschatz** curation tab (full-property filters + aggregate stats + full-column editor), `familyStem` +
+  `compoundParts` structure, and `npm run gen:items` (solvability-gated exercise candidates for human review).
+- ✅ **Reviewer portal expansion** — brand-aligned chrome, nav count badges, queue history (`Offen/Erledigt/
+  Alle`), admin-only learner-progress views (identity-bearing per account; pseudonymised per upload).
+- ✅ **Homework-in-chat** — upload moved into the family Chat tab; durable photo + status bubbles served by
+  chat history; verdict echoed in-chat.
+- ✅ **E2E harness** — top-level `e2e/` Playwright suite (backend+frontends via `webServer`, capture email
+  provider, seeded dev accounts via `SEED_DEV_ACCOUNTS`) + a CI `e2e` job.
+- ✅ **AWS retarget** — S3 storage adapter (presigned URLs), Frankfurt region docs; deployment still pending.
+
+**Remaining / current focus:** content depth + lecture quality (merge reviewed gen:items candidates, curate
+Wortfamilien/Komposita, sentence_context seed set, ground LLM lectures in the lexeme pool) · TTS pipeline
+(deferred; Amazon Polly) · deployment + hardening (deferred).
 
 ## 13. Acceptance checks
 - `user_id` never read from request body/path; only from JWT. (grep the codebase.)
