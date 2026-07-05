@@ -8,11 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `besserlesenschreiben/backend/` — NestJS API (`-api` repo)
 - `besserlesenschreiben/frontend/` — Vite/React SPA/PWA, the family app (`-web` repo)
-- `besserlesenschreiben/reviewer/` — Vite/React internal **staff portal** for professional homework review (`-review` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. (Backend `staff/` module exists first; the portal itself is Phase 2.5.)
+- `besserlesenschreiben/reviewer/` — Vite/React internal **staff portal** for professional homework review (`-review` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner progress, and the "Wortschatz" lexeme-curation tab.
 
 Two disjoint **auth realms** (ARCHITECTURE §1a): the **family** realm (parents + children, `-web`) and the **staff** realm (internal reviewers, `-review`). A credential in one is never valid in the other — different cookie/`aud`, different guard (`JwtAuthGuard` vs `StaffAuthGuard`).
 
-The seed scripts live in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent item-bank loader, run via `npm run seed`). There are no root-level `seed.ts`/`build-seed.ts`.
+The seed scripts live in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent; loads the item bank, the lexeme base ⊕ committed `lexeme.overrides.json` change-set, and — with `SEED_DEV_ACCOUNTS=true` — dev login accounts). `npm run gen:items` derives exercise candidates from the lexeme pool for human review. There are no root-level `seed.ts`/`build-seed.ts`.
 
 Currently one **monorepo** for fast cross-cutting iteration; the subprojects are independently buildable/deployable and split into the `-api`/`-web`/`-review` repos before launch (ARCHITECTURE §1).
 
@@ -44,7 +44,9 @@ npm run openapi:export          # regenerate committed openapi.json after any co
 npx prisma migrate dev          # local DB migrations
 npx prisma migrate deploy       # CI/prod migrations (run as pre-traffic step)
 npx prisma generate             # regenerate Prisma client after schema changes
-npm run seed                    # load item_bank.seed.json (idempotent, upserts on seed_key)
+npm run seed                    # load item_bank.seed.json + lexeme base ⊕ overrides (idempotent)
+npm run gen:items               # lexeme pool → exercise CANDIDATES (item_bank.generated.json, human-reviewed)
+npm run export:overrides        # live lexeme table vs base → committed lexeme.overrides.json
 ```
 
 ### Frontend (`besserlesenschreiben/frontend/`)
@@ -134,6 +136,7 @@ Everything through the current roadmap is **done**: Phase 1 (auth/profiles/sessi
 - **Golden tests:** `digest.md` format (LLM-facing) and `Exercise` JSON (client-facing) are pinned with golden files. Any change to these contract outputs must update the golden files intentionally.
 - **SVG-first media:** all app art, mascots (Nepo/Stella), icons, and badges are SVG. Sanitize any non-hand-authored SVG with DOMPurify before inlining — never `dangerouslySetInnerHTML` on raw SVG. Homework photos are the only raster exception (strip EXIF server-side, transcode to WebP).
 - **Prisma 7 + NestJS:** Prisma 7 is ESM-first — set `moduleFormat = "cjs"` in the Prisma client generator config for NestJS's CommonJS setup.
+- **Docs upkeep (keep them true):** a PR that changes routes, the Prisma schema, env vars, screens/tabs, or hosting must update the matching SPEC/ARCHITECTURE section in the same PR — and new milestones are appended to `backend/SPEC.md §12` ("Post-2.5"). The lexeme foundation is **extensible by design**: new word databases (`source`), new per-word properties (e.g. an age band), and new exercise types/generators follow the schema→contract→overrides→editor pattern.
 - **Telemetry:** every answered exercise emits exactly one `POST /attempts` with a real `timeMs` (timer starts on item mount). Fire-and-forget; queue + retry offline via Workbox; never block the child's UI.
 
 ## Hosting & env

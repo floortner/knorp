@@ -35,8 +35,9 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (child u
   │               bank sessions carry the unit's Merksatz, generated lectures their own intro
   ├ /liga         league (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
   ├ /profil       name, buddy, "aktiv seit", streak, stars, weekly activity, progress rows, contact-trainer CTA
-  └ /chat         message thread with trainer Angelika + input
-/parent           PIN gate → trainer actions (unlock next, reset) + homework upload & status
+  └ /chat         message thread with trainer Angelika + input; 📷 homework upload — the photo shows as
+  │               a chat message, the review status/verdict comes back as trainer bubbles (§9)
+/parent           PIN gate → trainer actions (unlock next, reset)
 ```
 
 **Tabs** (bottom nav, mobile): `lernen · liga · profil · chat`. Parent area reached from profile, **PIN-gated**.
@@ -165,7 +166,7 @@ POST /auth/request-code        POST /auth/verify
 GET  /me                       POST /profiles            PATCH /profiles/{id}/settings
 GET  /units                    POST /sessions            POST /attempts        POST /sessions/{id}/complete
 GET  /progress/{id}            GET  /digest/{id}
-GET  /chat/{id}                POST /chat/{id}
+GET  /chat/{id}                POST /chat/{id}            # history messages may carry imageUrl (homework bubbles)
 POST /homework                 GET  /homework/{id}        # no /confirm — staff reviewer is the human gate (§9)
 POST /parent/verify-pin        POST /parent/unlock-next   POST /parent/reset
 ```
@@ -188,28 +189,29 @@ error paths (the message is written for the child); no special routing. Nothing 
 
 - Reached from `/profil`; entry requires `POST /parent/verify-pin` → hold the returned parent token for ~15 min.
 - **Trainer actions:** unlock next unit, reset progress (confirm dialog — destructive).
-- **Homework:** upload + status tracking (§9) also live here, behind the PIN.
 - **No billing.** The app is free (approval-gated, ARCHITECTURE §1b/§9); there is no supporter/credit UI.
 - No engagement/streak-pressure mechanics tied to anything monetary, anywhere.
 
 ---
 
-## 9. Homework "Foto & verbessern" flow (parent-initiated)
+## 9. Homework "Foto & verbessern" flow (in the Chat tab)
 
 The human gate is a **trained professional (staff reviewer)**, not the parent — see `../ARCHITECTURE.md` §11
 and `../backend/SPEC.md` §10. This `-web` app **uploads and tracks status only**; it never shows the raw LLM
 draft and has **no confirm/edit UI** (the reviewer portal `-review` owns that, and is not part of this repo).
 
-1. Parent takes/uploads photo → `POST /homework` (multipart). Show pending state. Consent copy states the
-   photo is reviewed by a trained professional to tailor lessons.
-2. Poll `GET /homework/{id}`: surface `pending_analysis` → `pending_review` ("Wird von einer Fachkraft
-   geprüft …") → `reviewed`. Never display an `analyzed`/draft state to the family.
-3. On `reviewed`, show the **authoritative** result (`reviewedAnalysis`: topic, per-item correct/wrong,
-   suggested focus) as a read-only summary — no accept/reject buttons.
+1. The 📷 button next to the chat input opens the camera/picker → `POST /homework` (multipart). The photo
+   appears as a chat message (the backend serves it back as a durable bubble in `/chat` history). Consent
+   copy states the photo is reviewed by a trained professional ("eine Fachkraft") to tailor lessons.
+2. `GET /homework/{id}` is polled (with backoff) while in review; the trainer's status bubble reflects
+   `pending_analysis` / `pending_review` → `reviewed` / `rejected`. Never display a draft state.
+3. On `reviewed`, the status bubble carries the **authoritative** result (topic + suggested focus from
+   `reviewedAnalysis`) — read-only, no accept/reject.
 4. The validated focus shapes the **next** generated lecture; surface that session in `/lernen` when it
    appears. There is no family confirm step and the child is never blocked while a photo is in review.
 - Children's handwriting OCR is unreliable → the mandatory human gate is the **staff reviewer**, whose verdict
-  is authoritative (the former parent-confirm step is removed).
+  is authoritative (the former parent-confirm step is removed). The upload is **not** PIN-gated — it lives in
+  the child-facing chat by product decision; the professional-in-the-loop pipeline is unchanged.
 
 ---
 
@@ -240,8 +242,9 @@ profile tab Ton toggle wired end-to-end.
 
 **Phase 2 (DONE):**
 7. Chat (★ LLM) + the ✨ generated-lecture entry on `/lernen` with the lesson intro card (§2/§7).
-8. Homework "Foto & verbessern" upload + status tracking (parent-area only, behind the PIN; no confirm UI —
-   the staff reviewer portal owns review, §9). No billing UI — the app is free.
+8. Homework "Foto & verbessern" upload + status tracking (since moved into the **Chat tab** — the photo
+   shows as a chat message; no confirm UI — the staff reviewer portal owns review, §9). No billing UI — the
+   app is free.
 
 **Vokaltraining pivot (DONE):** the exercise set was replaced with the owner's program — the **14 types**
 of §3 (Wortraster, Selbstlaute, kurz/lang, Quatschwörter, Komposita, Wortfamilien), a new 7-unit

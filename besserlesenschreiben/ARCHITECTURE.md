@@ -169,21 +169,25 @@ src/
     security/             # JWT, argon2 PIN hashing, rate limiting
   modules/                # one folder per resource: controller (HTTP) + service + Zod DTOs
     auth/  profiles/  sessions/  attempts/  progress/
-    chat/  homework/  parent/         # (no billing/ module — billing deferred, §9; schema kept dormant)
-    staff/                # STAFF realm (§1a): reviewer auth + review queue + verdict submit
-  common/guards/          # … + StaffAuthGuard (aud:"staff") — disjoint from JwtAuthGuard (family realm)
+    chat/  homework/  parent/         # (no billing/ module — billing deferred, §9)
+    staff/                # STAFF realm (§1a): reviewer auth, review queue + authoritative apply,
+                          #   admin user administration, lexeme curation, learner progress
   services/               # DOMAIN logic only — plain injectables, NO controllers/HTTP here (dtctl lesson)
-    sessions.service.ts   # bank + LLM session generation (SPEC §8)
-    fsrs.service.ts       # scheduling (ts-fsrs)
-    digest.service.ts     # derived markdown performance digest
-    review.service.ts     # homework queue claim + authoritative apply of reviewed analysis (SPEC §10/§11)
-    tts.service.ts  vision.service.ts  storage.service.ts  media.service.ts  email.service.ts
+    digest/               # derived markdown performance digest
+    fsrs/                 # scheduling (ts-fsrs)
+    llm/                  # provider abstraction (Anthropic-direct + dev stub), structured output
+    lexeme/               # lexeme word-pool selection + overrides diff/apply utilities
+    storage/              # S3 presigned URLs / local-FS dev store (+ local image endpoint)
+    email/                # login-code delivery (console | resend | capture)
 prisma/
-  schema.prisma           # the model truth (account, profile, item_bank, attempt, …)
-  seed.ts                 # item-bank seed loader (prisma db seed)
+  schema.prisma           # the model truth (account, profile, item_bank, lexeme, attempt, …)
+  seed.ts                 # idempotent loader: item bank + lexeme base ⊕ overrides + dev accounts
 scripts/
   build-seed.ts           # regenerates item_bank.seed.json from source
-item_bank.seed.json
+  gen-items-from-lexemes.ts  # lexeme pool → solvability-gated exercise CANDIDATES (human-reviewed)
+  export-overrides.ts     # live lexeme table vs base → committed lexeme.overrides.json
+  export-openapi.ts  seed-e2e.ts  llm-smoke.ts
+item_bank.seed.json  lexeme.seed.json  lexeme.overrides.json
 test/                     # Vitest; incl. golden snapshots for digest.md + Exercise JSON
 package.json  package-lock.json  tsconfig.json  eslint.config.mjs  .env.example  AGENTS.md
 ```
@@ -196,10 +200,10 @@ src/
     api.ts                # typed fetch client — mirrors backend/SPEC.md §6 EXACTLY
     queryClient.ts        # TanStack Query config
     telemetry.ts          # attempt timing + emit (frontend SPEC §4)
-  routes/                 # login, onboarding, app(lernen|liga|profil|chat), parent
+  app/                    # shell, routing, tabs (lernen | liga | profil | chat), parent area
   features/
     exercises/            # the 14 Vokaltraining renderers + the Exercise union type + audio.ts (audio_url playback + Web Speech fallback)
-    progress/  chat/  parent/  billing/
+    auth/  lessons/  progress/  profile/   # homework upload lives in the Chat tab; no billing/ — the app is free
   components/ui/          # shadcn components
   hooks/  styles/theme.css (@theme tokens)
 public/                   # PWA icons (SVG), manifest
@@ -210,26 +214,29 @@ index.html  vite.config.ts  package.json  package-lock.json  .env.example  AGENT
 ### Reviewer `-review` (internal staff portal)
 ```
 src/
-  main.tsx  App.tsx        # providers + routes: /login, /login/code, /queue, /review/:uploadId
+  main.tsx  App.tsx        # providers + routes: /login, /login/code, /queue, /review/:uploadId, /users, /lexemes
   index.css               # neutral staff @theme tokens (teal accent, slate surface) — no PWA, no mascots
-  app/AppLayout.tsx       # top bar (reviewer identity + logout) over the routed <Outlet>
+  app/AppLayout.tsx       # top bar: (b) brand + reviewer name, nav with live count badges, logout
   lib/
     api.ts                # transport only over the STAFF routes — staff cookie, error-envelope → ApiError
-    contract.ts           # PROVISIONAL staff types until backend ships /staff/* in openapi.json,
-                          #   then replaced by generated api.gen.ts via `npm run gen:api`
-    endpoints.ts          # typed wrappers: staffAuthApi, reviewApi
+    api.gen.ts            # GENERATED from the backend OpenAPI (`npm run gen:api`), committed, never edited
+    contract.ts           # ergonomic aliases over the generated `operations` (no hand-authored shapes)
+    endpoints.ts          # typed wrappers: staffAuthApi, reviewApi, usersApi, lexemesApi
   features/
     auth/                 # StaffAuthProvider, /staff/me probe, RequireStaff guard, login + code screens
-    queue/                # the pending_review list (pseudonymised rows)
+    queue/                # review list (Offen | Erledigt | Alle) — pseudonymised rows
     review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
-  components/ui/          # button, input, textarea
+    users/                # ADMIN: account approval / deactivate / delete + per-child progress
+    lexemes/              # ADMIN: "Wortschatz" word-pool curation (filters, stats, editor, export)
+    progress/             # shared learner-progress panel (summary · skills · activity)
+  components/ui/          # button, input, select, textarea, modal, filter-chips
 index.html  vite.config.ts  package.json  .env.example  README.md  AGENTS.md
 ```
 The reviewer portal is **transport + UI only** — every decision (queue ordering, authoritative apply, who may
 review) is enforced by the backend `staff/` module. It ships to ~3 internal staff, never to families, and
 authenticates on the disjoint **staff** realm (§1a). **Form factor: desktop/tablet, landscape two-pane** (image
-| LLM draft) — **not** mobile-first; skip phone layouts (that's the family app's job, §11). It currently runs
-against a **provisional** `lib/contract.ts`; the backend `staff/` module (auth, queue, apply) is Phase 2.5.
+| LLM draft) — **not** mobile-first; skip phone layouts (that's the family app's job, §11). Types are generated
+from the backend's published `/staff/*` OpenAPI (`npm run gen:api`) and drift-gated in CI.
 
 `features/exercises/types.ts` (the `Exercise` discriminated union) and `lib/api.ts` are the two files that
 **must** stay in lockstep with the backend contract. Treat a change to either as a contract change (§4).
@@ -440,8 +447,9 @@ restore from the off-platform dumps) rather than the loss of every family's data
 - Tag releases; `CHANGELOG.md` per repo. A frontend deploy must never assume an unreleased backend route.
 
 ### CI/CD (GitHub Actions)
-- Implemented in `.github/workflows/ci.yml` (monorepo: one workflow, a `backend` job and a `frontend` job, each
-  scoped to its subdirectory; on push to `main` + all PRs). On the repo split each job moves to its own repo
+- Implemented in `.github/workflows/ci.yml` (monorepo: one workflow with `backend`, `frontend`, `reviewer`,
+  and `e2e` jobs — the `e2e` job runs the top-level Playwright suite against a service Postgres, booting the
+  backend + both frontends; on push to `main` + all PRs). On the repo split each job moves to its own repo
   unchanged.
 - Frontend: install → typecheck (`tsc`) → lint → unit + **golden** tests → `vite build`. (Deploy to
   S3+CloudFront on `main` lands with the deployment milestone.)
@@ -561,7 +569,7 @@ homework photo's LLM analysis is **never** applied on its own. A vetted **intern
 former parent-confirm step. The flow is **asynchronous** — the child is never blocked.
 
 ```
-parent/child uploads photo  ──▶  backend: strip EXIF, →WebP, store under user prefix
+family uploads photo (Chat tab) ─▶  backend: strip EXIF, →WebP, store under user prefix
         │                                          status = pending_analysis
         ▼
 Claude vision (★, gated)  ──▶  llm_analysis (DRAFT, NOT applied)   status = pending_review
@@ -575,7 +583,7 @@ backend applies the REVIEWED analysis (authoritative) ──▶ derived attempt 
         │   records llm-vs-reviewer diff (LLM-quality signal)
         ▼
 next generated lecture (§ SPEC §9) consumes the validated focus skills;
-parent is notified "Hausübung ausgewertet — nächste Lektion angepasst" (informational, non-blocking)
+the family chat shows the verdict as a status bubble (informational, non-blocking)
 ```
 
 **Invariants (non-negotiable):**
