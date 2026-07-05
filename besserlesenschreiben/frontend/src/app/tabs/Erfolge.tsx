@@ -14,7 +14,6 @@ export function Erfolge() {
 
   return (
     <div className="space-y-5">
-      <h1 className="font-display text-2xl font-bold text-ink">Erfolge</h1>
       <AchievementCard league={p.league} />
       <div className="grid grid-cols-2 gap-3">
         {p.streakDays > 0 ? (

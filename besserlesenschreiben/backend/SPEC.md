@@ -340,7 +340,8 @@ POST /sessions              {profileId, unit?, source?} -> 201 {sessionId, profi
 POST /attempts             {sessionId, itemId?, exerciseType, prompt,
                             expected, given, isCorrect, timeMs, attemptNo, skillTags}
                                                      -> 200 {ok:true}   # idempotent → 200, not 201
-POST /sessions/{id}/complete                         -> 200 {starsAwarded, streakDays, league}   # idempotent
+POST /sessions/{id}/complete                         -> 200 {starsAwarded, streakDays, jokerAvailable,
+                            jokerConsumed, league, allUnitsComplete}   # idempotent · mechanics: §8a
 ```
 - `unit` is the integer index (matches `item_bank.unit` / `session.unit`). `status` is per-profile:
   `locked | current | done`. The golden shapes are `../frontend/fixtures/units.example.json` and
@@ -350,8 +351,8 @@ POST /sessions/{id}/complete                         -> 200 {starsAwarded, strea
 
 ### Progress
 ```
-GET /progress/{profileId}   -> {streakDays, stars, weeklyActivity:[7], monthlyHeatmap,
-                                league:{tier, starsWeek, starsToNext}, skillBreakdown:[...]}
+GET /progress/{profileId}   -> {streakDays, jokerAvailable, stars, weeklyActivity:[7], monthlyHeatmap,
+                                league:{tier, starsWeek, starsToNext}, skillBreakdown:[...]}   # mechanics: §8a
 GET /digest/{profileId}     -> {markdown}   # regenerated from attempt table on demand (§ below)
 ```
 
@@ -505,18 +506,110 @@ Two mechanisms — **most sessions never touch the LLM:**
 
 **FSRS:** use the `ts-fsrs` package (or SM-2 as a simpler fallback). Schedule **per skill_tag**, not per word. Update `review_state` on `/attempts`.
 
-**B. LLM session (★, lectures generated on the fly)**
-1. Load `digest.md` (§6) — the compact markdown, not raw rows. The digest is derived from the **behavioural
-   signal in `attempt`**, not just right/wrong: per-skill accuracy, **response time** (`time_ms`), **retries/
-   self-corrections** (`attempt_no`), and recent trend. This is the "previous answers, clicks and response
-   times" the lecture adapts to — hesitation and slow-but-correct are weak signals, not just errors.
-2. If the profile has a **professionally-reviewed** homework upload (`status='reviewed'`), fold its
-   `reviewed_analysis.suggestedFocus` into the target skills — the validated focus, never the raw LLM draft.
-3. Prompt Claude: "Given this Lernprofil, generate N exercises of types {…} targeting {weak skills}, as JSON matching these schemas." Provide the per-type schemas (`../frontend/SPEC.md` §3).
-4. Validate against the Zod schemas, insert into `item_bank` (`generated_by='llm'`), optionally trigger TTS synth, return as a `session` (`source='llm'`).
+**B. LLM session (★, lectures generated on the fly)** — `sessions.service.ts`. The database decides *what* to
+drill and *with which real words*; Claude only writes the teaching intro and the exercise instances.
+
+0. **Gate.** Per-profile daily cap `LLM_SESSIONS_PER_DAY` (default 5, counted over today's `source='llm'`
+   sessions) → `429 RATE_LIMITED` when exceeded.
+1. **WHAT to drill (`focus`).** The union of three DB signals, deduplicated:
+   - **weak skills** from recent `attempt` rows (`weakSkills()` — low accuracy / slow / self-corrected),
+   - **FSRS-due** skills (`review_state.due ≤ now`),
+   - the **professionally-reviewed** homework focus — `reviewed_analysis.suggestedFocus` from the last 5
+     `status='reviewed'` uploads (never the raw LLM draft).
+2. **Calibration band.** `gradeBand(unlockedUnit)` → `{ label (Klassenstufe text), difficulty 1–3,
+   maxHk (9 | 11 | 12 — frequency ceiling), ageBand ("6-7" | "8-9") }`.
+3. **Behavioural context.** `digest.md` (§6) — per-skill accuracy, **response time** (`time_ms`), **retries**
+   (`attempt_no`), recent trend. Slow-but-correct and hesitation are weak signals, not just errors. Best-effort.
+4. **Word grounding (the Wortschatz lever).** `wordPoolFor(focus, { maxHk, ageBand })` samples the `lexeme`
+   table per focus skill via `pickForSkill`:
+   `WHERE skill_tags @> ARRAY[skill] AND hk <= maxHk AND (age_band IS NULL OR age_band = band)` — real German
+   words that actually carry the target orthographic feature, **null-tolerant band ∩ frequency** (unbanded
+   words stay eligible while curation is sparse). Emitted as `Wasser (das; was-ser)` so the model reuses real
+   words and correct syllable splits instead of hallucinating. Best-effort: an empty pool just drops the block.
+5. **Prompt + structured output.** `LLM_SYSTEM` + a user message (Klassenstufe + Förderschwerpunkte +
+   word-pool block + Lernstand digest) → `llm.extract(generatedSessionSchema, …)`, so every exercise is
+   Zod-validated and solvable end-to-end.
+6. **Persist + return.** Each exercise → an `item_bank` row (`unit=LLM_ITEM_UNIT` sentinel, `generated_by='llm'`,
+   `difficulty=band.difficulty`); then a `session` (`source='llm'`) referencing them; return the teaching
+   `intro` + items. (TTS synth is deferred — §9.)
+
+```mermaid
+flowchart TD
+  A[attempt<br/>weak skills] --> F[focus =<br/>weak ∪ due ∪ hwFocus]
+  R[review_state<br/>FSRS-due] --> F
+  H[homework_upload<br/>reviewed suggestedFocus] --> F
+  U[profile.unlockedUnit] --> GB[gradeBand<br/>label · difficulty · maxHk · ageBand]
+  F --> WP[wordPoolFor<br/>maxHk ∩ ageBand, null-tolerant]
+  GB --> WP
+  L[(lexeme<br/>Wortschatz)] --> WP
+  F --> D[digest.md<br/>accuracy · time_ms · attempt_no]
+  GB --> P[prompt: LLM_SYSTEM +<br/>Klassenstufe · Förderschwerpunkte · Wörter · Lernstand]
+  WP --> P
+  D --> P
+  P --> C{{Claude<br/>generatedSessionSchema}}
+  C --> Z[Zod validate]
+  Z --> IB[(item_bank<br/>generated_by=llm)]
+  Z --> S[(session source=llm)]
+  IB --> OUT[intro + items → client]
+  S --> OUT
+```
 
 **Rule:** the database decides *what* to drill (deterministic, free) — informed by telemetry **and the
-professionally-validated** homework focus; the LLM only generates *new content* and *conversation*.
+professionally-validated** homework focus — and the Wortschatz decides *which words* to drill it with; the LLM
+only generates *new content* and *conversation*.
+
+---
+
+## 8a. Progression & gamification
+
+Calm, non-punitive progression (ARCHITECTURE values — no lives/energy/time/loss mechanics). Logic lives in
+`src/modules/progress/gamification.ts` (constants + pure functions); awarded in `sessions.service.ts`
+`complete()`; read back in `progress.service.ts`.
+
+**Stars.** A completed session awards a **flat +15** (`STARS_PER_SESSION`) — no bonus for speed or accuracy.
+`profile.stars` is a monotonic lifetime total. Awarding is **idempotent**: re-completing a session whose
+`completed_at` is already set awards 0.
+
+**Weekly league.** Standing is derived from stars earned **this ISO week** (rolling Mon–Sun UTC sum of
+`session.stars_award` since `startOfUtcWeek(now)`), so it **resets every week** — nothing is ever deducted.
+
+| Tier | Weekly stars | `starsToNext` |
+|------|-------------|---------------|
+| Bronze | 0–99 | `100 − starsWeek` |
+| Silber | ≥ 100 | `300 − starsWeek` |
+| Gold | ≥ 300 | 0 |
+
+At +15/session that's ≈ **7 sessions → Silber**, **20 → Gold** in a week. The family app reframes this as
+"Erfolge / -Stufe" (personal milestones), not a competitive league — there are no peers.
+
+**Streak + weekly joker.** On completion, `nextStreak(lastActive, now, current, jokerUsedWeek)` compares whole
+UTC days (`lastActive` is stored as start-of-UTC-day):
+
+```mermaid
+stateDiagram-v2
+  [*] --> S1: first session (lastActive null)
+  S1 --> Sn: builds up
+  Sn --> Sn: same UTC day (gap ≤ 0) — unchanged
+  Sn --> Nplus1: consecutive day (gap = 1) → +1
+  Nplus1 --> Sn
+  Sn --> Rescued: one missed day (gap = 2) + joker available → +1, joker consumed
+  Rescued --> Sn
+  Sn --> Reset1: gap > 2, or gap = 2 with joker spent → reset to 1
+  Reset1 --> Sn
+```
+
+The **joker** is one rescue per ISO week (`isJokerAvailable` = `jokerUsedWeek` is null or before this week's
+Monday); when it fires, `jokerUsedWeek` is stamped to the week start. It forgives exactly one single-day miss
+per week; a two-day gap always resets. The UI hides the flame at 0 and shows a warm restart instead of a
+zeroed number.
+
+**Unit unlock.** Completing the session for your current `unlockedUnit` increments it (until the last unit in
+`UNIT_CATALOG`); `complete()` returns `allUnitsComplete` when the finished session was that last unit — the
+backend owns the count so the client never hardcodes it.
+
+Wire surfaces: `GET /progress/{profileId}` (§6) returns `{streakDays, jokerAvailable, stars, league, …}`;
+`POST /sessions/{id}/complete` returns `{starsAwarded, streakDays, jokerAvailable, jokerConsumed, league,
+allUnitsComplete}`.
 
 ---
 
