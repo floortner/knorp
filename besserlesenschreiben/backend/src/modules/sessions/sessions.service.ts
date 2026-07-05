@@ -43,6 +43,7 @@ const FEW_SHOT = JSON.stringify({
     { type: 'fixvowel', pseudo: 'Wond', vowel: 'a', options: ['Wand', 'Tag', 'Dach'], answer: 'Wand', skillTags: ['vowel_substitution'], praise: 'Richtig! Wond wird zu Wand.', id: 'x', audioUrl: null },
     { type: 'length', word: 'Ball', vowel: 'a', answer: 'kurz', hint: 'll = Stopper (Doppelkonsonant)', skillTags: ['vowel_length', 'double_consonant'], praise: 'Genau — kurzes a!', id: 'x', audioUrl: null },
     { type: 'raster', word: 'Tor', onset: 'T', vowel: 'o', coda: 'r', tiles: ['o', 'r', 'T'], skillTags: ['word_raster', 'vowel_identify'], praise: 'Super zerlegt!', id: 'x', audioUrl: null },
+    { type: 'sylarrange', word: 'Sonne', syll: ['Son', 'ne'], tiles: ['ne', 'Son'], skillTags: ['syllable_segmentation'], praise: 'Toll! Son-ne — zwei Silben.', id: 'x', audioUrl: null },
   ],
 });
 
@@ -57,6 +58,9 @@ export const LLM_SYSTEM = [
   'bei "sylarrange" sind tiles genau die syll in anderer Reihenfolge; bei "swapvowel" sind alle answers in options enthalten;',
   'bei "paircheck" stimmt answer mit dem Vergleich von left und right überein; bei "sentencefix" ist answer eines der tokens (das falsch geschriebene Wort).',
   `Verwende in skillTags NUR Werte aus dieser Liste: ${SKILL_TAGS.join(', ')}.`,
+  'Wenn eine Liste "Echte Beispielwörter" mitgegeben ist: baue die Übungen bevorzugt aus GENAU diesen Wörtern.',
+  'Jeder Eintrag dort hat die Form Wort (Artikel; Silbentrennung) — übernimm die angegebene Silbentrennung wörtlich für syll/tiles (sylarrange) und den Artikel für compound; erfinde keine eigenen Trennungen.',
+  'Erfinde keine seltenen oder erwachsenen Wörter; bleib bei einfachen, kindgerechten Wörtern.',
   'Setze einen kurzen, motivierenden deutschen praise. id darf ein Platzhalter sein, audioUrl=null.',
   `Beispiel für gültiges JSON:\n${FEW_SHOT}`,
 ].join(' ');
@@ -66,10 +70,11 @@ export const LLM_SYSTEM = [
  * grade-1 child and an advanced child get differently-calibrated content, and stored as the generated
  * item's `difficulty` so bank selection can order it sensibly.
  */
-function gradeBand(unlockedUnit: number): { label: string; difficulty: number } {
-  if (unlockedUnit <= 2) return { label: 'Anfang (erste Klasse, sehr einfach, kurze Wörter)', difficulty: 1 };
-  if (unlockedUnit <= 5) return { label: 'Mitte (zweite Klasse, mittlere Wörter)', difficulty: 2 };
-  return { label: 'Fortgeschritten (dritte Klasse, längere Wörter, kniffliger)', difficulty: 3 };
+function gradeBand(unlockedUnit: number): { label: string; difficulty: number; maxHk: number } {
+  // maxHk caps the word-pool frequency class per band: younger children get only the most common words.
+  if (unlockedUnit <= 2) return { label: 'Anfang (erste Klasse, sehr einfach, kurze Wörter)', difficulty: 1, maxHk: 9 };
+  if (unlockedUnit <= 5) return { label: 'Mitte (zweite Klasse, mittlere Wörter)', difficulty: 2, maxHk: 11 };
+  return { label: 'Fortgeschritten (dritte Klasse, längere Wörter, kniffliger)', difficulty: 3, maxHk: 12 };
 }
 
 @Injectable()
@@ -233,7 +238,7 @@ export class SessionsService {
     // feature (lexeme foundation). Best-effort context: an empty pool just drops the section.
     let wordPool = '';
     try {
-      wordPool = await this.lexeme.wordPoolFor(focus);
+      wordPool = await this.lexeme.wordPoolFor(focus, { maxHk: band.maxHk });
     } catch {
       /* the word pool is optional grounding */
     }

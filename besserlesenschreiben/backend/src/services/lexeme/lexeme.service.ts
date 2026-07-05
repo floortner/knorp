@@ -36,8 +36,10 @@ export class LexemeService {
   }
 
   /**
-   * A compact, prompt-ready word pool for up to the first few target skills. One line per skill; skills
-   * with no matching word are omitted. Empty string when nothing matches (caller drops the section).
+   * A compact, prompt-ready word pool for up to the first few target skills. One line per skill; each
+   * word carries its ARTICLE (nouns) and SYLLABIFICATION so the model can build raster/sylarrange/compound
+   * items from real data instead of guessing splits — e.g. `Wasser (das; was-ser)`, `fahren (fah-ren)`.
+   * Skills with no matching word are omitted. Empty string when nothing matches (caller drops the section).
    */
   async wordPoolFor(skillTags: string[], opts: { maxHk?: number; perSkill?: number } = {}): Promise<string> {
     const perSkill = opts.perSkill ?? 8;
@@ -46,8 +48,9 @@ export class LexemeService {
     const pools = await Promise.all(
       tags.map((t) => this.pickForSkill(t, { maxHk: opts.maxHk, limit: perSkill })),
     );
+    const entry = (w: LexemePick) => `${w.lemma} (${w.genus ? `${w.genus}; ` : ''}${w.syllabification})`;
     return tags
-      .map((t, i) => (pools[i].length ? `- ${t}: ${pools[i].map((w) => w.lemma).join(', ')}` : null))
+      .map((t, i) => (pools[i].length ? `- ${t}: ${pools[i].map(entry).join(', ')}` : null))
       .filter((line): line is string => line !== null)
       .join('\n');
   }

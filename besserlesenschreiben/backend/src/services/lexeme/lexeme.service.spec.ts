@@ -13,19 +13,25 @@ function makeService(pools: Record<string, LexemePick[]>) {
   return { svc: new LexemeService(prisma), $queryRaw };
 }
 
-const pick = (lemma: string): LexemePick => ({ lemma, syllabification: lemma, genus: null, hk: 8 });
+const pick = (lemma: string, syll = lemma.toLowerCase(), genus: string | null = null): LexemePick => ({
+  lemma,
+  syllabification: syll,
+  genus,
+  hk: 8,
+});
 
 describe('LexemeService.wordPoolFor', () => {
-  it('formats one line per skill that has words, and drops skills with none', async () => {
+  it('formats annotated entries (article; syllabification) per skill, and drops skills with none', async () => {
     const { svc } = makeService({
-      vowel_length: [pick('Jahr'), pick('viel')],
+      vowel_length: [pick('Jahr', 'jahr', 'das'), pick('viel')],
       dehnung_h: [], // no matching words → line omitted
-      double_consonant: [pick('Wasser')],
+      double_consonant: [pick('Wasser', 'was-ser', 'das')],
     });
 
     const pool = await svc.wordPoolFor(['vowel_length', 'dehnung_h', 'double_consonant', 'article']);
 
-    expect(pool).toBe('- vowel_length: Jahr, viel\n- double_consonant: Wasser');
+    // Each entry carries the data the model must copy verbatim: article (nouns) + syllabification.
+    expect(pool).toBe('- vowel_length: Jahr (das; jahr), viel (viel)\n- double_consonant: Wasser (das; was-ser)');
     expect(pool).not.toContain('dehnung_h'); // empty skill dropped
     expect(pool).not.toContain('article'); // no pool for it either
   });
