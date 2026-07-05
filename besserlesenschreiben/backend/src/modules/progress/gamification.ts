@@ -1,4 +1,4 @@
-import { utcDayDiff } from '../../common/dates';
+import { startOfUtcWeek, utcDayDiff } from '../../common/dates';
 
 /** Flat stars awarded for completing a session (matches the prototype's +15). */
 export const STARS_PER_SESSION = 15;
@@ -20,14 +20,31 @@ export function leagueFor(starsWeek: number): League {
   return { tier: 'bronze', starsWeek, starsToNext: LEAGUE_SILBER - starsWeek };
 }
 
+/** True if the joker hasn't been used in the current ISO week (Monday–Sunday UTC). */
+export function isJokerAvailable(jokerUsedWeek: Date | null, now: Date): boolean {
+  if (!jokerUsedWeek) return true;
+  return jokerUsedWeek.getTime() < startOfUtcWeek(now).getTime();
+}
+
 /**
- * Next streak value when a session completes:
- *   already active today → unchanged · active yesterday → +1 · gap (or first ever) → reset to 1.
+ * Next streak value when a session completes.
+ *   same UTC day  → unchanged
+ *   consecutive   → +1
+ *   1 missed day + joker available → +1, jokerConsumed = true
+ *   gap > 1 or no joker → reset to 1
  */
-export function nextStreak(lastActive: Date | null, now: Date, current: number): number {
-  if (!lastActive) return 1;
+export function nextStreak(
+  lastActive: Date | null,
+  now: Date,
+  current: number,
+  jokerUsedWeek: Date | null,
+): { streakDays: number; jokerConsumed: boolean } {
+  if (!lastActive) return { streakDays: 1, jokerConsumed: false };
   const gap = utcDayDiff(lastActive, now);
-  if (gap <= 0) return current; // same UTC day, already counted
-  if (gap === 1) return current + 1; // consecutive day
-  return 1; // missed at least a day
+  if (gap <= 0) return { streakDays: current, jokerConsumed: false };
+  if (gap === 1) return { streakDays: current + 1, jokerConsumed: false };
+  if (gap === 2 && isJokerAvailable(jokerUsedWeek, now)) {
+    return { streakDays: current + 1, jokerConsumed: true };
+  }
+  return { streakDays: 1, jokerConsumed: false };
 }

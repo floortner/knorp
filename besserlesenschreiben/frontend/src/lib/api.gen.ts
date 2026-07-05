@@ -767,6 +767,7 @@ export interface operations {
                             fontScale: number;
                             stars: number;
                             streakDays: number;
+                            jokerAvailable: boolean;
                             unlockedUnit: number;
                             createdAt: string;
                         }[];
@@ -809,6 +810,7 @@ export interface operations {
                             fontScale: number;
                             stars: number;
                             streakDays: number;
+                            jokerAvailable: boolean;
                             unlockedUnit: number;
                             createdAt: string;
                         };
@@ -842,6 +844,7 @@ export interface operations {
                             fontScale: number;
                             stars: number;
                             streakDays: number;
+                            jokerAvailable: boolean;
                             unlockedUnit: number;
                             createdAt: string;
                         };
@@ -895,6 +898,7 @@ export interface operations {
                             fontScale: number;
                             stars: number;
                             streakDays: number;
+                            jokerAvailable: boolean;
                             unlockedUnit: number;
                             createdAt: string;
                         };
@@ -1251,6 +1255,8 @@ export interface operations {
                     "application/json": {
                         starsAwarded: number;
                         streakDays: number;
+                        jokerAvailable: boolean;
+                        jokerConsumed: boolean;
                         league: {
                             /** @enum {string} */
                             tier: "bronze" | "silber" | "gold";
@@ -1339,6 +1345,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         streakDays: number;
+                        jokerAvailable: boolean;
                         stars: number;
                         weeklyActivity: number[];
                         monthlyHeatmap: {

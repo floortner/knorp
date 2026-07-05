@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertProfileOwned } from '../../common/ownership';
 import { daysAgo, startOfUtcWeek } from '../../common/dates';
-import { leagueFor } from './gamification';
+import { isJokerAvailable, leagueFor } from './gamification';
 import { monthlyHeatmap, skillBreakdown, weeklyActivity } from './progress.stats';
 
 const HEATMAP_WINDOW_DAYS = 30;
@@ -33,6 +33,7 @@ export class ProgressService {
 
     return {
       streakDays: profile.streakDays,
+      jokerAvailable: isJokerAvailable(profile.jokerUsedWeek, now),
       stars: profile.stars,
       weeklyActivity: weeklyActivity(attempts, now),
       monthlyHeatmap: monthlyHeatmap(attempts, now),

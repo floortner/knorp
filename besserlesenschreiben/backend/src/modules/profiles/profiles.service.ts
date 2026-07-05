@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
+import { isJokerAvailable } from '../progress/gamification';
 import type { ProfileModel } from '../../generated/prisma/models';
 import type { CreateProfileInput, UpdateSettingsInput } from './profiles.dto';
 
 /** Wire-shape view of a profile (Decimal → number; camelCase already). */
 function view(p: ProfileModel) {
+  const now = new Date();
   return {
     id: p.id,
     name: p.name,
@@ -16,6 +18,7 @@ function view(p: ProfileModel) {
     fontScale: Number(p.fontScale),
     stars: p.stars,
     streakDays: p.streakDays,
+    jokerAvailable: isJokerAvailable(p.jokerUsedWeek, now),
     unlockedUnit: p.unlockedUnit,
     createdAt: p.createdAt,
   };

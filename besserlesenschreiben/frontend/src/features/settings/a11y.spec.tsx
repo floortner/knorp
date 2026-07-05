@@ -8,7 +8,7 @@ const me: Me = {
   profiles: [
     {
       id: 'p1', name: 'Mia', buddy: 'nepo', goalPerWeek: 5, soundOn: false,
-      dyslexicFont: true, fontScale: 1.5, stars: 0, streakDays: 0, unlockedUnit: 1,
+      dyslexicFont: true, fontScale: 1.5, stars: 0, streakDays: 0, jokerAvailable: true, unlockedUnit: 1,
       createdAt: '2026-01-01T00:00:00Z',
     },
   ],

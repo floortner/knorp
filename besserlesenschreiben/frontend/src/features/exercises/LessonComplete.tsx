@@ -67,6 +67,9 @@ export function LessonComplete({
             <Star className="h-6 w-6 text-amber-400" aria-hidden />
             <span className="font-display text-xl font-bold text-ink">+{result.starsAwarded} Sterne</span>
           </div>
+          {result.jokerConsumed && (
+            <p className="text-sm font-medium text-amber-600">◆ Joker eingesetzt – Streak gerettet!</p>
+          )}
           <p className="text-ink-soft">
             {result.streakDays > 0
               ? `${result.streakDays} ${result.streakDays === 1 ? 'Tag' : 'Tage'} in Folge · `
