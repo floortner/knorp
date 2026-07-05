@@ -17,7 +17,7 @@
   "double_consonant": "kurzer Vokal → Stopper/Doppelkonsonant (length)"
  },
  "counts": {
-  "total": 849,
+  "total": 879,
   "by_unit": {
    "1": 54,
    "2": 34,
@@ -25,7 +25,7 @@
    "4": 71,
    "5": 298,
    "6": 162,
-   "7": 105
+   "7": 135
   },
   "by_type": {
    "findvowel": 40,
@@ -41,7 +41,7 @@
    "sylarrange": 162,
    "compound": 71,
    "family": 25,
-   "sentencefix": 9
+   "sentencefix": 39
   }
  },
  "items": [
@@ -18468,6 +18468,793 @@
     "compound_word"
    ],
    "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-korb",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Die",
+     "Katze",
+     "schläft",
+     "im",
+     "Kurb",
+     "heute."
+    ],
+    "answer": "Kurb",
+    "correction": "Korb",
+    "praise": "Gefunden! Richtig heißt es: Korb."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-garten",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Hund",
+     "spielt",
+     "im",
+     "Gorten",
+     "hinten."
+    ],
+    "answer": "Gorten",
+    "correction": "Garten",
+    "praise": "Gefunden! Richtig heißt es: Garten."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-nudeln",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Wir",
+     "essen",
+     "heute",
+     "Nodeln",
+     "mit",
+     "Soße."
+    ],
+    "answer": "Nodeln",
+    "correction": "Nudeln",
+    "praise": "Gefunden! Richtig heißt es: Nudeln."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-tisch",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Das",
+     "Buch",
+     "liegt",
+     "auf",
+     "dem",
+     "Tesch",
+     "dort."
+    ],
+    "answer": "Tesch",
+    "correction": "Tisch",
+    "praise": "Gefunden! Richtig heißt es: Tisch."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-sonne",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Am",
+     "Himmel",
+     "scheint",
+     "die",
+     "Sunne",
+     "hell."
+    ],
+    "answer": "Sunne",
+    "correction": "Sonne",
+    "praise": "Gefunden! Richtig heißt es: Sonne."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-nest",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Vogel",
+     "sitzt",
+     "im",
+     "Nust",
+     "oben."
+    ],
+    "answer": "Nust",
+    "correction": "Nest",
+    "praise": "Gefunden! Richtig heißt es: Nest."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-milch",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Mia",
+     "trinkt",
+     "ein",
+     "Glas",
+     "Melch",
+     "dazu."
+    ],
+    "answer": "Melch",
+    "correction": "Milch",
+    "praise": "Gefunden! Richtig heißt es: Milch."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-ball",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Boll",
+     "rollt",
+     "ins",
+     "Tor",
+     "hinein."
+    ],
+    "answer": "Boll",
+    "correction": "Ball",
+    "praise": "Gefunden! Richtig heißt es: Ball."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-kuchen",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Wir",
+     "backen",
+     "einen",
+     "Kachen",
+     "für",
+     "Oma."
+    ],
+    "answer": "Kachen",
+    "correction": "Kuchen",
+    "praise": "Gefunden! Richtig heißt es: Kuchen."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-blume",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Die",
+     "Blome",
+     "steht",
+     "in",
+     "der",
+     "Vase."
+    ],
+    "answer": "Blome",
+    "correction": "Blume",
+    "praise": "Gefunden! Richtig heißt es: Blume."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-zeitung",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Opa",
+     "liest",
+     "die",
+     "Zietung",
+     "am",
+     "Morgen."
+    ],
+    "answer": "Zietung",
+    "correction": "Zeitung",
+    "praise": "Gefunden! Richtig heißt es: Zeitung."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-schnee",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Im",
+     "Winter",
+     "fällt",
+     "viel",
+     "Schnie",
+     "herab."
+    ],
+    "answer": "Schnie",
+    "correction": "Schnee",
+    "praise": "Gefunden! Richtig heißt es: Schnee."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-strasse",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Das",
+     "Auto",
+     "fährt",
+     "auf",
+     "der",
+     "Stroße",
+     "entlang."
+    ],
+    "answer": "Stroße",
+    "correction": "Straße",
+    "praise": "Gefunden! Richtig heißt es: Straße."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-stiften",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Lena",
+     "malt",
+     "mit",
+     "bunten",
+     "Staften",
+     "ein",
+     "Bild."
+    ],
+    "answer": "Staften",
+    "correction": "Stiften",
+    "praise": "Gefunden! Richtig heißt es: Stiften."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-baum",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Apfel",
+     "hängt",
+     "am",
+     "Boum",
+     "ganz",
+     "oben."
+    ],
+    "answer": "Boum",
+    "correction": "Baum",
+    "praise": "Gefunden! Richtig heißt es: Baum."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-kaese",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Die",
+     "Maus",
+     "frisst",
+     "den",
+     "Kise",
+     "auf."
+    ],
+    "answer": "Kise",
+    "correction": "Käse",
+    "praise": "Gefunden! Richtig heißt es: Käse."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-suppe",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Papa",
+     "kocht",
+     "eine",
+     "Sappe",
+     "mit",
+     "Gemüse."
+    ],
+    "answer": "Sappe",
+    "correction": "Suppe",
+    "praise": "Gefunden! Richtig heißt es: Suppe."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-sandkasten",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Die",
+     "Kinder",
+     "spielen",
+     "im",
+     "Sandkosten",
+     "draußen."
+    ],
+    "answer": "Sandkosten",
+    "correction": "Sandkasten",
+    "praise": "Gefunden! Richtig heißt es: Sandkasten."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-wasser",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Fisch",
+     "schwimmt",
+     "im",
+     "Wusser",
+     "herum."
+    ],
+    "answer": "Wusser",
+    "correction": "Wasser",
+    "praise": "Gefunden! Richtig heißt es: Wasser."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-geschichte",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Oma",
+     "erzählt",
+     "eine",
+     "Geschachte",
+     "vor",
+     "dem",
+     "Schlafen."
+    ],
+    "answer": "Geschachte",
+    "correction": "Geschichte",
+    "praise": "Gefunden! Richtig heißt es: Geschichte."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-bahnhof",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Zug",
+     "hält",
+     "am",
+     "Bahnhef",
+     "an."
+    ],
+    "answer": "Bahnhef",
+    "correction": "Bahnhof",
+    "praise": "Gefunden! Richtig heißt es: Bahnhof."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-nacht",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Die",
+     "Nocht",
+     "ist",
+     "dunkel",
+     "und",
+     "still."
+    ],
+    "answer": "Nocht",
+    "correction": "Nacht",
+    "praise": "Gefunden! Richtig heißt es: Nacht."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-bruder",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Mein",
+     "Broder",
+     "heißt",
+     "Max",
+     "und",
+     "lacht",
+     "gern."
+    ],
+    "answer": "Broder",
+    "correction": "Bruder",
+    "praise": "Gefunden! Richtig heißt es: Bruder."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-schwester",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Die",
+     "Schwister",
+     "malt",
+     "ein",
+     "buntes",
+     "Bild."
+    ],
+    "answer": "Schwister",
+    "correction": "Schwester",
+    "praise": "Gefunden! Richtig heißt es: Schwester."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-lehrer",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Liehrer",
+     "schreibt",
+     "an",
+     "die",
+     "Tafel."
+    ],
+    "answer": "Liehrer",
+    "correction": "Lehrer",
+    "praise": "Gefunden! Richtig heißt es: Lehrer."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-baecker",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Bicker",
+     "backt",
+     "frisches",
+     "Brot."
+    ],
+    "answer": "Bicker",
+    "correction": "Bäcker",
+    "praise": "Gefunden! Richtig heißt es: Bäcker."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-moehre",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Der",
+     "Hase",
+     "frisst",
+     "eine",
+     "Mihre",
+     "gern."
+    ],
+    "answer": "Mihre",
+    "correction": "Möhre",
+    "praise": "Gefunden! Richtig heißt es: Möhre."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-teich",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Die",
+     "Ente",
+     "schwimmt",
+     "auf",
+     "dem",
+     "Tiech",
+     "dahin."
+    ],
+    "answer": "Tiech",
+    "correction": "Teich",
+    "praise": "Gefunden! Richtig heißt es: Teich."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-brief",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Anna",
+     "schreibt",
+     "einen",
+     "Breif",
+     "an",
+     "Oma."
+    ],
+    "answer": "Breif",
+    "correction": "Brief",
+    "praise": "Gefunden! Richtig heißt es: Brief."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "u7-sentencefix-loewe",
+   "unit": 7,
+   "exercise_type": "sentencefix",
+   "payload": {
+    "tokens": [
+     "Im",
+     "Zoo",
+     "brüllt",
+     "der",
+     "Läwe",
+     "ganz",
+     "laut."
+    ],
+    "answer": "Läwe",
+    "correction": "Löwe",
+    "praise": "Gefunden! Richtig heißt es: Löwe."
+   },
+   "skill_tags": [
+    "vowel_substitution",
+    "sentence_context"
+   ],
+   "difficulty": 3,
    "audio_url": null,
    "syllable_audio": null,
    "generated_by": "seed"
