@@ -15,7 +15,19 @@ export class StubLlmProvider implements LlmProvider {
     return `(Stub-KI) Ich habe verstanden: „${lastUser.slice(0, 140)}". Setze ANTHROPIC_API_KEY für echte Antworten.`;
   }
 
-  async extractRaw(_req: ProviderExtractRequest): Promise<unknown> {
+  async extractRaw(req: ProviderExtractRequest): Promise<unknown> {
+    // Homework vision is the one extract the stub CAN safely fake: the draft is never applied without a
+    // human reviewer verdict (the product's own gate), so a canned draft just lets the upload → queue →
+    // review loop run offline (dev + e2e). Lecture generation stays a loud 503 — fabricated exercises
+    // would reach a child directly.
+    if (req.schemaName === 'homework_analysis') {
+      return {
+        topic: 'Übungsblatt (Stub-Analyse)',
+        exerciseType: 'insertvowel',
+        items: [{ prompt: 'B_ch', childAnswer: 'Buch', correct: true }],
+        suggestedFocus: ['vowel_substitution'],
+      };
+    }
     throw new ApiException(503, 'PROVIDER_UNAVAILABLE', 'KI-Funktion ist in dieser Umgebung nicht verfügbar.');
   }
 }
