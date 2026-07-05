@@ -13,7 +13,11 @@ export const envSchema = z.object({
   // Staff realm (ARCHITECTURE §1a) — a DISTINCT signing key from JWT_SECRET so a credential in one realm
   // is never valid in the other. Required: the two realms must never share a key.
   STAFF_JWT_SECRET: z.string().min(8),
-  // Staff portal origin for CORS (credentials on). Empty → CORS reflects any origin (dev default).
+  // CORS allowlist (credentials on), comma-separated. In production at least one origin MUST be set —
+  // main.ts refuses to boot with a wide-open credentialed CORS (ARCHITECTURE §4). Empty → permissive
+  // (dev/test only).
+  WEB_ORIGIN: z.string().default(''),
+  // Staff portal origin for CORS (credentials on). Empty → permissive (dev/test only).
   REVIEWER_ORIGIN: z.string().default(''),
   // Public base URL of this API incl. the /api/v1 prefix. Used to build capability URLs the browser loads
   // directly — e.g. serving homework images from the filesystem store (no Azure SAS). Empty →
@@ -38,10 +42,10 @@ export const envSchema = z.object({
   DEV_REVIEWER_EMAIL: z.string().default(''),
   // later milestones (optional for now)
   ANTHROPIC_API_KEY: z.string().default(''),
-  // Default generation/chat model. Sonnet 5 = near-Opus quality for structured tasks at ~½ the price —
-  // the right default for a free app. (temperature/top_p/top_k are rejected on current models; steer via
-  // the prompt + output effort instead.)
-  ANTHROPIC_MODEL: z.string().default('claude-sonnet-5'),
+  // Default generation/chat model. Sonnet 4.6 = the best speed/intelligence balance for structured tasks
+  // at a fraction of Opus pricing — the right default for a free app. (temperature/top_p/top_k are rejected
+  // on current models; steer via the prompt + output effort instead.)
+  ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
   // Homework vision uses a stronger model — child handwriting OCR is accuracy-critical and the draft is
   // the reviewer's starting point.
   ANTHROPIC_VISION_MODEL: z.string().default('claude-opus-4-8'),
