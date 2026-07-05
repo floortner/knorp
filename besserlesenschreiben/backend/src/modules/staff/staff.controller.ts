@@ -109,6 +109,13 @@ export class StaffController {
     return this.review.claim(reviewer.id, uploadId);
   }
 
+  @Post('queue/:uploadId/release')
+  @HttpCode(200)
+  @ApiZodResponse(okSchema)
+  release(@CurrentReviewer() reviewer: AuthReviewer, @Param('uploadId') uploadId: string) {
+    return this.review.release(reviewer.id, uploadId);
+  }
+
   @Post('reviews/:uploadId')
   @HttpCode(200)
   @ApiZodBody(ReviewSubmitDto.schema)

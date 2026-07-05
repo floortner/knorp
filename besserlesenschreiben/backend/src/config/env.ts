@@ -63,11 +63,9 @@ export const envSchema = z.object({
   // Dev-only: where the local-filesystem store writes per-user files. Empty → defaults to
   // <os tmpdir>/blsb-dev-blob. Never used when AWS_S3_BUCKET is set.
   STORAGE_LOCAL_DIR: z.string().default(''),
-  TTS_PROVIDER: z.string().default(''),
-  TTS_KEY: z.string().default(''),
-  BILLING_PROVIDER: z.string().default('lemonsqueezy'),
-  BILLING_WEBHOOK_SECRET: z.string().default(''),
 });
+// (TTS_* and BILLING_* vars removed: Polly authenticates via the IAM role — no key — and billing is
+// deferred; both come back by ordinary schema addition if/when their milestones land.)
 
 export type Env = z.infer<typeof envSchema>;
 

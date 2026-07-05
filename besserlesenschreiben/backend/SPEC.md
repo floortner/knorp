@@ -575,10 +575,8 @@ LLM_RESIDENCY_ACK=               # required in prod when a key is set (EU reside
 LLM_SESSIONS_PER_DAY= CHAT_MESSAGES_PER_DAY=   # per-profile daily caps on ★ ops (defaults 5 / 60)
 AWS_S3_BUCKET= AWS_REGION=       # object storage; auth via the IAM instance role, not keys in env
 STORAGE_LOCAL_DIR=               # dev-only local filesystem store; unused when AWS_S3_BUCKET is set
-TTS_PROVIDER= TTS_KEY=           # deferred (target: Amazon Polly)
 EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev) | resend (prod) | capture (tests only)
 SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_REVIEWER_EMAIL=   # dev-only seeded logins (never in production)
-BILLING_PROVIDER= BILLING_WEBHOOK_SECRET=   # dormant (billing deferred)
 ```
 
 ## 12. Build milestones (suggested order for Claude Code)

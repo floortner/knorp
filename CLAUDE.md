@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Two disjoint **auth realms** (ARCHITECTURE §1a): the **family** realm (parents + children, `-web`) and the **staff** realm (internal reviewers, `-review`). A credential in one is never valid in the other — different cookie/`aud`, different guard (`JwtAuthGuard` vs `StaffAuthGuard`).
 
-The seed scripts live in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent; loads the item bank, the lexeme base ⊕ committed `lexeme.overrides.json` change-set, and — with `SEED_DEV_ACCOUNTS=true` — dev login accounts). `npm run gen:items` derives exercise candidates from the lexeme pool for human review. There are no root-level `seed.ts`/`build-seed.ts`.
+The seed scripts live in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent; loads the item bank, the lexeme base ⊕ committed `lexeme.overrides.json` change-set, and — with `SEED_DEV_ACCOUNTS=true` — dev login accounts). `npm run gen:items` derives exercise candidates from the lexeme pool for human review. item_bank.seed.json is the curated source of truth — there is no regeneration script (never rebuild it wholesale).
 
 Currently one **monorepo** for fast cross-cutting iteration; the subprojects are independently buildable/deployable and split into the `-api`/`-web`/`-review` repos before launch (ARCHITECTURE §1).
 

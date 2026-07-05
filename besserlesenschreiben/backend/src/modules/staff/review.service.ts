@@ -154,6 +154,19 @@ export class ReviewService {
   }
 
   /** Submit the authoritative verdict. approve/correct apply it; reject mutates nothing. */
+  /**
+   * Release the caller's own claim (leaving the review screen without a verdict). Only clears the lease
+   * if THIS reviewer holds it and the item is still pending — releasing after a submit or a takeover is a
+   * harmless no-op. Idempotent.
+   */
+  async release(reviewerId: string, uploadId: string): Promise<{ ok: true }> {
+    await this.prisma.homeworkUpload.updateMany({
+      where: { id: uploadId, claimedBy: reviewerId, status: 'pending_review' },
+      data: { claimedBy: null, claimedUntil: null },
+    });
+    return { ok: true };
+  }
+
   async submit(
     reviewerId: string,
     uploadId: string,
