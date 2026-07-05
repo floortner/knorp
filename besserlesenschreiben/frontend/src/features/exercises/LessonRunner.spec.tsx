@@ -17,6 +17,10 @@ vi.mock('@/features/sessions/useCompleteSession', () => ({
     isPending: false,
   }),
 }));
+vi.mock('@/features/profile/useMe', () => ({
+  useMe: () => ({ isLoading: false, isError: false, data: undefined }),
+  useActiveProfile: () => ({ id: 'prof-1', name: 'Mia', buddy: 'nepo', goalPerWeek: 5, streakDays: 3, stars: 100, soundOn: true, dyslexicFont: false, fontScale: 1, jokerAvailable: true, unlockedUnit: 1, createdAt: '2026-01-01T00:00:00Z' }),
+}));
 
 const realwordItem = (session as unknown as { items: Exercise[] }).items.find((i) => i.type === 'realword')!;
 

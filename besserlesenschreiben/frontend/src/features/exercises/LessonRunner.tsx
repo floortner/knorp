@@ -3,6 +3,7 @@ import type { SessionResponse } from '@/lib/types';
 import { recordAttempt } from '@/lib/telemetry';
 import { useSoundOn } from '@/features/settings/a11y';
 import { useCompleteSession } from '@/features/sessions/useCompleteSession';
+import { useActiveProfile } from '@/features/profile/useMe';
 import { Button } from '@/components/ui/button';
 import { ExerciseView } from './ExerciseView';
 import { LessonComplete } from './LessonComplete';
@@ -17,6 +18,7 @@ const ADVANCE_DELAY_MS = 900;
 export function LessonRunner({ session }: { session: SessionResponse }) {
   const soundOn = useSoundOn();
   const complete = useCompleteSession();
+  const profile = useActiveProfile();
   const items = session.items;
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
@@ -39,6 +41,7 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
       pending={complete.isPending}
       // Backend-authoritative (SPEC §12): no more hardcoded unit count on the client.
       allUnitsComplete={complete.data?.allUnitsComplete ?? false}
+      buddy={profile?.buddy}
     />
   );
 

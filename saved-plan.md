@@ -4,7 +4,7 @@ A. Best practices — close these before the AWS deploy
 2. Zero observability. No Sentry, no uptime check. Before first users: Sentry on backend + both frontends (PII-scrubbed per §6 — the rules are written, just not wired) and a free uptime ping on /health. Otherwise the first "it's broken" report will come from your wife, not your tooling.
 3. Backups are documented, not built. The off-platform encrypted pg_dump cron (ARCHITECTURE §7) should be part of the deploy milestone itself, not after — child data plus a single-instance EC2 is exactly the setup that needs it.
 4. Staff MFA is specced "before prod." With one trainer, email-code-only is a defensible exception — but decide it consciously and note it, don't drift into it.
-5. E2E coverage misses the seam that broke most this session: upload → reviewer verdict → chat status. One Playwright journey across both realms would guard the whole professional-loop. (Everything else — contract drift gates, golden tests, runtime response validation, realm isolation, idempotency index — is genuinely well done; the discipline in this codebase is above average.)
+5. ~~E2E coverage misses the seam that broke most this session: upload → reviewer verdict → chat status. One Playwright journey across both realms would guard the whole professional-loop.~~ **DONE** — `homework-loop.spec.ts` cross-realm Playwright journey (PR #50).
 
 B. Remove / simplify
 
@@ -23,15 +23,15 @@ D. Frontend engagement & retention (the centerpiece)
 
 What exists: stars (flat +15), streak counter, threshold "league", week strip, heatmap, confetti, per-item praise, static buddy. What's missing is the daily loop and the relationship — and your own docs set the constraint correctly (calm feedback, no lives/energy/dark patterns), which for struggling readers is not just ethics, it's efficacy. Ranked by impact-per-effort:
 
-1. Bring the buddy to life (biggest lever, assets already paid for). monster-pets/ has four emotional states per mascot — the app ships only the static ones. Make Nepo/Stella react on /lernen: froehlich after today's session, ueberrascht on a unit unlock, gently traurig → "Nepo hat dich vermisst!" after absence. Companion attachment is the strongest retention mechanic for 6–9-year-olds, and it's a state-swap away.
+1. ~~Bring the buddy to life (biggest lever, assets already paid for). monster-pets/ has four emotional states per mascot — the app ships only the static ones. Make Nepo/Stella react on /lernen: froehlich after today's session, ueberrascht on a unit unlock, gently traurig → "Nepo hat dich vermisst!" after absence. Companion attachment is the strongest retention mechanic for 6–9-year-olds, and it's a state-swap away.~~ **DONE** — `useBuddyState` hook + `buddyStateSrc`; all 4 states wired to live progress data (PR #51).
 2. A visible "today" goal. goalPerWeek exists but nothing shows today. A simple ring/checkmark on home ("Heute geübt ✓") + the week strip elevated next to it turns opening the app into completing something. The buddy closes the loop by celebrating the ring.
 3. Session-end forward hook. LessonComplete celebrates the past; add one line of future: "Morgen üben wir Wörter mit ie!" with the buddy looking expectant. Cheapest possible next-day pull.
-4. Kind streaks. Keep the counter, add one weekly "Streak-Joker" and a warm restart message instead of a zeroed number — punitive streaks demotivate exactly this audience.
+4. ~~Kind streaks. Keep the counter, add one weekly "Streak-Joker" and a warm restart message instead of a zeroed number — punitive streaks demotivate exactly this audience.~~ **DONE** — flame hidden at 0, warm restart card, weekly joker (backend + frontend, PRs #52 + #53).
 5. Badges — the SVG policy already reserves them and review_state already knows mastery: "Silben-Meister", 7-Tage-Serie, unit badges, shown in /profil. Medium effort (small backend addition).
 6. Weekly parent email (highest leverage for your actual constellation). Retention at this age runs through the parent. digest.md already computes everything — a Friday "Mia hat 3× geübt, stark bei Silben, als Nächstes: Dehnungs-h" via the existing email service turns parents into the reminder system, without pushing notifications at a child.
-7. Rename /liga → "Erfolge". There are no peers; a threshold ladder posing as a league is the one slightly-dishonest mechanic in the app. Reframing it as personal achievements is more truthful and pairs with #5.
+7. ~~Rename /liga → "Erfolge". There are no peers; a threshold ladder posing as a league is the one slightly-dishonest mechanic in the app. Reframing it as personal achievements is more truthful and pairs with #5.~~ **DONE** — route, tab, heading, tier labels all updated (PR #52).
 8. Later, with Polly: spoken praise variety — audio reward beats visual for pre-readers.
 
 Deliberately not recommended: push notifications to the child, real leaderboards, time pressure, loss mechanics — all antagonistic to a remedial-literacy audience and to your stated values.
 
-My suggested order: ~~B1+B2 (30 min, removes the footgun)~~ ✓ → D1–D4 as one "daily loop" PR (~a day) → A2 with the deploy → D5/D6 after your wife's first feedback.
+My suggested order: ~~B1+B2~~ ✓ → ~~D1~~ ✓ → ~~D4 + D7~~ ✓ → **D2 + D3** next (today goal ring + session-end hook) → A2 with the deploy → D5/D6 after first user feedback.
