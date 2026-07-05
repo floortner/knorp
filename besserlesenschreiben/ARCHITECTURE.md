@@ -183,7 +183,6 @@ prisma/
   schema.prisma           # the model truth (account, profile, item_bank, lexeme, attempt, …)
   seed.ts                 # idempotent loader: item bank + lexeme base ⊕ overrides + dev accounts
 scripts/
-  build-seed.ts           # regenerates item_bank.seed.json from source
   gen-items-from-lexemes.ts  # lexeme pool → solvability-gated exercise CANDIDATES (human-reviewed)
   export-overrides.ts     # live lexeme table vs base → committed lexeme.overrides.json
   export-openapi.ts  seed-e2e.ts  llm-smoke.ts

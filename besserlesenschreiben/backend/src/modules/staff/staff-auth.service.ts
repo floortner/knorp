@@ -46,6 +46,8 @@ export class StaffAuthService {
         orderBy: { createdAt: 'desc' },
       });
       if (!recent) {
+        // Housekeeping: sweep expired codes opportunistically on each new issue (no cron needed).
+        await this.prisma.staffLoginCode.deleteMany({ where: { expiresAt: { lt: new Date() } } });
         const code = String(randomInt(100000, 1000000)); // 6-digit
         await this.prisma.staffLoginCode.create({
           data: { email, codeHash: await argon2.hash(code), expiresAt: new Date(Date.now() + CODE_TTL_MS) },

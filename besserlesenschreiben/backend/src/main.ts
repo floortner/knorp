@@ -57,6 +57,22 @@ async function bootstrap(): Promise<void> {
     credentials: true,
     methods: ['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   });
+  // Request-level rate limiting (per IP): tight on the auth/code endpoints (email-sending cost +
+  // brute-force surface), loose elsewhere. Domain-level counters (verify attempts, PIN lockout, daily
+  // ★ caps) remain the precise guards — this is the blunt outer shell. Emits the §5 error envelope.
+  const { default: fastifyRateLimit } = await import('@fastify/rate-limit');
+  await app.register(fastifyRateLimit, {
+    timeWindow: '1 minute',
+    max: (req: { url?: string }) => ((req.url ?? '').includes('/auth/') ? 10 : 300),
+    errorResponseBuilder: (req: { id?: string }, context: { after: string }) => ({
+      error: {
+        code: 'RATE_LIMITED',
+        message: `Zu viele Anfragen. Bitte warte ${context.after}.`,
+        requestId: String(req.id ?? ''),
+        details: [],
+      },
+    }),
+  });
   await app.register(fastifyCookie); // session JWT delivered as an httpOnly cookie (SPEC §4)
   // Homework photo upload (multipart). 10 MB cap, one file per request (SPEC §10 / ARCHITECTURE §10).
   await app.register(fastifyMultipart, { limits: { fileSize: 10 * 1024 * 1024, files: 1 } });

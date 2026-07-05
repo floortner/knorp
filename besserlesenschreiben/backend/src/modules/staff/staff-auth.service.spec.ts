@@ -20,6 +20,7 @@ function setup(opts: {
   const prisma = {
     reviewer: { findUnique: vi.fn(async () => opts.reviewer ?? null) },
     staffLoginCode: {
+      deleteMany: vi.fn(async () => ({ count: 0 })),
       create: vi.fn(async () => ({ id: 'code-1' })),
       findFirst: vi.fn(async () => opts.code ?? null),
       update: vi.fn(async () => ({})),

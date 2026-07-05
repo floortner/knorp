@@ -43,6 +43,9 @@ export class AuthService {
       return { ok: true };
     }
 
+    // Housekeeping: expired codes are dead rows — sweep them opportunistically on each new issue
+    // (no cron needed; the table stays tiny).
+    await this.prisma.loginCode.deleteMany({ where: { expiresAt: { lt: new Date() } } });
     const code = String(randomInt(1000, 10000)); // 4-digit
     await this.prisma.loginCode.create({
       data: {

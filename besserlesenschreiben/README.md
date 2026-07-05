@@ -16,7 +16,6 @@ besserlesenschreiben/
 │   ├── item_bank.seed.json   ← seeded exercise content (~360 items, 7 units)
 │   ├── lexeme.seed.json + lexeme.overrides.json ← the curated word foundation (2,127 words ⊕ reviewer change-set)
 │   ├── prisma/seed.ts   ← idempotent seed loader (prisma db seed)
-│   └── scripts/build-seed.ts ← regenerates the seed JSON from source
 ├── frontend/            ← the family SPA / PWA  (TypeScript · React · Vite · Tailwind)
 │   ├── AGENTS.md        ← Claude Code: read this FIRST when working in frontend/
 │   └── SPEC.md          ← screens, the 14 Vokaltraining exercise renderers, telemetry

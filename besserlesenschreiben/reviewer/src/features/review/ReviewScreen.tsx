@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import type { HomeworkAnalysis } from '@/lib/contract';
 import { ApiError } from '@/lib/api';
+import { reviewApi } from '@/lib/endpoints';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { ProgressPanel } from '@/features/progress/ProgressPanel';
 import { useQueueProgress } from '@/features/queue/useQueue';
@@ -37,6 +38,14 @@ export function ReviewScreen() {
       claim.mutate(uploadId);
     }
   }, [item, draft, claim, uploadId]);
+
+  // Release the claim when leaving without a verdict (fire-and-forget; a no-op after submit/takeover),
+  // so an abandoned item goes straight back to the queue instead of waiting out the 15-min lease.
+  useEffect(() => {
+    return () => {
+      void reviewApi.release(uploadId).catch(() => {});
+    };
+  }, [uploadId]);
 
   const dirty = useMemo(
     () => (item && draft ? JSON.stringify(draft) !== JSON.stringify(item.llmAnalysis) : false),

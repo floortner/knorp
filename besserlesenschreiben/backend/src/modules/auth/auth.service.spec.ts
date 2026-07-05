@@ -17,6 +17,7 @@ function setup(account: { id: string; status: string; profileCount?: number } | 
       create: vi.fn(async ({ data }: { data: { email: string } }) => ({ id: 'new-acc', email: data.email })),
     },
     loginCode: {
+      deleteMany: vi.fn(async () => ({ count: 0 })),
       create: vi.fn(async () => ({ id: 'lc-1' })),
       findFirst: vi.fn(),
       update: vi.fn(async () => ({})),

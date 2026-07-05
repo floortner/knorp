@@ -60,6 +60,10 @@ export const reviewApi = {
       body: {},
     }),
 
+  /** Release my own claim when leaving the review screen without a verdict (idempotent no-op otherwise). */
+  release: (uploadId: string) =>
+    apiFetch<{ ok: true }>(`/staff/queue/${encodeURIComponent(uploadId)}/release`, { method: 'POST', body: {} }),
+
   /** Submit the authoritative verdict. approve/correct apply it; reject mutates nothing. */
   submit: (uploadId: string, body: ReviewSubmitBody) =>
     apiFetch<ReviewSubmitResponse>(`/staff/reviews/${encodeURIComponent(uploadId)}`, {

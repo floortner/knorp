@@ -3293,6 +3293,39 @@
         ]
       }
     },
+    "/api/v1/staff/queue/{uploadId}/release": {
+      "post": {
+        "operationId": "StaffController_release",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
     "/api/v1/staff/reviews/{uploadId}": {
       "post": {
         "operationId": "StaffController_submit",
