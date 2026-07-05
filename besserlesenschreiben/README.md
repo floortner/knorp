@@ -10,7 +10,7 @@ API backend, and an internal staff portal for professional homework review — b
 besserlesenschreiben/
 ├── README.md            ← you are here
 ├── ARCHITECTURE.md      ← GOVERNING doc for all three projects (read this second)
-├── backend/             ← the API service  (TypeScript · NestJS · Postgres · Azure)
+├── backend/             ← the API service  (TypeScript · NestJS · Postgres · AWS)
 │   ├── AGENTS.md        ← Claude Code: read this FIRST when working in backend/
 │   ├── SPEC.md          ← backend data model, endpoints, algorithms
 │   ├── item_bank.seed.json   ← starter exercise content (37 items, 7 units)
@@ -54,18 +54,18 @@ feature needs before the frontend/portal feature that calls them.
   OpenAPI-generated types keep them in lockstep — never hand-edit the contract on one side only.
 - **Two disjoint auth realms.** The family app and the staff reviewer portal authenticate separately
   (different cookie/`aud`, different signing key); a credential in one is never valid in the other.
-- **Security boundary.** `user_id`/`profile_id` come only from the auth token; blob access is via SAS scoped to
-  the caller's prefix; parent-scope + entitlement gate the routes that need them; PIN/login-code are hashed +
-  rate-limited. Staff see only a **pseudonymised** review queue — no child name, parent email, chat, or billing.
+- **Security boundary.** `user_id`/`profile_id` come only from the auth token; object-storage access is via
+  presigned URLs scoped to the caller's prefix; parent-scope gates the routes that need it; PIN/login-code are
+  hashed + rate-limited. Staff see only a **pseudonymised** review queue — no child name, parent email, chat, or billing.
 - **This is a children's app.** The logging rules, the SVG-first media policy, EXIF stripping on photos, and
-  EU/Austria data residency are part of the build, not afterthoughts.
+  EU data residency are part of the build, not afterthoughts.
 - **Payments** live in the parent area only, behind the PIN — never shown to a child.
 
 ## Hosting
 
-Azure, primary region **Austria East (Vienna)** (data at rest in Austria), Switzerland North as fallback.
-**Before building infra: confirm each Azure service is GA in Austria East** (Container Apps, PostgreSQL
-Flexible Server, Blob, Key Vault, Communication Services) — newer regions get services in waves.
+AWS, primary region **Frankfurt (eu-central-1)** (data at rest in the EU), Ireland (eu-west-1) as fallback.
+Stack: small EC2 instance (backend, systemd), RDS PostgreSQL, S3 (+ CloudFront for the frontends), SSM
+Parameter Store, SES. Deployment itself is a future milestone — see ARCHITECTURE §7.
 
 ## If you split this into separate repos later
 

@@ -1,7 +1,7 @@
 # besserlesenschreiben — backend (`-api`)
 
 The API service for an adaptive German children's literacy tutor. TypeScript · NestJS (Fastify) ·
-PostgreSQL · Prisma · Azure. Pure HTTP/JSON — it serves no HTML; the frontend is the only client.
+PostgreSQL · Prisma · AWS. Pure HTTP/JSON — it serves no HTML; the frontends are the only clients.
 
 **Read order for conventions & contract:** [`AGENTS.md`](./AGENTS.md) → [`../ARCHITECTURE.md`](../ARCHITECTURE.md) → [`SPEC.md`](./SPEC.md).
 This file is just the **local-dev runbook**.
@@ -10,15 +10,15 @@ This file is just the **local-dev runbook**.
 
 - **Node.js 24 LTS** (the pinned runtime — see ARCHITECTURE §2)
 - **PostgreSQL 17** — installed via Homebrew (steps below). Alternatively use Postgres.app or a managed
-  DB (Neon/Supabase/Azure) and just point `DATABASE_URL` at it; everything else is identical.
+  DB (Neon/Supabase/RDS) and just point `DATABASE_URL` at it; everything else is identical.
 
 ## Local vs production
 
 Local dev runs the **Nest app on your host** (`npm run start:dev`, hot-reload) against a **local
-PostgreSQL** (a Homebrew service). Production is the separate multi-stage `Dockerfile` → Azure
-Container Apps (ARCHITECTURE §7) and is unrelated to this setup.
+PostgreSQL** (a Homebrew service). Production is a small AWS EC2 instance running the built app under
+systemd (ARCHITECTURE §7 — deployment is a future milestone) and is unrelated to this setup.
 
-Milestone 1 (auth + profiles + parent PIN) needs **only Postgres** — no Azure/Anthropic/TTS. The
+Milestone 1 (auth + profiles + parent PIN) needs **only Postgres** — no AWS/Anthropic/TTS. The
 external services sit behind interfaces with dev fakes (see [stubs](#external-service-stubs)), so the
 early milestones run fully offline.
 
@@ -116,7 +116,7 @@ counts and a rough € cost per call.
 - Chat answers as Angelika (capped at `CHAT_MESSAGES_PER_DAY=60`).
 - A homework photo upload produces a draft in the reviewer queue within ~a minute.
 
-**3. Production:** set `ANTHROPIC_API_KEY` **and** `LLM_RESIDENCY_ACK=true` via Key Vault — the app
+**3. Production:** set `ANTHROPIC_API_KEY` **and** `LLM_RESIDENCY_ACK=true` via SSM Parameter Store — the app
 refuses to boot with a key but no residency acknowledgement (ARCHITECTURE §8). Watch the `llm.usage`
 log lines (token counts per call) for daily cost.
 
@@ -127,7 +127,7 @@ log lines (token counts per call) for daily cost.
 | ★ endpoints return 503 | no key → stub selected (or provider/network failure — see logs) |
 | ★ endpoints return 502 | model output failed the schema twice (re-ask included) — check few-shots/prompt |
 | our `429 RATE_LIMITED` | the per-profile daily cap, not Anthropic — kindgerecht by design |
-| truncated chat replies | verify `thinking: {type:'disabled'}` is still set (Sonnet 5 defaults to adaptive thinking, which eats `max_tokens`) |
+| truncated chat replies | verify `thinking: {type:'disabled'}` is still set (current Sonnet models default to adaptive thinking, which eats `max_tokens`) |
 | smoke fails the cache assert | `LLM_SYSTEM` must stay byte-stable between calls; check the `cache_control` marker |
 
 ## Reset the database

@@ -4,13 +4,13 @@ Instructions for AI coding agents (Claude Code) working in this folder. Read thi
 `../ARCHITECTURE.md`, then `./SPEC.md`. On any conflict, `../ARCHITECTURE.md` wins.
 
 ## What this is
-The API service for an adaptive German children's literacy tutor. TypeScript · NestJS · PostgreSQL · Azure.
+The API service for an adaptive German children's literacy tutor. TypeScript · NestJS · PostgreSQL · AWS.
 Pure HTTP/JSON service — it serves no HTML. The frontend (`../frontend`) is the only client.
 
 ## Stack (pinned lines — see ARCHITECTURE §2 for the table)
 Node 24 LTS · TypeScript 5.x · NestJS 11 (Fastify adapter) · Zod 4 (+ `nestjs-zod`) · `@nestjs/swagger` ·
-Prisma 7 (+ `@prisma/adapter-pg`, Prisma Migrate) · PostgreSQL 17 · `@azure/storage-blob` + `@azure/identity` ·
-`@azure/keyvault-secrets` · `@anthropic-ai/sdk` · `ts-fsrs` · `nestjs-pino` · Vitest.
+Prisma 7 (+ `@prisma/adapter-pg`, Prisma Migrate) · PostgreSQL 17 · `@aws-sdk/client-s3` +
+`@aws-sdk/s3-request-presigner` · `@anthropic-ai/sdk` · `ts-fsrs` · `nestjs-pino` · Vitest.
 Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleFormat = "cjs"` for NestJS.
 
 ## Read order before coding
@@ -20,7 +20,7 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 
 ## Golden rules (do not violate)
 1. **`user_id` / `profile_id` come ONLY from the JWT** — never from a request body or path. Grep for this.
-2. **Blob access = user-delegation SAS scoped to the caller's prefix.** Never expose container keys/paths.
+2. **Object-storage access = presigned URLs scoped to one object under the caller's prefix.** Never expose bucket credentials/paths.
 3. **Parent-scoped routes require a fresh `parent` claim** (`ParentScopeGuard`). Reset/unlock are destructive.
 4. **Access is gated by account status, not payment.** The family `JwtAuthGuard` requires `account.status='active'`
    (a per-request check → immediate revocation). AI (`★`) endpoints are **free** — no entitlement/credit/`402`
@@ -30,7 +30,7 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
    `StaffAuthGuard`, signed with `STAFF_JWT_SECRET` ≠ `JWT_SECRET`); a family JWT never validates there and vice
    versa. The reviewer queue is **pseudonymised** (image + LLM draft + skill tags + grade band only). Staff
    user-administration (approve/deactivate/delete real emails) is **admin-role-only**, separate from the queue.
-6. **Never log** child answers, homework/OCR content, emails, login codes, PIN/hash, JWTs, SAS URLs, or bodies.
+6. **Never log** child answers, homework/OCR content, emails, login codes, PIN/hash, JWTs, presigned URLs, or bodies.
    Log identifiers + outcomes only (ARCHITECTURE §6).
 7. **Errors use the one envelope** (`{error:{code,message,requestId,details}}`) via a global exception filter —
    never leak stack traces, Prisma errors, or provider errors to clients.

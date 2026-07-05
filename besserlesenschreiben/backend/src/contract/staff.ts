@@ -35,7 +35,7 @@ export const queueItemSchema = z.object({
   // Coarse progress band (current unit), never an age/DOB.
   gradeBand: z.string(),
   skillTags: z.array(z.string()),
-  // Short-lived per-upload read URL for the homework photo (SAS in prod).
+  // Short-lived per-upload read URL for the homework photo (presigned in prod).
   imageUrl: z.string(),
   // The LLM DRAFT to validate against (never applied on its own).
   llmAnalysis: homeworkAnalysisSchema,

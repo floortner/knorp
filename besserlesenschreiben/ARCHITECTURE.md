@@ -12,8 +12,8 @@ media handling**), **this document wins**.
 ```
 ┌─────────────────────────┐         HTTPS / JSON          ┌─────────────────────────┐
 │  FRONTEND (repo: -web)  │  ───────────────────────────▶ │  BACKEND (repo: -api)   │
-│  Vite + React SPA / PWA │   family cookie (httpOnly)    │  NestJS · Azure          │
-│  static, Azure CDN/SWA  │ ◀───────────────────────────  │  Container Apps          │
+│  Vite + React SPA / PWA │   family cookie (httpOnly)    │  NestJS · AWS EC2        │
+│  static, S3+CloudFront  │ ◀───────────────────────────  │  (systemd, no container) │
 │  child + parent areas   │                               │                          │
 └─────────────────────────┘                               │                          │
 ┌─────────────────────────┐         HTTPS / JSON          │                          │
@@ -21,17 +21,16 @@ media handling**), **this document wins**.
 │ Vite + React (staff)    │   staff cookie (httpOnly)     │                          │
 │ homework review queue   │ ◀───────────────────────────  │                          │
 └─────────────────────────┘                               └───────────┬─────────────┘
-                                  Azure (Austria East / Switzerland N) │
-              ┌───────────────────────┬──────────────────┬────────────┼───────────────┐
-              ▼                       ▼                  ▼            ▼               ▼
-   Azure DB for PostgreSQL    Azure Blob Storage    Anthropic API  Neural TTS   Merchant of Record
-   (Flexible Server)          (per-user, SAS URLs)  (sessions/      (de-AT/      (Lemon Squeezy/
-                                                     chat/vision)    de-DE)       Paddle) — hosted
-                                                                                  checkout, webhook
+                                    AWS (Frankfurt eu-central-1)      │
+              ┌───────────────────────┬──────────────────┬────────────┘
+              ▼                       ▼                  ▼
+   Amazon RDS for PostgreSQL   Amazon S3            Anthropic API      (TTS: Amazon Polly de-DE,
+                               (per-user prefixes,  (sessions/          deferred — Web-Speech
+                                presigned URLs)      chat/vision)       fallback in the client)
 ```
 
 - **Three repos, deployed independently.** The two **frontends** (`-web` family app, `-review` staff portal)
-  are static artifacts; the **backend** is a container. *Current reality:* all live in **one monorepo**
+  are static artifacts; the **backend** is a Node service. *Current reality:* all live in **one monorepo**
   (`besserlesenschreiben/{backend,frontend,reviewer}`) for fast cross-cutting iteration during Phase 1/1.5.
   They are kept independently buildable/deployable (separate `package.json`, CI jobs, env) and split into the
   `-api`/`-web`/`-review` repos before public launch — the contract pipeline (§4) is what makes that split a
@@ -124,18 +123,17 @@ homework; admins see accounts. Same `Reviewer.role` (`reviewer | admin`) gates t
 | Config | `@nestjs/config` + Zod-validated env | — |
 | Logging | `nestjs-pino` (pino, structured JSON) | current |
 | Database | PostgreSQL | **17** (18 fine) |
-| Object storage SDK | `@azure/storage-blob` (+ `@azure/identity`) — per-user prefixes, SAS URLs | current |
-| Secrets SDK | `@azure/keyvault-secrets` | current |
+| Object storage SDK | `@aws-sdk/client-s3` (+ `@aws-sdk/s3-request-presigner`) — per-user prefixes, presigned URLs | v3 |
 | LLM | `@anthropic-ai/sdk` (structured output via `zodOutputFormat`) | current |
 | Scheduling | `ts-fsrs` (SM-2 fallback) | current |
 | Tests | Vitest (Jest = Nest default alternative) | current |
 | Lint / format / types | ESLint + Prettier · `tsc` | — |
-| **Hosting (compute)** | Azure Container Apps (scale-to-zero) | — |
-| **Hosting (DB)** | Azure Database for PostgreSQL Flexible Server | PG 17 |
-| **Hosting (blobs)** | Azure Blob Storage | — |
-| **Secrets** | Azure Key Vault | — |
-| **Login email** | Azure Communication Services Email (or Resend/Postmark) | — |
-| **Region** | Austria East (Vienna) primary · Switzerland North fallback | — |
+| **Hosting (compute)** | Small AWS EC2 instance (Graviton, systemd — no container) | — |
+| **Hosting (DB)** | Amazon RDS for PostgreSQL | PG 17 |
+| **Hosting (objects)** | Amazon S3 | — |
+| **Secrets** | AWS SSM Parameter Store (SecureString), fetched at boot | — |
+| **Login email** | Amazon SES (or Resend/Postmark) | — |
+| **Region** | Frankfurt (eu-central-1) primary · Ireland (eu-west-1) fallback | — |
 
 **Backend-language decision (deliberate, revisitable):** **TypeScript/NestJS** is chosen for **one language
 across both repos** — shared types, shared tooling, one mental model for a solo dev, and the ability to reuse
@@ -187,7 +185,7 @@ scripts/
   build-seed.ts           # regenerates item_bank.seed.json from source
 item_bank.seed.json
 test/                     # Vitest; incl. golden snapshots for digest.md + Exercise JSON
-Dockerfile  package.json  package-lock.json  tsconfig.json  eslint.config.mjs  .env.example  AGENTS.md
+package.json  package-lock.json  tsconfig.json  eslint.config.mjs  .env.example  AGENTS.md
 ```
 
 ### Frontend `-web`
@@ -363,7 +361,7 @@ wrapper over `console` (optionally shipping warn/error to Sentry).
 
 **NEVER log (this is a children's app — treat it as the hard line):**
 - The contents of exercises a child answered, their answers, or homework image contents / OCR text.
-- Email addresses, the 4-digit login code, the parent PIN (or its hash), JWTs, cookies, Blob SAS URLs.
+- Email addresses, the 4-digit login code, the parent PIN (or its hash), JWTs, cookies, presigned storage URLs.
 - Full request/response bodies. Payment tokens or provider secrets.
 - Any field that, combined, re-identifies a specific child's performance.
 
@@ -381,54 +379,54 @@ SPEC §10, deleted on a schedule, EU residency.
 
 ## 7. Build · update · distribution
 
-**Hosting: Microsoft Azure**, region **Austria East (Vienna)** primary — data at rest in Austria, ideal for an
-Austrian children's app. **Switzerland North (Zurich)** is the fallback. Austria East has **no in-country
-paired region** yet, so geo-redundant DB backups replicate to **Germany West Central** (or North Europe).
-New Azure services land in fresh regions gradually → **confirm every service below is GA in Austria East**
-before committing; otherwise pin to Switzerland North.
+**Hosting: AWS**, region **Frankfurt (eu-central-1)** primary — data at rest in the EU (AWS has no Austria
+region; Frankfurt is the closest EU location). **Ireland (eu-west-1)** is the EU fallback/DR region.
+*(Deployment itself is a future milestone — nothing below is stood up yet; local dev needs none of it.)*
 
 ### Backend
-- **Compute:** **Azure Container Apps** (scale-to-zero, scales on HTTP load — fits the cost-recovery goal).
-  Multi-stage `Dockerfile`, non-root, `npm ci` deps, Node 24; image in **Azure Container Registry**.
-- **Database:** **Azure Database for PostgreSQL Flexible Server**, zone-redundant where the region offers it,
-  geo-backup to the DR region above.
-- **Blobs:** **Azure Blob Storage**, one container, per-user virtual prefixes (`users/{account}/{profile}/…`),
-  access via short-lived **user-delegation SAS** scoped to the caller's prefix (the Azure equivalent of the
-  signed-URL rule). Lifecycle policy auto-deletes raw homework images on schedule.
-- **Secrets:** **Azure Key Vault**, referenced by Container Apps; nothing in the image or repo.
-- **Health:** `GET /api/v1/health` → `{status, version, commit}` for the Container Apps probe.
+- **Compute:** a **small EC2 instance** (t4g Graviton), running `node dist/main.js` under **systemd** — no
+  container, no registry. TLS via nginx + Let's Encrypt (or an ALB). App Runner is the noted future option if
+  containerising ever pays for itself.
+- **Database:** **Amazon RDS for PostgreSQL**, automated backups on, snapshot copy to the DR region above.
+- **Objects:** **Amazon S3**, one bucket, per-user prefixes (`users/{account}/{profile}/…`), access via
+  short-lived **presigned URLs** scoped to a single object; the app authenticates via the **IAM instance
+  role** (default credential chain — no keys in env). Lifecycle policy auto-deletes raw homework images on
+  schedule.
+- **Secrets:** **SSM Parameter Store (SecureString)**, fetched at boot; nothing in the repo or on disk.
+- **Health:** `GET /api/v1/health` → `{status, version, commit}` for the load-balancer/uptime probe.
 - **Migrations:** `prisma migrate deploy` runs as a **pre-traffic release step** (never at import). Forward-only,
   expand→migrate→contract so rollouts are zero-downtime and rollback-safe.
 - **Seed:** `npm run seed` (`prisma db seed` → `prisma/seed.ts`) is idempotent; run on first deploy and when the seed JSON changes.
 
 ### Backups & off-platform disaster recovery
-The in-Azure geo-backup above survives a *regional* incident, but **not** an account-level event — a billing
-dispute or policy flag can suspend the subscription and take compute, database, **and** blobs offline
-simultaneously. The cheap insurance is to keep an independent copy **outside Azure**, so an account problem
+The in-AWS cross-region backup above survives a *regional* incident, but **not** an account-level event — a
+billing dispute or policy flag can suspend the account and take compute, database, **and** objects offline
+simultaneously. The cheap insurance is to keep an independent copy **outside AWS**, so an account problem
 costs uptime, not data and users.
 
-- **Postgres:** scheduled `pg_dump` (daily; a Container Apps job or GitHub Actions cron) → compressed,
+- **Postgres:** scheduled `pg_dump` (daily; a cron on the instance or GitHub Actions) → compressed,
   **client-side encrypted** (age/gpg) → pushed to a **different provider** (e.g. Cloudflare R2, Backblaze B2,
-  or another cloud's object storage). Keep the in-Azure automated backups too; this is the off-platform tier.
-- **Blob:** periodic export of the user prefixes (`users/{account}/{profile}/…` — homework images, generated
+  or another cloud's object storage). Keep the in-AWS automated backups too; this is the off-platform tier.
+- **Objects:** periodic export of the user prefixes (`users/{account}/{profile}/…` — homework images, generated
   sessions/digests, TTS audio) to the same off-platform target, encrypted. TTS audio is regenerable so it's
   lowest priority; child homework + learning artifacts are the priority.
 - **Retention:** short rolling window (e.g. 7 daily + 4 weekly), aligned with the minors'-data retention
   posture in §8 — backups are not an excuse to keep child data forever; expire them on the same clock.
-- **Encryption & access:** the off-platform copy is encrypted with a key **not stored in Azure Key Vault**
+- **Encryption & access:** the off-platform copy is encrypted with a key **not stored in SSM/AWS**
   (otherwise an account freeze locks you out of your own backups). Hold that key separately.
 - **Restore drills:** a backup you haven't restored is a hope, not a backup. Periodically rebuild Postgres from
   a dump into a throwaway instance and verify row counts + a sample profile. Document the restore runbook.
 - **Scope:** this is **disaster recovery, not analytics** — encrypted archives, not a queryable mirror, and
   subject to the same "no child content in logs/exports we don't need" discipline as everything else.
 
-Result: an Azure account suspension becomes a recoverable outage (stand the container + DB back up elsewhere,
+Result: an AWS account suspension becomes a recoverable outage (stand the app + DB back up elsewhere,
 restore from the off-platform dumps) rather than the loss of every family's data.
 
 ### Frontend
 - **Build:** `vite build` → hashed, immutable static assets + `index.html`.
-- **Distribution:** **Azure Static Web Apps** (or Blob + Azure CDN/Front Door). Cache policy: hashed assets
-  `immutable, max-age=1y`; `index.html` + service worker `no-cache` so deploys are picked up immediately.
+- **Distribution:** **S3 + CloudFront** (both frontends; the reviewer portal on its own origin). Cache policy:
+  hashed assets `immutable, max-age=1y`; `index.html` + service worker `no-cache` so deploys are picked up
+  immediately.
 - **PWA update strategy (important):** vite-plugin-pwa + Workbox, **prompt-to-update** (never silent reload
   mid-lesson). On new SW detected → let the current exercise finish, then a gentle "Neue Version verfügbar –
   neu laden?" in the shell/parent area, never interrupting a child's answer. App shell precached → installable
@@ -445,9 +443,11 @@ restore from the off-platform dumps) rather than the loss of every family's data
 - Implemented in `.github/workflows/ci.yml` (monorepo: one workflow, a `backend` job and a `frontend` job, each
   scoped to its subdirectory; on push to `main` + all PRs). On the repo split each job moves to its own repo
   unchanged.
-- Frontend: install → typecheck (`tsc`) → lint → unit + **golden** tests → `vite build` → deploy to Azure on `main`.
-- Backend: `npm ci` → lint (ESLint) → typecheck (`tsc --noEmit`) → `vitest` (incl. **golden** tests) → `prisma generate` →
-  build image → push to ACR → `prisma migrate deploy` + deploy to Container Apps on `main`.
+- Frontend: install → typecheck (`tsc`) → lint → unit + **golden** tests → `vite build`. (Deploy to
+  S3+CloudFront on `main` lands with the deployment milestone.)
+- Backend: `npm ci` → lint (ESLint) → typecheck (`tsc --noEmit`) → `vitest` (incl. **golden** tests) →
+  `prisma generate` → build. (Release to EC2 + `prisma migrate deploy` as a pre-traffic step lands with the
+  deployment milestone.)
 - **Contract check:** regenerate `api.ts` types from the backend OpenAPI and fail the frontend build on drift.
 - **Golden/snapshot tests (dtctl lesson):** the two outputs that are *contracts* — the `digest.md` format
   (LLM-facing) and the `Exercise` JSON (client-facing) — are pinned with golden files built from real structs.
@@ -458,20 +458,19 @@ restore from the off-platform dumps) rather than the loss of every family's data
 ## 8. Configuration, security & data residency (cross-cutting)
 
 - **Config is env-only**, typed via `@nestjs/config` + a Zod env schema (backend) and `import.meta.env` (frontend). Every var
-  is documented in a committed `.env.example`; **no secret is ever committed**. Secrets live in **Azure Key
-  Vault**. Full var list: `backend/SPEC.md §11`.
-- **Security boundary (recap, non-negotiable):** `user_id`/`profile_id` derive only from the JWT; Blob access is
-  via **user-delegation SAS scoped to the caller's prefix** (never a path from the client); routes are gated by
-  **account status (approved/active, §1b)** + **parent-scope** where needed (entitlement/credit gating is
-  deferred, §9); PIN and login code are hashed and rate-limited.
+  is documented in a committed `.env.example`; **no secret is ever committed**. Secrets live in **SSM
+  Parameter Store (SecureString)**. Full var list: `backend/SPEC.md §11`.
+- **Security boundary (recap, non-negotiable):** `user_id`/`profile_id` derive only from the JWT; object-storage
+  access is via **short-lived presigned URLs scoped to a single object** under the caller's prefix (never a
+  path from the client); routes are gated by **account status (approved/active, §1b)** + **parent-scope** where
+  needed (entitlement/credit gating is deferred, §9); PIN and login code are hashed and rate-limited.
 - **No in-memory security state in prod.** Anything that gates access — PIN-lockout counters, rate-limit
-  windows — lives in a durable store (DB columns / Redis), never a process-local Map. The backend scales to
-  zero and out, so in-memory counters would reset on every cold start and never be shared across replicas
-  (a brute-force hole). The parent-PIN lockout (5 fails / 15 min) is persisted on `account`
-  (`pin_attempts`, `pin_locked_until`).
+  windows — lives in a durable store (DB columns / Redis), never a process-local Map. A restart or a second
+  replica must never reset a lockout (a brute-force hole). The parent-PIN lockout (5 fails / 15 min) is
+  persisted on `account` (`pin_attempts`, `pin_locked_until`).
 - **LLM access is abstracted.** AI work (free, but access-gated by account status) goes through a single
-  swappable `LlmService` (Anthropic-direct is the dev default) so the provider can move to Azure AI Foundry /
-  Vertex EU without touching callers. **EU data-residency for minors is a hard gate before any production LLM
+  swappable `LlmService` (Anthropic-direct is the default) so the provider could move (e.g. Bedrock /
+  Vertex EU) without touching callers. **EU data-residency for minors is a hard gate before any production LLM
   call** — see the data-flow options below.
 - **Staff access to minors' data (reviewers).** Homework review (§11) means internal staff see a child's
   homework photo — the strongest minors'-data exposure in the system. Gate it hard: (a) reviewers are a small,
@@ -481,28 +480,24 @@ restore from the off-platform dumps) rather than the loss of every family's data
   (identifiers + outcome, never image/answer content — §6); (d) consent copy at upload states that a homework
   photo is reviewed by a trained professional to tailor lessons; (e) raw images expire on the §7 lifecycle
   regardless of review state. An admin can revoke a reviewer; queue claims are released on revoke.
-- **Minors' data:** primary region **Austria East** keeps data at rest in Austria; DR backups stay within the
-  EU (Germany West Central). Explicit parent consent for homework images; short retention via Blob lifecycle;
-  the logging rules in §6 are part of this commitment. **LLM data-flow — three options, in preference order
-  once verified:**
-  1. **Claude on Azure AI Foundry (serverless/MaaS).** Claude is now in the Foundry catalog, so inference can
-     stay inside the Azure billing + security boundary, billed via Azure, and pair with **Azure AI Content
-     Safety** (valuable for a children's app). *Prefer this if* the region check passes — Anthropic's Supported
-     Regions Policy applies, so confirm the Claude model you need is consumable from Austria East or another
-     **EU** region with EU data handling; also confirm the catalog's model version isn't lagging what you need.
-  2. **Anthropic API direct.** Simplest path and always the newest models, but it's an external seam: keep a
+- **Minors' data:** primary region **Frankfurt (eu-central-1)** keeps data at rest in the EU; DR backups stay
+  within the EU (eu-west-1). Explicit parent consent for homework images; short retention via the S3 lifecycle;
+  the logging rules in §6 are part of this commitment. **LLM data-flow (decided):**
+  1. **Anthropic API direct (chosen).** Simplest path and always the newest models. For EU inference
+     residency, pin `inference_geo: "eu"` on supported models (Sonnet 4.6+). It's an external seam: keep a
      **DPA**, send the *digest* (not raw child identifiers) where possible, and document the data flow.
-  3. **Claude via Vertex AI or Bedrock (EU regions).** Fallback escape hatches if strict in-EU residency is
-     required and Foundry's region/version doesn't fit — at the cost of a second cloud relationship.
-  Whichever is chosen, the same rules hold: **DPA in place, send the digest not raw identifiers where possible,
-  and document the data flow.** TTS (Azure AI Speech or external) follows the same DPA + minimal-data discipline.
-  - **Model policy (Anthropic-direct default):** `ANTHROPIC_MODEL` = `claude-sonnet-5` (generation/chat),
+  2. **Claude via Bedrock or Vertex AI (EU regions).** Fallback escape hatches only if a strictly
+     cloud-internal data boundary is ever required — at the cost of feature lag (no same-day models,
+     missing platform features) and a heavier integration.
+  Whichever is used, the same rules hold: **DPA in place, send the digest not raw identifiers where possible,
+  and document the data flow.** TTS (Amazon Polly, deferred) follows the same DPA + minimal-data discipline.
+  - **Model policy (Anthropic-direct default):** `ANTHROPIC_MODEL` = `claude-sonnet-4-6` (generation/chat),
     `ANTHROPIC_VISION_MODEL` = `claude-opus-4-8` (homework OCR — accuracy-critical). On current models
     `temperature`/`top_p`/`top_k` are rejected (400): steer with the prompt (and output effort), not sampling
     params. Stable system prompts are sent as prompt-cacheable blocks. Structured output is a forced tool over
     the `src/contract` Zod→JSON-Schema, re-validated (incl. solvability) with a one-shot re-ask on a miss.
 - **Observability:** `requestId` threads request → logs → error envelope → support. Optional Sentry on both
-  ends with PII scrubbing. Health checks drive Container Apps restarts.
+  ends with PII scrubbing. Health checks drive systemd/uptime-monitor restarts.
 
 ---
 
@@ -536,7 +531,7 @@ reward art, exercise illustrations, icons, decorative elements — all SVG. Rati
 - **Diffable** — SVG is text, so changes show up in PRs (raster blobs don't).
 
 **Pipeline**
-- Author/optimize SVGs with **SVGO**; store app SVGs in `assets/svg/` (bundled) or Blob for generated ones.
+- Author/optimize SVGs with **SVGO**; store app SVGs in `assets/svg/` (bundled) or S3 for generated ones.
 - **Sanitize every SVG that isn't hand-authored by you** (LLM-generated or uploaded) before storing/serving —
   SVG can carry `<script>`/`onload` and is an XSS vector. Use **DOMPurify** (`USE_PROFILES:{svg:true}`) on the
   frontend for any inlined SVG, and a server-side sanitizer before persisting. **Never** inline an unsanitized
