@@ -13,18 +13,18 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
 - **Language/framework:** Node.js 24 LTS + TypeScript + **NestJS 11** (Fastify adapter). **Zod** schemas
   (via `nestjs-zod`) for all request/response DTOs; `@nestjs/swagger` emits the OpenAPI the frontend types from.
 - **DB:** PostgreSQL 17 via **Prisma 7** (`prisma/schema.prisma` is the model truth). Migrations with **Prisma Migrate**.
-- **Object storage:** **Azure Blob Storage** (per-user prefixes, short-lived **SAS** URLs) via `@azure/storage-blob`.
+- **Object storage:** **Amazon S3** (per-user prefixes, short-lived **presigned** URLs) via `@aws-sdk/client-s3`.
 - **Auth:** passwordless email code → JWT session token. Separate **parent PIN** elevation.
 - **LLM:** `@anthropic-ai/sdk` (session generation, chat, homework vision); structured JSON via `zodOutputFormat` +
   `messages.parse` reuses the same Zod schemas. Model string configurable via env. See `../ARCHITECTURE.md` §8 for
-  the direct-API vs Azure-Foundry data-flow decision.
-- **TTS:** neural TTS provider (Azure AI Speech/Google `de-AT`/`de-DE`), pre-generated per item and cached in Blob.
+  the LLM data-flow decision (Anthropic-direct, `inference_geo: "eu"`).
+- **TTS:** **Amazon Polly** neural voices (`de-DE`), pre-generated per item and cached in S3 — deferred (Web-Speech fallback in the client).
 - **Payments:** Merchant-of-Record (Lemon Squeezy or Paddle) via webhook → entitlements.
-- **Hosting:** **Azure Container Apps** (region Austria East; see `../ARCHITECTURE.md` §7). **Never rely on local disk for persistence.**
+- **Hosting:** small **AWS EC2** instance, region Frankfurt eu-central-1 (see `../ARCHITECTURE.md` §7; deployment is a future milestone). **Never rely on local disk for persistence.**
 
 **Hard rules (security boundary):**
 1. `user_id` / `profile_id` is **always derived from the JWT**, never from a client-supplied path or body field.
-2. All Blob access is via **user-delegation SAS scoped to the authenticated user's prefix**. Container keys/paths are never exposed.
+2. All object-storage access is via **presigned URLs scoped to a single object under the authenticated user's prefix**. Bucket credentials/paths are never exposed.
 3. Parent-scoped and billing endpoints require a valid **parent elevation claim** (§4).
 4. AI endpoints (`★`) are **free** — no entitlement/credit/`402` check (billing deferred, ARCHITECTURE §9); access is gated by `account.status='active'` instead (§4).
 
@@ -107,7 +107,7 @@ item_bank(
   unit          int not null,           -- which unit/Einheit (1..N)
   exercise_type text not null,          -- raster|findvowel|realword|fixvowel|swapvowel|length|sylvalid|insertvowel|paircheck|pickword|sentencefix|compound|family|sylarrange
   payload       jsonb not null,         -- the exercise spec (see §8 for per-type shape)
-  audio_url     text,                   -- pre-generated TTS for the word (SAS at read time)
+  audio_url     text,                   -- pre-generated TTS for the word (presigned at read time)
   syllable_audio jsonb,                 -- optional per-syllable audio urls
   skill_tags    text[] not null,        -- e.g. {'vowel_ei','letter_discrimination','syllable_count'} (taxonomy: scripts/build-seed.ts)
   difficulty    int default 1,
@@ -170,7 +170,7 @@ review_state(
 homework_upload(
   id                uuid pk,
   profile_id        uuid fk -> profile,
-  image_key         text not null,            -- Blob key under user prefix (EXIF-stripped WebP)
+  image_key         text not null,            -- S3 key under user prefix (EXIF-stripped WebP)
   status            text default 'pending_analysis',
                     -- pending_analysis | pending_review | reviewed | rejected
   llm_analysis      jsonb,                     -- DRAFT vision output (§9) — NEVER applied on its own
@@ -251,7 +251,7 @@ The session JWT alone is not enough: the family `JwtAuthGuard` re-reads the acco
 
 ---
 
-## 5. Per-user storage layout (Azure Blob)
+## 5. Per-user storage layout (S3)
 
 Prefix derived from the authenticated profile — **never** from client input.
 
@@ -265,7 +265,7 @@ users/{account_id}/{profile_id}/
   homework/{date}-{id}.md    # LLM analysis of that photo
 ```
 
-Postgres holds metadata + pointers; Blob holds markdown + media. Reads/writes via SAS URLs scoped to the prefix.
+Postgres holds metadata + pointers; S3 holds markdown + media. Reads via presigned URLs scoped to one object.
 
 ---
 
@@ -344,8 +344,8 @@ POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
                                  reviewedAnalysis?, notes?}
                                                      -> {status}   # authoritative; applies on approved|corrected
 ```
-- `imageUrl` is a short-lived user-delegation SAS scoped to that one upload — the reviewer never gets a
-  container key or any other child's prefix.
+- `imageUrl` is a short-lived presigned URL scoped to that one upload — the reviewer never gets a
+  bucket credential or any other child's prefix.
 - `claim` leases the item (`claimed_until`) so two reviewers don't grade it twice; the lease auto-expires.
 - On `approved`/`corrected` the backend writes derived `attempt` rows + adjusts `review_state` from
   `reviewed_analysis`, sets `status='reviewed'`, and records a `homework_review` row (with `agreed_with_llm`).
@@ -378,7 +378,7 @@ POST /parent/reset         ‡ {profileId}             -> {ok}     # destructive
 paid-tier option (ARCHITECTURE §9). The app is free; nothing here is implemented. Listed for the future only.
 
 ### Digest generation (`GET /digest`)
-Regenerate `digest.md` from the `attempt` table (last ~14 days), write to Blob, return markdown.
+Regenerate `digest.md` from the `attempt` table (last ~14 days), write to storage, return markdown.
 This is the **LLM-facing view** — compact, not raw rows. Target format:
 
 ```markdown
@@ -451,13 +451,13 @@ professionally-validated** homework focus; the LLM only generates *new content* 
 ## 9. TTS pipeline
 
 - Vocabulary is **bounded** (item bank) → synthesize once, cache forever.
-- On item insert (seed or LLM): enqueue a synth job → neural TTS (`de-AT` preferred for the Austrian practice, `de-DE` fine) → store audio in Blob → set `item_bank.audio_url` (+ per-syllable for `count`/`order` clapping).
+- On item insert (seed or LLM): enqueue a synth job → Amazon Polly neural (`de-DE`; Polly has no `de-AT` neural voice — acceptable) → store audio in S3 → set `item_bank.audio_url` (+ per-syllable audio for syllable exercises).
 - Frontend plays `audio_url` if present; **Web Speech API is the fallback** for dynamic text (chat) only.
 - Verify current provider voices/pricing before committing — those change.
 
 ## 10. Homework vision pipeline — professional-in-the-loop (ARCHITECTURE §11)
 
-1. `POST /homework` → strip EXIF, transcode to WebP, store in Blob under user prefix, row
+1. `POST /homework` → strip EXIF, transcode to WebP, store in S3 under user prefix, row
    `status='pending_analysis'` (see `../ARCHITECTURE.md` §10).
 2. Send image to **Claude vision** with a structured prompt → **JSON only**:
    ```json
@@ -477,7 +477,7 @@ professionally-validated** homework focus; the LLM only generates *new content* 
    family only ever sees the authoritative `reviewed_analysis` (once `status='reviewed'`), never the draft.
 
 **Pseudonymisation (hard rule):** the reviewer queue exposes image + draft + skill tags + grade band only — no
-child name, parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived SAS.
+child name, parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived presigned URL.
 
 **Data-protection (minors):** parent-consented at upload (copy states a trained professional reviews the
 photo), short retention on raw images regardless of review state, EU data residency where the provider offers
@@ -497,10 +497,10 @@ REVIEWER_ORIGIN=                 # staff portal origin, CORS allowlist (credenti
 HOMEWORK_REVIEW_CLAIM_TTL=       # queue soft-lock lease, e.g. 900 (seconds)
 ANTHROPIC_API_KEY=
 ANTHROPIC_MODEL=                 # configurable; see ../ARCHITECTURE.md §8
-AZURE_STORAGE_ACCOUNT= AZURE_STORAGE_CONTAINER=   # auth via Managed Identity / Key Vault, not keys in env
+AWS_S3_BUCKET= AWS_REGION=          # auth via the IAM instance role (default credential chain), not keys in env
 TTS_PROVIDER= TTS_KEY=
 EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev) | resend (prod, needs KEY + FROM)
-STORAGE_LOCAL_DIR=               # dev-only local Blob fake; unused when AZURE_STORAGE_ACCOUNT is set
+STORAGE_LOCAL_DIR=               # dev-only local filesystem store; unused when AWS_S3_BUCKET is set
 BILLING_PROVIDER=                # lemonsqueezy|paddle
 BILLING_WEBHOOK_SECRET=
 ```
@@ -515,7 +515,7 @@ BILLING_WEBHOOK_SECRET=
 
 **Phase 1.5 — hardening (DONE):** runtime response-contract validation (`ZodResponseInterceptor`); httpOnly
 cookie auth + `/me`-probe frontend; durable PIN lockout (`pin_attempts`/`pin_locked_until`); prod email
-(Resend) + Azure Blob storage adapters (fail-loud, no silent no-op); 201 statuses on creating POSTs; FSRS
+(Resend) + object-storage adapters (fail-loud, no silent no-op); 201 statuses on creating POSTs; FSRS
 `learning_steps` persistence; React error boundary + renderer safety; offline session caching + telemetry
 retention; guard/flow tests; these docs.
 
@@ -543,7 +543,7 @@ retention; guard/flow tests; these docs.
    `input_schema` is the JSON Schema of the caller's `src/contract` Zod schema, re-validated against that
    schema — incl. per-type **solvability** — with a one-shot re-ask on a contract miss; EU-residency gate
    before prod; canned/stub path when `ANTHROPIC_API_KEY` is unset). No credit hook.
-   **Model policy:** `ANTHROPIC_MODEL` defaults to `claude-sonnet-5` (generation/chat), `ANTHROPIC_VISION_MODEL`
+   **Model policy:** `ANTHROPIC_MODEL` defaults to `claude-sonnet-4-6` (generation/chat), `ANTHROPIC_VISION_MODEL`
    to `claude-opus-4-8` (homework OCR). `temperature`/`top_p`/`top_k` are **not sent** — rejected (400) on
    current models; steer via the prompt (+ output effort). Stable system prompts are sent as prompt-cacheable
    blocks.
@@ -571,7 +571,7 @@ Builds the entire staff realm and the `-review` portal; only here does reviewed 
     disjoint key `STAFF_JWT_SECRET`, rejected on family routes and vice-versa); staff login (email code, own
     httpOnly cookie) + `GET /staff/me`; **~3 reviewers admin-seeded** (no self-signup).
 11. **Review queue + authoritative apply (closes milestone 8's loop).** `GET /staff/queue` (pseudonymised,
-    cursor-paged, per-upload short-lived SAS for `imageUrl`); claim/lease (`409` if held); `POST /staff/reviews/{id}`
+    cursor-paged, per-upload short-lived presigned `imageUrl`); claim/lease (`409` if held); `POST /staff/reviews/{id}`
     that writes `reviewed_analysis`, derives `attempt` rows + adjusts `review_state`, sets `status='reviewed'`,
     and records the LLM-vs-reviewer diff (`agreed_with_llm`).
 12. **Lecture wiring + family status.** LLM session generation (§8) folds a reviewed upload's

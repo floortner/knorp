@@ -20,7 +20,7 @@ export const envSchema = z.object({
   // Staff portal origin for CORS (credentials on). Empty → permissive (dev/test only).
   REVIEWER_ORIGIN: z.string().default(''),
   // Public base URL of this API incl. the /api/v1 prefix. Used to build capability URLs the browser loads
-  // directly — e.g. serving homework images from the filesystem store (no Azure SAS). Empty →
+  // directly — e.g. serving homework images from the filesystem store (no S3). Empty →
   // http://localhost:${PORT}/api/v1 (dev default).
   PUBLIC_API_URL: z.string().default(''),
   // Admin bootstrap (ARCHITECTURE §1b): comma-separated emails upserted as active admin reviewers by the
@@ -56,10 +56,12 @@ export const envSchema = z.object({
   // MUCH). Counted from existing rows (session/chat_message), UTC day. Over cap → friendly 429.
   LLM_SESSIONS_PER_DAY: z.coerce.number().int().positive().default(5),
   CHAT_MESSAGES_PER_DAY: z.coerce.number().int().positive().default(60),
-  AZURE_STORAGE_ACCOUNT: z.string().default(''),
-  AZURE_STORAGE_CONTAINER: z.string().default(''),
-  // Dev-only: where the local-filesystem Blob fake writes per-user files until the Azure adapter lands.
-  // Empty → defaults to <os tmpdir>/blsb-dev-blob. Never used when AZURE_STORAGE_ACCOUNT is set.
+  // Object storage: set AWS_S3_BUCKET to use S3 (auth via the default AWS credential chain — an IAM role
+  // in prod, no keys in env); leave blank to use the local-filesystem store.
+  AWS_S3_BUCKET: z.string().default(''),
+  AWS_REGION: z.string().default('eu-central-1'),
+  // Dev-only: where the local-filesystem store writes per-user files. Empty → defaults to
+  // <os tmpdir>/blsb-dev-blob. Never used when AWS_S3_BUCKET is set.
   STORAGE_LOCAL_DIR: z.string().default(''),
   TTS_PROVIDER: z.string().default(''),
   TTS_KEY: z.string().default(''),

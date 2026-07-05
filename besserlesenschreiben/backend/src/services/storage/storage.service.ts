@@ -4,51 +4,41 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import type { BlobServiceClient, ContainerClient, UserDelegationKey } from '@azure/storage-blob';
+import type { S3Client } from '@aws-sdk/client-s3';
 import type { Env } from '../../config/env';
 
 /**
- * Per-user object storage (SPEC §5). Two backends, chosen by whether AZURE_STORAGE_ACCOUNT is set:
- *   - Azure Blob (prod): authenticated via Managed Identity (DefaultAzureCredential) — no keys in env.
- *     Keys are ALWAYS `users/{account_id}/{profile_id}/…`, derived from the JWT ids, never client input,
- *     so the layout matches the eventual user-delegation SAS scope exactly (security §2).
+ * Per-user object storage (SPEC §5). Two backends, chosen by whether AWS_S3_BUCKET is set:
+ *   - S3 (prod): authenticated via the default AWS credential chain (IAM role on the instance) — no keys
+ *     in env. Keys are ALWAYS `users/{account_id}/{profile_id}/…`, derived from the JWT ids, never client
+ *     input, so the layout matches the presigned-URL scope exactly (security §2).
  *   - Local filesystem (dev): a fake under STORAGE_LOCAL_DIR using the same key layout.
  *
- * Failures are NOT silently swallowed here (the previous "Azure configured → skip write" no-op hid data
- * loss). Storage is honest; callers that can tolerate a miss (e.g. the regenerable digest) wrap the call.
- *
- * NOTE: user-delegation SAS URL minting for homework photos lands with the homework milestone (Phase 2),
- * where it is actually wired and testable.
+ * Failures are NOT silently swallowed here (a "storage configured → skip write" no-op hides data loss).
+ * Storage is honest; callers that can tolerate a miss (e.g. the regenerable digest) wrap the call.
  */
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger('StorageService');
-  private readonly account: string;
-  private readonly container: string;
+  private readonly bucket: string;
+  private readonly region: string;
   private readonly localRoot: string;
-  private readonly useAzure: boolean;
-  // Filesystem-store image serving (dev / no-Azure): sign short-lived capability tokens for the
+  private readonly useS3: boolean;
+  // Filesystem-store image serving (dev / no-S3): sign short-lived capability tokens for the
   // homework-image endpoint, and know our own public base to build the URL the reviewer's <img> loads.
   private readonly imageSecret: string;
   private readonly publicApiBase: string;
-  private blobServicePromise: Promise<BlobServiceClient> | null = null;
-  // A user-delegation key is valid for days and signs many SAS tokens — cache it instead of fetching one
-  // per blob (the review queue signs up to 50 URLs per page load).
-  private udkCache: { value: UserDelegationKey; expiresOn: Date } | null = null;
+  private s3ClientPromise: Promise<S3Client> | null = null;
 
   constructor(config: ConfigService<Env, true>) {
-    this.account = config.get('AZURE_STORAGE_ACCOUNT', { infer: true });
-    this.container = config.get('AZURE_STORAGE_CONTAINER', { infer: true });
-    this.useAzure = this.account.length > 0;
+    this.bucket = config.get('AWS_S3_BUCKET', { infer: true });
+    this.region = config.get('AWS_REGION', { infer: true });
+    this.useS3 = this.bucket.length > 0;
     this.localRoot = config.get('STORAGE_LOCAL_DIR', { infer: true }) || join(tmpdir(), 'blsb-dev-blob');
     this.imageSecret = config.get('STAFF_JWT_SECRET', { infer: true });
     this.publicApiBase =
       config.get('PUBLIC_API_URL', { infer: true }) ||
       `http://localhost:${config.get('PORT', { infer: true })}/api/v1`;
-
-    if (this.useAzure && !this.container) {
-      throw new Error('AZURE_STORAGE_ACCOUNT is set but AZURE_STORAGE_CONTAINER is missing.');
-    }
   }
 
   /** Storage key under the caller's prefix. Ids come from the JWT, never the request (security §2). */
@@ -56,51 +46,28 @@ export class StorageService {
     return `users/${accountId}/${profileId}/${name}`;
   }
 
-  /** Lazily build the Azure Blob service client (Managed Identity). Built once; reused across calls. */
-  private blobService(): Promise<BlobServiceClient> {
-    // `??=` narrows away the null; the cast bridges the package's dual ESM/CJS type declarations
-    // (the runtime `await import()` resolves the ESM client, the field uses the CJS one).
-    return (this.blobServicePromise ??= (async () => {
-      const { BlobServiceClient } = await import('@azure/storage-blob');
-      const { DefaultAzureCredential } = await import('@azure/identity');
-      return new BlobServiceClient(
-        `https://${this.account}.blob.core.windows.net`,
-        new DefaultAzureCredential(),
-      ) as unknown as BlobServiceClient;
+  /** Lazily build the S3 client (default credential chain — IAM role in prod). Built once; reused. */
+  private s3(): Promise<S3Client> {
+    return (this.s3ClientPromise ??= (async () => {
+      const { S3Client } = await import('@aws-sdk/client-s3');
+      return new S3Client({ region: this.region });
     })());
-  }
-
-  /** The container client (cheap to derive — no network) off the cached service client. */
-  private async azureContainer(): Promise<ContainerClient> {
-    const service = await this.blobService();
-    return service.getContainerClient(this.container);
-  }
-
-  /** A cached user-delegation key valid past `neededUntil`; refetched (with skew) only when stale. */
-  private async userDelegationKey(neededUntil: Date): Promise<UserDelegationKey> {
-    const SKEW_MS = 5 * 60 * 1000;
-    const WINDOW_MS = 6 * 60 * 60 * 1000; // reuse one key for ~6h of signing
-    if (this.udkCache && this.udkCache.expiresOn.getTime() - SKEW_MS > neededUntil.getTime()) {
-      return this.udkCache.value;
-    }
-    const now = Date.now();
-    const service = await this.blobService();
-    const expiresOn = new Date(Math.max(neededUntil.getTime(), now + WINDOW_MS));
-    const value = await service.getUserDelegationKey(new Date(now - 60_000), expiresOn);
-    this.udkCache = { value, expiresOn };
-    return value;
   }
 
   /** Write a user file. Throws on failure (callers that can tolerate a miss must catch). */
   async writeUserFile(accountId: string, profileId: string, name: string, content: string): Promise<void> {
     const key = this.keyFor(accountId, profileId, name);
-    if (this.useAzure) {
-      const container = await this.azureContainer();
-      const blob = container.getBlockBlobClient(key);
-      await blob.upload(content, Buffer.byteLength(content), {
-        blobHTTPHeaders: { blobContentType: 'text/markdown; charset=utf-8' },
-      });
-      this.logger.log({ event: 'storage.write', name }, 'user file written (azure)');
+    if (this.useS3) {
+      const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+      await (await this.s3()).send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: content,
+          ContentType: 'text/markdown; charset=utf-8',
+        }),
+      );
+      this.logger.log({ event: 'storage.write', name }, 'user file written (s3)');
       return;
     }
     const path = join(this.localRoot, key);
@@ -121,11 +88,11 @@ export class StorageService {
     contentType: string,
   ): Promise<string> {
     const key = this.keyFor(accountId, profileId, name);
-    if (this.useAzure) {
-      const container = await this.azureContainer();
-      await container.getBlockBlobClient(key).upload(content, content.byteLength, {
-        blobHTTPHeaders: { blobContentType: contentType },
-      });
+    if (this.useS3) {
+      const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+      await (await this.s3()).send(
+        new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: content, ContentType: contentType }),
+      );
     } else {
       const path = join(this.localRoot, key);
       await mkdir(dirname(path), { recursive: true });
@@ -136,34 +103,47 @@ export class StorageService {
   }
 
   /**
-   * Erase every object under an account's prefix (`users/{accountId}/…`) — the blob half of account
-   * deletion (SPEC §6; security rule 8: delete removes DB rows AND blobs). The accountId comes from the
-   * deleted row, never client input. Idempotent: a missing prefix is a no-op.
+   * Erase every object under an account's prefix (`users/{accountId}/…`) — the object-storage half of
+   * account deletion (SPEC §6; security rule 8: delete removes DB rows AND stored objects). The accountId
+   * comes from the deleted row, never client input. Idempotent: a missing prefix is a no-op.
    */
   async deleteUserPrefix(accountId: string): Promise<void> {
     const prefix = `users/${accountId}/`;
-    if (this.useAzure) {
-      const container = await this.azureContainer();
+    if (this.useS3) {
+      const { ListObjectsV2Command, DeleteObjectsCommand } = await import('@aws-sdk/client-s3');
+      const s3 = await this.s3();
       let deleted = 0;
-      for await (const blob of container.listBlobsFlat({ prefix })) {
-        await container.getBlockBlobClient(blob.name).deleteIfExists();
-        deleted += 1;
-      }
-      this.logger.log({ event: 'storage.delete_prefix', count: deleted }, 'account blobs erased (azure)');
+      let continuationToken: string | undefined;
+      do {
+        const page = await s3.send(
+          new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix, ContinuationToken: continuationToken }),
+        );
+        const keys = (page.Contents ?? []).flatMap((o) => (o.Key ? [{ Key: o.Key }] : []));
+        if (keys.length > 0) {
+          await s3.send(
+            new DeleteObjectsCommand({ Bucket: this.bucket, Delete: { Objects: keys, Quiet: true } }),
+          );
+          deleted += keys.length;
+        }
+        continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
+      } while (continuationToken);
+      this.logger.log({ event: 'storage.delete_prefix', count: deleted }, 'account objects erased (s3)');
       return;
     }
     await rm(join(this.localRoot, 'users', accountId), { recursive: true, force: true });
-    this.logger.log({ event: 'storage.delete_prefix' }, 'account blobs erased (dev local)');
+    this.logger.log({ event: 'storage.delete_prefix' }, 'account objects erased (dev local)');
   }
 
   /** Read binary content by full key (e.g. for vision analysis), or null if missing. */
   async readBinary(key: string): Promise<Buffer | null> {
-    if (this.useAzure) {
-      const container = await this.azureContainer();
+    if (this.useS3) {
+      const { GetObjectCommand, NoSuchKey } = await import('@aws-sdk/client-s3');
       try {
-        return await container.getBlockBlobClient(key).downloadToBuffer();
+        const res = await (await this.s3()).send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+        const bytes = await res.Body?.transformToByteArray();
+        return bytes ? Buffer.from(bytes) : null;
       } catch (err) {
-        if ((err as { statusCode?: number }).statusCode === 404) return null;
+        if (err instanceof NoSuchKey || (err as { name?: string }).name === 'NoSuchKey') return null;
         throw err;
       }
     }
@@ -178,16 +158,9 @@ export class StorageService {
   /** Read a user file, or null if it does not exist. Other errors propagate. */
   async readUserFile(accountId: string, profileId: string, name: string): Promise<string | null> {
     const key = this.keyFor(accountId, profileId, name);
-    if (this.useAzure) {
-      const container = await this.azureContainer();
-      const blob = container.getBlockBlobClient(key);
-      try {
-        const buf = await blob.downloadToBuffer();
-        return buf.toString('utf-8');
-      } catch (err) {
-        if ((err as { statusCode?: number }).statusCode === 404) return null;
-        throw err;
-      }
+    if (this.useS3) {
+      const buf = await this.readBinary(key);
+      return buf ? buf.toString('utf-8') : null;
     }
     try {
       return await readFile(join(this.localRoot, key), 'utf-8');
@@ -199,43 +172,31 @@ export class StorageService {
 
   /**
    * A short-lived, read-only URL for one stored object (a homework photo) — what the reviewer queue hands
-   * to staff (SPEC §6/§10). In Azure this is a **user-delegation SAS** scoped to that single blob (never a
-   * container key, never another child's prefix — security §2). `key` is the full stored key
+   * to staff (SPEC §6/§10). On S3 this is a **presigned GET** scoped to that single object key (never a
+   * bucket credential, never another child's prefix — security §2). `key` is the full stored key
    * (`users/{account}/{profile}/homework/…`), taken from `homework_upload.image_key`, never client input.
    */
   async signedHomeworkReadUrl(key: string, ttlSeconds: number, opts?: { stable?: boolean }): Promise<string> {
-    // `stable`: align start/expiry to a fixed `ttlSeconds` grid so repeated calls return an IDENTICAL URL
-    // within the window — the browser can then cache the image instead of re-downloading it every render
-    // (the family chat re-fetches history often). Effective TTL is up to 2× the window; fine for a caller's
-    // own image, so the reviewer queue leaves it off (short, per-request URLs).
+    // `stable`: align the signing date/expiry to a fixed `ttlSeconds` grid so repeated calls return an
+    // IDENTICAL URL within the window — the browser can then cache the image instead of re-downloading it
+    // every render (the family chat re-fetches history often). Effective TTL is up to 2× the window; fine
+    // for a caller's own image, so the reviewer queue leaves it off (short, per-request URLs).
     const windowMs = ttlSeconds * 1000;
     const nowMs = Date.now();
     const startMs = (opts?.stable ? Math.floor(nowMs / windowMs) * windowMs : nowMs) - 60_000;
     const expMs = opts?.stable ? Math.ceil((nowMs + windowMs) / windowMs) * windowMs : nowMs + windowMs;
-    if (this.useAzure) {
-      const { generateBlobSASQueryParameters, BlobSASPermissions, SASProtocol } =
-        await import('@azure/storage-blob');
-      const expiresOn = new Date(expMs);
-      // User-delegation key is signed by Entra ID (no account key in the app) — the per-blob SAS rule.
-      // Cached + reused across the many URLs a queue page signs.
-      const udk = await this.userDelegationKey(expiresOn);
-      const sas = generateBlobSASQueryParameters(
-        {
-          containerName: this.container,
-          blobName: key,
-          permissions: BlobSASPermissions.parse('r'),
-          startsOn: new Date(startMs),
-          expiresOn,
-          protocol: SASProtocol.Https,
-        },
-        udk,
-        this.account,
-      ).toString();
-      return `https://${this.account}.blob.core.windows.net/${this.container}/${encodeURI(key)}?${sas}`;
+    if (this.useS3) {
+      const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+      // A fixed signingDate + expiresIn makes the presigned URL deterministic within the stable window.
+      return getSignedUrl(await this.s3(), new GetObjectCommand({ Bucket: this.bucket, Key: key }), {
+        signingDate: new Date(startMs),
+        expiresIn: Math.ceil((expMs - startMs) / 1000),
+      });
     }
-    // Filesystem store (no Azure): serve the bytes over HTTP from our own signed endpoint. The token is a
-    // short-lived capability (SAS-equivalent) so a cross-origin <img> on the reviewer needs no cookie; the
-    // bytes come from readBinary(key) on the local blob fake. See StorageController.
+    // Filesystem store (no S3): serve the bytes over HTTP from our own signed endpoint. The token is a
+    // short-lived capability (presigned-URL equivalent) so a cross-origin <img> on the reviewer needs no
+    // cookie; the bytes come from readBinary(key) on the local store. See StorageController.
     const exp = expMs;
     const payload = Buffer.from(JSON.stringify({ k: key, e: exp })).toString('base64url');
     const token = `${payload}.${this.signImageToken(payload)}`;

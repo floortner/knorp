@@ -1,7 +1,7 @@
 /**
- * LLM abstraction (ARCHITECTURE §8). A single swappable provider so the backend can move from
- * Anthropic-direct (dev/default) to Azure AI Foundry / Vertex EU without touching callers. Free —
- * there is no credit/entitlement hook (ARCHITECTURE §9 deferred).
+ * LLM abstraction (ARCHITECTURE §8). A single swappable provider so the backend could move from
+ * Anthropic-direct (the default) to another route (e.g. Bedrock / Vertex EU) without touching callers.
+ * Free — there is no credit/entitlement hook (ARCHITECTURE §9 deferred).
  */
 
 export interface LlmMessage {

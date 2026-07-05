@@ -5,10 +5,10 @@ import { Public } from '../../common/decorators/public.decorator';
 import { StorageService } from './storage.service';
 
 /**
- * Serves stored homework images over HTTP for the reviewer portal in the filesystem-store setup (no Azure
- * SAS). The `token` query param is a short-lived signed capability (verified in StorageService) — it IS the
- * auth, so the route is @Public() and a cross-origin <img> needs no cookie. On Azure the queue hands out SAS
- * URLs and this route is never hit. Binary response (no @ApiZodResponse → the response interceptor skips it).
+ * Serves stored homework images over HTTP for the reviewer portal in the filesystem-store setup (no S3).
+ * The `token` query param is a short-lived signed capability (verified in StorageService) — it IS the
+ * auth, so the route is @Public() and a cross-origin <img> needs no cookie. On S3 the queue hands out
+ * presigned URLs and this route is never hit. Binary response (no @ApiZodResponse → interceptor skips it).
  */
 @Controller('storage')
 export class StorageController {

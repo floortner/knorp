@@ -68,8 +68,8 @@ Frontend (Vite/React SPA/PWA)  ←→  Backend (NestJS/Fastify)
                                         │
                     ┌───────────────────┼──────────────────┐
                     ▼                   ▼                  ▼
-            Azure PostgreSQL   Azure Blob Storage   Anthropic API
-            (Prisma 7)         (per-user SAS URLs)  (sessions/chat/vision)
+            AWS RDS PostgreSQL  Amazon S3             Anthropic API
+            (Prisma 7)          (per-user presigned)  (sessions/chat/vision)
 ```
 
 The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend holds no DB or business logic; the backend serves no HTML.
@@ -77,7 +77,7 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 ### Backend structure
 - `src/contract/` — Zod schemas (`exercise.ts`, `models.ts`) that are the **source** of the contract pipeline: Zod → `openapi.json` → `api.gen.ts`. Edit here first, then re-export.
 - `src/modules/` — one folder per resource: controller (HTTP only) + service + Zod DTOs
-- `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (Azure Blob SAS), `email`
+- `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (S3 presigned URLs / local-FS dev store), `email`, `llm`, `lexeme`
 - `src/common/guards/` — `JwtAuthGuard` (family; requires `status='active'`), `ParentScopeGuard`, `StaffAuthGuard` (staff realm)
 - `src/common/filters/` — global exception filter → the one error envelope
 - `prisma/schema.prisma` — the model truth; DDL in `backend/SPEC.md §3` is its conceptual form
@@ -109,20 +109,20 @@ Everything through the current roadmap is **done**: Phase 1 (auth/profiles/sessi
 
 **Product decision — the app is FREE, including the AI features; access is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred** and not built: no `EntitlementGuard`, credits, or `402` gating. The `entitlement`/`credits_ledger` tables stay dormant so metering stays a future option; `★` means "AI-backed / cost-bearing op," free for any approved active account.
 
-**Remaining work:** the **TTS pipeline** (deferred — Web-Speech fallback on the client for now) and **deployment + hardening** (Azure infra has not been stood up). Billing stays deferred unless the product decision changes.
+**Remaining work:** the **TTS pipeline** (deferred — Web-Speech fallback on the client for now; target: Amazon Polly) and **deployment + hardening** (AWS infra has not been stood up). Billing stays deferred unless the product decision changes.
 
 ## Non-negotiable security rules
 
 1. **`user_id`/`profile_id` come ONLY from the JWT** — never from a request body or path parameter. Grep for violations.
-2. **Blob access via user-delegation SAS scoped to the caller's prefix** (`users/{account_id}/{profile_id}/…`). Container keys never exposed.
+2. **Object-storage access via presigned URLs scoped to one object under the caller's prefix** (`users/{account_id}/{profile_id}/…`). Bucket credentials never exposed.
 3. **Parent-scoped routes** (`/parent/*`) require a fresh `parent` claim in the JWT (`ParentScopeGuard`).
 4. **Access is gated by account status, not payment.** The family `JwtAuthGuard` requires `account.status='active'` (a per-request check) — `pending`/`deactivated`/deleted accounts can't act, and revocation is immediate. AI (`★`) endpoints are **free**; there is no entitlement/credit check (billing deferred, ARCHITECTURE §9).
 5. **Signup is silent pending-on-first-code.** A first `/auth/request-code` for an unknown email creates a `pending` account and **emails nothing** (still `200`, no enumeration); a staff admin approves before any code is sent. The family UI says "we'll email you soon," never advancing to code entry.
-6. **Never log** child answers, homework/OCR content, email addresses, login codes, PIN or its hash, JWTs, SAS URLs, or request/response bodies. Log identifiers + outcomes only.
+6. **Never log** child answers, homework/OCR content, email addresses, login codes, PIN or its hash, JWTs, presigned URLs, or request/response bodies. Log identifiers + outcomes only.
 7. **One error envelope** for every non-2xx response: `{error:{code,message,requestId,details[]}}`. The global exception filter handles this — never leak Prisma/provider errors.
 8. **Staff user-administration is admin-role-only and sees identity.** Approve/deactivate/delete (`/staff/users/*`) handle real emails and are gated by `role='admin'` — kept separate from the pseudonymised reviewer queue (rule 10). Account deletion erases DB rows **and** the account's blobs.
 9. **The two auth realms never cross.** `/staff/*` requires a staff cookie (`aud:"staff"`, `StaffAuthGuard`); a family JWT is rejected there and a staff cookie is rejected on every family route. Realms use **distinct signing keys** (`STAFF_JWT_SECRET` ≠ `JWT_SECRET`).
-10. **The reviewer queue is pseudonymised.** `/staff/*` exposes only the homework image (per-upload SAS), the LLM draft, skill tags, and a grade band — never a child name, parent email, chat text, or billing. Homework's `llm_analysis` is a draft and **must not** mutate the learning profile before a reviewer verdict; only `reviewed_analysis` applies.
+10. **The reviewer queue is pseudonymised.** `/staff/*` exposes only the homework image (per-upload presigned URL), the LLM draft, skill tags, and a grade band — never a child name, parent email, chat text, or billing. Homework's `llm_analysis` is a draft and **must not** mutate the learning profile before a reviewer verdict; only `reviewed_analysis` applies.
 
 ## Key conventions
 
@@ -138,7 +138,7 @@ Everything through the current roadmap is **done**: Phase 1 (auth/profiles/sessi
 
 ## Hosting & env
 
-- **Azure Container Apps** (backend, scale-to-zero) + **Azure Static Web Apps** (frontend), region **Austria East (Vienna)** primary.
-- Secrets in **Azure Key Vault** — nothing secret in the repo or image. See `backend/SPEC.md §11` for the full env var list (`.env.example` is committed).
+- **AWS**, region **Frankfurt (eu-central-1)** primary: small EC2 instance (backend, systemd, no container) + S3/CloudFront (frontends), RDS PostgreSQL, SES. Deployment is a future milestone (nothing stood up yet).
+- Secrets in **SSM Parameter Store** — nothing secret in the repo. See `backend/SPEC.md §11` for the full env var list (`.env.example` is committed).
 - Migrations run as a **pre-traffic release step** (`prisma migrate deploy`), never at app startup.
 - PWA update strategy: **prompt-to-update** (never silent reload mid-lesson).
