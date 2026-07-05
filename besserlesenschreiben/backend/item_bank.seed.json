@@ -17,7 +17,7 @@
   "double_consonant": "kurzer Vokal → Stopper/Doppelkonsonant (length)"
  },
  "counts": {
-  "total": 778,
+  "total": 849,
   "by_unit": {
    "1": 54,
    "2": 34,
@@ -25,7 +25,7 @@
    "4": 71,
    "5": 298,
    "6": 162,
-   "7": 34
+   "7": 105
   },
   "by_type": {
    "findvowel": 40,
@@ -39,8 +39,8 @@
    "pickword": 16,
    "length": 298,
    "sylarrange": 162,
-   "compound": 17,
-   "family": 8,
+   "compound": 71,
+   "family": 25,
    "sentencefix": 9
   }
  },
@@ -16671,6 +16671,1801 @@
    },
    "skill_tags": [
     "dehnung_h"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-beispiel",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "spiel-",
+    "options": [
+     "diesjährig",
+     "Ruhe",
+     "verstehen",
+     "Beispiel"
+    ],
+    "answer": "Beispiel",
+    "praise": "Richtig! Beispiel gehört zur Wortfamilie „spiel“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-fehlen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "fehl-",
+    "options": [
+     "Einführung",
+     "jährlich",
+     "Wahlkampf",
+     "fehlen"
+    ],
+    "answer": "fehlen",
+    "praise": "Richtig! fehlen gehört zur Wortfamilie „fehl“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-frueh",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "früh-",
+    "options": [
+     "früh",
+     "bestehen",
+     "zunehmend",
+     "laufen"
+    ],
+    "answer": "früh",
+    "praise": "Richtig! früh gehört zur Wortfamilie „früh“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-fuehlen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "fühl-",
+    "options": [
+     "fühlen",
+     "Bewohner",
+     "zählen",
+     "beziehen"
+    ],
+    "answer": "fühlen",
+    "praise": "Richtig! fühlen gehört zur Wortfamilie „fühl“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-fuehren",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "führ-",
+    "options": [
+     "wählen",
+     "Auswahl",
+     "sprechen",
+     "führen"
+    ],
+    "answer": "führen",
+    "praise": "Richtig! führen gehört zur Wortfamilie „führ“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-gehoeren",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "hör-",
+    "options": [
+     "Ablauf",
+     "gehören",
+     "führen",
+     "fühlen"
+    ],
+    "answer": "gehören",
+    "praise": "Richtig! gehören gehört zur Wortfamilie „hör“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-laufen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "lauf-",
+    "options": [
+     "laufen",
+     "bezahlen",
+     "Gefahr",
+     "Fahrer"
+    ],
+    "answer": "laufen",
+    "praise": "Richtig! laufen gehört zur Wortfamilie „lauf“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-lesen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "les-",
+    "options": [
+     "Erfahrung",
+     "langjährig",
+     "zunehmend",
+     "lesen"
+    ],
+    "answer": "lesen",
+    "praise": "Richtig! lesen gehört zur Wortfamilie „les“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-nah",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "nah-",
+    "options": [
+     "empfehlen",
+     "Gefühl",
+     "nah",
+     "führen"
+    ],
+    "answer": "nah",
+    "praise": "Richtig! nah gehört zur Wortfamilie „nah“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-nehmen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "nehm-",
+    "options": [
+     "nehmen",
+     "aussprechen",
+     "durchführen",
+     "Jahrzehnt"
+    ],
+    "answer": "nehmen",
+    "praise": "Richtig! nehmen gehört zur Wortfamilie „nehm“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 2,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-ruhe",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "ruh-",
+    "options": [
+     "Ruhe",
+     "Spiel",
+     "Autobahn",
+     "jahrelang"
+    ],
+    "answer": "Ruhe",
+    "praise": "Richtig! Ruhe gehört zur Wortfamilie „ruh“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-schreiben",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "schreib-",
+    "options": [
+     "einführen",
+     "früh",
+     "Fehler",
+     "schreiben"
+    ],
+    "answer": "schreiben",
+    "praise": "Richtig! schreiben gehört zur Wortfamilie „schreib“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-sehen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "seh-",
+    "options": [
+     "führend",
+     "bestehen",
+     "sehen",
+     "spielen"
+    ],
+    "answer": "sehen",
+    "praise": "Richtig! sehen gehört zur Wortfamilie „seh“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 2,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-sprechen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "sprech-",
+    "options": [
+     "sprechen",
+     "empfehlen",
+     "fahren",
+     "jährig"
+    ],
+    "answer": "sprechen",
+    "praise": "Richtig! sprechen gehört zur Wortfamilie „sprech“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-stehen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "steh-",
+    "options": [
+     "hören",
+     "stehen",
+     "Fahrt",
+     "Verlauf"
+    ],
+    "answer": "stehen",
+    "praise": "Richtig! stehen gehört zur Wortfamilie „steh“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 2,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-wahl",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "wahl-",
+    "options": [
+     "Wahl",
+     "Fehler",
+     "Autobahn",
+     "durchführen"
+    ],
+    "answer": "Wahl",
+    "praise": "Richtig! Wahl gehört zur Wortfamilie „wahl“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-family-ziehen",
+   "unit": 7,
+   "exercise_type": "family",
+   "payload": {
+    "stem": "zieh-",
+    "options": [
+     "Erfahrung",
+     "Gefahr",
+     "frühzeitig",
+     "ziehen"
+    ],
+    "answer": "ziehen",
+    "praise": "Richtig! ziehen gehört zur Wortfamilie „zieh“."
+   },
+   "skill_tags": [
+    "word_family"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-alltag",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Alltag",
+    "parts": [
+     "All",
+     "Tag"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Tag“ ist der — also der Alltag."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-arbeitsplatz",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Arbeitsplatz",
+    "parts": [
+     "Arbeits",
+     "Platz"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Platz“ ist der — also der Arbeitsplatz."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-aufbau",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Aufbau",
+    "parts": [
+     "Auf",
+     "Bau"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Bau“ ist der — also der Aufbau."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-auffuehrung",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Aufführung",
+    "parts": [
+     "Auf",
+     "Führung"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Führung“ ist die — also die Aufführung."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-auflage",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Auflage",
+    "parts": [
+     "Auf",
+     "Lage"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Lage“ ist die — also die Auflage."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-aufloesung",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Auflösung",
+    "parts": [
+     "Auf",
+     "Lösung"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Lösung“ ist die — also die Auflösung."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-augenblick",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Augenblick",
+    "parts": [
+     "Augen",
+     "Blick"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Blick“ ist der — also der Augenblick."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-ausbau",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Ausbau",
+    "parts": [
+     "Aus",
+     "Bau"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Bau“ ist der — also der Ausbau."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-ausbildung",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Ausbildung",
+    "parts": [
+     "Aus",
+     "Bildung"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Bildung“ ist die — also die Ausbildung."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-ausdruck",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Ausdruck",
+    "parts": [
+     "Aus",
+     "Druck"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Druck“ ist der — also der Ausdruck."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-ausland",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Ausland",
+    "parts": [
+     "Aus",
+     "Land"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "das",
+    "praise": "Genau! „Land“ ist das — also das Ausland."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-aussicht",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Aussicht",
+    "parts": [
+     "Aus",
+     "Sicht"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Sicht“ ist die — also die Aussicht."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-ausstellung",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Ausstellung",
+    "parts": [
+     "Aus",
+     "Stellung"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Stellung“ ist die — also die Ausstellung."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-auswahl",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Auswahl",
+    "parts": [
+     "Aus",
+     "Wahl"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Wahl“ ist die — also die Auswahl."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-auswirkung",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Auswirkung",
+    "parts": [
+     "Aus",
+     "Wirkung"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Wirkung“ ist die — also die Auswirkung."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-baustelle",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Baustelle",
+    "parts": [
+     "Bau",
+     "Stelle"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Stelle“ ist die — also die Baustelle."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-betriebsrat",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Betriebsrat",
+    "parts": [
+     "Betriebs",
+     "Rat"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Rat“ ist der — also der Betriebsrat."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-dienstleistung",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Dienstleistung",
+    "parts": [
+     "Dienst",
+     "Leistung"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Leistung“ ist die — also die Dienstleistung."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-fussball",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Fußball",
+    "parts": [
+     "Fuß",
+     "Ball"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Ball“ ist der — also der Fußball."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-gasthaus",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Gasthaus",
+    "parts": [
+     "Gast",
+     "Haus"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "das",
+    "praise": "Genau! „Haus“ ist das — also das Gasthaus."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-grundlage",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Grundlage",
+    "parts": [
+     "Grund",
+     "Lage"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Lage“ ist die — also die Grundlage."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-grundstueck",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Grundstück",
+    "parts": [
+     "Grund",
+     "Stück"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "das",
+    "praise": "Genau! „Stück“ ist das — also das Grundstück."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-hintergrund",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Hintergrund",
+    "parts": [
+     "Hinter",
+     "Grund"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Grund“ ist der — also der Hintergrund."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-hoehepunkt",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Höhepunkt",
+    "parts": [
+     "Höhe",
+     "Punkt"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Punkt“ ist der — also der Höhepunkt."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-innenstadt",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Innenstadt",
+    "parts": [
+     "Innen",
+     "Stadt"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Stadt“ ist die — also die Innenstadt."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-krankenhaus",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Krankenhaus",
+    "parts": [
+     "Kranken",
+     "Haus"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "das",
+    "praise": "Genau! „Haus“ ist das — also das Krankenhaus."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-krankenkasse",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Krankenkasse",
+    "parts": [
+     "Kranken",
+     "Kasse"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Kasse“ ist die — also die Krankenkasse."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-landgericht",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Landgericht",
+    "parts": [
+     "Land",
+     "Gericht"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "das",
+    "praise": "Genau! „Gericht“ ist das — also das Landgericht."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-landkreis",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Landkreis",
+    "parts": [
+     "Land",
+     "Kreis"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Kreis“ ist der — also der Landkreis."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-landrat",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Landrat",
+    "parts": [
+     "Land",
+     "Rat"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Rat“ ist der — also der Landrat."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-landtag",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Landtag",
+    "parts": [
+     "Land",
+     "Tag"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Tag“ ist der — also der Landtag."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-mittelpunkt",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Mittelpunkt",
+    "parts": [
+     "Mittel",
+     "Punkt"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Punkt“ ist der — also der Mittelpunkt."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-nachfrage",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Nachfrage",
+    "parts": [
+     "Nach",
+     "Frage"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Frage“ ist die — also die Nachfrage."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-neubau",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Neubau",
+    "parts": [
+     "Neu",
+     "Bau"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Bau“ ist der — also der Neubau."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-oeffnungszeit",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Öffnungszeit",
+    "parts": [
+     "Öffnungs",
+     "Zeit"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Zeit“ ist die — also die Öffnungszeit."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-rathaus",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Rathaus",
+    "parts": [
+     "Rat",
+     "Haus"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "das",
+    "praise": "Genau! „Haus“ ist das — also das Rathaus."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-ruhestand",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Ruhestand",
+    "parts": [
+     "Ruhe",
+     "Stand"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Stand“ ist der — also der Ruhestand."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-schwerpunkt",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Schwerpunkt",
+    "parts": [
+     "Schwer",
+     "Punkt"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Punkt“ ist der — also der Schwerpunkt."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-spieltag",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Spieltag",
+    "parts": [
+     "Spiel",
+     "Tag"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Tag“ ist der — also der Spieltag."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-stadthalle",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Stadthalle",
+    "parts": [
+     "Stadt",
+     "Halle"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Halle“ ist die — also die Stadthalle."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-stadtrat",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Stadtrat",
+    "parts": [
+     "Stadt",
+     "Rat"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Rat“ ist der — also der Stadtrat."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-standort",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Standort",
+    "parts": [
+     "Stand",
+     "Ort"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Ort“ ist der — also der Standort."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-tatsache",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Tatsache",
+    "parts": [
+     "Tat",
+     "Sache"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Sache“ ist die — also die Tatsache."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-vorbild",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Vorbild",
+    "parts": [
+     "Vor",
+     "Bild"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "das",
+    "praise": "Genau! „Bild“ ist das — also das Vorbild."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-vorlage",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Vorlage",
+    "parts": [
+     "Vor",
+     "Lage"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Lage“ ist die — also die Vorlage."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-vorsprung",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Vorsprung",
+    "parts": [
+     "Vor",
+     "Sprung"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Sprung“ ist der — also der Vorsprung."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-vorstand",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Vorstand",
+    "parts": [
+     "Vor",
+     "Stand"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Stand“ ist der — also der Vorstand."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-vorstellung",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Vorstellung",
+    "parts": [
+     "Vor",
+     "Stellung"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "die",
+    "praise": "Genau! „Stellung“ ist die — also die Vorstellung."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-vorteil",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Vorteil",
+    "parts": [
+     "Vor",
+     "Teil"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Teil“ ist der — also der Vorteil."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-wahlkampf",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Wahlkampf",
+    "parts": [
+     "Wahl",
+     "Kampf"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Kampf“ ist der — also der Wahlkampf."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-weltmeister",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Weltmeister",
+    "parts": [
+     "Welt",
+     "Meister"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Meister“ ist der — also der Weltmeister."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-wochenende",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Wochenende",
+    "parts": [
+     "Wochen",
+     "Ende"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "das",
+    "praise": "Genau! „Ende“ ist das — also das Wochenende."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 3,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-zeitpunkt",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Zeitpunkt",
+    "parts": [
+     "Zeit",
+     "Punkt"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Punkt“ ist der — also der Zeitpunkt."
+   },
+   "skill_tags": [
+    "compound_word"
+   ],
+   "difficulty": 4,
+   "audio_url": null,
+   "syllable_audio": null,
+   "generated_by": "seed"
+  },
+  {
+   "seed_key": "gen-compound-zeitraum",
+   "unit": 7,
+   "exercise_type": "compound",
+   "payload": {
+    "word": "Zeitraum",
+    "parts": [
+     "Zeit",
+     "Raum"
+    ],
+    "options": [
+     "der",
+     "die",
+     "das"
+    ],
+    "answer": "der",
+    "praise": "Genau! „Raum“ ist der — also der Zeitraum."
+   },
+   "skill_tags": [
+    "compound_word"
    ],
    "difficulty": 4,
    "audio_url": null,
