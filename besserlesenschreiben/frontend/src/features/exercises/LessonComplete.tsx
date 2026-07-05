@@ -6,6 +6,7 @@ import type { SessionComplete } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { fanfare } from './audio';
 import { useSoundOn } from '@/features/settings/a11y';
+import { buddyStateSrc } from '@/lib/constants';
 
 const TIER_LABEL: Record<string, string> = { bronze: 'Bronze', silber: 'Silber', gold: 'Gold' };
 
@@ -14,10 +15,12 @@ export function LessonComplete({
   result,
   pending,
   allUnitsComplete = false,
+  buddy = 'nepo',
 }: {
   result?: SessionComplete;
   pending: boolean;
   allUnitsComplete?: boolean;
+  buddy?: string;
 }) {
   const navigate = useNavigate();
   const soundOn = useSoundOn();
@@ -78,6 +81,11 @@ export function LessonComplete({
           </p>
         </div>
       )}
+
+      <div className="flex w-full max-w-xs items-center gap-3 rounded-card bg-teal-tint/70 p-3 text-left">
+        <img src={buddyStateSrc(buddy, 'cool')} alt="" className="h-8 w-8 shrink-0" />
+        <p className="text-sm text-ink">Morgen macht dein Begleiter neue Übungen für dich bereit!</p>
+      </div>
 
       <Button size="lg" className="mt-2 max-w-xs" onClick={() => navigate('/app/lernen')}>
         Weiter
