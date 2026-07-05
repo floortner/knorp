@@ -3,19 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { errorMessage, isApiError } from '@/lib/api';
 import { useActiveProfile, useMe } from '@/features/profile/useMe';
 import { useUnits } from '@/features/units/useUnits';
+import { useProgress } from '@/features/progress/useProgress';
 import { useCreateSession } from '@/features/sessions/useCreateSession';
 import { UnitCard } from '@/features/units/UnitCard';
 import { Button } from '@/components/ui/button';
 import { TopBar } from '@/app/components/TopBar';
 import { WeekStrip } from '@/app/components/WeekStrip';
 import { ErrorRetry } from '@/app/components/ErrorRetry';
+import { buddyStateSrc, type BuddyState } from '@/lib/constants';
+import { useBuddyState } from './useBuddyState';
 
 export function Lernen() {
   const navigate = useNavigate();
   const me = useMe();
   const profile = useActiveProfile();
   const units = useUnits(profile?.id);
+  const progress = useProgress(profile?.id);
   const createSession = useCreateSession();
+  const buddyState = useBuddyState(profile?.unlockedUnit, progress.data);
   const [lectureNote, setLectureNote] = useState<string | null>(null);
 
   if (me.isLoading) return <CenterNote>Lädt …</CenterNote>;
@@ -66,12 +71,7 @@ export function Lernen() {
       <TopBar name={profile.name} streakDays={profile.streakDays} stars={profile.stars} />
       <WeekStrip />
 
-      <div className="flex items-center gap-3 rounded-card bg-teal-tint/70 p-4">
-        <img src="/nepo.svg" alt="" className="h-10 w-10" />
-        <p className="text-sm font-medium text-ink">
-          Schön, dass du da bist! Wähle eine Einheit und leg los.
-        </p>
-      </div>
+      <BuddyCard buddy={profile.buddy} state={buddyState} />
 
       <button
         type="button"
@@ -127,4 +127,21 @@ export function Lernen() {
 
 function CenterNote({ children }: { children: React.ReactNode }) {
   return <p className="py-16 text-center font-medium text-ink-soft">{children}</p>;
+}
+
+const BUDDY_MESSAGES: Record<BuddyState, (name: string) => string> = {
+  froehlich: () => 'Super, heute schon geübt! Noch eine Runde?',
+  ueberrascht: () => 'Wow, eine neue Einheit wartet auf dich!',
+  traurig: (name) => `${name} hat dich vermisst! Üben wir heute?`,
+  cool: () => 'Schön, dass du da bist! Wähle eine Einheit und leg los.',
+};
+
+function BuddyCard({ buddy, state }: { buddy: string; state: BuddyState }) {
+  const name = buddy.charAt(0).toUpperCase() + buddy.slice(1);
+  return (
+    <div className="flex items-center gap-3 rounded-card bg-teal-tint/70 p-4">
+      <img src={buddyStateSrc(buddy, state)} alt="" className="h-10 w-10" />
+      <p className="text-sm font-medium text-ink">{BUDDY_MESSAGES[state](name)}</p>
+    </div>
+  );
 }

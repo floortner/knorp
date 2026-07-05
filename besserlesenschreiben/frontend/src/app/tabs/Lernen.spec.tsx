@@ -19,10 +19,17 @@ const units: Unit[] = [
   { unit: 2, title: 'Einheit 2', subtitle: 'Das Wortraster', focus: '', exerciseTypes: ['raster'], itemCount: 4, status: 'locked', theme: { iconBg: '#EFE6FB', iconColor: '#8B45D6' } },
 ];
 
+const progress = {
+  streakDays: 3, stars: 240, weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
+  monthlyHeatmap: [], league: { tier: 'bronze', starsWeek: 10, starsToNext: 40 },
+  skillBreakdown: [],
+};
+
 vi.mock('@/lib/endpoints', () => ({
   coreApi: {
     me: () => Promise.resolve(me),
     units: () => Promise.resolve(units),
+    progress: () => Promise.resolve(progress),
     createSession: vi.fn(),
   },
 }));
