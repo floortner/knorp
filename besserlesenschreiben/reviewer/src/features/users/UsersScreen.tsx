@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, ShieldAlert } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { Button } from '@/components/ui/button';
+import { FilterChips } from '@/components/ui/filter-chips';
 import { ProgressPanel } from '@/features/progress/ProgressPanel';
 import { cn } from '@/lib/cn';
 import type { AccountStatus, AdminUser } from '@/lib/contract';
@@ -48,24 +49,7 @@ export function UsersScreen() {
 
   return (
     <section>
-      <div className="mb-4 flex flex-wrap gap-2" role="tablist" aria-label="Status filtern">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            role="tab"
-            aria-selected={filter === f.value}
-            onClick={() => setFilter(f.value)}
-            className={cn(
-              'rounded-full px-4 py-1.5 text-sm font-medium ring-1 transition',
-              filter === f.value
-                ? 'bg-teal text-white ring-teal'
-                : 'bg-surface text-ink-soft ring-line hover:bg-black/[0.02]',
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <FilterChips value={filter} onChange={setFilter} options={FILTERS} label="Status filtern" />
 
       {isPending ? (
         <p className="py-16 text-center text-ink-soft">Lädt Nutzer …</p>

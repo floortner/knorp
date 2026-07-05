@@ -21,6 +21,32 @@ interface QueueItem {
   imageUrl: string;
   llmAnalysis: HomeworkAnalysis;
   createdAt: string;
+  decision: string | null;
+  reviewedAt: string | null;
+}
+
+/** Which slice of the review pipeline to list. */
+export type QueueFilter = 'open' | 'done' | 'all';
+
+/**
+ * The where + ordering for a queue slice. `id` is the last orderBy key so cursor:{id} paging is stable
+ * even when the primary sort key (createdAt/reviewedAt) ties.
+ */
+function queueQuery(
+  filter: QueueFilter,
+  now: Date,
+): { where: Prisma.HomeworkUploadWhereInput; orderBy: Prisma.HomeworkUploadOrderByWithRelationInput[] } {
+  switch (filter) {
+    case 'done':
+      return { where: { status: { in: ['reviewed', 'rejected'] } }, orderBy: [{ reviewedAt: 'desc' }, { id: 'desc' }] };
+    case 'all':
+      return { where: {}, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] };
+    default: // open: pickable pending items, oldest-first (FIFO)
+      return {
+        where: { status: 'pending_review', OR: [{ claimedBy: null }, { claimedUntil: { lt: now } }] },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      };
+  }
 }
 
 const MAX_LIMIT = 50;
@@ -49,18 +75,22 @@ export class ReviewService {
     return `L-${createHash('sha256').update(profileId).digest('hex').slice(0, 6)}`;
   }
 
-  /** Pending-review items available to pick up: not claimed, or with an expired lease. Cursor-paged. */
-  async queue(limit: number, cursor?: string): Promise<{ items: QueueItem[]; nextCursor: string | null; total: number }> {
+  /**
+   * List review items. `open` = pickable pending items (unclaimed / lease-expired), oldest-first — the live
+   * queue. `done` = already-actioned (reviewed/rejected), newest-first — the history. `all` = everything.
+   * Every row stays PSEUDONYMISED. Cursor-paged, with a total for the current filter.
+   */
+  async queue(
+    limit: number,
+    cursor?: string,
+    filter: QueueFilter = 'open',
+  ): Promise<{ items: QueueItem[]; nextCursor: string | null; total: number }> {
     const take = Math.min(Math.max(limit, 1), MAX_LIMIT);
-    const now = new Date();
-    const where = {
-      status: 'pending_review' as const,
-      OR: [{ claimedBy: null }, { claimedUntil: { lt: now } }],
-    };
+    const { where, orderBy } = queueQuery(filter, new Date());
     const [rows, total] = await Promise.all([
       this.prisma.homeworkUpload.findMany({
         where,
-        orderBy: { createdAt: 'asc' },
+        orderBy,
         take: take + 1, // one extra to know if there's a next page
         ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
         include: { profile: { select: { unlockedUnit: true } } },
@@ -89,6 +119,8 @@ export class ReviewService {
         imageUrl: await this.storage.signedHomeworkReadUrl(row.imageKey, this.claimTtlMs / 1000),
         llmAnalysis: analysis,
         createdAt: row.createdAt.toISOString(),
+        decision: row.reviewDecision ?? null,
+        reviewedAt: row.reviewedAt ? row.reviewedAt.toISOString() : null,
       })),
     );
 

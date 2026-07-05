@@ -203,12 +203,19 @@ export class StorageService {
    * container key, never another child's prefix — security §2). `key` is the full stored key
    * (`users/{account}/{profile}/homework/…`), taken from `homework_upload.image_key`, never client input.
    */
-  async signedHomeworkReadUrl(key: string, ttlSeconds: number): Promise<string> {
+  async signedHomeworkReadUrl(key: string, ttlSeconds: number, opts?: { stable?: boolean }): Promise<string> {
+    // `stable`: align start/expiry to a fixed `ttlSeconds` grid so repeated calls return an IDENTICAL URL
+    // within the window — the browser can then cache the image instead of re-downloading it every render
+    // (the family chat re-fetches history often). Effective TTL is up to 2× the window; fine for a caller's
+    // own image, so the reviewer queue leaves it off (short, per-request URLs).
+    const windowMs = ttlSeconds * 1000;
+    const nowMs = Date.now();
+    const startMs = (opts?.stable ? Math.floor(nowMs / windowMs) * windowMs : nowMs) - 60_000;
+    const expMs = opts?.stable ? Math.ceil((nowMs + windowMs) / windowMs) * windowMs : nowMs + windowMs;
     if (this.useAzure) {
       const { generateBlobSASQueryParameters, BlobSASPermissions, SASProtocol } =
         await import('@azure/storage-blob');
-      const now = new Date();
-      const expiresOn = new Date(now.getTime() + ttlSeconds * 1000);
+      const expiresOn = new Date(expMs);
       // User-delegation key is signed by Entra ID (no account key in the app) — the per-blob SAS rule.
       // Cached + reused across the many URLs a queue page signs.
       const udk = await this.userDelegationKey(expiresOn);
@@ -217,7 +224,7 @@ export class StorageService {
           containerName: this.container,
           blobName: key,
           permissions: BlobSASPermissions.parse('r'),
-          startsOn: new Date(now.getTime() - 60_000),
+          startsOn: new Date(startMs),
           expiresOn,
           protocol: SASProtocol.Https,
         },
@@ -229,7 +236,7 @@ export class StorageService {
     // Filesystem store (no Azure): serve the bytes over HTTP from our own signed endpoint. The token is a
     // short-lived capability (SAS-equivalent) so a cross-origin <img> on the reviewer needs no cookie; the
     // bytes come from readBinary(key) on the local blob fake. See StorageController.
-    const exp = Date.now() + ttlSeconds * 1000;
+    const exp = expMs;
     const payload = Buffer.from(JSON.stringify({ k: key, e: exp })).toString('base64url');
     const token = `${payload}.${this.signImageToken(payload)}`;
     return `${this.publicApiBase}/storage/homework-image?token=${encodeURIComponent(token)}`;

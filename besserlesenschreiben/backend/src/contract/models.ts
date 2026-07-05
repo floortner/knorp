@@ -113,6 +113,7 @@ export const chatMessageSchema = z.object({
   me: z.boolean(), // true = the child, false = the trainer (Angelika)
   text: z.string(),
   ts: z.string(), // ISO timestamp
+  imageUrl: z.string().optional(), // homework photo bubble (a short-lived read URL); absent on text messages
 });
 export const chatHistorySchema = z.object({ messages: z.array(chatMessageSchema) });
 export const chatReplySchema = z.object({ reply: chatMessageSchema });

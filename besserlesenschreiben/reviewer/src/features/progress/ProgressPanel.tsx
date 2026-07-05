@@ -1,16 +1,11 @@
 import { cn } from '@/lib/cn';
+import { decisionTone } from '@/lib/decision';
 import type { ProfileProgress } from '@/lib/contract';
 
 /** The identity-agnostic progress payload (shared by the account + queue variants). */
 type ProgressData = Pick<ProfileProgress, 'summary' | 'skills' | 'activity'>;
 
 const de = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('de-AT') : '—');
-
-function decisionTone(decision: string): string {
-  if (decision === 'approved') return 'bg-good-tint text-good';
-  if (decision === 'rejected') return 'bg-danger-tint text-danger';
-  return 'bg-amber-tint text-amber'; // corrected
-}
 
 /** Renders one learner's progress: summary, per-skill mastery, and recent activity + homework history. */
 export function ProgressPanel({ data }: { data: ProgressData }) {

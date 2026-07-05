@@ -19,7 +19,7 @@ import { CurrentReviewer, type AuthReviewer } from '../../common/decorators/curr
 import { STAFF_COOKIE, clearStaffCookie, staffCookieOptions } from '../../common/staff-cookie';
 import type { Env } from '../../config/env';
 import { StaffAuthService } from './staff-auth.service';
-import { ReviewService } from './review.service';
+import { ReviewService, type QueueFilter } from './review.service';
 import { StaffProgressService } from './staff-progress.service';
 import { ReviewSubmitDto, StaffRequestCodeDto, StaffVerifyDto } from './staff.dto';
 
@@ -84,9 +84,14 @@ export class StaffController {
 
   @Get('queue')
   @ApiZodResponse(queuePageSchema)
-  queue(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
+  queue(
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
+    @Query('status') status?: string,
+  ) {
     const n = limit ? Number.parseInt(limit, 10) : 50;
-    return this.review.queue(Number.isFinite(n) ? n : 50, cursor);
+    const filter: QueueFilter = status === 'done' || status === 'all' ? status : 'open';
+    return this.review.queue(Number.isFinite(n) ? n : 50, cursor, filter);
   }
 
   /** Pseudonymised learner progress for a queued upload (ADMIN only) — review context, never a name. */

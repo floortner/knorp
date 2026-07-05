@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { reviewApi } from '@/lib/endpoints';
+import { reviewApi, type QueueFilter } from '@/lib/endpoints';
 
-/** The pending-review queue (first page). Pseudonymised rows; cursor paging is wired in `reviewApi`. */
-export function useQueue() {
+export type { QueueFilter };
+
+/** A slice of the review pipeline (first page). Pseudonymised rows; cursor paging is wired in `reviewApi`. */
+export function useQueue(status: QueueFilter = 'open') {
   return useQuery({
-    queryKey: ['staff-queue'],
-    queryFn: () => reviewApi.queue({ limit: 50 }),
+    queryKey: ['staff-queue', status],
+    queryFn: () => reviewApi.queue({ status, limit: 50 }),
     // Small fixed staff pool — a short refetch keeps the shared queue roughly live without polling hard.
     refetchInterval: 30_000,
   });

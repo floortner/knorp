@@ -56,7 +56,8 @@ Phase 1 (shell/auth/onboarding/home/telemetry/12 renderers/progress) + Phase 1.5
 caching, telemetry retention, query fixes, committed `api.gen.ts` + drift gate, flow tests) + Phase 1.6
 (content + UX polish: unit unlock, all-done celebration, parent area, profile tab) are **done**, as is
 Phase 2: chat (★ LLM), the ✨ generated-lecture entry + lesson intro card, and the homework
-"Foto & verbessern" flow (parent-area only). No billing — the app is free. The exercise set has since been
+"Foto & verbessern" flow (in the child Chat tab — the photo shows as a chat message, not PIN-gated). No
+billing — the app is free. The exercise set has since been
 **replaced by the 14-type Vokaltraining program** (SPEC §3) with a new 7-unit progression and ~360 seed items.
 
 ## Definition of done for a feature
