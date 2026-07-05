@@ -62,7 +62,18 @@ async function main(): Promise<void> {
     messages: [
       {
         role: 'user' as const,
-        text: 'Klassenstufe: Mitte (zweite Klasse, mittlere Wörter)\nFörderschwerpunkte: vowel_length, vowel_substitution\n\nLernstand:\n(kein Lernstand — Probelauf)',
+        text: [
+          'Klassenstufe: Mitte (zweite Klasse, mittlere Wörter)',
+          'Förderschwerpunkte: vowel_length, dehnung_h',
+          '',
+          // Mirrors the production pool block (lexeme grounding): Wort (Artikel; Silbentrennung).
+          'Echte Beispielwörter zum jeweiligen Schwerpunkt (nutze bevorzugt diese Wörter):',
+          '- vowel_length: Jahr (das; jahr), Wasser (das; was-ser), viel (viel), Sonne (die; son-ne)',
+          '- dehnung_h: fahren (fah-ren), Zahl (die; zahl), wohnen (woh-nen), Lehrer (der; leh-rer)',
+          '',
+          'Lernstand:',
+          '(kein Lernstand — Probelauf)',
+        ].join('\n'),
       },
     ],
   };

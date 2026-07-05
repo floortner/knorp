@@ -57,6 +57,7 @@ export class AnthropicLlmProvider implements LlmProvider {
     return [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
   }
 
+
   /**
    * Cost visibility on a free app: token counts per call (input/output/cache) so spend per day is readable
    * from logs before and after cutover. Counts + identifiers only — never prompt or reply content (§6).
@@ -128,14 +129,16 @@ export class AnthropicLlmProvider implements LlmProvider {
         max_tokens: req.maxTokens ?? 4096,
         thinking: { type: 'disabled' },
         ...(req.system ? { system: this.systemBlocks(req.system) } : {}),
-        // strict: the API guarantees tool input matches the schema exactly (Zod already emits
-        // `required`/`additionalProperties`, so the schema is strict-compatible as-is).
+        // NOT strict: strict tool mode rejects several keywords this contract needs (maxItems from
+        // z.array().length, oneOf from the discriminated union, tuple `items`) and hard-caps
+        // union-typed parameters at 16 — the 14-type Exercise union alone has ~28. The schema still
+        // steers generation as guidance; correctness is enforced AFTER the call, where LlmService
+        // re-parses against the full Zod schema (incl. solvability) with one corrective re-ask.
         tools: [
           {
             name: req.schemaName,
             description: `Return a single ${req.schemaName} object.`,
             input_schema: req.jsonSchema,
-            strict: true,
           },
         ],
         tool_choice: { type: 'tool', name: req.schemaName },
