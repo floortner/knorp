@@ -1943,6 +1943,7 @@ export interface operations {
                             syllableCount: number;
                             forms: string | null;
                             separablePrefix: string | null;
+                            ageBand: string | null;
                             familyStem: string | null;
                             compoundParts: string[];
                             features: {
@@ -1981,6 +1982,7 @@ export interface operations {
                     syllableCount: number;
                     forms: string | null;
                     separablePrefix: string | null;
+                    ageBand: string | null;
                     familyStem: string | null;
                     compoundParts: string[];
                     features: {
@@ -2010,6 +2012,7 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        ageBand: string | null;
                         familyStem: string | null;
                         compoundParts: string[];
                         features: {
@@ -2046,6 +2049,10 @@ export interface operations {
                             count: number;
                         }[];
                         byGenus: {
+                            value: string;
+                            count: number;
+                        }[];
+                        byAgeBand: {
                             value: string;
                             count: number;
                         }[];
@@ -2128,6 +2135,7 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        ageBand: string | null;
                         familyStem: string | null;
                         compoundParts: string[];
                         features: {
@@ -2179,6 +2187,7 @@ export interface operations {
                     syllableCount?: number;
                     forms?: string | null;
                     separablePrefix?: string | null;
+                    ageBand?: string | null;
                     familyStem?: string | null;
                     compoundParts?: string[];
                     features?: {
@@ -2208,6 +2217,7 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        ageBand: string | null;
                         familyStem: string | null;
                         compoundParts: string[];
                         features: {

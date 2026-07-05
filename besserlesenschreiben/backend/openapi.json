@@ -3894,6 +3894,10 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "ageBand": {
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "familyStem": {
                             "nullable": true,
                             "type": "string"
@@ -3947,6 +3951,7 @@
                           "syllableCount",
                           "forms",
                           "separablePrefix",
+                          "ageBand",
                           "familyStem",
                           "compoundParts",
                           "features",
@@ -4033,6 +4038,10 @@
                     "nullable": true,
                     "type": "string"
                   },
+                  "ageBand": {
+                    "nullable": true,
+                    "type": "string"
+                  },
                   "familyStem": {
                     "nullable": true,
                     "type": "string"
@@ -4083,6 +4092,7 @@
                   "syllableCount",
                   "forms",
                   "separablePrefix",
+                  "ageBand",
                   "familyStem",
                   "compoundParts",
                   "features",
@@ -4142,6 +4152,10 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "ageBand": {
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "familyStem": {
                       "nullable": true,
                       "type": "string"
@@ -4195,6 +4209,7 @@
                     "syllableCount",
                     "forms",
                     "separablePrefix",
+                    "ageBand",
                     "familyStem",
                     "compoundParts",
                     "features",
@@ -4254,6 +4269,27 @@
                       }
                     },
                     "byGenus": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "byAgeBand": {
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -4413,6 +4449,7 @@
                     "total",
                     "byPos",
                     "byGenus",
+                    "byAgeBand",
                     "bySource",
                     "bySkill",
                     "bySyllableCount",
@@ -4526,6 +4563,10 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "ageBand": {
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "familyStem": {
                       "nullable": true,
                       "type": "string"
@@ -4579,6 +4620,7 @@
                     "syllableCount",
                     "forms",
                     "separablePrefix",
+                    "ageBand",
                     "familyStem",
                     "compoundParts",
                     "features",
@@ -4641,6 +4683,10 @@
                     "type": "string"
                   },
                   "separablePrefix": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "ageBand": {
                     "nullable": true,
                     "type": "string"
                   },
@@ -4734,6 +4780,10 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "ageBand": {
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "familyStem": {
                       "nullable": true,
                       "type": "string"
@@ -4787,6 +4837,7 @@
                     "syllableCount",
                     "forms",
                     "separablePrefix",
+                    "ageBand",
                     "familyStem",
                     "compoundParts",
                     "features",

@@ -33,6 +33,7 @@ function toWire(r: LexemeRow) {
     syllableCount: r.syllableCount,
     forms: r.forms,
     separablePrefix: r.separablePrefix,
+    ageBand: r.ageBand,
     familyStem: r.familyStem,
     compoundParts: r.compoundParts,
     features: (r.features ?? {}) as Record<string, string | boolean>,
@@ -50,6 +51,7 @@ export interface LexemeFilters {
   skill?: string; // skillTags has
   pos?: string; // exact part of speech
   genus?: string; // 'der' | 'die' | 'das' | 'none' (none → no genus, i.e. not a noun)
+  ageBand?: string; // '6-7' | '8-9' | 'none' (none → unbanded)
   source?: string; // 'rwe2015' | 'reviewer'
   feature?: string; // an orthographic feature key that must be present in `features`
   hkMin?: number;
@@ -67,6 +69,7 @@ function whereFrom(f: LexemeFilters): Prisma.LexemeWhereInput {
   if (f.skill) w.skillTags = { has: f.skill };
   if (f.pos) w.pos = f.pos;
   if (f.genus) w.genus = f.genus === 'none' ? null : f.genus;
+  if (f.ageBand) w.ageBand = f.ageBand === 'none' ? null : f.ageBand;
   if (f.source) w.source = f.source;
   if (f.syllableCount !== undefined) w.syllableCount = f.syllableCount;
   if (f.morphemeCount !== undefined) w.morphemeCount = f.morphemeCount;
@@ -126,7 +129,7 @@ export class LexemeAdminService {
     const rows = await this.prisma.lexeme.findMany({
       where: whereFrom(f),
       select: {
-        pos: true, genus: true, source: true, hk: true, skillTags: true,
+        pos: true, genus: true, ageBand: true, source: true, hk: true, skillTags: true,
         syllableCount: true, morphemeCount: true,
         isLernwort: true, isTrennbar: true, isMerkwort: true,
       },
@@ -150,6 +153,7 @@ export class LexemeAdminService {
       total,
       byPos: tally(rows.map((r) => r.pos)),
       byGenus: tally(rows.map((r) => r.genus)),
+      byAgeBand: tally(rows.map((r) => r.ageBand)),
       bySource: tally(rows.map((r) => r.source)),
       bySkill: [...skill.entries()].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count),
       bySyllableCount: tallyNum(rows.map((r) => r.syllableCount)),

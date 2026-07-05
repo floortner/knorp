@@ -70,11 +70,13 @@ export const LLM_SYSTEM = [
  * grade-1 child and an advanced child get differently-calibrated content, and stored as the generated
  * item's `difficulty` so bank selection can order it sensibly.
  */
-function gradeBand(unlockedUnit: number): { label: string; difficulty: number; maxHk: number } {
+function gradeBand(unlockedUnit: number): { label: string; difficulty: number; maxHk: number; ageBand: string } {
   // maxHk caps the word-pool frequency class per band: younger children get only the most common words.
-  if (unlockedUnit <= 2) return { label: 'Anfang (erste Klasse, sehr einfach, kurze Wörter)', difficulty: 1, maxHk: 9 };
-  if (unlockedUnit <= 5) return { label: 'Mitte (zweite Klasse, mittlere Wörter)', difficulty: 2, maxHk: 11 };
-  return { label: 'Fortgeschritten (dritte Klasse, längere Wörter, kniffliger)', difficulty: 3, maxHk: 12 };
+  // ageBand intersects the lexeme age facet (null-tolerant in selection) so band = age ∩ frequency.
+  const ageBand = unlockedUnit <= 4 ? '6-7' : '8-9';
+  if (unlockedUnit <= 2) return { label: 'Anfang (erste Klasse, sehr einfach, kurze Wörter)', difficulty: 1, maxHk: 9, ageBand };
+  if (unlockedUnit <= 5) return { label: 'Mitte (zweite Klasse, mittlere Wörter)', difficulty: 2, maxHk: 11, ageBand };
+  return { label: 'Fortgeschritten (dritte Klasse, längere Wörter, kniffliger)', difficulty: 3, maxHk: 12, ageBand };
 }
 
 @Injectable()
@@ -238,7 +240,7 @@ export class SessionsService {
     // feature (lexeme foundation). Best-effort context: an empty pool just drops the section.
     let wordPool = '';
     try {
-      wordPool = await this.lexeme.wordPoolFor(focus, { maxHk: band.maxHk });
+      wordPool = await this.lexeme.wordPoolFor(focus, { maxHk: band.maxHk, ageBand: band.ageBand });
     } catch {
       /* the word pool is optional grounding */
     }

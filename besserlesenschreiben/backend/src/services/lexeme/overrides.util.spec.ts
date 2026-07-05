@@ -4,7 +4,7 @@ import { computeOverrides, type LexemeRecord } from './overrides.util';
 function rec(lemma: string, over: Partial<LexemeRecord> = {}): LexemeRecord {
   return {
     lemma, hk: 9, pos: 'N', genus: null, morphemeCount: 1, ipa: 'x', syllabification: lemma,
-    syllableCount: 1, forms: null, separablePrefix: null, familyStem: null, compoundParts: [],
+    syllableCount: 1, forms: null, separablePrefix: null, ageBand: null, familyStem: null, compoundParts: [],
     features: {}, skillTags: [],
     isLernwort: false, isTrennbar: false, isMerkwort: false, source: 'rwe2015', ...over,
   };

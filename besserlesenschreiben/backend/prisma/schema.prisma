@@ -115,6 +115,7 @@ model Lexeme {
   syllableCount   Int      @map("syllable_count")
   forms           String? // inflections / plural (Schemakonstanz), best-effort free text
   separablePrefix String?  @map("separable_prefix")
+  ageBand         String?  @map("age_band") // target age band: "6-7" | "8-9" | null (unbanded)
   familyStem      String?  @map("family_stem") // shared root grouping a Wortfamilie (members share it) → `family` exercises
   compoundParts   String[] @default([]) @map("compound_parts") // ordered parts of a compound (["Holz","Treppe"]); [] = not a compound → `compound` exercises
   features        Json // all 19 orthographic Lernstellen flags (raw, incl. non-vowel phenomena)
@@ -128,6 +129,7 @@ model Lexeme {
   @@index([hk])
   @@index([skillTags], type: Gin) // fast "words for skill X" selection
   @@index([familyStem]) // fast "members of Wortfamilie X" selection
+  @@index([ageBand]) // fast band-facet filter/selection
   @@map("lexeme")
 }
 

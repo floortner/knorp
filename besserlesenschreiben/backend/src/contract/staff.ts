@@ -151,6 +151,7 @@ export const lexemeSchema = z.object({
   syllableCount: z.number().int(),
   forms: z.string().nullable(),
   separablePrefix: z.string().nullable(),
+  ageBand: z.string().nullable(), // target age band: "6-7" | "8-9" | null (unbanded)
   familyStem: z.string().nullable(), // shared root grouping a Wortfamilie → `family` exercises
   compoundParts: z.array(z.string()), // ordered compound parts (["Holz","Treppe"]); [] = not a compound
   features: lexemeFeaturesSchema,
@@ -185,6 +186,7 @@ export const lexemeStatsSchema = z.object({
   total: z.number().int(),
   byPos: z.array(lexemeCountSchema),
   byGenus: z.array(lexemeCountSchema),
+  byAgeBand: z.array(lexemeCountSchema),
   bySource: z.array(lexemeCountSchema),
   bySkill: z.array(lexemeCountSchema),
   bySyllableCount: z.array(lexemeCountSchema),

@@ -22,6 +22,7 @@ function toFilters(q: RawQuery): LexemeFilters {
     skill: q.skill || undefined,
     pos: q.pos || undefined,
     genus: q.genus || undefined,
+    ageBand: q.ageBand || undefined,
     source: q.source || undefined,
     feature: q.feature || undefined,
     hkMin: int(q.hkMin),
