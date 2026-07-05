@@ -1,10 +1,10 @@
 import { Flame, Star } from 'lucide-react';
 import { useActiveProfile } from '@/features/profile/useMe';
 import { useProgress } from '@/features/progress/useProgress';
-import { Heatmap, LeagueCard, WeekBars } from '@/features/progress/components';
+import { Heatmap, AchievementCard, WeekBars } from '@/features/progress/components';
 import { ErrorRetry } from '@/app/components/ErrorRetry';
 
-export function Liga() {
+export function Erfolge() {
   const profile = useActiveProfile();
   const progress = useProgress(profile?.id);
 
@@ -14,10 +14,14 @@ export function Liga() {
 
   return (
     <div className="space-y-5">
-      <h1 className="font-display text-2xl font-bold text-ink">Liga</h1>
-      <LeagueCard league={p.league} />
+      <h1 className="font-display text-2xl font-bold text-ink">Erfolge</h1>
+      <AchievementCard league={p.league} />
       <div className="grid grid-cols-2 gap-3">
-        <Stat icon={<Flame className="h-5 w-5 text-orange" />} value={p.streakDays} label="Tage in Folge" />
+        {p.streakDays > 0 ? (
+          <Stat icon={<Flame className="h-5 w-5 text-orange" />} value={p.streakDays} label="Tage in Folge" />
+        ) : (
+          <WarmRestart />
+        )}
         <Stat icon={<Star className="h-5 w-5 text-amber-400" />} value={p.stars} label="Sterne gesamt" />
       </div>
       <WeekBars weekly={p.weeklyActivity} />
@@ -34,6 +38,15 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; la
         <span className="font-display text-2xl font-bold text-ink">{value}</span>
       </div>
       <p className="mt-1 text-sm text-ink-soft">{label}</p>
+    </div>
+  );
+}
+
+function WarmRestart() {
+  return (
+    <div className="rounded-card bg-teal-tint/60 p-4">
+      <p className="font-display text-lg font-bold text-teal-dark">🌱</p>
+      <p className="mt-1 text-sm font-medium text-ink">Heute neu starten!</p>
     </div>
   );
 }

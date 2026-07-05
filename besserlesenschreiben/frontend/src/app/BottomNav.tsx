@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn';
 
 const TABS: Array<{ to: string; label: string; icon: LucideIcon }> = [
   { to: '/app/lernen', label: 'Lernen', icon: BookOpen },
-  { to: '/app/liga', label: 'Liga', icon: Trophy },
+  { to: '/app/erfolge', label: 'Erfolge', icon: Trophy },
   { to: '/app/chat', label: 'Chat', icon: MessageCircle },
   { to: '/app/profil', label: 'Profil', icon: User },
 ];

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { fanfare } from './audio';
 import { useSoundOn } from '@/features/settings/a11y';
 
-const LEAGUE_LABEL: Record<string, string> = { bronze: 'Bronze', silber: 'Silber', gold: 'Gold' };
+const TIER_LABEL: Record<string, string> = { bronze: 'Bronze', silber: 'Silber', gold: 'Gold' };
 
 /** Reward screen shown when every item in a session is solved (SPEC §3 — fanfare on complete). */
 export function LessonComplete({
@@ -68,8 +68,10 @@ export function LessonComplete({
             <span className="font-display text-xl font-bold text-ink">+{result.starsAwarded} Sterne</span>
           </div>
           <p className="text-ink-soft">
-            {result.streakDays} {result.streakDays === 1 ? 'Tag' : 'Tage'} in Folge ·{' '}
-            {LEAGUE_LABEL[result.league.tier] ?? result.league.tier}-Liga
+            {result.streakDays > 0
+              ? `${result.streakDays} ${result.streakDays === 1 ? 'Tag' : 'Tage'} in Folge · `
+              : 'Heute neu gestartet! · '}
+            {TIER_LABEL[result.league.tier] ?? result.league.tier}-Stufe
           </p>
         </div>
       )}
