@@ -6,7 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 import { assertProfileOwned } from '../../common/ownership';
 import { daysAgo, startOfUtcDay, startOfUtcWeek } from '../../common/dates';
-import { STARS_PER_SESSION, leagueFor, nextStreak, type League } from '../progress/gamification';
+import { STARS_PER_SESSION, isJokerAvailable, leagueFor, nextStreak, type League } from '../progress/gamification';
 import { LlmService } from '../../services/llm/llm.service';
 import { LexemeService } from '../../services/lexeme/lexeme.service';
 import { DigestService } from '../../services/digest/digest.service';
@@ -316,18 +316,26 @@ export class SessionsService {
       return {
         starsAwarded: session.starsAward ?? 0,
         streakDays: profile.streakDays,
+        jokerAvailable: isJokerAvailable(profile.jokerUsedWeek, now),
+        jokerConsumed: false,
         league: await this.weeklyLeague(profile.id, now),
         allUnitsComplete,
       };
     }
 
     const stars = STARS_PER_SESSION;
-    const streakDays = nextStreak(profile.lastActive, now, profile.streakDays);
+    const { streakDays, jokerConsumed } = nextStreak(
+      profile.lastActive,
+      now,
+      profile.streakDays,
+      profile.jokerUsedWeek,
+    );
     const shouldUnlock = session.unit === profile.unlockedUnit && profile.unlockedUnit < UNIT_CATALOG.length;
     const profileUpdate = {
       stars: { increment: stars },
       streakDays,
       lastActive: startOfUtcDay(now),
+      ...(jokerConsumed ? { jokerUsedWeek: startOfUtcWeek(now) } : {}),
       ...(shouldUnlock ? { unlockedUnit: { increment: 1 } } : {}),
     };
     await this.prisma.$transaction([
@@ -341,8 +349,12 @@ export class SessionsService {
         'next unit unlocked',
       );
     }
+    if (jokerConsumed) {
+      this.logger.log({ event: 'session.joker_consumed', streakDays }, 'weekly joker applied');
+    }
     this.logger.log({ event: 'session.completed', sessionId, stars, streakDays }, 'session completed');
-    return { starsAwarded: stars, streakDays, league: await this.weeklyLeague(profile.id, now), allUnitsComplete };
+    const jokerAvailable = isJokerAvailable(jokerConsumed ? startOfUtcWeek(now) : profile.jokerUsedWeek, now);
+    return { starsAwarded: stars, streakDays, jokerAvailable, jokerConsumed, league: await this.weeklyLeague(profile.id, now), allUnitsComplete };
   }
 
   /** League from stars earned since Monday this week (sum of completed sessions' awards). */

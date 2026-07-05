@@ -68,7 +68,7 @@ export function Lernen() {
 
   return (
     <div className="space-y-5">
-      <TopBar name={profile.name} streakDays={profile.streakDays} stars={profile.stars} />
+      <TopBar name={profile.name} streakDays={profile.streakDays} stars={profile.stars} jokerAvailable={profile.jokerAvailable} />
       <WeekStrip />
 
       <BuddyCard buddy={profile.buddy} state={buddyState} />

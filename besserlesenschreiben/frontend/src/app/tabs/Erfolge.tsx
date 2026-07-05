@@ -18,7 +18,7 @@ export function Erfolge() {
       <AchievementCard league={p.league} />
       <div className="grid grid-cols-2 gap-3">
         {p.streakDays > 0 ? (
-          <Stat icon={<Flame className="h-5 w-5 text-orange" />} value={p.streakDays} label="Tage in Folge" />
+          <StreakStat streakDays={p.streakDays} jokerAvailable={p.jokerAvailable} />
         ) : (
           <WarmRestart />
         )}
@@ -38,6 +38,24 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; la
         <span className="font-display text-2xl font-bold text-ink">{value}</span>
       </div>
       <p className="mt-1 text-sm text-ink-soft">{label}</p>
+    </div>
+  );
+}
+
+function StreakStat({ streakDays, jokerAvailable }: { streakDays: number; jokerAvailable: boolean }) {
+  return (
+    <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+      <div className="flex items-center gap-2">
+        <Flame className="h-5 w-5 text-orange" aria-hidden />
+        <span className="font-display text-2xl font-bold text-ink">{streakDays}</span>
+        {jokerAvailable && (
+          <span className="text-amber-400" aria-hidden title="Joker verfügbar">◆</span>
+        )}
+      </div>
+      <p className="mt-1 text-sm text-ink-soft">Tage in Folge</p>
+      {jokerAvailable && (
+        <p className="mt-1 text-xs text-amber-600">1 Joker verfügbar</p>
+      )}
     </div>
   );
 }

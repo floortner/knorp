@@ -226,6 +226,9 @@
                             "minimum": -9007199254740991,
                             "maximum": 9007199254740991
                           },
+                          "jokerAvailable": {
+                            "type": "boolean"
+                          },
                           "unlockedUnit": {
                             "type": "integer",
                             "minimum": -9007199254740991,
@@ -245,6 +248,7 @@
                           "fontScale",
                           "stars",
                           "streakDays",
+                          "jokerAvailable",
                           "unlockedUnit",
                           "createdAt"
                         ],
@@ -352,6 +356,9 @@
                           "minimum": -9007199254740991,
                           "maximum": 9007199254740991
                         },
+                        "jokerAvailable": {
+                          "type": "boolean"
+                        },
                         "unlockedUnit": {
                           "type": "integer",
                           "minimum": -9007199254740991,
@@ -371,6 +378,7 @@
                         "fontScale",
                         "stars",
                         "streakDays",
+                        "jokerAvailable",
                         "unlockedUnit",
                         "createdAt"
                       ],
@@ -444,6 +452,9 @@
                           "minimum": -9007199254740991,
                           "maximum": 9007199254740991
                         },
+                        "jokerAvailable": {
+                          "type": "boolean"
+                        },
                         "unlockedUnit": {
                           "type": "integer",
                           "minimum": -9007199254740991,
@@ -463,6 +474,7 @@
                         "fontScale",
                         "stars",
                         "streakDays",
+                        "jokerAvailable",
                         "unlockedUnit",
                         "createdAt"
                       ],
@@ -614,6 +626,9 @@
                           "minimum": -9007199254740991,
                           "maximum": 9007199254740991
                         },
+                        "jokerAvailable": {
+                          "type": "boolean"
+                        },
                         "unlockedUnit": {
                           "type": "integer",
                           "minimum": -9007199254740991,
@@ -633,6 +648,7 @@
                         "fontScale",
                         "stars",
                         "streakDays",
+                        "jokerAvailable",
                         "unlockedUnit",
                         "createdAt"
                       ],
@@ -2135,6 +2151,12 @@
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
                     },
+                    "jokerAvailable": {
+                      "type": "boolean"
+                    },
+                    "jokerConsumed": {
+                      "type": "boolean"
+                    },
                     "league": {
                       "type": "object",
                       "properties": {
@@ -2171,6 +2193,8 @@
                   "required": [
                     "starsAwarded",
                     "streakDays",
+                    "jokerAvailable",
+                    "jokerConsumed",
                     "league",
                     "allUnitsComplete"
                   ],
@@ -2352,6 +2376,9 @@
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
                     },
+                    "jokerAvailable": {
+                      "type": "boolean"
+                    },
                     "stars": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -2449,6 +2476,7 @@
                   },
                   "required": [
                     "streakDays",
+                    "jokerAvailable",
                     "stars",
                     "weeklyActivity",
                     "monthlyHeatmap",

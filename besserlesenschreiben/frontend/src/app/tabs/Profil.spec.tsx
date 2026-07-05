@@ -9,11 +9,11 @@ import { AuthProvider } from '@/features/auth/AuthProvider';
 const me: Me = {
   account: { id: 'a1', email: 'm@test.de' },
   profiles: [
-    { id: 'p1', name: 'Mia', buddy: 'nepo', goalPerWeek: 5, soundOn: true, dyslexicFont: false, fontScale: 1, stars: 240, streakDays: 3, unlockedUnit: 1, createdAt: '2026-01-01T00:00:00Z' },
+    { id: 'p1', name: 'Mia', buddy: 'nepo', goalPerWeek: 5, soundOn: true, dyslexicFont: false, fontScale: 1, stars: 240, streakDays: 3, jokerAvailable: true, unlockedUnit: 1, createdAt: '2026-01-01T00:00:00Z' },
   ],
 };
 const progress: Progress = {
-  streakDays: 3, stars: 240, weeklyActivity: [0, 0, 0, 0, 0, 0, 1],
+  streakDays: 3, jokerAvailable: true, stars: 240, weeklyActivity: [0, 0, 0, 0, 0, 0, 1],
   monthlyHeatmap: [], league: { tier: 'bronze', starsWeek: 15, starsToNext: 85 },
   skillBreakdown: [{ skill: 'vowel_length', attempts: 3, correctPct: 100, due: false }],
 };

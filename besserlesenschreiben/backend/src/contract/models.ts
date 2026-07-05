@@ -23,6 +23,7 @@ export const profileSchema = z.object({
   fontScale: z.number(),
   stars: z.number().int(),
   streakDays: z.number().int(),
+  jokerAvailable: z.boolean(),
   unlockedUnit: z.number().int(),
   createdAt: z.string(),
 });
@@ -83,6 +84,8 @@ export const leagueSchema = z.object({
 export const sessionCompleteSchema = z.object({
   starsAwarded: z.number().int(),
   streakDays: z.number().int(),
+  jokerAvailable: z.boolean(),
+  jokerConsumed: z.boolean(),
   league: leagueSchema,
   // True once the child has completed the final unit — the backend is authoritative so the client never
   // has to hardcode the unit count to decide whether to show the all-units celebration.
@@ -92,6 +95,7 @@ export const sessionCompleteSchema = z.object({
 // ── Progress / digest ──────────────────────────────────────────────────────────
 export const progressSchema = z.object({
   streakDays: z.number().int(),
+  jokerAvailable: z.boolean(),
   stars: z.number().int(),
   weeklyActivity: z.array(z.number().int()),
   monthlyHeatmap: z.array(z.object({ date: z.string(), count: z.number().int() })),

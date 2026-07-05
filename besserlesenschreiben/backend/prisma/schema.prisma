@@ -63,6 +63,7 @@ model Profile {
   stars        Int      @default(0)
   streakDays   Int      @default(0) @map("streak_days")
   lastActive   DateTime? @map("last_active") @db.Date
+  jokerUsedWeek DateTime? @map("joker_used_week") @db.Date
   unlockedUnit Int      @default(1) @map("unlocked_unit")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 

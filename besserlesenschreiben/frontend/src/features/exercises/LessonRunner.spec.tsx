@@ -13,7 +13,7 @@ vi.mock('@/features/settings/a11y', () => ({ useSoundOn: () => false }));
 vi.mock('@/features/sessions/useCompleteSession', () => ({
   useCompleteSession: () => ({
     mutate: (...a: unknown[]) => mutate(...a),
-    data: { starsAwarded: 3, streakDays: 1, league: { tier: 'bronze' } },
+    data: { starsAwarded: 3, streakDays: 1, jokerAvailable: true, jokerConsumed: false, league: { tier: 'bronze' } },
     isPending: false,
   }),
 }));
