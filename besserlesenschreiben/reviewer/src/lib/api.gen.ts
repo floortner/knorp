@@ -767,6 +767,7 @@ export interface operations {
                             fontScale: number;
                             stars: number;
                             streakDays: number;
+                            jokerAvailable: boolean;
                             unlockedUnit: number;
                             createdAt: string;
                         }[];
@@ -809,6 +810,7 @@ export interface operations {
                             fontScale: number;
                             stars: number;
                             streakDays: number;
+                            jokerAvailable: boolean;
                             unlockedUnit: number;
                             createdAt: string;
                         };
@@ -842,6 +844,7 @@ export interface operations {
                             fontScale: number;
                             stars: number;
                             streakDays: number;
+                            jokerAvailable: boolean;
                             unlockedUnit: number;
                             createdAt: string;
                         };
@@ -895,6 +898,7 @@ export interface operations {
                             fontScale: number;
                             stars: number;
                             streakDays: number;
+                            jokerAvailable: boolean;
                             unlockedUnit: number;
                             createdAt: string;
                         };
@@ -1251,6 +1255,8 @@ export interface operations {
                     "application/json": {
                         starsAwarded: number;
                         streakDays: number;
+                        jokerAvailable: boolean;
+                        jokerConsumed: boolean;
                         league: {
                             /** @enum {string} */
                             tier: "bronze" | "silber" | "gold";
@@ -1339,6 +1345,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         streakDays: number;
+                        jokerAvailable: boolean;
                         stars: number;
                         weeklyActivity: number[];
                         monthlyHeatmap: {
@@ -1936,6 +1943,7 @@ export interface operations {
                             syllableCount: number;
                             forms: string | null;
                             separablePrefix: string | null;
+                            ageBand: string | null;
                             familyStem: string | null;
                             compoundParts: string[];
                             features: {
@@ -1974,6 +1982,7 @@ export interface operations {
                     syllableCount: number;
                     forms: string | null;
                     separablePrefix: string | null;
+                    ageBand: string | null;
                     familyStem: string | null;
                     compoundParts: string[];
                     features: {
@@ -2003,6 +2012,7 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        ageBand: string | null;
                         familyStem: string | null;
                         compoundParts: string[];
                         features: {
@@ -2039,6 +2049,10 @@ export interface operations {
                             count: number;
                         }[];
                         byGenus: {
+                            value: string;
+                            count: number;
+                        }[];
+                        byAgeBand: {
                             value: string;
                             count: number;
                         }[];
@@ -2121,6 +2135,7 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        ageBand: string | null;
                         familyStem: string | null;
                         compoundParts: string[];
                         features: {
@@ -2172,6 +2187,7 @@ export interface operations {
                     syllableCount?: number;
                     forms?: string | null;
                     separablePrefix?: string | null;
+                    ageBand?: string | null;
                     familyStem?: string | null;
                     compoundParts?: string[];
                     features?: {
@@ -2201,6 +2217,7 @@ export interface operations {
                         syllableCount: number;
                         forms: string | null;
                         separablePrefix: string | null;
+                        ageBand: string | null;
                         familyStem: string | null;
                         compoundParts: string[];
                         features: {

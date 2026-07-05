@@ -24,13 +24,21 @@ export class LexemeService {
    * Uses the GIN-indexed array-containment on `skill_tags`; only the un-mapped columns are selected so
    * the raw rows need no camelCase bridging.
    */
-  async pickForSkill(skillTag: string, opts: { maxHk?: number; limit?: number } = {}): Promise<LexemePick[]> {
+  async pickForSkill(
+    skillTag: string,
+    opts: { maxHk?: number; limit?: number; ageBand?: string } = {},
+  ): Promise<LexemePick[]> {
     const maxHk = opts.maxHk ?? 12;
     const limit = opts.limit ?? 12;
+    // Null-tolerant band intersection: keep unbanded words (age_band IS NULL) plus the matching band, so
+    // the pool never collapses to empty while curation is still filling the (new, sparse) age facet.
+    const ageFilter = opts.ageBand
+      ? Prisma.sql`AND (age_band IS NULL OR age_band = ${opts.ageBand})`
+      : Prisma.empty;
     return this.prisma.$queryRaw<LexemePick[]>(Prisma.sql`
       SELECT lemma, syllabification, genus, hk
       FROM lexeme
-      WHERE skill_tags @> ARRAY[${skillTag}]::text[] AND hk <= ${maxHk}
+      WHERE skill_tags @> ARRAY[${skillTag}]::text[] AND hk <= ${maxHk} ${ageFilter}
       ORDER BY random()
       LIMIT ${limit}`);
   }
@@ -41,12 +49,15 @@ export class LexemeService {
    * items from real data instead of guessing splits — e.g. `Wasser (das; was-ser)`, `fahren (fah-ren)`.
    * Skills with no matching word are omitted. Empty string when nothing matches (caller drops the section).
    */
-  async wordPoolFor(skillTags: string[], opts: { maxHk?: number; perSkill?: number } = {}): Promise<string> {
+  async wordPoolFor(
+    skillTags: string[],
+    opts: { maxHk?: number; perSkill?: number; ageBand?: string } = {},
+  ): Promise<string> {
     const perSkill = opts.perSkill ?? 8;
     const tags = skillTags.slice(0, 4);
     // The per-skill picks are independent — run them in parallel; this is on the lecture-generation path.
     const pools = await Promise.all(
-      tags.map((t) => this.pickForSkill(t, { maxHk: opts.maxHk, limit: perSkill })),
+      tags.map((t) => this.pickForSkill(t, { maxHk: opts.maxHk, limit: perSkill, ageBand: opts.ageBand })),
     );
     const entry = (w: LexemePick) => `${w.lemma} (${w.genus ? `${w.genus}; ` : ''}${w.syllabification})`;
     return tags

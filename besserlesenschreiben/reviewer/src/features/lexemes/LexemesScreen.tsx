@@ -12,6 +12,7 @@ import { SkillsHelp } from './SkillsHelp';
 import { SKILL_TAGS } from './skills';
 
 const POS_OPTIONS = ['N', 'V', 'ADJ', 'ADV', 'PRO', 'KONJ', 'ART', 'PREP', 'PTK', 'NUM', 'ADJ / ADV'];
+const AGE_BANDS = ['6-7', '8-9'];
 // The orthographic Lernstellen keys in `features` (from the parser).
 const FEATURE_KEYS = [
   'vSchreibung', 'stummesH', 'doppelvokalUmlaut', 'auslautverhaertung', 'ig',
@@ -92,6 +93,15 @@ export function LexemesScreen() {
             <option value="none">kein Nomen</option>
           </Select>
         </Ctrl>
+        <Ctrl label="Altersband">
+          <Select className="w-auto" value={filters.ageBand ?? ''} onChange={(e) => setF({ ageBand: e.target.value || undefined })}>
+            <option value="">Alle</option>
+            {AGE_BANDS.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+            <option value="none">kein Band</option>
+          </Select>
+        </Ctrl>
         <Ctrl label="Merkmal">
           <Filter value={filters.feature} onChange={(v) => setF({ feature: v })} options={FEATURE_KEYS} allLabel="Alle" />
         </Ctrl>
@@ -142,6 +152,7 @@ export function LexemesScreen() {
                 <th className="px-4 py-2 font-medium">Silben</th>
                 <th className="px-4 py-2 font-medium">Silbenzahl</th>
                 <th className="px-4 py-2 font-medium">Morpheme</th>
+                <th className="px-4 py-2 font-medium">Altersband</th>
                 <th className="px-4 py-2 font-medium">Skills <SkillsHelp /></th>
                 <th className="px-4 py-2" />
               </tr>
@@ -163,6 +174,7 @@ export function LexemesScreen() {
                   <td className="px-4 py-2 text-ink-soft">{w.syllabification}</td>
                   <td className="px-4 py-2 text-ink-soft">{w.syllableCount}</td>
                   <td className="px-4 py-2 text-ink-soft">{w.morphemeCount}</td>
+                  <td className="px-4 py-2 text-ink-soft">{w.ageBand ?? '—'}</td>
                   <td className="px-4 py-2">
                     <div className="flex flex-wrap gap-1">
                       {w.skillTags.map((t) => (
@@ -270,6 +282,7 @@ function StatsPanel({ s }: { s: LexemeStats }) {
         <div className="mt-3 space-y-2">
           <StatRow label="Wortart" items={s.byPos} />
           <StatRow label="Genus" items={s.byGenus} />
+          <StatRow label="Altersband" items={s.byAgeBand} />
           <StatRow label="Quelle" items={s.bySource} />
           <StatRow label="Silbenzahl" items={s.bySyllableCount} />
           <StatRow label="Morpheme" items={s.byMorpheme} />

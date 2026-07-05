@@ -21,6 +21,7 @@ interface Form {
   syllableCount: string;
   forms: string;
   separablePrefix: string;
+  ageBand: string;
   familyStem: string;
   compoundParts: string; // edited as "Holz + Treppe"; split on "+" into string[] on save
   skillTags: string[];
@@ -41,6 +42,7 @@ function initForm(l: Lexeme | null): Form {
     syllableCount: String(l?.syllableCount ?? 1),
     forms: l?.forms ?? '',
     separablePrefix: l?.separablePrefix ?? '',
+    ageBand: l?.ageBand ?? '',
     familyStem: l?.familyStem ?? '',
     compoundParts: (l?.compoundParts ?? []).join(' + '),
     skillTags: l?.skillTags ?? [],
@@ -95,6 +97,7 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
       syllableCount,
       forms: f.forms || null,
       separablePrefix: f.separablePrefix || null,
+      ageBand: f.ageBand || null,
       familyStem: f.familyStem.trim() || null,
       compoundParts: f.compoundParts.split('+').map((s) => s.trim()).filter(Boolean),
       features: features as Lexeme['features'],
@@ -156,6 +159,13 @@ export function LexemeEditor({ lexeme, onClose }: { lexeme: Lexeme | null; onClo
           </Field>
           <Field label="Trennbares Präfix">
             <Input value={f.separablePrefix} onChange={(e) => set('separablePrefix', e.target.value)} />
+          </Field>
+          <Field label="Altersband">
+            <Select value={f.ageBand} onChange={(e) => set('ageBand', e.target.value)}>
+              <option value="">— (kein Band)</option>
+              <option value="6-7">6-7</option>
+              <option value="8-9">8-9</option>
+            </Select>
           </Field>
           <Field label="Wortfamilie-Stamm">
             <Input

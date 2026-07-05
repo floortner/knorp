@@ -15,7 +15,7 @@ function make(prisma: Partial<Record<string, unknown>>) {
 
 const newWord: LexemeCreateInput = {
   lemma: 'Zebra', hk: 10, pos: 'N', genus: 'das', morphemeCount: 1, ipa: 'x', syllabification: 'ze-bra',
-  syllableCount: 2, forms: null, separablePrefix: null, familyStem: null, compoundParts: [],
+  syllableCount: 2, forms: null, separablePrefix: null, ageBand: null, familyStem: null, compoundParts: [],
   features: {}, skillTags: ['vowel_length'],
   isLernwort: false, isTrennbar: false, isMerkwort: false,
 };

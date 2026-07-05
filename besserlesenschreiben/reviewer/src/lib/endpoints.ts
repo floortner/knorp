@@ -125,6 +125,7 @@ export interface LexemeFilters {
   skill?: string;
   pos?: string;
   genus?: string; // der | die | das | none
+  ageBand?: string; // 6-7 | 8-9 | none
   source?: string; // rwe2015 | reviewer
   feature?: string; // an orthographic feature key that must be present
   hkMin?: string;

@@ -117,8 +117,8 @@ item_bank(
 )
 
 -- LEXEME FOUNDATION (global, curated word pool — grounds exercise generation). EXTENSIBLE BY DESIGN:
--- more word databases (new `source` values), new per-word properties (e.g. a future age band), and new
--- exercise generators are expected additions — follow the schema→contract→overrides→editor pattern.
+-- more word databases (new `source` values), new per-word properties, and new exercise generators are
+-- expected additions — follow the schema→contract→overrides→editor pattern (age_band was the latest).
 lexeme(
   id               uuid pk,
   lemma            text unique not null,
@@ -131,6 +131,7 @@ lexeme(
   syllable_count   int not null,
   forms            text,                  -- inflections, best-effort
   separable_prefix text,
+  age_band         text,                  -- target age band: "6-7" | "8-9" | null (unbanded)
   family_stem      text,                  -- Wortfamilie grouping → family exercises
   compound_parts   text[] default '{}',   -- ordered compound split → compound exercises
   features         jsonb not null,        -- raw orthographic Lernstellen flags
@@ -425,11 +426,12 @@ Curate the word pool that grounds exercise generation (§3 `lexeme`). Edits land
 immediately; `export` persists the diff-vs-base as the committed `lexeme.overrides.json` change-set so
 corrections survive reseeds (dev-only write; refused in production).
 ```
-GET    /staff/lexemes         ?search=&skill=&pos=&genus=&feature=&source=&hkMin=&hkMax=&syl=&morph=
+GET    /staff/lexemes         ?search=&skill=&pos=&genus=&ageBand=&feature=&source=&hkMin=&hkMax=&syl=&morph=
                               &lernwort=&trennbar=&merkwort=&limit=&cursor=  -> {items, nextCursor, total}
+                              # ageBand ∈ 6-7 | 8-9 | none (unbanded); genus 'none' = not a noun
 GET    /staff/lexemes/stats   ?…same filters…       -> aggregate counts over the filter (total, byPos,
-                                                       byGenus, bySource, bySkill, bySyllableCount,
-                                                       byMorpheme, flags, hk)
+                                                       byGenus, byAgeBand, bySource, bySkill,
+                                                       bySyllableCount, byMorpheme, flags, hk)
 GET    /staff/lexemes/{lemma}                       -> one lexeme
 POST   /staff/lexemes         {full record}         -> 201  # add a word (source='reviewer'; 409 on dup)
 PATCH  /staff/lexemes/{lemma} {sparse fields}       -> field-level edit
@@ -670,6 +672,10 @@ Built the entire staff realm and the `-review` portal; reviewed homework now sha
 - ✅ **E2E harness** — top-level `e2e/` Playwright suite (backend+frontends via `webServer`, capture email
   provider, seeded dev accounts via `SEED_DEV_ACCOUNTS`) + a CI `e2e` job.
 - ✅ **AWS retarget** — S3 storage adapter (presigned URLs), Frankfurt region docs; deployment still pending.
+- ✅ **Lexeme `age_band`** — per-word target band (`6-7` | `8-9` | null), reviewer Wortschatz filter/column/
+  stat + editor, threaded into lecture word-pool selection (`gradeBand` → `wordPoolFor`) as a null-tolerant
+  age ∩ frequency intersection (unbanded words stay eligible). Band-aware `gen:items` deferred until curation
+  populates the facet.
 
 **Remaining / current focus:** content depth + lecture quality (merge reviewed gen:items candidates, curate
 Wortfamilien/Komposita, sentence_context seed set, ground LLM lectures in the lexeme pool) · TTS pipeline
