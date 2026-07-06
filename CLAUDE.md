@@ -119,12 +119,14 @@ The database decides *what* to drill — informed by telemetry **and the staff-v
 ### Homework review (professional-in-the-loop)
 Homework photos are uploaded by the family but validated by an **internal staff reviewer**, not the parent (ARCHITECTURE §11, backend SPEC §10). Vision produces a **draft** (`homework_upload.llm_analysis`) that is **never applied on its own**; a reviewer approves/corrects/rejects in the staff portal, and only the **authoritative** `reviewed_analysis` mutates `attempt`/`review_state` and feeds the next lecture. Review is **async** (the child is never blocked) and the queue is **pseudonymised** (image + draft + skill tags + grade band only). The old `POST /homework/{id}/confirm` parent step is **removed**.
 
-### Build status
-Everything through the current roadmap is **done**: Phase 1 (auth/profiles/sessions/attempts/progress/FSRS/digest), Phase 1.5 (hardening), Phase 1.6 (content + UX polish), **Phase 2** (free AI: `LlmService` → chat → homework upload + vision draft → LLM session generation), the **approval-gated access** milestone (`account.status` `pending|active|deactivated`, silent pending-on-first-code signup, admin user-management), and **Phase 2.5** (staff realm + professional homework review: `reviewer`/`homework_review` tables, `StaffAuthGuard`, `/staff/*` queue + authoritative apply, reviewer portal). The Phase-1.6 technical debt is **resolved** (`backend/SPEC.md §12`).
-
-**Product decision — the app is FREE, including the AI features; access is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred** and not built: no `EntitlementGuard`, credits, or `402` gating. The `entitlement`/`credits_ledger` tables stay dormant so metering stays a future option; `★` means "AI-backed / cost-bearing op," free for any approved active account.
-
-**Remaining work:** the **TTS pipeline** (deferred — Web-Speech fallback on the client for now; target: Amazon Polly) and **deployment + hardening** (AWS infra has not been stood up). Billing stays deferred unless the product decision changes.
+### Build status & roadmap
+The single source of truth for what's shipped and what's next is the repo-root **`ROADMAP.md`**. In short:
+everything through Phase 2.5 + Post-2.5 is **done**; **next** is D5/D6 (badges, weekly parent email), **then**
+the AWS deployment milestone (E). **Product decision — the app is FREE, including the AI features; access is
+gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred** and not built: no
+`EntitlementGuard`, credits, or `402` gating; the `entitlement`/`credits_ledger` tables stay dormant so
+metering stays a future option, and `★` means "AI-backed / cost-bearing op," free for any approved active
+account. TTS is deferred (Web-Speech fallback for now; target Amazon Polly).
 
 ## Non-negotiable security rules
 
@@ -149,7 +151,7 @@ Everything through the current roadmap is **done**: Phase 1 (auth/profiles/sessi
 - **Golden tests:** `digest.md` format (LLM-facing) and `Exercise` JSON (client-facing) are pinned with golden files. Any change to these contract outputs must update the golden files intentionally.
 - **SVG-first media:** all app art, mascots (Nepo/Stella), icons, and badges are SVG. Sanitize any non-hand-authored SVG with DOMPurify before inlining — never `dangerouslySetInnerHTML` on raw SVG. Homework photos are the only raster exception (strip EXIF server-side, transcode to WebP).
 - **Prisma 7 + NestJS:** Prisma 7 is ESM-first — set `moduleFormat = "cjs"` in the Prisma client generator config for NestJS's CommonJS setup.
-- **Docs upkeep (keep them true):** a PR that changes routes, the Prisma schema, env vars, screens/tabs, or hosting must update the matching SPEC/ARCHITECTURE section in the same PR — and new milestones are appended to `backend/SPEC.md §12` ("Post-2.5"). The lexeme foundation is **extensible by design**: new word databases (`source`), new per-word properties (e.g. an age band), and new exercise types/generators follow the schema→contract→overrides→editor pattern.
+- **Docs upkeep (keep them true):** a PR that changes routes, the Prisma schema, env vars, screens/tabs, or hosting must update the matching SPEC/ARCHITECTURE section in the same PR — and milestones (shipped + planned) are tracked only in the repo-root `ROADMAP.md`, ticked there when they ship. The lexeme foundation is **extensible by design**: new word databases (`source`), new per-word properties (e.g. an age band), and new exercise types/generators follow the schema→contract→overrides→editor pattern.
 - **Telemetry:** every answered exercise emits exactly one `POST /attempts` with a real `timeMs` (timer starts on item mount). Fire-and-forget; queue + retry offline via Workbox; never block the child's UI.
 
 ## Hosting & env

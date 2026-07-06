@@ -51,14 +51,10 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 - Test: `npm test` (include **golden** snapshot tests for the `Exercise` rendering contract)
 - Types from API: `npm run gen:api` (openapi-typescript against the backend OpenAPI)
 
-## Build milestones (SPEC §11)
-Phase 1 (shell/auth/onboarding/home/telemetry/12 renderers/progress) + Phase 1.5 (error boundary, offline
-caching, telemetry retention, query fixes, committed `api.gen.ts` + drift gate, flow tests) + Phase 1.6
-(content + UX polish: unit unlock, all-done celebration, parent area, profile tab) are **done**, as is
-Phase 2: chat (★ LLM), the ✨ generated-lecture entry + lesson intro card, and the homework
-"Foto & verbessern" flow (in the child Chat tab — the photo shows as a chat message, not PIN-gated). No
-billing — the app is free. The exercise set has since been
-**replaced by the 14-type Vokaltraining program** (SPEC §3) with a new 7-unit progression and ~360 seed items.
+## Build milestones
+Shipped milestones and the forward plan live in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)** — the
+single source of truth. Everything through Phase 2 is done; the exercise set is now the **14-type
+Vokaltraining program** (SPEC §3) with a 7-unit progression and ~360 seed items. No billing — the app is free.
 
 ## Definition of done for a feature
 Renders from backend JSON; one `/attempts` per answer with sane timing; error codes map to the right UI;

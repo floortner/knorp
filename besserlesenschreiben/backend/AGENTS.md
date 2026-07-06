@@ -65,12 +65,10 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 - Seed: `npm run seed` (`prisma db seed` → `prisma/seed.ts`)
 - Full local-dev setup (local Postgres, env, first run, calling the API): see [`./README.md`](./README.md).
 
-## Build milestones (backend SPEC §12)
-Phases 1, 1.5, 1.6, **Phase 2** (`LlmService`, chat, homework upload + vision draft, LLM session generation —
-all **free**, no billing), and **Phase 2.5** (staff realm: `reviewer`/`homework_review` tables, `StaffAuthGuard`,
-`/staff/*` queue + authoritative apply, approval-gated account lifecycle + admin user-management) are **done**.
-Billing is **deferred** — schema (`entitlement`/`credits_ledger`/`processed_webhook`) kept dormant (ARCHITECTURE §9).
-Remaining: **TTS pipeline** (deferred — Web-Speech fallback on the client for now) and **deploy/hardening**.
+## Build milestones
+Shipped milestones and the forward plan live in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)** — the
+single source of truth. Everything through Phase 2.5 + Post-2.5 is done; billing is deferred (schema kept
+dormant, ARCHITECTURE §9); TTS + deploy/hardening remain.
 
 ## Definition of done for a feature
 Endpoint matches `SPEC.md §6`; `user_id` from token; correct error codes; structured logs with `requestId`

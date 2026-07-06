@@ -70,11 +70,11 @@ On wrong: buzz + "Nochmal versuchen", allow retry (increment `attemptNo`). Confe
 ## Suggested first prompt for Claude Code
 
 > Read `CLAUDE.md`, then `AGENTS.md`, then `../ARCHITECTURE.md`, then `SPEC.md`. Open `docs/knorp.html` to see
-> the target design and interactions. We're building milestone 1 from `SPEC.md` §11: app shell + routing +
+> the target design and interactions. We're building the first milestone in `../../ROADMAP.md`: app shell + routing +
 > bottom tab nav + `lib/api.ts` + the email-code auth screens. **Recreate** the prototype's look in React +
 > TypeScript + Tailwind + shadcn/ui — do not paste the prototype HTML. Render against `fixtures/` where
 > relevant. Stop after the shell so we can review.
 
-Drive it milestone by milestone (`SPEC.md` §11). Build the telemetry pipeline (milestone 4) first, then the
-14 renderers (milestone 5) — together ~half the work. Give the renderers their own focused sessions, one or
+Drive it milestone by milestone (`../../ROADMAP.md`). Build the telemetry pipeline first, then the
+14 renderers — together ~half the work. Give the renderers their own focused sessions, one or
 two exercise types at a time, each with a golden snapshot test against `fixtures/session.example.json`.
