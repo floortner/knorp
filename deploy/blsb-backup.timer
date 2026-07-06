@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily off-platform Postgres backup
+
+[Timer]
+# 03:17 UTC daily (off the top of the hour), catch up if the box was off.
+OnCalendar=*-*-* 03:17:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

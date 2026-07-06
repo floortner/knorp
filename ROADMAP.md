@@ -247,20 +247,22 @@ Provisioned as **Terraform in `infra/`** (reproducible, reviewable, doubles as t
    SSM managed instance); **GitHub OIDC provider + scoped deploy role** (`s3 sync`, CloudFront invalidation,
    `ssm:SendCommand`); one blob bucket (lifecycle on `users/*/homework/`) + two private web buckets (OAC);
    two CloudFront distributions (hashed assets immutable 1y, `index.html`/SW `no-cache`); ACM cert in
-   **us-east-1**; Route 53 records (`app.`/`review.`→CloudFront, `api.`→EIP) + Resend SPF/DKIM; SSM
+   **us-east-1**; Route 53 records (`app.`/`review.`→CloudFront, `api.`→EIP) + SES DKIM/MAIL FROM
+   (Terraform-managed); SSM
    SecureString params (`JWT_SECRET`, `STAFF_JWT_SECRET`, `DATABASE_URL`, `EMAIL_KEY`, `ANTHROPIC_API_KEY`);
    an **AWS Budgets** alert (~€40).
 2. **Box bootstrap + service** — cloud-init installs Node 24, Postgres, nginx, certbot; create the local
    Postgres role/db; `blsb-api.service` systemd unit with the SSM-rendered `EnvironmentFile` (incl.
    `GIT_COMMIT`); nginx reverse-proxy `api.<domain>` :443→:3000 + certbot renew timer. **Build on the
    Graviton box** (Prisma has no `binaryTargets`) to avoid an arm64 engine mismatch.
-3. **GitHub Actions deploy** (`.github/workflows/deploy.yml`, `workflow_dispatch` and/or `v*` tag) — `api`
+3. **GitHub Actions deploy** (`.github/workflows/deploy.yml`, **manual `workflow_dispatch` button only** —
+   merging never auto-deploys) — `api`
    job: `aws ssm send-command` → on-box `deploy/release.sh` (`npm ci` → build → **`prisma migrate deploy`
    (pre-traffic)** → `npm run seed` → refresh env from SSM → `systemctl restart`); `web` job: build family +
    reviewer with prod `VITE_API_BASE` (+ `VITE_PWA=true` for `-web`) → `s3 sync` → CloudFront invalidation.
    Contract drift gates (`openapi:export` / `gen:api`) stay green before any deploy.
 4. **Prod config** — SSM/env: `WEB_ORIGIN=https://app.<domain>`, `REVIEWER_ORIGIN=https://review.<domain>`,
-   `PUBLIC_API_URL`, `STAFF_ADMIN_EMAILS=<owner>`, `EMAIL_PROVIDER=resend` + `EMAIL_KEY` + `EMAIL_FROM`,
+   `PUBLIC_API_URL`, `STAFF_ADMIN_EMAILS=<owner>`, `EMAIL_PROVIDER=ses` + `EMAIL_FROM` (SES; IAM-role auth, no key),
    `AWS_S3_BUCKET` + `AWS_REGION=eu-central-1`, `LLM_RESIDENCY_ACK=true`, **lowered daily caps**
    (`LLM_SESSIONS_PER_DAY`/`CHAT_MESSAGES_PER_DAY` from 5/60 → ~3/20 for beta), `SEED_DEV_ACCOUNTS` blank.
    Also set a **hard monthly spend limit in the Anthropic console** — the real cap on the variable cost.

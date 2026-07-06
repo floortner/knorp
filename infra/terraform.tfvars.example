@@ -1,0 +1,18 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars + state are gitignored — never commit them.
+
+domain      = "knorp.org"         # a domain you own with its hosted zone already in Route 53
+owner_email = "you@example.com"   # admin reviewer + Let's Encrypt + EMAIL_FROM domain
+alarm_email = "you@example.com"   # budget alerts (confirm the SNS subscription email once)
+
+# Email is Amazon SES — Terraform verifies the domain + creates its DKIM/MAIL FROM DNS automatically.
+# After apply, request SES production access (see infra/README.md) to email arbitrary addresses.
+
+# Optional overrides (defaults shown):
+# region                      = "eu-central-1"
+# instance_type               = "t4g.small"
+# app_subdomain               = "app"
+# reviewer_subdomain          = "review"
+# api_subdomain               = "api"
+# github_repo                 = "floortner/knorp"
+# monthly_budget_usd          = 25
+# create_github_oidc_provider = true   # set false if your account already has the GitHub OIDC provider

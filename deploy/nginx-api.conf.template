@@ -1,0 +1,20 @@
+# nginx site for the API host. Installed to /etc/nginx/conf.d/blsb-api.conf with __API_FQDN__ substituted.
+# This is the HTTP (:80) form; `certbot --nginx` rewrites it to add the :443 TLS server + redirect.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __API_FQDN__;
+
+    # Homework photo upload is capped at 10 MB in the app; allow a little overhead.
+    client_max_body_size 12m;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+    }
+}

@@ -1,0 +1,23 @@
+[Unit]
+Description=besserlesenschreiben API (NestJS)
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=blsb
+Group=blsb
+WorkingDirectory=/opt/blsb/current/besserlesenschreiben/backend
+EnvironmentFile=/etc/blsb/env
+ExecStart=/usr/bin/node dist/main.js
+Restart=on-failure
+RestartSec=3
+# The app binds :3000 on localhost; nginx terminates TLS and proxies to it.
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -156,7 +156,7 @@ account. TTS is deferred (Web-Speech fallback for now; target Amazon Polly).
 
 ## Hosting & env
 
-- **AWS**, region **Frankfurt (eu-central-1)** primary: small EC2 instance (backend, systemd, no container) + S3/CloudFront (frontends), RDS PostgreSQL, SES. Deployment is a future milestone (nothing stood up yet).
+- **AWS**, region **Frankfurt (eu-central-1)** primary: small EC2 instance (backend, systemd, no container) + S3/CloudFront (frontends). The **beta deployment** (ROADMAP §E) is authored in `infra/` (Terraform) + `deploy/` (on-box scripts): for a €50/mo all-in budget it **self-hosts Postgres on the EC2 box** (not RDS), terminates TLS with **nginx + Let's Encrypt**, sends login-code email via **Amazon SES** (Terraform-managed DKIM; IAM-role auth, no key), and deploys from **GitHub Actions via OIDC → SSM Run Command** (no static keys, no SSH). Full-prod target (RDS, ALB, cross-region DR, OTel, staff MFA) is deferred — see ARCHITECTURE §7. Nothing is stood up until you `terraform apply`.
 - Secrets in **SSM Parameter Store** — nothing secret in the repo. See `backend/SPEC.md §11` for the full env var list (`.env.example` is committed).
 - Migrations run as a **pre-traffic release step** (`prisma migrate deploy`), never at app startup.
 - PWA update strategy: **prompt-to-update** (never silent reload mid-lesson).
