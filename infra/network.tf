@@ -17,7 +17,7 @@ resource "aws_security_group" "api" {
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description = "HTTP (Let's Encrypt HTTP-01 challenge + redirect to HTTPS)"
+    description = "HTTP (Lets Encrypt HTTP-01 challenge + redirect to HTTPS)"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -25,7 +25,7 @@ resource "aws_security_group" "api" {
   }
 
   ingress {
-    description = "HTTPS (nginx → node)"
+    description = "HTTPS (nginx to node)"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -35,7 +35,7 @@ resource "aws_security_group" "api" {
   # No port 22: administration + deploys go through AWS SSM (Session Manager / Run Command).
 
   egress {
-    description = "All outbound (package installs, Anthropic, Resend, S3, SSM)"
+    description = "All outbound (package installs, Anthropic, SES, S3, SSM)"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"

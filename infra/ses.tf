@@ -9,14 +9,15 @@ resource "aws_sesv2_email_identity" "domain" {
   }
 }
 
-# Easy-DKIM: three CNAMEs proving domain ownership + signing.
+# Easy-DKIM: three CNAMEs proving domain ownership + signing. Easy DKIM always yields exactly 3 tokens;
+# they're only known after apply, so index with a static count rather than for_each over unknown keys.
 resource "aws_route53_record" "ses_dkim" {
-  for_each = toset(aws_sesv2_email_identity.domain.dkim_signing_attributes[0].tokens)
-  zone_id  = data.aws_route53_zone.primary.zone_id
-  name     = "${each.value}._domainkey.${var.domain}"
-  type     = "CNAME"
-  ttl      = 1800
-  records  = ["${each.value}.dkim.amazonses.com"]
+  count   = 3
+  zone_id = data.aws_route53_zone.primary.zone_id
+  name    = "${aws_sesv2_email_identity.domain.dkim_signing_attributes[0].tokens[count.index]}._domainkey.${var.domain}"
+  type    = "CNAME"
+  ttl     = 1800
+  records = ["${aws_sesv2_email_identity.domain.dkim_signing_attributes[0].tokens[count.index]}.dkim.amazonses.com"]
 }
 
 # Custom MAIL FROM (mail.<domain>) so SPF aligns — improves deliverability / avoids spam folders.
