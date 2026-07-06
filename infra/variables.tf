@@ -74,9 +74,15 @@ variable "alarm_email" {
 }
 
 variable "monthly_budget_usd" {
-  description = "AWS Budgets monthly cost alarm threshold (USD). The €50 all-in ceiling minus Anthropic headroom; alert well before it."
+  description = "AWS Budgets monthly cost ALERT threshold (USD) — email warnings well before the hard cap."
   type        = number
   default     = 25
+}
+
+variable "budget_hard_cap_usd" {
+  description = "AWS Budget Action HARD CAP (USD): when ACTUAL monthly AWS spend crosses this, AUTOMATICALLY stop the EC2 instance (the app goes offline until you restart it). Anthropic is billed separately and is NOT covered by this. Caveats: AWS billing data lags hours→~a day (not real-time), and a stopped instance still accrues small EBS + Elastic-IP + hosted-zone costs."
+  type        = number
+  default     = 50
 }
 
 # (Email is Amazon SES — Terraform manages its DKIM/MAIL FROM DNS in ses.tf; no per-provider records var.)
