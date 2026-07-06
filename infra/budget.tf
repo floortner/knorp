@@ -1,5 +1,6 @@
-# Cost guardrail: email an alert as AWS spend approaches the budget. The hard cap on the *variable*
-# (Anthropic) cost is set separately in the Anthropic console — this only watches the AWS side.
+# Cost guardrails on the AWS side: this budget EMAILS alerts as spend approaches the threshold; the
+# enforcement HARD CAP (auto-stop the instance at var.budget_hard_cap_usd) lives in budget-action.tf.
+# Anthropic (the variable cost) is capped separately in the Anthropic console, on top of this.
 resource "aws_sns_topic" "budget" {
   name = "${local.name}-budget"
 }
