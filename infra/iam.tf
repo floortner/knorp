@@ -42,11 +42,16 @@ data "aws_iam_policy_document" "instance" {
     actions   = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.artifacts.arn}/releases/*"]
   }
-  # Read the app's runtime config/secrets at deploy time.
+  # Read the app's runtime config/secrets at deploy time. GetParametersByPath authorizes against the
+  # BARE path ARN (…parameter/blsb/beta — no trailing element), which "…/*" does not match, so grant
+  # both the path node and its children.
   statement {
-    sid       = "SsmRead"
-    actions   = ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath"]
-    resources = ["arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/*"]
+    sid     = "SsmRead"
+    actions = ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath"]
+    resources = [
+      "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}",
+      "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/*",
+    ]
   }
   # Send login-code email via SES (from the verified domain identity only).
   statement {
