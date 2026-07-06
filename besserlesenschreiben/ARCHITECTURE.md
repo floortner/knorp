@@ -455,10 +455,9 @@ restore from the off-platform dumps) rather than the loss of every family's data
 - Tag releases; `CHANGELOG.md` per repo. A frontend deploy must never assume an unreleased backend route.
 
 ### CI/CD (GitHub Actions)
-- Implemented in `.github/workflows/ci.yml` (monorepo: one workflow with `backend`, `frontend`, `reviewer`,
-  and `e2e` jobs — the `e2e` job runs the top-level Playwright suite against a service Postgres, booting the
-  backend + both frontends; on push to `main` + all PRs). On the repo split each job moves to its own repo
-  unchanged.
+- Implemented in `.github/workflows/ci.yml` (monorepo: one workflow with `backend`, `frontend`, and
+  `reviewer` jobs; on push to `main` + all PRs). The top-level Playwright suite (`e2e/`) is **run locally
+  only, not in CI** (`cd e2e && npm test`). On the repo split each job moves to its own repo unchanged.
 - Frontend: install → typecheck (`tsc`) → lint → unit + **golden** tests → `vite build`. (Deploy to
   S3+CloudFront on `main` lands with the deployment milestone.)
 - Backend: `npm ci` → lint (ESLint) → typecheck (`tsc --noEmit`) → `vitest` (incl. **golden** tests) →

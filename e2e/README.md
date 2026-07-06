@@ -28,7 +28,9 @@ Override the DB with `DATABASE_URL=... npm test`. `global-setup.ts` runs `prisma
 `npm run seed` (item bank), and `npm run seed:e2e` (an active family account + a reviewer) before tests.
 
 ## CI
-The `e2e` job in `.github/workflows/ci.yml` runs the same suite against a `postgres:16` service.
+This suite is **local-only** — it is intentionally **not** run in CI. `.github/workflows/ci.yml` runs the
+fast backend/frontend/reviewer unit + golden + contract jobs; run the Playwright suite yourself
+(`cd e2e && npm test`) before pushing anything that touches a real user journey.
 
 ## Adding specs
 - Login helper: `helpers/auth.ts` (`loginAsFamily`).
