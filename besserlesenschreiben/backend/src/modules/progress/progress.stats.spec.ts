@@ -8,15 +8,24 @@ function at(daysBack: number, skillTags: string[], isCorrect: boolean): AttemptS
 }
 
 describe('weeklyActivity', () => {
-  it('returns 7 day-buckets, today last', () => {
-    const out = weeklyActivity([at(0, ['x'], true), at(0, ['x'], true), at(6, ['x'], true)], now);
+  // now = Thursday 2026-06-25 → current ISO week = Mon 2026-06-22 … Sun 2026-06-28.
+  it('buckets the current ISO week Monday-first (Mo=0 … So=6)', () => {
+    const out = weeklyActivity([at(0, ['x'], true), at(0, ['x'], true), at(3, ['x'], true)], now);
     expect(out).toHaveLength(7);
-    expect(out[6]).toBe(2); // today
-    expect(out[0]).toBe(1); // 6 days ago
+    expect(out).toEqual([1, 0, 0, 2, 0, 0, 0]); // Mon (3 days ago) = 1, Thu (today) = 2
   });
 
-  it('ignores attempts older than the window', () => {
-    expect(weeklyActivity([at(10, ['x'], true)], now)).toEqual([0, 0, 0, 0, 0, 0, 0]);
+  it('ignores attempts from before this week (last Sunday and older)', () => {
+    expect(weeklyActivity([at(4, ['x'], true), at(10, ['x'], true)], now)).toEqual([0, 0, 0, 0, 0, 0, 0]);
+  });
+
+  it('a Monday-night session lands on Mo, never So (the beta launch-night bug)', () => {
+    const monNight: AttemptStat = {
+      skillTags: ['x'],
+      isCorrect: true,
+      createdAt: new Date('2026-06-22T23:15:00Z'), // Monday 23:15 UTC of the current week
+    };
+    expect(weeklyActivity([monNight], now)).toEqual([1, 0, 0, 0, 0, 0, 0]);
   });
 });
 

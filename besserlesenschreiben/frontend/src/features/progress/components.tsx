@@ -6,7 +6,8 @@ type Skill = Progress['skillBreakdown'][number];
 
 const TIER_LABEL: Record<string, string> = { bronze: 'Bronze', silber: 'Silber', gold: 'Gold' };
 const NEXT_TIER: Record<string, string | undefined> = { bronze: 'Silber', silber: 'Gold', gold: undefined };
-const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+// weeklyActivity is the CURRENT ISO calendar week, Monday-first (backend contract) — label accordingly.
+const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
 /** Achievement standing: current tier + progress toward the next. */
 export function AchievementCard({ league }: { league: League }) {
@@ -25,28 +26,23 @@ export function AchievementCard({ league }: { league: League }) {
   );
 }
 
-/** Stars/attempts per day over the rolling last 7 days (index 6 = today). */
+/** Attempts per day of the current calendar week, Monday-first (index 0 = Mo … 6 = So). */
 export function WeekBars({ weekly }: { weekly: number[] }) {
   const max = Math.max(1, ...weekly);
-  const now = new Date();
   return (
     <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
       <p className="mb-3 text-sm font-semibold text-ink">Diese Woche</p>
       <div className="flex items-end justify-between gap-2" style={{ height: 88 }}>
-        {weekly.map((count, i) => {
-          const d = new Date(now);
-          d.setDate(now.getDate() - (weekly.length - 1 - i));
-          return (
-            <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1">
-              <span
-                className={cn('w-full rounded-md', count > 0 ? 'bg-teal' : 'bg-black/[0.06]')}
-                style={{ height: `${Math.max(6, (count / max) * 64)}px` }}
-                title={`${count}`}
-              />
-              <span className="text-[10px] text-ink-soft/70">{WEEKDAYS[d.getDay()]}</span>
-            </div>
-          );
-        })}
+        {weekly.map((count, i) => (
+          <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1">
+            <span
+              className={cn('w-full rounded-md', count > 0 ? 'bg-teal' : 'bg-black/[0.06]')}
+              style={{ height: `${Math.max(6, (count / max) * 64)}px` }}
+              title={`${count}`}
+            />
+            <span className="text-[10px] text-ink-soft/70">{WEEKDAYS[i]}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
