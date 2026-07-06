@@ -1,32 +1,82 @@
 #!/bin/bash
-# Cloud-init for the besserlesenschreiben beta box. Idempotent: installs prerequisites, mounts the
-# Postgres data volume, and sets up a passwordless (peer-auth, localhost-only) Postgres. All app-level
-# setup (systemd unit, nginx, TLS, migrations) is done by deploy/release.sh on each deploy — this only
-# lays the foundation so the first deploy has somewhere to land.
+# Cloud-init for the besserlesenschreiben beta box. Idempotent: installs prerequisites, sets up the
+# Postgres data-volume mount as a SYSTEMD DEPENDENCY of postgresql (so Postgres can never silently
+# start on the root volume), and initialises a passwordless (peer-auth, localhost-only) Postgres.
+# All app-level setup (systemd unit, nginx, TLS, migrations) is done by deploy/release.sh on each
+# deploy — this only lays the foundation so the first deploy has somewhere to land.
 set -euxo pipefail
 exec > >(tee /var/log/blsb-cloud-init.log) 2>&1
 
-# --- 1. Mount the Postgres data volume at /var/lib/pgsql (find the blank, unmounted EBS disk) ---
 PG_DATA_ROOT=/var/lib/pgsql
-if ! mountpoint -q "$PG_DATA_ROOT"; then
-  DATA_DEV=""
+FS_LABEL=blsb-pgdata
+
+# --- 1. Data-volume mount as a systemd unit (not a one-shot boot script) -------------------------
+# The aws_volume_attachment lands AFTER first boot starts, so a plain "look once" races the
+# attachment. Instead: a oneshot unit waits for the disk (labelling it on first use), and
+# postgresql.service REQUIRES it — if the volume never appears, Postgres does not start and the
+# deploy fails loudly, rather than initdb silently landing on the root volume.
+cat > /usr/local/sbin/blsb-pgdata-mount.sh <<'SCRIPT'
+#!/bin/bash
+set -euo pipefail
+PG_DATA_ROOT=/var/lib/pgsql
+FS_LABEL=blsb-pgdata
+
+mountpoint -q "$PG_DATA_ROOT" && exit 0
+
+for attempt in $(seq 1 60); do   # up to 5 min
+  # Fast path: a volume we (or a previous instance) already labelled.
+  if blkid -L "$FS_LABEL" >/dev/null 2>&1; then break; fi
   for dev in $(lsblk -dpno NAME | grep -E '/dev/nvme[0-9]+n1'); do
-    if [ -z "$(lsblk -no FSTYPE "$dev" | tr -d '[:space:]')" ] && [ -z "$(lsblk -no MOUNTPOINT "$dev" | tr -d '[:space:]')" ]; then
-      DATA_DEV="$dev"; break
+    # Skip disks with any filesystem/partitions/mounts among dev+children… except a bare
+    # unlabelled xfs data volume from a previous instance — adopt it by labelling.
+    content="$(lsblk -no FSTYPE,MOUNTPOINT "$dev" | tr -d '[:space:]')"
+    if [ -z "$content" ]; then
+      mkfs.xfs -f -L "$FS_LABEL" "$dev"; break
+    elif [ "$content" = "xfs" ] && [ -z "$(lsblk -no MOUNTPOINT "$dev" | tr -d '[:space:]')" ]; then
+      xfs_admin -L "$FS_LABEL" "$dev"; break
     fi
   done
-  if [ -n "$DATA_DEV" ]; then
-    mkfs.xfs -f "$DATA_DEV"
-    mkdir -p "$PG_DATA_ROOT"
-    UUID=$(blkid -s UUID -o value "$DATA_DEV")
-    grep -q "$UUID" /etc/fstab || echo "UUID=$UUID $PG_DATA_ROOT xfs defaults,nofail 0 2" >> /etc/fstab
-    mount "$PG_DATA_ROOT"
-  fi
-fi
+  blkid -L "$FS_LABEL" >/dev/null 2>&1 && break
+  echo "waiting for data volume ($attempt/60)…"; sleep 5
+done
+
+blkid -L "$FS_LABEL" >/dev/null 2>&1 || { echo "FATAL: data volume never appeared — refusing to run Postgres on the root volume"; exit 1; }
+grep -q "LABEL=$FS_LABEL" /etc/fstab || echo "LABEL=$FS_LABEL $PG_DATA_ROOT xfs defaults,nofail 0 2" >> /etc/fstab
+mkdir -p "$PG_DATA_ROOT"
+mount "$PG_DATA_ROOT"
+SCRIPT
+chmod 755 /usr/local/sbin/blsb-pgdata-mount.sh
+
+cat > /etc/systemd/system/blsb-pgdata.service <<'UNIT'
+[Unit]
+Description=Mount the dedicated Postgres data volume (label blsb-pgdata)
+DefaultDependencies=no
+After=local-fs.target
+Before=postgresql.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=400
+ExecStart=/usr/local/sbin/blsb-pgdata-mount.sh
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+# Postgres CANNOT start unless the data volume is mounted.
+mkdir -p /etc/systemd/system/postgresql.service.d
+cat > /etc/systemd/system/postgresql.service.d/blsb-pgdata.conf <<'UNIT'
+[Unit]
+Requires=blsb-pgdata.service
+After=blsb-pgdata.service
+UNIT
+
+systemctl daemon-reload
+systemctl enable blsb-pgdata.service
 
 # --- 2. Packages: Node 24 (NodeSource), Postgres, nginx, certbot, git, aws cli, jq ---
-dnf install -y nginx postgresql15 postgresql15-server git jq tar gzip
-# AWS CLI v2 is preinstalled on AL2023; certbot via pip (nginx plugin).
+dnf install -y nginx postgresql15 postgresql15-server git jq tar gzip xfsprogs
 dnf install -y python3-pip
 python3 -m pip install --quiet certbot certbot-nginx || true
 curl -fsSL https://rpm.nodesource.com/setup_24.x | bash -
@@ -38,7 +88,10 @@ mkdir -p /opt/blsb/releases /etc/blsb
 chown -R blsb:blsb /opt/blsb
 chmod 750 /etc/blsb
 
-# --- 4. Initialise Postgres on the data volume (peer auth; localhost only) ---
+# --- 4. Mount the data volume NOW (waits for the attachment), then initialise Postgres on it ---
+systemctl start blsb-pgdata.service   # blocks until mounted, or fails loudly
+mountpoint -q "$PG_DATA_ROOT" || { echo "FATAL: $PG_DATA_ROOT not mounted"; exit 1; }
+
 if [ ! -f "$PG_DATA_ROOT/data/PG_VERSION" ]; then
   chown -R postgres:postgres "$PG_DATA_ROOT"
   postgresql-setup --initdb

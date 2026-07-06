@@ -67,12 +67,17 @@ jobs:
             --query "Command.CommandId" --output text)
           echo "SSM command: $CMD_ID"
 
-          # Wait for completion; the waiter errors if it ends in a failure state.
-          if ! aws ssm wait command-executed --command-id "$CMD_ID" --instance-id "${{ vars.INSTANCE_ID }}"; then
-            echo "::warning::release command did not reach Success — see output below"
-          fi
-
-          STATUS=$(aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "${{ vars.INSTANCE_ID }}" --query Status --output text)
+          # Poll until the command reaches a terminal state. (The built-in `aws ssm wait
+          # command-executed` waiter gives up after ~100s — far less than the on-box build takes.)
+          STATUS=InProgress
+          for i in $(seq 1 100); do   # 100 × 15s = up to 25 min
+            sleep 15
+            STATUS=$(aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "${{ vars.INSTANCE_ID }}" --query Status --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in
+              Success|Failed|Cancelled|TimedOut) break ;;
+              *) echo "  …$STATUS (${i}/100)" ;;
+            esac
+          done
           echo "----- release stdout -----"
           aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "${{ vars.INSTANCE_ID }}" --query StandardOutputContent --output text
           echo "----- release stderr -----"
