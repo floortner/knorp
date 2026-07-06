@@ -1,4 +1,4 @@
-import { daysAgo, utcDateKey } from '../../common/dates';
+import { daysAgo, startOfUtcWeek, utcDateKey, utcDayDiff } from '../../common/dates';
 
 /** One attempt reduced to what the progress aggregations need. */
 export interface AttemptStat {
@@ -19,9 +19,21 @@ export interface SkillStat {
   due: boolean; // FSRS says this skill is due for review
 }
 
-/** Attempts-per-day over the last 7 UTC days, oldest first (index 6 = today). */
+/**
+ * Attempts-per-day for the CURRENT ISO calendar week, Monday-first (index 0 = Mo … 6 = So), matching
+ * the Mo–So week strip, the "diese Woche" goal ring, and the league's ISO-week window. Day boundaries
+ * are UTC (codebase convention) — for a CET/CEST child a late-night session before ~01:00/02:00 local
+ * still credits the previous day, which matches the "I practiced Monday night" mental model.
+ * (Was: a rolling last-7-days window, which the Mo-first strip mis-rendered — practice landed on "So".)
+ */
 export function weeklyActivity(attempts: readonly AttemptStat[], now: Date): number[] {
-  return dayBuckets(attempts, now, 7).map((d) => d.count);
+  const monday = startOfUtcWeek(now);
+  const counts = [0, 0, 0, 0, 0, 0, 0];
+  for (const a of attempts) {
+    const idx = utcDayDiff(monday, a.createdAt);
+    if (idx >= 0 && idx < 7) counts[idx] += 1;
+  }
+  return counts;
 }
 
 /** Attempts-per-day over the last 30 UTC days, oldest first. */
