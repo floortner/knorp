@@ -62,6 +62,19 @@ npm run gen:api                 # regenerate api.ts types from backend OpenAPI (
 ### Reviewer (`besserlesenschreiben/reviewer/`)
 Same commands as the frontend (`npm install` · `npm run dev` on **:5174** · `build` · `test` · `gen:api`), typed from the backend's `/staff/*` OpenAPI. Internal staff portal — desktop/tablet, no PWA.
 
+### End-to-end (`e2e/`, repo root — its own npm project)
+```bash
+createdb blsb_e2e                 # one-time test DB (or point DATABASE_URL at any empty DB)
+cd e2e && npm install && npx playwright install --with-deps chromium webkit   # once
+npm test                          # boots backend :3100 + family :5273, seeds, runs the Playwright suite
+npm run test:ui                   # interactive debug
+```
+Real user journeys over family frontend + backend, deterministic and offline: `ANTHROPIC_API_KEY=''` → `StubLlmProvider`, `EMAIL_PROVIDER=capture` (login codes read back via a gated test route), local-disk storage, and the anchor journey uses a **bank session** (zero LLM calls). Dedicated ports so a run never collides with `dev.sh`. `global-setup.ts` runs `migrate deploy` + `npm run seed` (item bank) + `npm run seed:e2e` (an active family account + a reviewer). Same suite runs in the `e2e` CI job. Lower layers (contract-drift gates, golden snapshots, unit specs) already cover shape + logic, so this is a thin real-journey layer.
+
+**CI (`.github/workflows/ci.yml`):** per-project jobs run `lint · typecheck · test · build` plus the **contract-drift gates** — `npm run openapi:export` then `git diff --exit-code openapi.json` (backend), and `npm run gen:api` then `git diff --exit-code api.gen.ts` (frontend/reviewer). Regenerate and commit these whenever a Zod contract changes or CI fails red.
+
+Other root dirs: `data-foundation/` — source corpora + `parse-rwe.py` for the lexeme pool (the *Rechtschreibwortschatz* data behind the `source` facet); `website/` — static marketing page.
+
 ## Architecture overview
 
 ### System topology
