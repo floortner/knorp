@@ -26,3 +26,5 @@ npm-debug.log*
 
 # Prisma generated client (regenerated via `prisma generate`)
 **/generated/prisma/
+
+**/.obsidian/
