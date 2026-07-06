@@ -107,7 +107,8 @@ reviewed homework now shapes lectures.
 - ✅ **Homework-in-chat** — upload moved into the family Chat tab; durable photo + status bubbles served by
   chat history; verdict echoed in-chat.
 - ✅ **E2E harness** — top-level `e2e/` Playwright suite (backend + frontends via `webServer`, capture email
-  provider, seeded dev accounts via `SEED_DEV_ACCOUNTS`) + a CI `e2e` job.
+  provider, seeded dev accounts via `SEED_DEV_ACCOUNTS`). Run **locally only** (`cd e2e && npm test`) —
+  intentionally not in CI.
 - ✅ **AWS retarget** — S3 storage adapter (presigned URLs), Frankfurt region docs; deployment still pending.
 - ✅ **Lexeme `age_band`** — per-word target band (`6-7` | `8-9` | null), reviewer Wortschatz filter/column/
   stat + editor, threaded into lecture word-pool selection (`gradeBand` → `wordPoolFor`) as a null-tolerant
