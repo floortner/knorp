@@ -54,7 +54,7 @@ reviewer ──claims/actions──▶ homework_upload          # shared queue, 
 ## 3. Database schema (canonical system of record)
 
 Expressed as Postgres DDL below; the **source of truth in code is `prisma/schema.prisma`**, from which Prisma
-generates the client and migrations. `item_bank.seed_key` is the unique natural key for idempotent seeding (§12).
+generates the client and migrations. `item_bank.seed_key` is the unique natural key for idempotent seeding.
 
 ```sql
 -- ACCOUNT (household, keyed by parent email)
@@ -104,7 +104,7 @@ profile(
 -- ITEM BANK (global, was hardcoded LESSONS[] in the prototype; now server-owned)
 item_bank(
   id            uuid pk,
-  seed_key      text unique,            -- stable natural key for idempotent seeding (§12); null for generated_by='llm'
+  seed_key      text unique,            -- stable natural key for idempotent seeding; null for generated_by='llm'
   unit          int not null,           -- which unit/Einheit (1..N)
   exercise_type text not null,          -- raster|findvowel|realword|fixvowel|swapvowel|length|sylvalid|insertvowel|paircheck|pickword|sentencefix|compound|family|sylarrange
   payload       jsonb not null,         -- the exercise spec (see §8 for per-type shape)
@@ -674,107 +674,7 @@ EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev) | resend (
 SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_REVIEWER_EMAIL=   # dev-only seeded logins (never in production)
 ```
 
-## 12. Build milestones (suggested order for Claude Code)
-
-**Phase 1 — free tier (DONE, merged + CI-green):**
-1. ✅ Auth (email code + JWT, httpOnly cookie + logout), account/profile, settings, parent PIN.
-2. ✅ Item bank: unique `seed_key` column, load `item_bank.seed.json` via `prisma/seed.ts` (`npm run seed`).
-3. ✅ Sessions (bank) + attempts ingest + progress + FSRS.
-4. ✅ Digest generation.
-
-**Phase 1.5 — hardening (DONE):** runtime response-contract validation (`ZodResponseInterceptor`); httpOnly
-cookie auth + `/me`-probe frontend; durable PIN lockout (`pin_attempts`/`pin_locked_until`); prod email
-(Resend) + object-storage adapters (fail-loud, no silent no-op); 201 statuses on creating POSTs; FSRS
-`learning_steps` persistence; React error boundary + renderer safety; offline session caching + telemetry
-retention; guard/flow tests; these docs.
-
-**Phase 1.6 — content + UX polish (DONE):**
-- Auto-unlock next unit on session complete (atomic, backend).
-- All-units-complete celebration (pixel mascot, fanfare, confetti).
-- 5 new exercise types: `swipe`, `odd`, `listen`, `sentence`, `build` (Zod contract + renderers + seed items).
-- Parent area: PIN gate, set-PIN flow, child progress view, two-step progress reset.
-- Profile tab: Ton toggle wired end-to-end; removed Legasthenie-Schrift + Schriftgröße stubs.
-
-**Technical debt (Phase 1.6) — RESOLVED:**
-- ✅ Parent-scoped child id no longer comes from the request body: `verify-pin` binds the target `profileId` into the `parentToken` JWT (validated for ownership at issue time), and `reset`/`unlock-next` read it from the token via `@ParentProfileId()`. The destructive routes take no body id.
-- ✅ `apiFetch` takes a per-request `token` option; the global `setAuthToken` mutation is gone (`parentApi.reset` carries the `parentToken` per call).
-- ✅ `sessionCompleteSchema` now includes `allUnitsComplete: boolean` — the backend is authoritative; the frontend no longer derives it from a hardcoded `TOTAL_UNITS`.
-- ✅ Unsafe `as ApiError` casts replaced by an `isApiError` type guard + `errorMessage()` helper across the SPA (calm generic fallback for non-envelope errors).
-
-**Phase 2 — free AI features + approval-gated access (★, after 1.5).**
-> **Product decision (current):** the app is **free, including the AI features**. There is **no billing,
-> `EntitlementGuard`, or credit enforcement** — `★` now means "AI-backed / cost-bearing op," free for any
-> **approved, active** account. The `entitlement`/`credits_ledger`/`processed_webhook` tables stay **dormant**
-> so metering can be added later without a migration (ARCHITECTURE §9, deferred). Access control moves to the
-> **account lifecycle** (ARCHITECTURE §1b), which the owner drives from the staff portal.
-
-5. ✅ **`LlmService`** (abstracted; Anthropic-direct dev default; structured output via a forced tool whose
-   `input_schema` is the JSON Schema of the caller's `src/contract` Zod schema, re-validated against that
-   schema — incl. per-type **solvability** — with a one-shot re-ask on a contract miss; EU-residency gate
-   before prod; canned/stub path when `ANTHROPIC_API_KEY` is unset). No credit hook.
-   **Model policy:** `ANTHROPIC_MODEL` defaults to `claude-sonnet-4-6` (generation/chat), `ANTHROPIC_VISION_MODEL`
-   to `claude-opus-4-8` (homework OCR). `temperature`/`top_p`/`top_k` are **not sent** — rejected (400) on
-   current models; steer via the prompt (+ output effort). Stable system prompts are sent as prompt-cacheable
-   blocks.
-6. ✅ **Chat** (free ★). TTS pipeline deferred (Web Speech fallback in the client for now).
-7. ✅ **Homework upload + vision draft (family side).** `POST /homework` → storage (EXIF strip, WebP) → Claude
-   vision → `llm_analysis` draft, `status='pending_review'`, enqueued for the (already-built) staff review
-   queue. **Nothing mutates the profile** until a reviewer approves.
-8. ✅ **LLM session generation** (§8) — folds a reviewed upload's `reviewed_analysis.suggestedFocus` into the
-   next on-the-fly lecture; generated exercises are validated for solvability and stamped with a
-   grade-band difficulty.
-
-**Phase 2 access-control milestone — approval-gated signup + staff user-admin (ARCHITECTURE §1b):**
-9. ✅ **Account lifecycle.** `account.status` (`pending|active|deactivated`) + migration; silent
-   pending-on-first-code (no email until approved; family UI "we'll email you soon"); family `JwtAuthGuard`
-   requires `status='active'` (immediate deactivate/delete).
-10. ✅ **Staff user administration (admin role only).** `GET /staff/users`, approve / deactivate / delete
-    (`§6`) — distinct from the pseudonymised reviewer queue; deletion erases DB + blobs. Reviewer-portal
-    admin screens (`-review`).
-
-~~Billing (entitlements, credits, webhook, pay-it-forward)~~ — **removed from the roadmap** (schema kept dormant; ARCHITECTURE §9).
-
-**Phase 2.5 — professional review + staff portal (DONE).**
-Built the entire staff realm and the `-review` portal; reviewed homework now shapes lectures.
-11. ✅ **Staff realm foundation.** `reviewer` + `homework_review` tables; `StaffAuthGuard` (`aud:"staff"`,
-    disjoint key `STAFF_JWT_SECRET`, rejected on family routes and vice-versa); staff login (email code, own
-    httpOnly cookie) + `GET /staff/me`; **~3 reviewers admin-seeded** (no self-signup).
-12. ✅ **Review queue + authoritative apply (closes milestone 8's loop).** `GET /staff/queue` (pseudonymised,
-    cursor-paged, per-upload short-lived presigned `imageUrl`); claim/lease (`409` if held); `POST /staff/reviews/{id}`
-    that writes `reviewed_analysis`, derives `attempt` rows + adjusts `review_state`, sets `status='reviewed'`,
-    and records the LLM-vs-reviewer diff (`agreed_with_llm`).
-13. ✅ **Lecture wiring + family status.** LLM session generation (§8) folds a reviewed upload's
-    `reviewed_analysis.suggestedFocus` into the next lecture; `-web` surfaces `pending_review → reviewed` and
-    the read-only authoritative result (no confirm UI).
-14. ✅ **Reviewer portal** (`besserlesenschreiben/reviewer`, future `-review` repo) — thin client over `/staff/*`,
-    all enforcement in `staff/`; **desktop/tablet, landscape, not mobile-first** (ARCHITECTURE §1a/§11):
-    - **a. Shell + staff auth:** app shell, `lib/api.ts` (staff routes), email-code login, `/staff/me` gate, logout.
-    - **b. Queue screen:** pseudonymised list (`profileHandle`, grade band, skill tags, thumbnail), claim action.
-    - **c. Review screen:** two-pane landscape (homework image | LLM draft), `approve` / `correct` (editable
-      fields) / `reject`, submit → `POST /staff/reviews/{id}`; release claim on leave.
-
-**Post-2.5 (DONE) — append new milestones here as they ship:**
-- ✅ **Lexeme foundation** — `lexeme` table (2,127-word base from the Rechtschreibwortschatz 2015 extraction),
-  committed `lexeme.seed.json` ⊕ `lexeme.overrides.json` change-set (corrections survive reseeds), reviewer
-  **Wortschatz** curation tab (full-property filters + aggregate stats + full-column editor), `familyStem` +
-  `compoundParts` structure, and `npm run gen:items` (solvability-gated exercise candidates for human review).
-- ✅ **Reviewer portal expansion** — brand-aligned chrome, nav count badges, queue history (`Offen/Erledigt/
-  Alle`), admin-only learner-progress views (identity-bearing per account; pseudonymised per upload).
-- ✅ **Homework-in-chat** — upload moved into the family Chat tab; durable photo + status bubbles served by
-  chat history; verdict echoed in-chat.
-- ✅ **E2E harness** — top-level `e2e/` Playwright suite (backend+frontends via `webServer`, capture email
-  provider, seeded dev accounts via `SEED_DEV_ACCOUNTS`) + a CI `e2e` job.
-- ✅ **AWS retarget** — S3 storage adapter (presigned URLs), Frankfurt region docs; deployment still pending.
-- ✅ **Lexeme `age_band`** — per-word target band (`6-7` | `8-9` | null), reviewer Wortschatz filter/column/
-  stat + editor, threaded into lecture word-pool selection (`gradeBand` → `wordPoolFor`) as a null-tolerant
-  age ∩ frequency intersection (unbanded words stay eligible). Band-aware `gen:items` deferred until curation
-  populates the facet.
-
-**Remaining / current focus:** content depth + lecture quality (merge reviewed gen:items candidates, curate
-Wortfamilien/Komposita, sentence_context seed set, ground LLM lectures in the lexeme pool) · TTS pipeline
-(deferred; Amazon Polly) · deployment + hardening (deferred).
-
-## 13. Acceptance checks
+## 12. Acceptance checks
 - `user_id` never read from request body/path; only from JWT. (grep the codebase.)
 - Parent reset returns 403 without a fresh parent scope.
 - `/attempts` insert < 50ms p95; data sufficient to rebuild `digest.md`.

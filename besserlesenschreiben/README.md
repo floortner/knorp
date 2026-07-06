@@ -34,8 +34,8 @@ This is **three projects in one directory**. Open Claude Code at this root to bu
 a subfolder to build one at a time. Either way, the agent should read, in order:
 **`<subproject>/AGENTS.md` → `ARCHITECTURE.md` → `<subproject>/SPEC.md` (or `README.md` for `reviewer/`).**
 
-Suggested order of work (each project's milestones are in its SPEC; cross-cutting build order in
-`backend/SPEC.md §12`):
+Suggested order of work (shipped milestones and the forward plan live in the repo-root
+[`../ROADMAP.md`](../ROADMAP.md) — the single source of truth):
 1. **Backend first** — auth + profiles + parent PIN (the security boundary everything depends on), then the
    item bank (load `item_bank.seed.json`), sessions + attempts, progress, digest, chat, homework, then the
    **staff realm** (reviewer auth, review queue, authoritative apply — Phase 2.5). No billing — the app is free.

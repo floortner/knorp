@@ -60,7 +60,7 @@ job. Comfortable tap targets for tablet are welcome.
 - Install: `npm install`  ·  Dev: `npm run dev` (port **5174**)  ·  Build: `npm run build` (tsc -b + vite)
 - Lint: `npm run lint`  ·  Test: `npm test` (Vitest)  ·  Types from API: `npm run gen:api`
 
-## What's built (backend SPEC §12, Phase 2.5 + post-2.5 — all DONE)
+## What's built (Phase 2.5 + post-2.5 — all DONE; full roadmap in [`../../ROADMAP.md`](../../ROADMAP.md))
 - Shell + staff auth · queue "Chats" with history filter (Offen | Erledigt | Alle) + nav count badges ·
   two-pane review screen (claim, approve/correct/reject).
 - ADMIN surfaces: **Nutzer** (approve/deactivate/delete + per-child learner progress) and **Wortschatz**
