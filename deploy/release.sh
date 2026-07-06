@@ -23,9 +23,13 @@ bash "$RELEASE_DIR/deploy/render-env.sh"
 grep -q '^GIT_COMMIT=' /etc/blsb/env && sed -i "s/^GIT_COMMIT=.*/GIT_COMMIT=$RELEASE/" /etc/blsb/env \
   || echo "GIT_COMMIT=$RELEASE" >> /etc/blsb/env
 
-# Pull the few non-secret values this script needs (peer-auth DB URL, FQDN, admin email).
-# shellcheck disable=SC1091
-source /etc/blsb/env
+# Pull the few values this script needs. DO NOT `source` the env file: it is a systemd EnvironmentFile
+# with unquoted values — EMAIL_FROM contains `<login@…>` which bash would parse as a redirection.
+envval() { grep -m1 "^$1=" /etc/blsb/env | cut -d= -f2-; }
+API_FQDN="$(envval API_FQDN)"
+DATABASE_URL="$(envval DATABASE_URL)"
+STAFF_ADMIN_EMAILS="$(envval STAFF_ADMIN_EMAILS)"
+LETSENCRYPT_EMAIL="$(envval LETSENCRYPT_EMAIL)"
 : "${API_FQDN:?missing API_FQDN in SSM}"
 : "${DATABASE_URL:?missing DATABASE_URL in SSM}"
 
@@ -34,6 +38,14 @@ chown -R blsb:blsb "$RELEASE_DIR"
 sudo -u blsb bash -c "cd '$BE' && npm ci --include=dev && npx prisma generate && npm run build"
 
 # 3. Migrations (pre-traffic) + idempotent seed, as blsb (peer auth over the unix socket).
+# Guard: child data must live on the dedicated EBS data volume, never the root disk. If the
+# blsb-pgdata mount is missing (cloud-init raced the volume attachment, drift, …), fail the deploy
+# loudly instead of migrating onto the root volume.
+mountpoint -q /var/lib/pgsql || {
+  echo "FATAL: /var/lib/pgsql is not a dedicated mount — Postgres would live on the root volume." >&2
+  echo "       Check 'systemctl status blsb-pgdata' / 'lsblk' on the box, then re-run the deploy." >&2
+  exit 1
+}
 sudo -u blsb bash -c "cd '$BE' && DATABASE_URL='$DATABASE_URL' npx prisma migrate deploy"
 sudo -u blsb bash -c "cd '$BE' && DATABASE_URL='$DATABASE_URL' STAFF_ADMIN_EMAILS='${STAFF_ADMIN_EMAILS:-}' NODE_ENV=production npx prisma db seed"
 
@@ -55,14 +67,51 @@ if [ ! -d "/etc/letsencrypt/live/$API_FQDN" ]; then
   "$CERTBOT" --nginx -d "$API_FQDN" --non-interactive --agree-tos \
     -m "${LETSENCRYPT_EMAIL:-admin@$API_FQDN}" --redirect
 fi
+# Renewal timer: certbot is pip-installed (no dnf package on AL2023), so no timer ships with it —
+# without this the cert silently expires after 90 days. Idempotent.
+if [ ! -f /etc/systemd/system/certbot-renew.timer ]; then
+  cat > /etc/systemd/system/certbot-renew.service <<UNIT
+[Unit]
+Description=Certbot renewal
+[Service]
+Type=oneshot
+ExecStart=$CERTBOT renew --quiet --nginx
+UNIT
+  cat > /etc/systemd/system/certbot-renew.timer <<UNIT
+[Unit]
+Description=Twice-daily certbot renewal
+[Timer]
+OnCalendar=*-*-* 03:41:00
+OnCalendar=*-*-* 15:41:00
+RandomizedDelaySec=1800
+Persistent=true
+[Install]
+WantedBy=timers.target
+UNIT
+  systemctl daemon-reload
+  systemctl enable --now certbot-renew.timer
+fi
 
-# 7. Restart the API and smoke-check.
+# 7. Restart the API and smoke-check (retry: Nest+Prisma cold boot can take >3s on a t4g.small).
 systemctl restart blsb-api
-sleep 3
-if curl -fsS "http://127.0.0.1:3000/api/v1/health" >/dev/null; then
+HEALTHY=""
+for i in $(seq 1 30); do
+  if curl -fsS "http://127.0.0.1:3000/api/v1/health" >/dev/null 2>&1; then HEALTHY=1; break; fi
+  sleep 2
+done
+if [ -n "$HEALTHY" ]; then
   echo "==> health OK — release $RELEASE live"
 else
-  echo "!! health check failed; recent logs:" >&2
+  echo "!! health check failed after 60s; recent logs:" >&2
   journalctl -u blsb-api -n 40 --no-pager >&2 || true
   exit 1
 fi
+
+# 8. Prune old release dirs (each holds source + node_modules on the 20 GB root disk) — keep the
+# 3 newest, never the one `current` points at.
+CURRENT_TARGET="$(readlink -f /opt/blsb/current || true)"
+ls -1dt /opt/blsb/releases/*/ 2>/dev/null | tail -n +4 | while read -r old; do
+  [ "$(readlink -f "$old")" = "$CURRENT_TARGET" ] && continue
+  echo "==> pruning old release $old"
+  rm -rf "$old"
+done
