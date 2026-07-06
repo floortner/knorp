@@ -1,0 +1,8 @@
+[Unit]
+Description=besserlesenschreiben off-platform encrypted Postgres backup
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/blsb/current/deploy/backup.sh

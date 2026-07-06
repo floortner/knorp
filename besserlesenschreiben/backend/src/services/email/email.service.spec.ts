@@ -3,6 +3,13 @@ import type { ConfigService } from '@nestjs/config';
 import type { Env } from '../../config/env';
 import { EmailService } from './email.service';
 
+// Mock the SES SDK so construction/send never touch AWS.
+const { sesSend } = vi.hoisted(() => ({ sesSend: vi.fn() }));
+vi.mock('@aws-sdk/client-sesv2', () => ({
+  SESv2Client: vi.fn(() => ({ send: sesSend })),
+  SendEmailCommand: vi.fn((input: unknown) => ({ __cmd: input })),
+}));
+
 /** Minimal ConfigService stub returning the given env values. */
 function cfg(values: Partial<Env>): ConfigService<Env, true> {
   return { get: (k: keyof Env) => values[k] ?? '' } as unknown as ConfigService<Env, true>;
@@ -20,6 +27,11 @@ describe('EmailService construction', () => {
   it('rejects resend without a key/from', () => {
     expect(() => new EmailService(cfg({ EMAIL_PROVIDER: 'resend' }))).toThrow(/requires EMAIL_KEY and EMAIL_FROM/);
     expect(() => new EmailService(cfg({ EMAIL_PROVIDER: 'resend', EMAIL_KEY: 'k' }))).toThrow();
+  });
+
+  it('rejects ses without a from, accepts it with one (no key needed — IAM role auth)', () => {
+    expect(() => new EmailService(cfg({ EMAIL_PROVIDER: 'ses' }))).toThrow(/requires EMAIL_FROM/);
+    expect(() => new EmailService(cfg({ EMAIL_PROVIDER: 'ses', EMAIL_FROM: 'login@blesen.app' }))).not.toThrow();
   });
 
   it('permits the capture provider ONLY under NODE_ENV=test — a mis-set dev/prod env cannot enable it', () => {
@@ -51,5 +63,19 @@ describe('EmailService.sendLoginCode', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }));
     await expect(svc.sendLoginCode('a@b.de', '1234')).rejects.toThrow(/status 500/);
     vi.unstubAllGlobals();
+  });
+
+  it('ses provider sends via SESv2 (no network fetch) with the recipient + sender set', async () => {
+    sesSend.mockClear().mockResolvedValue({});
+    const svc = new EmailService(cfg({ EMAIL_PROVIDER: 'ses', EMAIL_FROM: 'login@blesen.app', AWS_REGION: 'eu-central-1' }));
+    await svc.sendLoginCode('a@b.de', '1234');
+    expect(sesSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        __cmd: expect.objectContaining({
+          FromEmailAddress: 'login@blesen.app',
+          Destination: { ToAddresses: ['a@b.de'] },
+        }),
+      }),
+    );
   });
 });

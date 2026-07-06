@@ -1,15 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 import type { Env } from '../../config/env';
 
-const SUPPORTED = ['console', 'resend', 'capture'] as const;
+const SUPPORTED = ['console', 'ses', 'resend', 'capture'] as const;
 type Provider = (typeof SUPPORTED)[number];
 
 /**
  * Login-code delivery (SPEC §4). Providers:
  *   - `console` — DEV ONLY: prints the code to stdout (no email server needed). Must never be
  *     selected in production: printing the code/email is exactly what ARCHITECTURE §6 forbids.
- *   - `resend`  — production: Resend REST API (no SDK dependency, just fetch).
+ *   - `ses`     — production (default): Amazon SES v2, auth via the default AWS credential chain (the
+ *     IAM instance role — no API key in env/SSM). Requires EMAIL_FROM on a verified SES identity.
+ *   - `resend`  — alternative production provider: Resend REST API (needs EMAIL_KEY + EMAIL_FROM).
  *   - `capture` — E2E-TEST ONLY: holds the last code per address in memory (never logged) so a
  *     Playwright test can read it back via the gated `/test/last-login-code` route. Both the family
  *     4-digit and staff 6-digit codes flow through here, so it covers both realms' logins. Permitted
@@ -24,6 +27,7 @@ export class EmailService {
   private readonly provider: Provider;
   private readonly key: string;
   private readonly from: string;
+  private readonly ses?: SESv2Client;
   /** capture-mode only: email → most-recent plaintext code. Never logged. */
   private readonly captured = new Map<string, string>();
 
@@ -38,6 +42,13 @@ export class EmailService {
 
     if (this.provider === 'resend' && (!this.key || !this.from)) {
       throw new Error("EMAIL_PROVIDER='resend' requires EMAIL_KEY and EMAIL_FROM to be set.");
+    }
+    if (this.provider === 'ses') {
+      if (!this.from) {
+        throw new Error("EMAIL_PROVIDER='ses' requires EMAIL_FROM (a verified SES identity).");
+      }
+      // No API key — SES authenticates via the default AWS credential chain (IAM instance role in prod).
+      this.ses = new SESv2Client({ region: config.get('AWS_REGION', { infer: true }) });
     }
     // Hard stop: `capture` is an E2E-only provider — it holds login codes in memory and exposes them via
     // an unauthenticated gated route. Permit it ONLY under NODE_ENV=test (fail closed at boot), so a
@@ -68,7 +79,33 @@ export class EmailService {
       this.captured.set(email, code);
       return;
     }
+    if (this.provider === 'ses') {
+      await this.sendViaSes(email, code);
+      return;
+    }
     await this.sendViaResend(email, code);
+  }
+
+  private async sendViaSes(email: string, code: string): Promise<void> {
+    await this.ses!.send(
+      new SendEmailCommand({
+        FromEmailAddress: this.from,
+        Destination: { ToAddresses: [email] },
+        Content: {
+          Simple: {
+            Subject: { Data: `Dein Anmelde-Code: ${code}` },
+            Body: {
+              Text: { Data: `Dein Code lautet ${code}. Er ist 10 Minuten gültig.` },
+              Html: {
+                Data: `<p>Dein Code lautet <strong style="font-size:1.4em;letter-spacing:.15em">${code}</strong>.</p><p>Er ist 10 Minuten gültig.</p>`,
+              },
+            },
+          },
+        },
+      }),
+    );
+    // Identifiers + outcome only — never the recipient or code (ARCHITECTURE §6).
+    this.logger.log({ event: 'email.sent', provider: 'ses' }, 'login code sent');
   }
 
   private async sendViaResend(email: string, code: string): Promise<void> {

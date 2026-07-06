@@ -178,7 +178,7 @@ src/
     llm/                  # provider abstraction (Anthropic-direct + dev stub), structured output
     lexeme/               # lexeme word-pool selection + overrides diff/apply utilities
     storage/              # S3 presigned URLs / local-FS dev store (+ local image endpoint)
-    email/                # login-code delivery (console | resend | capture)
+    email/                # login-code delivery (console | ses | resend | capture)
 prisma/
   schema.prisma           # the model truth (account, profile, item_bank, lexeme, attempt, …)
   seed.ts                 # idempotent loader: item bank + lexeme base ⊕ overrides + dev accounts
@@ -387,7 +387,16 @@ SPEC §10, deleted on a schedule, EU residency.
 
 **Hosting: AWS**, region **Frankfurt (eu-central-1)** primary — data at rest in the EU (AWS has no Austria
 region; Frankfurt is the closest EU location). **Ireland (eu-west-1)** is the EU fallback/DR region.
-*(Deployment itself is a future milestone — nothing below is stood up yet; local dev needs none of it.)*
+
+> **Beta deployment (round 1, ROADMAP §E).** The first-feedback-round environment is implemented in
+> `infra/` (Terraform) + `deploy/` (on-box scripts) and **deliberately deviates from the full-prod target
+> below to fit a €50/mo all-in budget**: Postgres is **self-hosted on the same EC2 box** (not RDS) with an
+> off-platform encrypted `pg_dump` as its safety net; TLS is **nginx + Let's Encrypt** (no ALB); there is
+> **one region, no DR-region copy**; observability is **OpenTelemetry as the chosen approach but not yet
+> built** (Sentry dropped); and **staff MFA is a conscious beta exception** (email-code only, ~3 admin-seeded
+> reviewers). Deploys run from **GitHub Actions via OIDC → a scoped role → SSM Run Command** (no static AWS
+> keys, no inbound SSH). The full-prod design below (RDS, ALB/multi-instance, cross-region DR, OTel build-out,
+> MFA) is the target these deviations graduate to. *Local dev needs none of it.*
 
 ### Backend
 - **Compute:** a **small EC2 instance** (t4g Graviton), running `node dist/main.js` under **systemd** — no

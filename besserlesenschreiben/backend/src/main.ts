@@ -16,7 +16,10 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    // trustProxy: in prod the app sits behind nginx (TLS termination) — derive the client IP from
+    // X-Forwarded-For so per-IP rate limiting sees the real caller, not 127.0.0.1 (which would hand every
+    // request the loopback exemption below). Harmless in dev/e2e: no XFF header → req.ip stays the socket IP.
+    new FastifyAdapter({ trustProxy: true }),
     // Disable Nest's built-in JSON body parser so we can register one that tolerates an empty body
     // (see below); multipart is registered separately via @fastify/multipart.
     { bufferLogs: true, bodyParser: false },
