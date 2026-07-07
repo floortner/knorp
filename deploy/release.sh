@@ -57,15 +57,23 @@ install -m 644 "$RELEASE_DIR/deploy/blsb-api.service" /etc/systemd/system/blsb-a
 systemctl daemon-reload
 systemctl enable blsb-api
 
-# 6. nginx site (HTTP form) + TLS on first run.
-sed "s/__API_FQDN__/$API_FQDN/g" "$RELEASE_DIR/deploy/nginx-api.conf.template" > /etc/nginx/conf.d/blsb-api.conf
+# 6. nginx site + TLS. Render the template ONLY on first deploy — after that certbot OWNS the file
+# (it rewrites it with the :443 server + redirect); re-rendering would clobber TLS. (Exactly that bug
+# silently killed HTTPS on the second beta deploy: template overwrote the 443 block, and the cert-dir
+# check skipped certbot, so nothing restored it.)
+if [ ! -f /etc/nginx/conf.d/blsb-api.conf ]; then
+  sed "s/__API_FQDN__/$API_FQDN/g" "$RELEASE_DIR/deploy/nginx-api.conf.template" > /etc/nginx/conf.d/blsb-api.conf
+fi
 systemctl enable --now nginx
 nginx -t && systemctl reload nginx
 CERTBOT="$(command -v certbot || echo /usr/local/bin/certbot)"
-if [ ! -d "/etc/letsencrypt/live/$API_FQDN" ]; then
-  echo "==> obtaining Let's Encrypt cert for $API_FQDN (DNS must already point here)"
+# Ensure the HTTPS server exists — first deploy obtains the cert; later deploys SELF-HEAL a config
+# that lost its 443 block (an existing cert is reinstalled, not reissued: --keep-until-expiring).
+if ! grep -q 'listen 443' /etc/nginx/conf.d/blsb-api.conf; then
+  echo "==> configuring TLS for $API_FQDN (DNS must already point here)"
   "$CERTBOT" --nginx -d "$API_FQDN" --non-interactive --agree-tos \
-    -m "${LETSENCRYPT_EMAIL:-admin@$API_FQDN}" --redirect
+    -m "${LETSENCRYPT_EMAIL:-admin@$API_FQDN}" --redirect --keep-until-expiring
+  nginx -t && systemctl reload nginx
 fi
 # Renewal timer: certbot is pip-installed (no dnf package on AL2023), so no timer ships with it —
 # without this the cert silently expires after 90 days. Idempotent.
