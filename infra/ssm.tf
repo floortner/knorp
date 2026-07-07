@@ -22,7 +22,7 @@ locals {
     AWS_REGION             = var.region
     EMAIL_PROVIDER         = "ses"
     EMAIL_FROM             = "besserlesenschreiben <login@${var.domain}>"
-    STAFF_ADMIN_EMAILS     = var.owner_email
+    STAFF_ADMIN_EMAILS     = join(",", length(var.staff_admin_emails) > 0 ? var.staff_admin_emails : [var.owner_email])
     ANTHROPIC_MODEL        = "claude-sonnet-4-6"
     ANTHROPIC_VISION_MODEL = "claude-opus-4-8"
     LLM_RESIDENCY_ACK      = "true"
