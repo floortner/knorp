@@ -78,4 +78,27 @@ describe('EmailService.sendLoginCode', () => {
       }),
     );
   });
+
+  it('ses retries ONCE after a transient failure (login email too important for a one-off blip)', async () => {
+    vi.useFakeTimers();
+    sesSend.mockClear().mockRejectedValueOnce(new Error('cold-boot blip')).mockResolvedValueOnce({});
+    const svc = new EmailService(cfg({ EMAIL_PROVIDER: 'ses', EMAIL_FROM: 'login@blesen.app', AWS_REGION: 'eu-central-1' }));
+    const pending = svc.sendLoginCode('a@b.de', '1234');
+    await vi.runAllTimersAsync();
+    await expect(pending).resolves.toBeUndefined();
+    expect(sesSend).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+
+  it('ses gives up after the second failure (fail loud, never silently drop a login email)', async () => {
+    vi.useFakeTimers();
+    sesSend.mockClear().mockRejectedValue(new Error('hard down'));
+    const svc = new EmailService(cfg({ EMAIL_PROVIDER: 'ses', EMAIL_FROM: 'login@blesen.app', AWS_REGION: 'eu-central-1' }));
+    const pending = svc.sendLoginCode('a@b.de', '1234');
+    pending.catch(() => undefined); // observe early so the rejection is never "unhandled"
+    await vi.runAllTimersAsync();
+    await expect(pending).rejects.toThrow('hard down');
+    expect(sesSend).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
 });

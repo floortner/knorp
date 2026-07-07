@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import type { ArgumentsHost } from '@nestjs/common';
+import { describe, it, expect, vi } from 'vitest';
+import { Logger, type ArgumentsHost } from '@nestjs/common';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 import { ApiException } from '../exceptions/api-exception';
 
@@ -53,5 +53,27 @@ describe('AllExceptionsFilter', () => {
     const out = run(new ApiException(404, 'NOT_FOUND', 'Nicht gefunden.'));
     expect(out.status).toBe(404);
     expect(out.body.error.code).toBe('NOT_FOUND');
+  });
+
+  it('logs a PLAIN-OBJECT throw diagnosably — never "[object Object]" (beta launch-night lesson)', () => {
+    const errorSpy = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    class WeirdProviderFailure {
+      name = 'CredentialsProviderError';
+      message = 'Could not load credentials from any providers';
+      statusCode = 500;
+      hint = 'not-in-the-curated-list';
+    }
+    const out = run(new WeirdProviderFailure());
+    expect(out.status).toBe(500);
+    expect(out.body.error.code).toBe('INTERNAL');
+
+    const logged = errorSpy.mock.calls[0][0] as { err: string };
+    expect(logged.err).not.toContain('[object Object]');
+    expect(logged.err).toContain('WeirdProviderFailure'); // constructor name
+    expect(logged.err).toContain('Could not load credentials'); // curated `message` field
+    expect(logged.err).toContain('statusCode=500'); // curated field
+    expect(logged.err).toContain('hint'); // non-curated keys appear by NAME only …
+    expect(logged.err).not.toContain('not-in-the-curated-list'); // … never by value (PII discipline)
+    errorSpy.mockRestore();
   });
 });
