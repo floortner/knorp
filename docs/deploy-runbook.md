@@ -72,19 +72,13 @@ aws sesv2 put-account-details --region eu-central-1 \
 aws sesv2 create-email-identity --region eu-central-1 --email-identity florian.ortner@gmail.com
 ```
 
-**5d. GitHub repo variables** — push/merge the branch so the workflow exists, then in GitHub →
-**Settings → Secrets and variables → Actions → Variables**, add (values from `terraform output`):
-
-| Variable | `terraform output` |
-|---|---|
-| `AWS_DEPLOY_ROLE_ARN` | `github_deploy_role_arn` |
-| `ARTIFACTS_BUCKET` | `artifacts_bucket` |
-| `INSTANCE_ID` | `instance_id` |
-| `APP_BUCKET` | `app_bucket` |
-| `REVIEWER_BUCKET` | `reviewer_bucket` |
-| `APP_CF_ID` | `app_cloudfront_id` |
-| `REVIEWER_CF_ID` | `reviewer_cloudfront_id` |
-| `API_BASE` | `api_url` (`https://api.knorp.org/api/v1`) |
+**5d. GitHub repo variables** — sync them from the terraform outputs (needs an authenticated `gh` CLI):
+```bash
+cd infra && ./set-github-vars.sh
+```
+Sets all 8 variables the deploy workflow reads (`AWS_DEPLOY_ROLE_ARN`, `ARTIFACTS_BUCKET`, `INSTANCE_ID`,
+`APP_BUCKET`, `REVIEWER_BUCKET`, `APP_CF_ID`, `REVIEWER_CF_ID`, `API_BASE`). **Re-run after any apply that
+changes an output** — especially an instance replacement (`INSTANCE_ID` goes stale otherwise).
 
 ## Phase 6 — First deploy (~10 min)
 ```bash

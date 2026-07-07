@@ -46,8 +46,12 @@ CloudFront + ACM validation take ~10–20 min on first apply. State is local (gi
    Approval is usually ~24h. Until then, verify your own test addresses to try login
    (`aws sesv2 create-email-identity --email-identity you@example.com`).
 4. **Anthropic:** set a hard monthly spend limit in the Anthropic console — the real cap on variable cost.
-5. In GitHub, set repo variable **`AWS_DEPLOY_ROLE_ARN`** to the `github_deploy_role_arn` output and the
-   bucket/distribution/ids the deploy workflow needs (see `.github/workflows/deploy.yml`).
+5. **Sync the GitHub Actions variables** the deploy workflow needs from the terraform outputs:
+   ```bash
+   ./set-github-vars.sh        # needs an authenticated `gh` CLI
+   ```
+   Re-run after ANY apply that changes an output — especially an instance replacement
+   (`INSTANCE_ID` goes stale) or a bucket/CloudFront recreation.
 6. **First deploy:** run the `Deploy` workflow (`workflow_dispatch`). Its `api` job runs `deploy/release.sh`
    on the box (via SSM), which installs the systemd unit + nginx, obtains the Let's Encrypt cert, migrates,
    seeds, and starts the API. The `web` job builds + uploads both frontends.
