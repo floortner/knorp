@@ -2527,6 +2527,15 @@
                           },
                           "imageUrl": {
                             "type": "string"
+                          },
+                          "homeworkStatus": {
+                            "type": "string",
+                            "enum": [
+                              "pending_analysis",
+                              "pending_review",
+                              "reviewed",
+                              "rejected"
+                            ]
                           }
                         },
                         "required": [
@@ -2601,6 +2610,15 @@
                         },
                         "imageUrl": {
                           "type": "string"
+                        },
+                        "homeworkStatus": {
+                          "type": "string",
+                          "enum": [
+                            "pending_analysis",
+                            "pending_review",
+                            "reviewed",
+                            "rejected"
+                          ]
                         }
                       },
                       "required": [

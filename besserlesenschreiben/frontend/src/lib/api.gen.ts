@@ -1389,6 +1389,8 @@ export interface operations {
                             text: string;
                             ts: string;
                             imageUrl?: string;
+                            /** @enum {string} */
+                            homeworkStatus?: "pending_analysis" | "pending_review" | "reviewed" | "rejected";
                         }[];
                     };
                 };
@@ -1421,6 +1423,8 @@ export interface operations {
                             text: string;
                             ts: string;
                             imageUrl?: string;
+                            /** @enum {string} */
+                            homeworkStatus?: "pending_analysis" | "pending_review" | "reviewed" | "rejected";
                         };
                     };
                 };

@@ -128,12 +128,14 @@ export function ReviewScreen() {
           {draft && <AnalysisEditor value={draft} onChange={setDraft} disabled={submit.isPending} />}
 
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-ink-soft">Notiz (optional, intern)</span>
+            <span className="text-sm font-medium text-ink-soft">
+              Kommentar ans Kind (optional — erscheint im Chat unter dem Foto)
+            </span>
             <Textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="z. B. Foto unscharf, nur teilweise lesbar"
+              placeholder="z. B. Toll gemacht! Achte beim nächsten Mal auf die Wortwiederholungen."
             />
           </label>
 

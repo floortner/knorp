@@ -274,7 +274,7 @@ model HomeworkReview {
   llmAnalysis      Json     @map("llm_analysis") // snapshot of the draft shown to the reviewer
   reviewedAnalysis Json?    @map("reviewed_analysis") // the verdict (null when rejected)
   agreedWithLlm    Boolean  @map("agreed_with_llm") // false ⇒ reviewer changed something (LLM-quality signal)
-  notes            String? // optional QA note; never child-identifying
+  notes            String? // optional reviewer comment — CHILD-VISIBLE (chat status bubble); never child-identifying
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   upload   HomeworkUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
