@@ -127,15 +127,8 @@ export function Lernen() {
           {errorMessage(createSession.error)}
         </p>
       )}
-
-
-      <div className="flex items-center gap-3 rounded-card border border-dashed border-teal/40 bg-white/50 p-4">
-        <img src="/pixel.svg" alt="" className="h-10 w-10" />
-        <div>
-          <p className="font-display font-bold text-ink">Belohnung: Pixel</p>
-          <p className="text-sm text-ink-soft">Schließe alle Einheiten ab</p>
-        </div>
-      </div>
+      {/* (The "Belohnung: Pixel" teaser card was removed — Pixel is freely selectable in the Profil
+          buddy picker now, so "earn Pixel by finishing all units" no longer made sense.) */}
     </div>
   );
 }

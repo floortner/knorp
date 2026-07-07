@@ -2,27 +2,34 @@
 export const TOTAL_UNITS = 7;
 
 /**
- * All selectable buddies (monster-pets mascots — 4 emotional states each in /monster-pets/).
+ * Freely selectable learn buddies (monster-pets mascots — 4 emotional states each in /monster-pets/).
  * Ids must match the backend's buddy enum (profiles.dto.ts). Nepo + Stella lead (the original pair).
  */
 export const BUDDIES = [
   { id: 'nepo', name: 'Nepo' },
   { id: 'stella', name: 'Stella' },
   { id: 'charly', name: 'Charly' },
-  { id: 'echo', name: 'Echo' },
-  { id: 'inky', name: 'Inky' },
   { id: 'jax', name: 'Jax' },
   { id: 'junior', name: 'Junior' },
   { id: 'li', name: 'Li' },
-  { id: 'pixel', name: 'Pixel' },
-  { id: 'puff', name: 'Puff' },
   { id: 'rudolph', name: 'Rudolph' },
   { id: 'theo', name: 'Theo' },
 ] as const;
 
+/**
+ * REWARD pets — earned by completing tasks, NOT freely selectable (shown locked in the Profil picker;
+ * the backend buddy enum rejects them). The earn mechanic lands with the D5 badges milestone.
+ */
+export const REWARD_PETS = [
+  { id: 'echo', name: 'Echo' },
+  { id: 'inky', name: 'Inky' },
+  { id: 'pixel', name: 'Pixel' },
+  { id: 'puff', name: 'Puff' },
+] as const;
+
 export type BuddyId = (typeof BUDDIES)[number]['id'];
 
-const KNOWN = new Set<string>(BUDDIES.map((b) => b.id));
+const KNOWN = new Set<string>([...BUDDIES, ...REWARD_PETS].map((b) => b.id));
 
 /** Buddy id → default (neutral/happy) asset. Root svgs where they exist, else the fröhlich state. */
 export function buddySrc(buddy: string): string {

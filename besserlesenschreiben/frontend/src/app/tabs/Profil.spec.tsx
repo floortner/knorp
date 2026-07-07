@@ -61,11 +61,10 @@ describe('Profil', () => {
     expect(updateSettings).toHaveBeenCalledWith('p1', { soundOn: false });
   });
 
-  it('offers all twelve buddies; picking one PATCHes the profile', async () => {
+  it('offers the 8 buddies; picking one PATCHes the profile', async () => {
     const user = userEvent.setup();
     renderProfil();
     await screen.findByText('Dein Lernfreund');
-    // 12 mascots, current one marked selected
     expect(screen.getByRole('button', { name: 'Nepo' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Theo' })).toHaveAttribute('aria-pressed', 'false');
     await user.click(screen.getByRole('button', { name: 'Charly' }));
@@ -73,6 +72,19 @@ describe('Profil', () => {
     // re-tapping the already-selected buddy does nothing
     await user.click(screen.getByRole('button', { name: 'Nepo' }));
     expect(updateSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the 4 reward pets LOCKED in their own "Belohnungen" section — visible teaser, never selectable', async () => {
+    renderProfil();
+    await screen.findByText('Dein Lernfreund');
+    expect(screen.getByText('Belohnungen')).toBeInTheDocument(); // separate section, not mixed into the buddy grid
+    for (const pet of ['Echo', 'Inky', 'Pixel', 'Puff']) {
+      // rendered as a non-interactive tile (with lock), NOT as a button
+      expect(screen.getByLabelText(`${pet} (noch gesperrt)`)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: pet })).not.toBeInTheDocument();
+    }
+    expect(screen.getByText(/schaltest du frei/)).toBeInTheDocument();
+    expect(updateSettings).not.toHaveBeenCalled();
   });
 
   it('tapping the big buddy cycles its emotional reaction', async () => {
