@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, HeartHandshake, Star } from 'lucide-react';
+import { Flame, HeartHandshake, Lock, Star } from 'lucide-react';
 import { useActiveProfile } from '@/features/profile/useMe';
 import { useUpdateSettings } from '@/features/profile/useUpdateSettings';
-import { BUDDIES, buddySrc, buddyStateSrc, type BuddyState } from '@/lib/constants';
+import { BUDDIES, REWARD_PETS, buddySrc, buddyStateSrc, type BuddyState } from '@/lib/constants';
 import { useAuth } from '@/features/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -50,7 +50,7 @@ export function Profil() {
         </div>
       </section>
 
-      {/* Buddy picker — the child's companion is theirs to choose */}
+      {/* Buddy picker — the child's companion is theirs to choose. */}
       <section>
         <h2 className="mb-3 font-display font-bold text-ink">Dein Lernfreund</h2>
         <div className="grid grid-cols-4 gap-3">
@@ -80,6 +80,30 @@ export function Profil() {
             );
           })}
         </div>
+      </section>
+
+      {/* Reward pets — a separate collection, EARNED through tasks (D5 badges milestone), never
+          freely selectable. Locked teaser until the earn mechanic exists. */}
+      <section>
+        <h2 className="mb-3 font-display font-bold text-ink">Belohnungen</h2>
+        <div className="grid grid-cols-4 gap-3">
+          {REWARD_PETS.map((p) => (
+            <div
+              key={p.id}
+              aria-label={`${p.name} (noch gesperrt)`}
+              className="relative flex flex-col items-center gap-1 rounded-card bg-white/60 p-2 shadow-sm ring-1 ring-black/5"
+            >
+              <img src={buddyStateSrc(p.id, 'cool')} alt="" className="h-12 w-12 opacity-40 grayscale" />
+              <span className="text-xs font-medium text-ink-soft/60">{p.name}</span>
+              <span className="absolute right-1.5 top-1.5 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/10">
+                <Lock className="h-3 w-3 text-ink-soft" aria-hidden />
+              </span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-ink-soft">
+          🔒 Diese Freunde schaltest du frei, wenn du bestimmte Aufgaben schaffst.
+        </p>
       </section>
 
       {/* Settings */}
