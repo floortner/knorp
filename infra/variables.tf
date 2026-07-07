@@ -64,8 +64,14 @@ variable "github_deploy_refs" {
 }
 
 variable "owner_email" {
-  description = "Owner email: seeded as the admin reviewer (STAFF_ADMIN_EMAILS), the Let's Encrypt registration address, and the default EMAIL_FROM sender local-part domain."
+  description = "Owner email: the Let's Encrypt registration address and the default admin reviewer when staff_admin_emails is empty."
   type        = string
+}
+
+variable "staff_admin_emails" {
+  description = "Staff admin reviewers (STAFF_ADMIN_EMAILS) — each is seeded as an ACTIVE admin reviewer by the on-box seed at every deploy. Empty → falls back to [owner_email]."
+  type        = list(string)
+  default     = []
 }
 
 variable "alarm_email" {
