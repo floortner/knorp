@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { errorMessage } from '@/lib/api';
 import type { Buddy } from '@/lib/endpoints';
+import { BUDDIES, buddySrc } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/cn';
@@ -83,19 +84,18 @@ export function OnboardingScreen() {
   );
 }
 
-const BUDDY_META: Record<Buddy, { name: string; src: string }> = {
-  nepo: { name: 'Nepo', src: '/nepo.svg' },
-  stella: { name: 'Stella', src: '/stella.svg' },
-};
+function buddyName(id: string): string {
+  return BUDDIES.find((b) => b.id === id)?.name ?? 'Nepo';
+}
 
 function Welcome({ buddy }: { buddy: Buddy }) {
-  const meta = BUDDY_META[buddy];
+  const name = buddyName(buddy);
   return (
     <>
       <div className="flex aspect-square w-44 items-center justify-center rounded-full bg-teal-tint">
-        <img src={meta.src} alt={meta.name} className="w-28" />
+        <img src={buddySrc(buddy)} alt={name} className="w-28" />
       </div>
-      <h1 className="mt-6 font-display text-2xl font-bold text-ink">Hallo, ich bin {meta.name}!</h1>
+      <h1 className="mt-6 font-display text-2xl font-bold text-ink">Hallo, ich bin {name}!</h1>
       <p className="mt-3 max-w-xs text-ink-soft">
         Schön, dass du da bist. Gemeinsam üben wir Lesen &amp; Schreiben – Schritt für Schritt, in deinem Tempo.
       </p>
@@ -129,23 +129,22 @@ function ChooseBuddy({
         autoFocus
       />
 
-      <div className="mt-5 grid grid-cols-2 gap-3">
-        {(Object.keys(BUDDY_META) as Buddy[]).map((key) => {
-          const meta = BUDDY_META[key];
-          const selected = buddy === key;
+      <div className="mt-5 grid grid-cols-3 gap-3">
+        {BUDDIES.map((b) => {
+          const selected = buddy === b.id;
           return (
             <button
-              key={key}
+              key={b.id}
               type="button"
-              onClick={() => onBuddy(key)}
+              onClick={() => onBuddy(b.id)}
               aria-pressed={selected}
               className={cn(
-                'flex flex-col items-center gap-2 rounded-card bg-white p-4 shadow-sm ring-1 transition',
+                'flex flex-col items-center gap-2 rounded-card bg-white p-3 shadow-sm ring-1 transition',
                 selected ? 'ring-2 ring-teal' : 'ring-black/5',
               )}
             >
-              <img src={meta.src} alt="" className="h-20" />
-              <span className="font-display font-bold text-ink">{meta.name}</span>
+              <img src={buddySrc(b.id)} alt="" className="h-14" />
+              <span className="font-display text-sm font-bold text-ink">{b.name}</span>
             </button>
           );
         })}

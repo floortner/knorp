@@ -45,11 +45,13 @@ function renderProfil() {
 beforeEach(() => updateSettings.mockClear());
 
 describe('Profil', () => {
-  it('shows the child header and skill breakdown', async () => {
+  it('shows the child header WITHOUT the machine-key skill diagnostics or a chat CTA', async () => {
     renderProfil();
     expect(await screen.findByText('Mia')).toBeInTheDocument();
     expect(screen.getByText(/aktiv seit/)).toBeInTheDocument();
-    expect(await screen.findByText('vowel_length')).toBeInTheDocument();
+    // diagnostics stay out of the child app (reviewer portal owns them); Chat is a bottom tab already
+    expect(screen.queryByText('vowel_length')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Trainerin kontaktieren/)).not.toBeInTheDocument();
   });
 
   it('toggles sound off via PATCH settings', async () => {
@@ -57,6 +59,34 @@ describe('Profil', () => {
     renderProfil();
     await user.click(await screen.findByRole('switch', { name: 'Ton an/aus' }));
     expect(updateSettings).toHaveBeenCalledWith('p1', { soundOn: false });
+  });
+
+  it('offers all twelve buddies; picking one PATCHes the profile', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    await screen.findByText('Dein Lernfreund');
+    // 12 mascots, current one marked selected
+    expect(screen.getByRole('button', { name: 'Nepo' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Theo' })).toHaveAttribute('aria-pressed', 'false');
+    await user.click(screen.getByRole('button', { name: 'Charly' }));
+    expect(updateSettings).toHaveBeenCalledWith('p1', { buddy: 'charly' });
+    // re-tapping the already-selected buddy does nothing
+    await user.click(screen.getByRole('button', { name: 'Nepo' }));
+    expect(updateSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it('tapping the big buddy cycles its emotional reaction', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    const buddyBtn = await screen.findByRole('button', { name: 'Dein Lernfreund reagiert' });
+    const img = () => buddyBtn.querySelector('img')!.getAttribute('src');
+    expect(img()).toBe('/nepo.svg'); // neutral
+    await user.click(buddyBtn);
+    expect(img()).toBe('/monster-pets/nepo-froehlich.svg');
+    await user.click(buddyBtn);
+    expect(img()).toBe('/monster-pets/nepo-ueberrascht.svg');
+    await user.click(buddyBtn);
+    expect(img()).toBe('/monster-pets/nepo-cool.svg');
   });
 
   // NOTE: the Schriftgröße ("Groß") control was removed in milestone 1.6 (the font-scale stub was cut),

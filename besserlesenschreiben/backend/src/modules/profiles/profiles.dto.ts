@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { ZodDto } from '../../common/zod-dto';
 
-const buddy = z.enum(['nepo', 'stella']);
+// All monster-pets mascots (frontend/public/monster-pets/ — 4 emotional states each).
+const buddy = z.enum([
+  'nepo', 'stella', 'charly', 'echo', 'inky', 'jax',
+  'junior', 'li', 'pixel', 'puff', 'rudolph', 'theo',
+]);
 
 // Defaults are applied in the service (not via Zod `.default()`) to keep the DTOs simple.
 export const createProfileSchema = z.object({
