@@ -296,7 +296,17 @@
                     "type": "string",
                     "enum": [
                       "nepo",
-                      "stella"
+                      "stella",
+                      "charly",
+                      "echo",
+                      "inky",
+                      "jax",
+                      "junior",
+                      "li",
+                      "pixel",
+                      "puff",
+                      "rudolph",
+                      "theo"
                     ]
                   },
                   "goal": {
@@ -574,7 +584,17 @@
                     "type": "string",
                     "enum": [
                       "nepo",
-                      "stella"
+                      "stella",
+                      "charly",
+                      "echo",
+                      "inky",
+                      "jax",
+                      "junior",
+                      "li",
+                      "pixel",
+                      "puff",
+                      "rudolph",
+                      "theo"
                     ]
                   }
                 }
