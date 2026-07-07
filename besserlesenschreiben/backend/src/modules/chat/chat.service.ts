@@ -15,6 +15,8 @@ interface WireMessage {
   text: string;
   ts: string;
   imageUrl?: string;
+  // Present only on homework STATUS bubbles (contract chatMessageSchema) — drives the client CTA.
+  homeworkStatus?: 'pending_analysis' | 'pending_review' | 'reviewed' | 'rejected';
 }
 
 const HISTORY_LIMIT = 100; // most-recent messages returned to the client
@@ -24,22 +26,26 @@ const HOMEWORK_HISTORY = 20; // recent homework uploads surfaced as chat bubbles
 const HW_URL_TTL_S = 3600; // family read-URL lifetime for their own homework photo
 
 /**
- * The trainer's line under a homework photo, reflecting its CURRENT review status. On `reviewed` it draws
- * from the AUTHORITATIVE `reviewedAnalysis` (topic + what to practise next) — never the LLM draft.
+ * The trainer's line under a homework photo, reflecting its CURRENT review status. On `reviewed` it shows
+ * the topic (from the AUTHORITATIVE `reviewedAnalysis` — never the LLM draft) plus the reviewer's optional
+ * comment. The raw `suggestedFocus` tags are deliberately NOT shown — they are machine keys for lecture
+ * generation, cryptic for a child; the client renders a "Zu deinen neuen Übungen" button instead
+ * (`homeworkStatus` on the wire message).
  */
-function homeworkStatusText(status: string, reviewedAnalysis: unknown): string {
-  if (status === 'rejected') return 'Das Foto konnte leider nicht verwendet werden. Versuch es mit einem klareren Bild. 🙈';
+function homeworkStatusText(status: string, reviewedAnalysis: unknown, reviewerNotes?: string | null): string {
+  const comment = reviewerNotes?.trim() ? ` ${reviewerNotes.trim()}` : '';
+  if (status === 'rejected') {
+    // The comment doubles as the retake hint ("Foto unscharf …").
+    return `Das Foto konnte leider nicht verwendet werden.${comment} Versuch es mit einem klareren Bild. 🙈`;
+  }
   if (status === 'reviewed') {
     const parsed = homeworkAnalysisSchema.safeParse(reviewedAnalysis);
     if (parsed.success) {
-      const focus = parsed.data.suggestedFocus.length
-        ? ` Als Nächstes üben wir: ${parsed.data.suggestedFocus.join(', ')}.`
-        : '';
-      return `Deine Hausübung ist geprüft ✅ — ${parsed.data.topic}.${focus}`;
+      return `Deine Hausübung ist geprüft ✅ — ${parsed.data.topic}.${comment} Neue Übungen warten auf dich!`;
     }
-    return 'Deine Hausübung ist geprüft ✅ — die nächsten Übungen sind jetzt für dich angepasst.';
+    return `Deine Hausübung ist geprüft ✅.${comment} Neue Übungen warten auf dich!`;
   }
-  return 'Dein Foto ist da! 📚 Eine Fachkraft schaut es sich an und passt deine nächsten Übungen an.';
+  return 'Dein Foto ist da! Angelika passt deine nächsten Übungen an und meldet sich, wenn diese bereit sind.';
 }
 
 /**
@@ -83,7 +89,14 @@ export class ChatService {
         where: { profileId },
         orderBy: { createdAt: 'desc' },
         take: HOMEWORK_HISTORY,
-        select: { imageKey: true, status: true, createdAt: true, reviewedAnalysis: true },
+        select: {
+          imageKey: true,
+          status: true,
+          createdAt: true,
+          reviewedAnalysis: true,
+          // Latest review's optional comment — CHILD-VISIBLE in the status bubble.
+          reviews: { orderBy: { createdAt: 'desc' }, take: 1, select: { notes: true } },
+        },
       }),
     ]);
 
@@ -96,7 +109,14 @@ export class ChatService {
       // Photo + status share the upload's timestamp so the pair stays adjacent (stable sort keeps insert order).
       const ts = h.createdAt.toISOString();
       entries.push({ msg: { me: true, text: '', ts }, imageKey: h.imageKey });
-      entries.push({ msg: { me: false, text: homeworkStatusText(h.status, h.reviewedAnalysis), ts } });
+      entries.push({
+        msg: {
+          me: false,
+          text: homeworkStatusText(h.status, h.reviewedAnalysis, h.reviews?.[0]?.notes),
+          ts,
+          homeworkStatus: h.status as WireMessage['homeworkStatus'],
+        },
+      });
     }
 
     // Newest HISTORY_LIMIT overall (chat + homework interleaved), then sign only the surviving photo bubbles

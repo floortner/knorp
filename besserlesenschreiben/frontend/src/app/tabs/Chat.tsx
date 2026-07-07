@@ -1,6 +1,7 @@
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Camera, Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Camera, Send, Sparkles } from 'lucide-react';
 import { chatApi, homeworkApi } from '@/lib/endpoints';
 import { errorMessage } from '@/lib/api';
 import type { ChatHistory, ChatMessage } from '@/lib/types';
@@ -177,7 +178,21 @@ function Bubble({ message }: { message: ChatMessage }) {
         {message.imageUrl ? (
           <img src={message.imageUrl} alt="Hausübung" className="max-h-64 rounded-xl object-contain" />
         ) : (
-          message.text
+          <>
+            {message.text}
+            {message.homeworkStatus === 'reviewed' && (
+              // Reviewed verdict → take the child straight to where the adapted exercises live
+              // (the ✨ entry on /lernen). Navigation only — generating the lecture stays a
+              // deliberate tap there (it consumes a daily ★ session).
+              <Link
+                to="/app/lernen"
+                className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-teal px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm transition-transform active:scale-95"
+              >
+                <Sparkles className="h-4 w-4" aria-hidden />
+                Zu deinen neuen Übungen
+              </Link>
+            )}
+          </>
         )}
       </div>
     </div>

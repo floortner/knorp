@@ -112,18 +112,23 @@ export const progressSchema = z.object({
 
 export const digestSchema = z.object({ markdown: z.string() });
 
+// ── Homework status (shared with chat below) ───────────────────────────────────
+export const homeworkStatusEnum = z.enum(['pending_analysis', 'pending_review', 'reviewed', 'rejected']);
+
 // ── Chat (trainer) ─────────────────────────────────────────────────────────────
 export const chatMessageSchema = z.object({
   me: z.boolean(), // true = the child, false = the trainer (Angelika)
   text: z.string(),
   ts: z.string(), // ISO timestamp
   imageUrl: z.string().optional(), // homework photo bubble (a short-lived read URL); absent on text messages
+  // Present ONLY on a homework STATUS bubble — lets the client render a status-specific affordance
+  // (e.g. a "Zu deinen neuen Übungen" button once `reviewed`).
+  homeworkStatus: homeworkStatusEnum.optional(),
 });
 export const chatHistorySchema = z.object({ messages: z.array(chatMessageSchema) });
 export const chatReplySchema = z.object({ reply: chatMessageSchema });
 
 // ── Homework (family realm) ─────────────────────────────────────────────────────
-export const homeworkStatusEnum = z.enum(['pending_analysis', 'pending_review', 'reviewed', 'rejected']);
 export const homeworkUploadResponseSchema = z.object({
   uploadId: z.string(),
   status: homeworkStatusEnum,

@@ -12,7 +12,13 @@ function setup(
     owned?: boolean;
     rows?: Array<{ role: string; text: string; createdAt: Date }>;
     sentToday?: number;
-    homework?: Array<{ imageKey: string; status: string; createdAt: Date; reviewedAnalysis: unknown }>;
+    homework?: Array<{
+      imageKey: string;
+      status: string;
+      createdAt: Date;
+      reviewedAnalysis: unknown;
+      reviews?: Array<{ notes: string | null }>;
+    }>;
   } = {},
 ) {
   const owned = opts.owned ?? true;
@@ -82,6 +88,7 @@ describe('ChatService', () => {
           status: 'reviewed',
           createdAt: new Date('2026-06-30T09:00:00Z'),
           reviewedAnalysis: { topic: 'Anlaute', exerciseType: 'x', items: [], suggestedFocus: ['vowel_length'] },
+          reviews: [{ notes: 'Toll gemacht, achte auf die Selbstlaute!' }],
         },
       ],
     });
@@ -89,12 +96,27 @@ describe('ChatService', () => {
     expect(messages[0]).toEqual({ me: true, text: 'Hi', ts: '2026-06-30T08:00:00.000Z' });
     // photo bubble: a read URL, no text
     expect(messages[1]).toEqual({ me: true, text: '', ts: '2026-06-30T09:00:00.000Z', imageUrl: 'https://example.test/hw.webp' });
-    // status line shares the photo's timestamp (stays adjacent) and draws detail from reviewedAnalysis
+    // status line shares the photo's timestamp (stays adjacent): topic + reviewer comment; the raw
+    // suggestedFocus machine keys are NOT leaked at the child — the CTA rides on homeworkStatus instead.
     expect(messages[2].ts).toBe('2026-06-30T09:00:00.000Z');
     expect(messages[2].me).toBe(false);
     expect(messages[2].text).toContain('geprüft');
     expect(messages[2].text).toContain('Anlaute');
-    expect(messages[2].text).toContain('vowel_length');
+    expect(messages[2].text).toContain('Toll gemacht, achte auf die Selbstlaute!');
+    expect(messages[2].text).not.toContain('vowel_length');
+    expect(messages[2].homeworkStatus).toBe('reviewed');
+  });
+
+  it('a pending upload gets the waiting text, no comment, and its status on the wire', async () => {
+    const { svc } = setup({
+      rows: [],
+      homework: [
+        { imageKey: 'k', status: 'pending_review', createdAt: new Date('2026-06-30T09:00:00Z'), reviewedAnalysis: null, reviews: [] },
+      ],
+    });
+    const { messages } = await svc.history('a1', 'p1');
+    expect(messages[1].text).toContain('Dein Foto ist da');
+    expect(messages[1].homeworkStatus).toBe('pending_review');
   });
 
   it('send persists the child message + trainer reply and returns the reply', async () => {
