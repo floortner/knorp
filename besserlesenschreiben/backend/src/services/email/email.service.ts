@@ -87,23 +87,32 @@ export class EmailService {
   }
 
   private async sendViaSes(email: string, code: string): Promise<void> {
-    await this.ses!.send(
-      new SendEmailCommand({
-        FromEmailAddress: this.from,
-        Destination: { ToAddresses: [email] },
-        Content: {
-          Simple: {
-            Subject: { Data: `Dein Anmelde-Code: ${code}` },
-            Body: {
-              Text: { Data: `Dein Code lautet ${code}. Er ist 10 Minuten gültig.` },
-              Html: {
-                Data: `<p>Dein Code lautet <strong style="font-size:1.4em;letter-spacing:.15em">${code}</strong>.</p><p>Er ist 10 Minuten gültig.</p>`,
-              },
+    const command = new SendEmailCommand({
+      FromEmailAddress: this.from,
+      Destination: { ToAddresses: [email] },
+      Content: {
+        Simple: {
+          Subject: { Data: `Dein Anmelde-Code: ${code}` },
+          Body: {
+            Text: { Data: `Dein Code lautet ${code}. Er ist 10 Minuten gültig.` },
+            Html: {
+              Data: `<p>Dein Code lautet <strong style="font-size:1.4em;letter-spacing:.15em">${code}</strong>.</p><p>Er ist 10 Minuten gültig.</p>`,
             },
           },
         },
-      }),
-    );
+      },
+    });
+    try {
+      await this.ses!.send(command);
+    } catch {
+      // One retry after a short pause. The SDK already retries throttling/5xx internally, but NOT
+      // e.g. credential-resolution hiccups right after a process boot (bit the beta on launch night —
+      // a login email is too important to lose to a one-off blip). Identifiers only, never the error
+      // body (it may echo the recipient — ARCHITECTURE §6).
+      this.logger.warn({ event: 'email.retry', provider: 'ses' }, 'SES send failed once — retrying');
+      await new Promise((resolve) => setTimeout(resolve, 750));
+      await this.ses!.send(command);
+    }
     // Identifiers + outcome only — never the recipient or code (ARCHITECTURE §6).
     this.logger.log({ event: 'email.sent', provider: 'ses' }, 'login code sent');
   }
