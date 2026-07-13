@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 270" width="240" height="270">
+<defs>
+<clipPath id="clipAngFlat"><rect x="58" y="74" width="124" height="164" rx="60"></rect></clipPath>
+</defs>
+<g>
+
+      <path d="M92 76 Q86 50 100 42" stroke="#1AA8A8" stroke-width="6" fill="none" stroke-linecap="round"></path>
+      <circle cx="100" cy="40" r="7" fill="#FDC73B"></circle>
+      <path d="M148 76 Q154 50 140 42" stroke="#1AA8A8" stroke-width="6" fill="none" stroke-linecap="round"></path>
+      <circle cx="140" cy="40" r="7" fill="#FF8FB0"></circle>
+      <rect x="58" y="74" width="124" height="164" rx="60" fill="#28C7C7"></rect>
+      <g clip-path="url(#clipAngFlat)"><path d="M58 196 H182 V240 H58 Z" fill="#1AA8A8"></path></g>
+      <circle cx="100" cy="146" r="17" fill="#fff"></circle>
+      <circle cx="140" cy="146" r="17" fill="#fff"></circle>
+      <circle cx="100" cy="148" r="8" fill="#0E4A4A"></circle>
+      <circle cx="140" cy="148" r="8" fill="#0E4A4A"></circle>
+      <circle cx="103" cy="144" r="3" fill="#fff"></circle>
+      <circle cx="143" cy="144" r="3" fill="#fff"></circle>
+      <circle cx="100" cy="146" r="20" fill="none" stroke="#0E4A4A" stroke-width="4.5"></circle>
+      <circle cx="140" cy="146" r="20" fill="none" stroke="#0E4A4A" stroke-width="4.5"></circle>
+      <path d="M119 144 Q120 141 121 144" stroke="#0E4A4A" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+      <path d="M80 142 L66 138" stroke="#0E4A4A" stroke-width="4.5" stroke-linecap="round"></path>
+      <path d="M160 142 L174 138" stroke="#0E4A4A" stroke-width="4.5" stroke-linecap="round"></path>
+      <circle cx="78" cy="170" r="8" fill="#FF9FB0"></circle>
+      <circle cx="162" cy="170" r="8" fill="#FF9FB0"></circle>
+      <path d="M104 178 Q120 192 136 178" stroke="#0E4A4A" stroke-width="6" fill="none" stroke-linecap="round"></path>
+      <rect x="146" y="86" width="50" height="32" rx="12" fill="#fff"></rect>
+      <path d="M156 116 l-6 13 17 -9 Z" fill="#fff"></path>
+      <text x="171" y="109" font-family="Poppins,sans-serif" font-weight="700" font-size="19" fill="#6C5CE7" text-anchor="middle">Aa</text>
+    
+</g>
+</svg>

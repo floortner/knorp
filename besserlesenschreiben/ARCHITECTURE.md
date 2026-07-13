@@ -207,8 +207,9 @@ src/
     auth/  lessons/  progress/  profile/   # homework upload lives in the Chat tab; no billing/ — the app is free
   components/ui/          # shadcn components
   hooks/  styles/theme.css (@theme tokens)
-public/                   # PWA icons (SVG), manifest
-assets/svg/               # app illustrations, mascots (Nepo/Stella), badges — all SVG (§ Media)
+public/                   # PWA icons (SVG), manifest, brand svgs (nepo.svg)
+monster-pets/             # served mascot SVGs (base + moods/poses), symlinked into public/monster-pets
+                          #   (master source art + catalog live at repo-root assets/ — see § Media)
 index.html  vite.config.ts  package.json  package-lock.json  .env.example  AGENTS.md
 ```
 
@@ -549,7 +550,9 @@ reward art, exercise illustrations, icons, decorative elements — all SVG. Rati
 - **Diffable** — SVG is text, so changes show up in PRs (raster blobs don't).
 
 **Pipeline**
-- Author/optimize SVGs with **SVGO**; store app SVGs in `assets/svg/` (bundled) or S3 for generated ones.
+- Author/optimize SVGs with **SVGO**. The master mascot/art library + catalog lives at repo-root `assets/`
+  (SVG masters versioned; large PNG renders gitignored — print-only); the served subset is `frontend/monster-pets/`
+  (symlinked into `public/`). Generated art goes to S3.
 - **Sanitize every SVG that isn't hand-authored by you** (LLM-generated or uploaded) before storing/serving —
   SVG can carry `<script>`/`onload` and is an XSS vector. Use **DOMPurify** (`USE_PROFILES:{svg:true}`) on the
   frontend for any inlined SVG, and a server-side sanitizer before persisting. **Never** inline an unsanitized

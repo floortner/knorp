@@ -2,11 +2,11 @@ import { z } from 'zod';
 import { ZodDto } from '../../common/zod-dto';
 
 // Freely selectable learn buddies (frontend/public/monster-pets/ — 4 emotional states each).
-// echo/inky/pixel/puff are REWARD pets — earned via tasks (D5), never freely selectable, so they are
+// bo/echo/inky/pixel are REWARD pets — earned via tasks (D5), never freely selectable, so they are
 // deliberately NOT in this enum (a direct API PATCH must not bypass the lock).
 const buddy = z.enum([
   'nepo', 'stella', 'charly', 'jax',
-  'junior', 'li', 'rudolph', 'theo',
+  'junior', 'li', 'bruno', 'greta',
 ]);
 
 // Defaults are applied in the service (not via Zod `.default()`) to keep the DTOs simple.

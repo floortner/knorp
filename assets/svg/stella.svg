@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 270" width="240" height="270">
+<defs>
+<clipPath id="clipUniFlat"><rect x="58" y="74" width="124" height="166" rx="58"></rect></clipPath>
+</defs>
+<g>
+
+    <circle cx="78" cy="84" r="20" fill="#E8488F"></circle>
+    <circle cx="162" cy="84" r="20" fill="#E8488F"></circle>
+    <path d="M104 70 L120 18 L136 70 Z" fill="#FDC73B"></path>
+    <rect x="58" y="74" width="124" height="166" rx="58" fill="#E8488F"></rect>
+    <g clip-path="url(#clipUniFlat)"><path d="M58 196 H182 V240 H58 Z" fill="#CE2E72"></path></g>
+    <circle cx="98" cy="144" r="20" fill="#fff"></circle>
+    <circle cx="142" cy="144" r="20" fill="#fff"></circle>
+    <circle cx="100" cy="148" r="9" fill="#5A1840"></circle>
+    <circle cx="140" cy="148" r="9" fill="#5A1840"></circle>
+    <circle cx="103" cy="144" r="3.5" fill="#fff"></circle>
+    <circle cx="143" cy="144" r="3.5" fill="#fff"></circle>
+    <path d="M104 176 Q120 190 136 176" stroke="#5A1840" stroke-width="6" fill="none" stroke-linecap="round"></path>
+    <path d="M115 182 l2 9 4 -6 Z M122 183 l2 8 4 -6 Z" fill="#fff"></path>
+    <circle cx="74" cy="170" r="8" fill="#F6A9CE"></circle>
+    <circle cx="166" cy="170" r="8" fill="#F6A9CE"></circle>
+  
+</g>
+</svg>

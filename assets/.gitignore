@@ -1,0 +1,5 @@
+# Mascot source-art library (master SVGs + manifest + avatars are versioned).
+# The large PNG renders are print-only — the app serves SVG (ARCHITECTURE §10) — so they're not versioned.
+png/
+*.png
+.DS_Store

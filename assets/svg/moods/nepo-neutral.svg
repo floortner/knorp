@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" width="240" height="260">
+<defs>
+<clipPath id="clipBolt"><rect x="56" y="78" width="128" height="160" rx="62"></rect></clipPath>
+</defs>
+<g>
+
+<path d="M84 90 L74 52 L116 80 Z" fill="#1AA0E0"></path><path d="M156 90 L166 52 L124 80 Z" fill="#1AA0E0"></path>
+<rect x="56" y="78" width="128" height="160" rx="62" fill="#29B6F6"></rect>
+<g clip-path="url(#clipBolt)"><path d="M56 196 H184 V238 H56 Z" fill="#1593CC"></path></g>
+<circle cx="80" cy="172" r="9" fill="#7FD0F5"></circle><circle cx="160" cy="172" r="9" fill="#7FD0F5"></circle>
+<circle cx="120" cy="142" r="36" fill="#fff"></circle><circle cx="120" cy="142" r="9" fill="#10384F"></circle>
+<circle cx="124" cy="138" r="3" fill="#fff"></circle>
+<path d="M108 194 L132 194" stroke="#0E3A52" stroke-width="6" fill="none" stroke-linecap="round"></path>
+  
+</g>
+</svg>

@@ -1,0 +1,442 @@
+{
+  "name": "Lernbuddies — Monster vom Planeten Knorp",
+  "style": "Flat Geometric (reine Volltöne, keine Konturen, keine Transparenzen, keine Verläufe)",
+  "generated": "2026-07-13",
+  "zielgruppe": "8–14 Jahre",
+  "moods": [
+    "froehlich",
+    "ueberrascht",
+    "traurig",
+    "cool",
+    "neutral"
+  ],
+  "posenTypen": [
+    "jubel",
+    "schlaf"
+  ],
+  "stufen": [
+    "bronze",
+    "silber",
+    "gold",
+    "kosmisch"
+  ],
+  "pngSizes": [
+    256,
+    512,
+    1024
+  ],
+  "namensschema": {
+    "figur": "assets/svg/{id}.svg",
+    "mood": "assets/svg/moods/{id}-{mood}.svg",
+    "pose": "assets/svg/posen/{id}-{pose}.svg",
+    "avatar": "assets/avatare/{id}-avatar.svg",
+    "png": "assets/png/[moods|posen|avatare/]{basisname}-{größe}.png"
+  },
+  "printHinweise": [
+    "Alle SVGs CMYK-sicher: reine Volltöne, keine opacity/Verläufe/Filter",
+    "Bodenschatten in Einzel-Assets entfernt",
+    "Mindestgröße digital: 32px (Avatare)",
+    "Schrift der Seiten: Poppins (Headlines), DM Sans (Copy)"
+  ],
+  "figures": [
+    {
+      "id": "nepo",
+      "name": "Nepo",
+      "type": "monster",
+      "tagline": "Der fröhliche Held",
+      "colors": [
+        "#1AA0E0",
+        "#10384F",
+        "#29B6F6",
+        "#1593CC"
+      ],
+      "files": {
+        "svg": "assets/svg/nepo.svg",
+        "avatar": "assets/avatare/nepo-avatar.svg",
+        "png": [
+          "assets/png/nepo-256.png",
+          "assets/png/nepo-512.png",
+          "assets/png/nepo-1024.png"
+        ],
+        "moods": [
+          "assets/svg/moods/nepo-froehlich.svg",
+          "assets/svg/moods/nepo-ueberrascht.svg",
+          "assets/svg/moods/nepo-traurig.svg",
+          "assets/svg/moods/nepo-cool.svg",
+          "assets/svg/moods/nepo-neutral.svg"
+        ]
+      }
+    },
+    {
+      "id": "stella",
+      "name": "Stella",
+      "type": "monster",
+      "tagline": "Die Planerin",
+      "colors": [
+        "#E8488F",
+        "#5A1840",
+        "#F6A9CE",
+        "#FDC73B",
+        "#CE2E72"
+      ],
+      "files": {
+        "svg": "assets/svg/stella.svg",
+        "avatar": "assets/avatare/stella-avatar.svg",
+        "png": [
+          "assets/png/stella-256.png",
+          "assets/png/stella-512.png",
+          "assets/png/stella-1024.png"
+        ],
+        "moods": [
+          "assets/svg/moods/stella-froehlich.svg",
+          "assets/svg/moods/stella-ueberrascht.svg",
+          "assets/svg/moods/stella-traurig.svg",
+          "assets/svg/moods/stella-cool.svg",
+          "assets/svg/moods/stella-neutral.svg"
+        ]
+      }
+    },
+    {
+      "id": "charly",
+      "name": "Charly",
+      "type": "monster",
+      "tagline": "Der mutige Abenteurer",
+      "colors": [
+        "#3DBE74",
+        "#114A2E",
+        "#8FE0B0",
+        "#2A9E5C",
+        "#FF7A59"
+      ],
+      "files": {
+        "svg": "assets/svg/charly.svg",
+        "avatar": "assets/avatare/charly-avatar.svg",
+        "png": [
+          "assets/png/charly-256.png",
+          "assets/png/charly-512.png",
+          "assets/png/charly-1024.png"
+        ],
+        "moods": [
+          "assets/svg/moods/charly-froehlich.svg",
+          "assets/svg/moods/charly-ueberrascht.svg",
+          "assets/svg/moods/charly-traurig.svg",
+          "assets/svg/moods/charly-cool.svg",
+          "assets/svg/moods/charly-neutral.svg"
+        ]
+      }
+    },
+    {
+      "id": "jax",
+      "name": "Jax",
+      "type": "monster",
+      "tagline": "Der coole Gamer",
+      "colors": [
+        "#2B3543",
+        "#FF6B4A",
+        "#28C7C7",
+        "#E2502F",
+        "#26313F",
+        "#41526A",
+        "#7A2A14",
+        "#FFB59E"
+      ],
+      "files": {
+        "svg": "assets/svg/jax.svg",
+        "avatar": "assets/avatare/jax-avatar.svg",
+        "png": [
+          "assets/png/jax-256.png",
+          "assets/png/jax-512.png",
+          "assets/png/jax-1024.png"
+        ],
+        "moods": [
+          "assets/svg/moods/jax-froehlich.svg",
+          "assets/svg/moods/jax-ueberrascht.svg",
+          "assets/svg/moods/jax-traurig.svg",
+          "assets/svg/moods/jax-cool.svg",
+          "assets/svg/moods/jax-neutral.svg"
+        ]
+      }
+    },
+    {
+      "id": "li",
+      "name": "Li",
+      "type": "monster",
+      "tagline": "Die Kreative",
+      "colors": [
+        "#E8A91E",
+        "#FF9FB0",
+        "#3A2A0A",
+        "#FDC73B",
+        "#6E4A08",
+        "#FFE36B",
+        "#FEB17B",
+        "#F4BA2E",
+        "#FF8A1E"
+      ],
+      "files": {
+        "svg": "assets/svg/li.svg",
+        "avatar": "assets/avatare/li-avatar.svg",
+        "png": [
+          "assets/png/li-256.png",
+          "assets/png/li-512.png",
+          "assets/png/li-1024.png"
+        ],
+        "moods": [
+          "assets/svg/moods/li-froehlich.svg",
+          "assets/svg/moods/li-ueberrascht.svg",
+          "assets/svg/moods/li-traurig.svg",
+          "assets/svg/moods/li-cool.svg",
+          "assets/svg/moods/li-neutral.svg"
+        ]
+      }
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "type": "monster",
+      "tagline": "Der neugierige Kleine",
+      "colors": [
+        "#A4D037",
+        "#21400A",
+        "#7FB024",
+        "#FF9FB0",
+        "#8FC02E"
+      ],
+      "files": {
+        "svg": "assets/svg/junior.svg",
+        "avatar": "assets/avatare/junior-avatar.svg",
+        "png": [
+          "assets/png/junior-256.png",
+          "assets/png/junior-512.png",
+          "assets/png/junior-1024.png"
+        ],
+        "moods": [
+          "assets/svg/moods/junior-froehlich.svg",
+          "assets/svg/moods/junior-ueberrascht.svg",
+          "assets/svg/moods/junior-traurig.svg",
+          "assets/svg/moods/junior-cool.svg",
+          "assets/svg/moods/junior-neutral.svg"
+        ]
+      }
+    },
+    {
+      "id": "bruno",
+      "name": "Bruno",
+      "type": "monster",
+      "tagline": "Der entspannte Träumer",
+      "colors": [
+        "#EFCF7E",
+        "#C9874A",
+        "#B0743A",
+        "#E0A05A",
+        "#3A260C",
+        "#A4D037",
+        "#BE7E43",
+        "#6B4A12",
+        "#E2C19D"
+      ],
+      "files": {
+        "svg": "assets/svg/bruno.svg",
+        "avatar": "assets/avatare/bruno-avatar.svg",
+        "png": [
+          "assets/png/bruno-256.png",
+          "assets/png/bruno-512.png",
+          "assets/png/bruno-1024.png"
+        ],
+        "moods": [
+          "assets/svg/moods/bruno-froehlich.svg",
+          "assets/svg/moods/bruno-ueberrascht.svg",
+          "assets/svg/moods/bruno-traurig.svg",
+          "assets/svg/moods/bruno-cool.svg",
+          "assets/svg/moods/bruno-neutral.svg"
+        ]
+      }
+    },
+    {
+      "id": "greta",
+      "name": "Greta",
+      "type": "monster",
+      "tagline": "Die smarte Denkerin",
+      "colors": [
+        "#232A6E",
+        "#7C8BF5",
+        "#1E2350",
+        "#F272A8",
+        "#FF9FB0",
+        "#5566E6",
+        "#DB4E8E"
+      ],
+      "files": {
+        "svg": "assets/svg/greta.svg",
+        "avatar": "assets/avatare/greta-avatar.svg",
+        "png": [
+          "assets/png/greta-256.png",
+          "assets/png/greta-512.png",
+          "assets/png/greta-1024.png"
+        ],
+        "moods": [
+          "assets/svg/moods/greta-froehlich.svg",
+          "assets/svg/moods/greta-ueberrascht.svg",
+          "assets/svg/moods/greta-traurig.svg",
+          "assets/svg/moods/greta-cool.svg",
+          "assets/svg/moods/greta-neutral.svg"
+        ]
+      }
+    },
+    {
+      "id": "pixel",
+      "name": "Pixel",
+      "type": "pet",
+      "tagline": "Perfektions-Profi",
+      "category": "Perfektion · fehlerfrei",
+      "colors": [
+        "#0E4A4A",
+        "#1FA8A8",
+        "#7FE3E3",
+        "#58BFBF",
+        "#28C7C7"
+      ],
+      "stufen": [
+        "bronze",
+        "silber",
+        "gold",
+        "kosmisch"
+      ],
+      "files": {
+        "svg": "assets/svg/pixel.svg",
+        "avatar": "assets/avatare/pixel-avatar.svg",
+        "png": [
+          "assets/png/pixel-256.png",
+          "assets/png/pixel-512.png",
+          "assets/png/pixel-1024.png"
+        ],
+        "posen": [
+          "assets/svg/posen/pixel-jubel.svg",
+          "assets/svg/posen/pixel-schlaf.svg"
+        ]
+      }
+    },
+    {
+      "id": "bo",
+      "name": "Bo",
+      "type": "pet",
+      "tagline": "Fleißig wie eine Biene",
+      "category": "Fleiß · Volumen",
+      "colors": [
+        "#3A2A0A",
+        "#DFF3FB",
+        "#FF9FB0",
+        "#FDC73B"
+      ],
+      "stufen": [
+        "bronze",
+        "silber",
+        "gold",
+        "kosmisch"
+      ],
+      "files": {
+        "svg": "assets/svg/bo.svg",
+        "avatar": "assets/avatare/bo-avatar.svg",
+        "png": [
+          "assets/png/bo-256.png",
+          "assets/png/bo-512.png",
+          "assets/png/bo-1024.png"
+        ],
+        "posen": [
+          "assets/svg/posen/bo-jubel.svg",
+          "assets/svg/posen/bo-schlaf.svg"
+        ]
+      }
+    },
+    {
+      "id": "inky",
+      "name": "Inky",
+      "type": "pet",
+      "tagline": "Hält deine Serie fest",
+      "category": "Streak · Dranbleiben",
+      "colors": [
+        "#6C5CE7",
+        "#5247C4",
+        "#2E2A5C",
+        "#FF9FB0",
+        "#7D6DEA"
+      ],
+      "stufen": [
+        "bronze",
+        "silber",
+        "gold",
+        "kosmisch"
+      ],
+      "files": {
+        "svg": "assets/svg/inky.svg",
+        "avatar": "assets/avatare/inky-avatar.svg",
+        "png": [
+          "assets/png/inky-256.png",
+          "assets/png/inky-512.png",
+          "assets/png/inky-1024.png"
+        ],
+        "posen": [
+          "assets/svg/posen/inky-jubel.svg",
+          "assets/svg/posen/inky-schlaf.svg"
+        ]
+      }
+    },
+    {
+      "id": "echo",
+      "name": "Echo",
+      "type": "pet",
+      "tagline": "Begleitet die Abendrunde",
+      "category": "Abend · Extra-Übungen",
+      "colors": [
+        "#4650B0",
+        "#191F4A",
+        "#353D8C",
+        "#FFE29A",
+        "#FF9FB0",
+        "#7B84D6"
+      ],
+      "stufen": [
+        "bronze",
+        "silber",
+        "gold",
+        "kosmisch"
+      ],
+      "files": {
+        "svg": "assets/svg/echo.svg",
+        "avatar": "assets/avatare/echo-avatar.svg",
+        "png": [
+          "assets/png/echo-256.png",
+          "assets/png/echo-512.png",
+          "assets/png/echo-1024.png"
+        ],
+        "posen": [
+          "assets/svg/posen/echo-jubel.svg",
+          "assets/svg/posen/echo-schlaf.svg"
+        ]
+      }
+    },
+    {
+      "id": "angelika",
+      "name": "Angelika",
+      "type": "trainerin",
+      "tagline": "Die Sprachtrainerin",
+      "colors": [
+        "#0E4A4A",
+        "#1AA8A8",
+        "#FF9FB0",
+        "#FDC73B",
+        "#FF8FB0",
+        "#28C7C7",
+        "#6C5CE7"
+      ],
+      "files": {
+        "svg": "assets/svg/angelika.svg",
+        "png": [
+          "assets/png/angelika-256.png",
+          "assets/png/angelika-512.png",
+          "assets/png/angelika-1024.png"
+        ]
+      }
+    }
+  ]
+}
