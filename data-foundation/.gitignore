@@ -1,3 +1,0 @@
-# The source corpus PDF is CC BY-NC-ND 4.0 and 10MB — kept local, not committed.
-# lexeme.seed.json (the derived data) + parse-rwe.py are the committed artifacts.
-*.pdf

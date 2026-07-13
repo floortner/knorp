@@ -7,24 +7,7 @@ import type { Exercise } from '@/lib/types';
  */
 
 function wordOf(ex: Exercise): string {
-  switch (ex.type) {
-    case 'sylvalid':
-      return ex.syllable;
-    case 'paircheck':
-      return `${ex.left}, ${ex.right}`;
-    case 'fixvowel':
-    case 'pickword':
-      return ex.answer; // speak the REAL word, not the Quatschwort
-    case 'sentencefix':
-      return ex.correction;
-    case 'family':
-      return ex.answer;
-    case 'insertvowel':
-      return ex.word;
-    default:
-      // raster | findvowel | realword | swapvowel | length | compound | sylarrange
-      return ex.word;
-  }
+  return ex.answer;
 }
 
 export function speak(ex: Exercise, soundOn: boolean): void {

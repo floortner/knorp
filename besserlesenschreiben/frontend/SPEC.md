@@ -50,48 +50,31 @@ to a bank session with a friendly note when the LLM is unavailable (503).
 
 ## 3. Exercise renderers (the core)
 
-The backend serves a `session` = ordered `Exercise[]`. Render one at a time. **14 types** — the owner's
-**Vokaltraining program** (FRESCH-style: Wortraster, kurz/lang-Vokal, Quatschwörter, Komposita,
-Wortfamilien). The source of truth is the backend Zod union in `backend/src/contract/exercise.ts`.
-Each renderer: shows the prompt, captures the answer, gives feedback, **emits telemetry**.
+The backend serves a `session` = ordered `Exercise[]`. Render one at a time. The source of truth is the
+backend Zod union in `backend/src/contract/exercise.ts`. Each renderer: shows the prompt, captures the
+answer, gives feedback, **emits telemetry**.
 
-Discriminated union on `type`:
+> **The Vokaltraining content set was dropped 2026-07-13** (ROADMAP.md §F) — the 14-type program described
+> in earlier revisions of this section (Wortraster, kurz/lang-Vokal, Quatschwörter, Komposita, Wortfamilien)
+> no longer exists. The contract currently holds a single stand-in type; training types, sequence, and word
+> lists are being redesigned from scratch. Add new types via `ExerciseView.tsx`'s dispatch as they're
+> designed (ROADMAP.md §C2 has the playbook).
+
+Discriminated union on `type` (currently):
 
 ```ts
 type Exercise =
-  | { type:'raster';      id; word; onset; vowel; coda; tiles:string[3]; praise }            // Wortraster: Anfang · Vokal · Ende
-  | { type:'findvowel';   id; word; letters:string[]; answer:string; praise }                // tap the Selbstlaut in the word
-  | { type:'realword';    id; word; answer:'wort'|'quatsch'; praise }                        // echtes Wort oder Quatschwort?
-  | { type:'fixvowel';    id; pseudo; vowel; options:string[]; answer:string; praise }       // Hend + a → Hand
-  | { type:'swapvowel';   id; word; options:string[]; answers:string[]; praise }             // swap the vowel; ANY of answers is correct
-  | { type:'length';      id; word; vowel; answer:'kurz'|'lang'; hint?; praise }             // kurzer oder langer Vokal?
-  | { type:'sylvalid';    id; syllable; answer:'ja'|'nein'; praise }                         // kann die Silbe klingen (hat sie einen Vokal)?
-  | { type:'insertvowel'; id; pattern; word; options:string[]; answer:string; praise }       // B_ch → u → Buch
-  | { type:'paircheck';   id; left; right; answer:'gleich'|'anders'; praise }                // Silbenpaare exakt vergleichen
-  | { type:'pickword';    id; options:string[]; answer:string; praise }                      // one real word among vowel variants
-  | { type:'sentencefix'; id; tokens:string[]; answer:string; correction:string; praise }    // tap the misspelled word in the sentence
-  | { type:'compound';    id; word; parts:[string,string]; options:string[]; answer:string; praise } // pick the Grundwort's article
-  | { type:'family';      id; stem; options:string[]; answer:string; praise }                // which word belongs to the Wortfamilie?
-  | { type:'sylarrange';  id; word; syll:string[]; tiles:string[]; praise }                  // rebuild a multi-syllable word from tiles
+  | { type:'placeholder'; id; prompt:string; options:string[]; answer:string; praise } // single-choice stand-in
 ```
 
-Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice.
+Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice, plus `skillTags`.
 
-> **Gotcha:** `swapvowel` uses `answers: string[]` — several vowels can make a real word (Wind → Wand/wund)
-> and tapping ANY of them is correct. Every other choice type has a single `answer`.
-
-**Interaction patterns:**
-- Single-choice (`findvowel, fixvowel, swapvowel, insertvowel, pickword, compound, family`): tap one
-  option → correct/wrong. `findvowel` offers the word's letters as chips; `compound` shows the split
-  (`Holz · Treppe`) and asks der/die/das.
-- Binary choice (`realword, length, sylvalid, paircheck`): a large prompt card with two labelled sides —
-  Echtes Wort/Quatschwort, kurz/lang, ja/nein, gleich/anders.
-- Wortraster (`raster`): the program's signature visual — grey line (Anfang) · **yellow circle** (Vokal,
-  "die Sonne") · grey line (Ende); tap the three shuffled parts into their slots.
-- Tile-order (`sylarrange`): tap syllable tiles in sequence; compare to `syll.join('|')`; reset button.
-- Sentence (`sentencefix`): the sentence as tappable tokens; tap the word with the wrong vowel; the praise
-  reveals the `correction`.
-- States: `idle | correct | wrong`. On correct: chime + speak word + `praise`, advance. On wrong: buzz + "Nochmal versuchen", allow retry. Confetti/fanfare on session complete.
+**Interaction pattern:** `placeholder` renders via the generic `SingleChoiceExercise` — tap one option →
+correct/wrong. States: `idle | correct | wrong`. On correct: chime + speak the answer + `praise`, advance.
+On wrong: buzz + "Nochmal versuchen", allow retry. Confetti/fanfare on session complete. This state machine
+and the `ExerciseCard`/`ChoiceTile`/`useAnswer` scaffolding are reusable for whatever training types replace
+the dropped 14 — the Vokaltraining-specific mechanics (Wortraster grid, syllable-tile reordering,
+sentence-token tapping) were deleted along with their renderers.
 
 ---
 
@@ -104,13 +87,8 @@ Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice.
 const startedAt = performance.now();
 
 // Derive prompt + expected per type (see features/exercises/derive.ts — pure and total over the union).
-// Some types have no scalar `word`/`answer`; the backend stores both columns NOT NULL, so never emit
-// undefined. Examples:
-//   raster      → prompt = word,          expected = `${onset}|${vowel}|${coda}`
-//   sylarrange  → prompt = word,          expected = syll.join('|')
-//   swapvowel   → prompt = word,          expected = answers.join('/')
-//   sentencefix → prompt = tokens.join(' '), expected = the misspelled token
-//   everything else → prompt = word/pseudo/pattern/stem, expected = answer
+// The backend stores both columns NOT NULL, so never emit undefined. Currently: placeholder → prompt =
+// ex.prompt, expected = ex.answer. Grow this switch as new training types are added (ROADMAP.md §F/§C2).
 const { prompt, expected } = promptAndExpected(ex);
 
 // on answer:
@@ -225,7 +203,8 @@ VITE_PWA=true
 
 ## 11. Acceptance checks
 - Every answered item produces exactly one `/attempts` call with a sane `timeMs`.
-- App renders all 14 exercise types from backend-served JSON with no hardcoded lesson data.
+- App renders every exercise type in the current contract (currently just `placeholder`) from
+  backend-served JSON with no hardcoded lesson data.
 - `dyslexicFont` + `fontScale` visibly change rendering; `soundOn` mutes all audio.
 - No price/paywall/buy control is reachable from the child tabs — only from `/parent` behind the PIN.
 - Works installed as a PWA; attempts queue and sync after an offline blip.

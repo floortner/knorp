@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { ClipboardCheck, Users, BookMarked } from 'lucide-react';
+import { ClipboardCheck, Users } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { useOpenRequestCount } from '@/features/queue/useQueue';
 import { usePendingUserCount } from '@/features/users/useUsers';
@@ -41,16 +41,11 @@ export function AppLayout() {
                 <ClipboardCheck className="size-4" aria-hidden /> Chats
                 <NavBadge count={openRequests} />
               </NavLink>
-              {/* User administration + lexeme curation are admin-only (backend SPEC §6); hidden from plain reviewers. */}
+              {/* User administration is admin-only (backend SPEC §6); hidden from plain reviewers. */}
               {isAdmin && (
                 <NavLink to="/users" className={navClass}>
                   <Users className="size-4" aria-hidden /> Nutzer
                   <NavBadge count={pendingUsers} tone="amber" />
-                </NavLink>
-              )}
-              {isAdmin && (
-                <NavLink to="/lexemes" className={navClass}>
-                  <BookMarked className="size-4" aria-hidden /> Wortschatz
                 </NavLink>
               )}
             </nav>

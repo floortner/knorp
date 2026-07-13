@@ -2,25 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SessionsService } from './sessions.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { LlmService } from '../../services/llm/llm.service';
-import type { LexemeService } from '../../services/lexeme/lexeme.service';
 import type { DigestService } from '../../services/digest/digest.service';
 import type { ConfigService } from '@nestjs/config';
 import type { Env } from '../../config/env';
 import { ApiException } from '../../common/exceptions/api-exception';
 
-// The lecture prompt requests a word pool; an empty stub keeps generation deterministic in tests
-// (empty pool → the section is dropped, so the prompt is unchanged).
-const lexemeStub = { wordPoolFor: async () => '', pickForSkill: async () => [] } as unknown as LexemeService;
-
 const genExercise = {
-  type: 'fixvowel',
-  pseudo: 'Sunne',
-  vowel: 'o',
+  type: 'placeholder',
+  prompt: 'Was passt?',
   options: ['Sonne', 'Wand', 'Dach'],
   answer: 'Sonne',
   id: 'placeholder',
   audioUrl: null,
-  skillTags: ['vowel_substitution'],
+  skillTags: ['placeholder'],
   praise: 'Super!',
 };
 
@@ -57,7 +51,7 @@ function setup(opts: { available?: boolean; usedToday?: number } = {}) {
   } as unknown as LlmService;
   const digest = { generate: vi.fn(async () => ({ markdown: '## Lernstand' })) } as unknown as DigestService;
   const config = { get: () => 5 } as unknown as ConfigService<Env, true>; // LLM_SESSIONS_PER_DAY
-  return { svc: new SessionsService(prisma, llm, digest, lexemeStub, config), prisma, llm, digest, itemCreates };
+  return { svc: new SessionsService(prisma, llm, digest, config), prisma, llm, digest, itemCreates };
 }
 
 describe('SessionsService.createLlm', () => {
@@ -91,15 +85,15 @@ describe('SessionsService.createLlm', () => {
 
     expect((llm.extract as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
     // item persisted with the backend-owned fields (id/audioUrl stripped from payload)
-    expect(itemCreates[0]).toMatchObject({ unit: 0, exerciseType: 'fixvowel', generatedBy: 'llm', audioUrl: null });
-    expect(itemCreates[0].skillTags).toEqual(['vowel_substitution']);
+    expect(itemCreates[0]).toMatchObject({ unit: 0, exerciseType: 'placeholder', generatedBy: 'llm', audioUrl: null });
+    expect(itemCreates[0].skillTags).toEqual(['placeholder']);
     expect((itemCreates[0].payload as Record<string, unknown>).id).toBeUndefined();
-    expect((itemCreates[0].payload as Record<string, unknown>).pseudo).toBe('Sunne');
+    expect((itemCreates[0].payload as Record<string, unknown>).prompt).toBe('Was passt?');
     expect((itemCreates[0].payload as Record<string, unknown>).praise).toBe('Super!');
 
     expect((prisma.session.create as ReturnType<typeof vi.fn>).mock.calls[0][0].data).toMatchObject({ source: 'llm', unit: 2 });
     // wire item is reconstructed via the mapper: fresh id + type + payload fields
-    expect(res.items[0]).toMatchObject({ id: 'item-1', type: 'fixvowel', pseudo: 'Sunne', audioUrl: null });
+    expect(res.items[0]).toMatchObject({ id: 'item-1', type: 'placeholder', prompt: 'Was passt?', audioUrl: null });
     // the teaching intro rides on the session response (lecture card before exercise 1)
     expect(res).toMatchObject({ profileId: 'p1', unit: 2, intro: 'Merke: Klatsch die Silben mit!' });
   });

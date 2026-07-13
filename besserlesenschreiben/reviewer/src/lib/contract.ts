@@ -39,10 +39,3 @@ export type UserProgress = ResponseOf<operations['StaffUsersController_accountPr
 export type QueueProgress = ResponseOf<operations['StaffController_queueProgress']>;
 export type ProfileProgress = UserProgress['profiles'][number];
 
-/** Lexeme foundation curation (admin role only; backend SPEC §6). */
-export type LexemePage = ResponseOf<operations['StaffLexemesController_list']>;
-export type Lexeme = LexemePage['items'][number];
-export type LexemeEditBody = BodyOf<operations['StaffLexemesController_edit']>;
-export type LexemeCreateBody = BodyOf<operations['StaffLexemesController_add']>;
-export type LexemeExportResult = ResponseOf<operations['StaffLexemesController_export']>;
-export type LexemeStats = ResponseOf<operations['StaffLexemesController_stats']>;

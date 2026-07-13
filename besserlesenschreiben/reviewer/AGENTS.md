@@ -51,7 +51,7 @@ job. Comfortable tap targets for tablet are welcome.
    `401/SESSION_EXPIRED` clears auth and redirects to `/login` once.
 
 ## Conventions
-- TanStack Query for ALL server state; key prefixes: `['staff-me']`, `['staff-queue', …]`, `['staff-users', …]`, `['staff-lexemes', …]` (mutations invalidate by prefix).
+- TanStack Query for ALL server state; key prefixes: `['staff-me']`, `['staff-queue', …]`, `['staff-users', …]` (mutations invalidate by prefix).
 - Auth state is derived from a `/staff/me` probe (survives refresh); see `features/auth/`.
 - Brand accent is teal (shared), but the surface is neutral slate/white — see `src/index.css` `@theme`.
 - German UI copy (the staff are German/Austrian).
@@ -63,8 +63,9 @@ job. Comfortable tap targets for tablet are welcome.
 ## What's built (Phase 2.5 + post-2.5 — all DONE; full roadmap in [`../../ROADMAP.md`](../../ROADMAP.md))
 - Shell + staff auth · queue "Chats" with history filter (Offen | Erledigt | Alle) + nav count badges ·
   two-pane review screen (claim, approve/correct/reject).
-- ADMIN surfaces: **Nutzer** (approve/deactivate/delete + per-child learner progress) and **Wortschatz**
-  (lexeme curation: full-property filters, aggregate stats, full-column editor, overrides export).
+- ADMIN surface: **Nutzer** (approve/deactivate/delete + per-child learner progress). The **Wortschatz**
+  lexeme-curation tab was dropped 2026-07-13 along with the `lexeme` table and the Vokaltraining content set
+  (ROADMAP.md §F) — re-add a curation surface if the new word-list schema needs one.
 Identity note: the ADMIN user administration shows real emails by design; the review queue never does.
 
 ## Definition of done for a feature

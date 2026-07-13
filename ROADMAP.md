@@ -15,7 +15,10 @@ hardening (A), cleanup (B), most engagement work (C1, D1–D4, D7), and the **E 
 have shipped: backend + family frontend + reviewer portal are live on real HTTPS domains (`infra/` Terraform
 + `deploy/` on-box scripts + `.github/workflows/deploy.yml`), inside the €50/mo all-in budget.
 
-- **Next:** **D5 / D6** (badges, weekly parent email) — self-contained engagement work.
+- **Next:** **F — content-set redesign** (§F): the Vokaltraining word lists/training types/sequence/lecture
+  prompt were intentionally dropped 2026-07-13; a new pedagogical approach is being designed from scratch on
+  top of the kept skeleton (auth, homework review, chat, staff portal, AWS deploy).
+- **Then:** **D5 / D6** (badges, weekly parent email) — self-contained engagement work.
 - **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it.
 - **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9; schema kept
   dormant) · TTS pipeline (Web-Speech fallback on the client for now; target Amazon Polly) · full-prod
@@ -30,7 +33,10 @@ have shipped: backend + family frontend + reviewer portal are live on real HTTPS
 
 **Phase 1 — free tier:**
 1. ✅ Auth (email code + JWT, httpOnly cookie + logout), account/profile, settings, parent PIN.
-2. ✅ Item bank: unique `seed_key` column, load `item_bank.seed.json` via `prisma/seed.ts` (`npm run seed`).
+2. ✅ Item bank: unique `seed_key` column on the `item_bank` table (idempotent upsert-on-`seed_key`). The
+   `item_bank.seed.json` content **and** the JSON-loading half of `prisma/seed.ts` were dropped 2026-07-13
+   (§F) — the empty `item_bank` table and its `seed_key` shape remain, so re-seeding content is a matter of
+   restoring the loader + a new seed file, not a migration.
 3. ✅ Sessions (bank) + attempts ingest + progress + FSRS.
 4. ✅ Digest generation.
 
@@ -100,10 +106,11 @@ reviewed homework now shapes lectures.
     (approve / correct / reject) → `POST /staff/reviews/{id}`.
 
 **Post-2.5:**
-- ✅ **Lexeme foundation** — `lexeme` table (2,127-word base from the Rechtschreibwortschatz 2015 extraction),
-  committed `lexeme.seed.json` ⊕ `lexeme.overrides.json` change-set (corrections survive reseeds), reviewer
-  **Wortschatz** curation tab (full-property filters + aggregate stats + full-column editor), `familyStem` +
-  `compoundParts` structure, `npm run gen:items` (solvability-gated exercise candidates for human review).
+- ~~**Lexeme foundation**~~ — **DROPPED 2026-07-13** (`chore/drop-vokaltraining-content`), along with the
+  entire Vokaltraining content set: the `lexeme` table, `lexeme.seed.json`/`lexeme.overrides.json`,
+  `data-foundation/`, `npm run gen:items`, and the reviewer's Wortschatz curation tab are all removed. The
+  word-list schema, training types, sequence, and lecture-generation approach are being redesigned from
+  scratch — see **§F** below.
 - ✅ **Reviewer portal expansion** — brand-aligned chrome, nav count badges, queue history (`Offen/Erledigt/
   Alle`), admin-only learner-progress views (identity-bearing per account; pseudonymised per upload).
 - ✅ **Homework-in-chat** — upload moved into the family Chat tab; durable photo + status bubbles served by
@@ -112,10 +119,7 @@ reviewed homework now shapes lectures.
   provider, seeded dev accounts via `SEED_DEV_ACCOUNTS`). Run **locally only** (`cd e2e && npm test`) —
   intentionally not in CI.
 - ✅ **AWS retarget** — S3 storage adapter (presigned URLs), Frankfurt region docs; deployment still pending.
-- ✅ **Lexeme `age_band`** — per-word target band (`6-7` | `8-9` | null), reviewer Wortschatz filter/column/
-  stat + editor, threaded into lecture word-pool selection (`gradeBand` → `wordPoolFor`) as a null-tolerant
-  age ∩ frequency intersection (unbanded words stay eligible). Band-aware `gen:items` deferred until curation
-  populates the facet.
+- ~~**Lexeme `age_band`**~~ — **DROPPED** with the lexeme foundation above.
 
 ### Frontend (`-web`)
 
@@ -137,9 +141,11 @@ correctness fixes; committed `api.gen.ts` + drift gate; flow tests.
 "Foto & verbessern" upload (moved into the **Chat tab** — photo as a chat message; no confirm UI; the staff
 portal owns review). No billing UI — the app is free.
 
-**Vokaltraining pivot:** the exercise set was replaced with the owner's program — the **14 types**
-(Wortraster, Selbstlaute, kurz/lang, Quatschwörter, Komposita, Wortfamilien), a 7-unit progression with
-per-unit Merksatz intro cards, and a ~360-item seed bank extracted from the program docs.
+**Vokaltraining pivot — DROPPED 2026-07-13.** The exercise set that replaced the legacy prototype — the
+**14 types** (Wortraster, Selbstlaute, kurz/lang, Quatschwörter, Komposita, Wortfamilien), a 7-unit
+progression with per-unit Merksatz intro cards, and a ~360-item seed bank — was itself removed along with
+the whole content set (§F). The `Exercise` contract now holds a single stand-in `placeholder` type; training
+types, sequence, and word lists are being redesigned from scratch.
 
 > The **staff reviewer portal** is a **separate subproject** (`besserlesenschreiben/reviewer`, future
 > `-review` repo), out of scope for `-web`: don't build review/queue screens there. The only homework surface
@@ -171,28 +177,27 @@ per-unit Merksatz intro cards, and a ~360-item seed bank extracted from the prog
 
 ### C. Extensibility
 
-1. ~~Age property (`ageBand` on lexeme).~~ **DONE** — `ageBand ∈ {"6-7","8-9",null}` end-to-end (migration
-   `add_lexeme_age_band` + `@@index`; `lexemeSchema` + `byAgeBand` stat; overrides/seed/`toWire`/filters;
-   reviewer Wortschatz filter + column + editor; artifacts re-exported). Selection: `gradeBand()` (≤unit 4 →
-   `6-7`, else `8-9`) → `wordPoolFor`/`pickForSkill` with a **null-tolerant** `age_band IS NULL OR =band`
-   (unbanded words stay eligible while curation is sparse).
-   - **Deferred follow-ups:** band-aware `gen:items` (waits until words are actually banded); the profile-side
-     counterpart (grade or birth year — `unlockedUnit` is a weak age proxy; its own small milestone touching
-     profile schema/contract + onboarding UI + `useMe`).
+1. ~~Age property (`ageBand` on lexeme).~~ **DONE, then DROPPED 2026-07-13** — shipped end-to-end
+   (`ageBand ∈ {"6-7","8-9",null}`, `gradeBand()` → `wordPoolFor`/`pickForSkill` word-pool selection, reviewer
+   Wortschatz filter/column/editor) but removed along with the whole `lexeme` foundation (§F). The
+   profile-side counterpart (grade or birth year — `unlockedUnit` is a weak age proxy) is still an open,
+   independent idea for whenever profile-level age targeting is wanted again.
 
-2. **New exercise / test types (open — opportunistic).** Per-type cost is fixed and safe; the drift gates
-   catch everything.
+2. **New exercise / test types (open — this is where the §F content redesign lands them).** Per-type cost is
+   fixed and safe; the drift gates catch everything. The Vokaltraining-era pipeline this playbook used to
+   reference (`item_bank.seed.json`'s old content, `scripts/gen-items-from-lexemes.ts`, lexeme grounding) was
+   dropped 2026-07-13 — this now starts from the single `placeholder` type in `src/contract/exercise.ts`.
    - **Backend:** `src/contract/exercise.ts` (add the Zod variant, extend the `discriminatedUnion`, add a
      `superRefine` case to `solvableExerciseSchema` so it can't emit an unanswerable item) → `exercise.spec.ts`
-     (solvability unit test) → `item_bank.seed.json` (hand-curate a batch — no wholesale regeneration) →
-     `scripts/gen-items-from-lexemes.ts` (a generator only if the type is lexeme-grounded) →
-     `sessions.service.ts` `FEW_SHOT` (only if it should be LLM-generatable). `npm run openapi:export`.
-     **Warning:** the union already exceeds strict tool mode's limits — keep the wire schema strict-agnostic,
-     leave solvability enforcement post-hoc, don't re-enable strict.
-   - **Frontend:** `ExerciseView.tsx` (dispatch case — reuse `SingleChoiceExercise`/`BinaryChoiceExercise`
-     where the shape fits, else a new renderer) → `derive.ts` `promptAndExpected()` (telemetry case — stay
-     total over the union) → `fixtures/session.example.json` (one golden example so the "one of each type"
-     gate stays green) → `ExerciseView.spec.tsx` (snapshot + interaction test). `npm run gen:api`.
+     (solvability unit test) → hand-curate seed content for the new type in `item_bank.seed.json` →
+     `sessions.service.ts` `LLM_SYSTEM` (only if it should be LLM-generatable). `npm run openapi:export`.
+     **Note:** the old 14-type union approached strict tool-mode's limits — watch for this again as the union
+     regrows; keep the wire schema strict-agnostic, leave solvability enforcement post-hoc, don't re-enable
+     strict.
+   - **Frontend:** `ExerciseView.tsx` (dispatch case — reuse `SingleChoiceExercise` where the shape fits, else
+     a new renderer) → `derive.ts` `promptAndExpected()` (telemetry case — stay total over the union) →
+     `fixtures/session.example.json` (one golden example per type so the "covers all types" gate stays green)
+     → `ExerciseView.spec.tsx` (snapshot + interaction test). `npm run gen:api`.
    - **Reviewer:** none — exercise types don't surface in the staff portal.
 
 ### D. Frontend engagement & retention
@@ -282,10 +287,66 @@ but the collector/exporter build-out is **deferred** — round 1 ships only a fr
 (email-code-only is a conscious beta exception — note it in ARCHITECTURE) · advanced PWA/CDN cache tuning ·
 load testing.
 
+### F. Content-set redesign — **the next step**
+
+**Goal:** design and rebuild the pedagogical content layer from scratch — a new word-list schema, training
+types (replacing the single `placeholder` scaffold left by the drop), a unit/sequence catalogue, and the LLM
+lecture-generation prompt — on top of the skeleton kept from the Vokaltraining program (auth, homework
+review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline). Dropped 2026-07-13 (the
+`chore/drop-vokaltraining-content` commit); see **Post-2.5** above for exactly what was removed.
+
+> **Re-creation reference (read this first).** The complete, working Vokaltraining implementation — the
+> `Lexeme` model, all 14 exercise types with their solvability rules, the 7-unit catalogue, the full
+> `LLM_SYSTEM`/`FEW_SHOT` lecture prompt with word-pool grounding, `LexemeService`, `gen-items-from-lexemes.ts`,
+> the Wortschatz reviewer tab, and the `lexeme.seed.json`/`data-foundation` corpus — is preserved intact at
+> **commit `0d4948b`** (the parent of the drop commit). Re-creation is **fill-in-the-slots against a working
+> reference, not invention from a blank page**: `git show 0d4948b:<path>` any old file. The drop deliberately
+> left the plumbing wired to a single `placeholder` type so each piece plugs back into a known seam.
+
+**What survives (the slots to fill), so you're not rebuilding plumbing:**
+- Contract pipeline (ARCHITECTURE §4): Zod → `openapi.json` → `api.gen.ts` + the CI drift gate — intact.
+- `solvableExerciseSchema` + the `EXERCISE_TYPES` gate, the `ItemBank` table (empty), FSRS scheduling per
+  `skill_tag`, telemetry (`attempt` rows), the `digest.md` roll-up, the `LlmService` forced-tool/Zod-revalidate
+  path — all intact, all keyed on the *opaque* `skill_tag: string[]` / `exercise_type: string`, so they carry
+  over to any taxonomy.
+- Frontend renderer scaffolding: `ExerciseCard`/`ChoiceTile`/`useAnswer`/`SingleChoiceExercise`,
+  `ExerciseView.tsx` dispatch, `derive.ts`, the golden-fixture + snapshot test harness — intact.
+
+**Re-creation sequence** (each step ends green — the drift gates + golden tests catch mistakes):
+1. **Word-list schema.** Re-add a `Lexeme`-equivalent Prisma model (migration). Decide which linguistic facts
+   to keep (frequency, syllabification, IPA, gender survive any German-orthography approach) vs. which
+   annotation columns were FRESCH-specific (`features`/`familyStem`/`compoundParts`/`isLernwort`/`isTrennbar`/
+   `isMerkwort`). Decide whether to re-derive the base list fresh or restore the corpus extraction
+   (`data-foundation/` + `parse-rwe.py` are at `0d4948b`). Reference: `git show 0d4948b:besserlesenschreiben/backend/prisma/schema.prisma`.
+2. **Skill-tag taxonomy** (`src/contract/skills.ts`) — replace `SKILL_TAGS = ['placeholder']` with the new
+   taxonomy. This is the **spine**: it drives FSRS scheduling (`review_state.skill_tag`), the digest roll-up,
+   and LLM targeting. `assertKnownTags` in the seed loader keeps content honest against it.
+3. **Training types** (`src/contract/exercise.ts` + frontend renderers) — grow the `placeholder`-only union
+   one type at a time, per the **§C2 playbook** (which lists the exact per-file seams). Each type needs its
+   solvability `superRefine` case, a renderer (reuse `SingleChoiceExercise` where it fits), a `derive.ts`
+   telemetry case, and a golden fixture example.
+4. **Sequence** (`sessions/units.catalog.ts`) — populate `UNIT_CATALOG` (currently `[]`) with the new
+   unit progression + per-unit `intro` Merksätze + theme colors. Mirror in `frontend/fixtures/units.example.json`.
+5. **Content seed + loader.** Restore the JSON-loading half of `prisma/seed.ts` and author a new
+   `item_bank.seed.json` (hand-curated; the `contract.spec.ts` solvability gate re-validates every row). If
+   the new approach wants deterministic generation, restore/rewrite `gen-items-from-lexemes.ts`.
+6. **Lecture-generation prompt** (`sessions.service.ts` `LLM_SYSTEM`/`FEW_SHOT`) — rewrite the per-type
+   solvability rules + few-shot examples for the new training types; re-add word-pool grounding
+   (`wordPoolFor`/`LexemeService`) and the `gradeBand` `maxHk`/`ageBand` calibration if the new schema wants it.
+7. **Reviewer curation surface** — decide whether the new word-list schema needs a staff curation tab (the old
+   Wortschatz tab + `/staff/lexemes` routes are at `0d4948b` as a reference).
+
+**Docs to re-true when this lands** (per the ARCHITECTURE docs-upkeep rule): `backend/SPEC.md` §2/§3/§8 (DDL,
+Exercise contract, session algorithm), `frontend/SPEC.md` §3, both `CLAUDE.md`/`AGENTS.md` exercise sections,
+and this file. They currently carry "dropped 2026-07-13 (§F)" annotations marking exactly the sections to
+restore.
+
 ---
 
 ## Suggested order
 
 ~~B1+B2~~ ✓ → ~~D1~~ ✓ → ~~D4 + D7~~ ✓ → ~~D2 + D3~~ ✓ → ~~C1~~ ✓ → ~~E — first feedback round (beta) on
-AWS~~ ✓ → **D5 / D6** (badges, parent email) next, now that real families are giving feedback. **C2** (a
-concrete new exercise type) slots in whenever the content work calls for it.
+AWS~~ ✓ → **F — content-set redesign** next (word-list schema → skill taxonomy → training types → sequence →
+lecture prompt), then **D5 / D6** (badges, parent email) once the new content is live. **C2** (a concrete new
+exercise type) is how new training types land during §F, and keeps slotting in afterward whenever the
+content work calls for it.
