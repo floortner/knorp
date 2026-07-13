@@ -8,7 +8,6 @@ import { assertProfileOwned } from '../../common/ownership';
 import { daysAgo, startOfUtcDay, startOfUtcWeek } from '../../common/dates';
 import { STARS_PER_SESSION, isJokerAvailable, leagueFor, nextStreak, type League } from '../progress/gamification';
 import { LlmService } from '../../services/llm/llm.service';
-import { LexemeService } from '../../services/lexeme/lexeme.service';
 import { DigestService } from '../../services/digest/digest.service';
 import { solvableExerciseSchema } from '../../contract/exercise';
 import { SKILL_TAGS } from '../../contract/skills';
@@ -35,34 +34,18 @@ export const generatedSessionSchema = z.object({
   exercises: z.array(solvableExerciseSchema).min(1).max(LLM_SESSION_SIZE),
 });
 
-// One compact, valid exemplar per common type — few-shot examples are the biggest lever on structured
-// generation quality. Kept byte-stable so the system prompt can be prompt-cached across calls.
-const FEW_SHOT = JSON.stringify({
-  intro: 'Merke: Tauschst du den Selbstlaut aus, entsteht oft ein neues Wort. Sprich laut mit — welcher Vokal macht ein echtes Wort?',
-  exercises: [
-    { type: 'fixvowel', pseudo: 'Wond', vowel: 'a', options: ['Wand', 'Tag', 'Dach'], answer: 'Wand', skillTags: ['vowel_substitution'], praise: 'Richtig! Wond wird zu Wand.', id: 'x', audioUrl: null },
-    { type: 'length', word: 'Ball', vowel: 'a', answer: 'kurz', hint: 'll = Stopper (Doppelkonsonant)', skillTags: ['vowel_length', 'double_consonant'], praise: 'Genau — kurzes a!', id: 'x', audioUrl: null },
-    { type: 'raster', word: 'Tor', onset: 'T', vowel: 'o', coda: 'r', tiles: ['o', 'r', 'T'], skillTags: ['word_raster', 'vowel_identify'], praise: 'Super zerlegt!', id: 'x', audioUrl: null },
-    { type: 'sylarrange', word: 'Sonne', syll: ['Son', 'ne'], tiles: ['ne', 'Son'], skillTags: ['syllable_segmentation'], praise: 'Toll! Son-ne — zwei Silben.', id: 'x', audioUrl: null },
-  ],
-});
-
+// The Vokaltraining lecture prompt (per-type solvability rules + few-shot examples + the lexeme word-pool
+// grounding) was dropped along with its training types and word lists — the lecture-creation approach is
+// being redesigned from scratch. This placeholder keeps the LLM call (forced-tool + Zod re-validation)
+// wired end-to-end against the `placeholder` exercise type; replace as new training types are designed.
 export const LLM_SYSTEM = [
-  'Du generierst eine kleine deutsche Vokaltraining-Lektion (Rechtschreibförderung, FRESCH-Methode).',
-  'Beginne mit intro: 1–2 kurze, kindgerechte Sätze, die die Regel oder den Trick zu den Förderschwerpunkten erklären (z. B. "Merke: …"). Kein Gruß, keine Frage.',
-  `Erzeuge dann bis zu ${LLM_SESSION_SIZE} abwechslungsreiche Übungen, die GENAU auf die genannten Förderschwerpunkte und die Klassenstufe zielen.`,
-  'Jede Übung MUSS eindeutig korrekt lösbar sein: bei "fixvowel"/"pickword"/"family"/"insertvowel"/"compound" ist answer in options enthalten;',
-  'bei "raster" ergeben onset+vowel+coda GENAU das Wort und tiles sind genau diese drei Teile gemischt;',
-  'bei "findvowel" buchstabieren die letters genau das Wort und answer ist einer der letters;',
-  'bei "insertvowel" hat pattern genau einen Unterstrich "_" und ergibt mit answer das Wort;',
-  'bei "sylarrange" sind tiles genau die syll in anderer Reihenfolge; bei "swapvowel" sind alle answers in options enthalten;',
-  'bei "paircheck" stimmt answer mit dem Vergleich von left und right überein; bei "sentencefix" ist answer eines der tokens (das falsch geschriebene Wort).',
+  'Du generierst eine kleine deutsche Lektion.',
+  'Beginne mit intro: 1–2 kurze, kindgerechte Sätze, die die Förderschwerpunkte erklären. Kein Gruß, keine Frage.',
+  `Erzeuge dann bis zu ${LLM_SESSION_SIZE} Übungen vom Typ "placeholder", die auf die genannten Förderschwerpunkte und die Klassenstufe zielen.`,
+  'Jede Übung MUSS eindeutig lösbar sein: answer muss in options enthalten sein.',
   `Verwende in skillTags NUR Werte aus dieser Liste: ${SKILL_TAGS.join(', ')}.`,
-  'Wenn eine Liste "Echte Beispielwörter" mitgegeben ist: baue die Übungen bevorzugt aus GENAU diesen Wörtern.',
-  'Jeder Eintrag dort hat die Form Wort (Artikel; Silbentrennung) — übernimm die angegebene Silbentrennung wörtlich für syll/tiles (sylarrange) und den Artikel für compound; erfinde keine eigenen Trennungen.',
   'Erfinde keine seltenen oder erwachsenen Wörter; bleib bei einfachen, kindgerechten Wörtern.',
   'Setze einen kurzen, motivierenden deutschen praise. id darf ein Platzhalter sein, audioUrl=null.',
-  `Beispiel für gültiges JSON:\n${FEW_SHOT}`,
 ].join(' ');
 
 /**
@@ -70,13 +53,10 @@ export const LLM_SYSTEM = [
  * grade-1 child and an advanced child get differently-calibrated content, and stored as the generated
  * item's `difficulty` so bank selection can order it sensibly.
  */
-function gradeBand(unlockedUnit: number): { label: string; difficulty: number; maxHk: number; ageBand: string } {
-  // maxHk caps the word-pool frequency class per band: younger children get only the most common words.
-  // ageBand intersects the lexeme age facet (null-tolerant in selection) so band = age ∩ frequency.
-  const ageBand = unlockedUnit <= 4 ? '6-7' : '8-9';
-  if (unlockedUnit <= 2) return { label: 'Anfang (erste Klasse, sehr einfach, kurze Wörter)', difficulty: 1, maxHk: 9, ageBand };
-  if (unlockedUnit <= 5) return { label: 'Mitte (zweite Klasse, mittlere Wörter)', difficulty: 2, maxHk: 11, ageBand };
-  return { label: 'Fortgeschritten (dritte Klasse, längere Wörter, kniffliger)', difficulty: 3, maxHk: 12, ageBand };
+function gradeBand(unlockedUnit: number): { label: string; difficulty: number } {
+  if (unlockedUnit <= 2) return { label: 'Anfang (erste Klasse, sehr einfach)', difficulty: 1 };
+  if (unlockedUnit <= 5) return { label: 'Mitte (zweite Klasse, mittel)', difficulty: 2 };
+  return { label: 'Fortgeschritten (dritte Klasse, kniffliger)', difficulty: 3 };
 }
 
 @Injectable()
@@ -87,7 +67,6 @@ export class SessionsService {
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
     private readonly digest: DigestService,
-    private readonly lexeme: LexemeService,
     private readonly config: ConfigService<Env, true>,
   ) {}
 
@@ -234,26 +213,14 @@ export class SessionsService {
     }
 
     const band = gradeBand(profile.unlockedUnit);
-    const focusLine = focus.length ? focus.join(', ') : 'Grundlagen: Silben, Anlaute, Reime';
-
-    // Ground generation in real, frequency-appropriate words that actually carry the target orthographic
-    // feature (lexeme foundation). Best-effort context: an empty pool just drops the section.
-    let wordPool = '';
-    try {
-      wordPool = await this.lexeme.wordPoolFor(focus, { maxHk: band.maxHk, ageBand: band.ageBand });
-    } catch {
-      /* the word pool is optional grounding */
-    }
-    const poolBlock = wordPool
-      ? `\nEchte Beispielwörter zum jeweiligen Schwerpunkt (nutze bevorzugt diese Wörter):\n${wordPool}\n`
-      : '';
+    const focusLine = focus.length ? focus.join(', ') : 'Grundlagen';
 
     const generated = await this.llm.extract(generatedSessionSchema, 'generated_session', {
       system: LLM_SYSTEM,
       messages: [
         {
           role: 'user',
-          text: `Klassenstufe: ${band.label}\nFörderschwerpunkte: ${focusLine}\n${poolBlock}\nLernstand:\n${digestMd}`,
+          text: `Klassenstufe: ${band.label}\nFörderschwerpunkte: ${focusLine}\nLernstand:\n${digestMd}`,
         },
       ],
     });

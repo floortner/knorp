@@ -171,22 +171,22 @@ src/
     auth/  profiles/  sessions/  attempts/  progress/
     chat/  homework/  parent/         # (no billing/ module — billing deferred, §9)
     staff/                # STAFF realm (§1a): reviewer auth, review queue + authoritative apply,
-                          #   admin user administration, lexeme curation, learner progress
+                          #   admin user administration, learner progress (lexeme curation dropped, §F)
   services/               # DOMAIN logic only — plain injectables, NO controllers/HTTP here (dtctl lesson)
     digest/               # derived markdown performance digest
     fsrs/                 # scheduling (ts-fsrs)
     llm/                  # provider abstraction (Anthropic-direct + dev stub), structured output
-    lexeme/               # lexeme word-pool selection + overrides diff/apply utilities
     storage/              # S3 presigned URLs / local-FS dev store (+ local image endpoint)
     email/                # login-code delivery (console | ses | resend | capture)
 prisma/
-  schema.prisma           # the model truth (account, profile, item_bank, lexeme, attempt, …)
-  seed.ts                 # idempotent loader: item bank + lexeme base ⊕ overrides + dev accounts
+  schema.prisma           # the model truth (account, profile, item_bank, attempt, …). The `lexeme` model
+                           # + the Vokaltraining content set were dropped 2026-07-13 (ROADMAP.md §F) — the
+                           # word-list schema is being redesigned.
+  seed.ts                 # idempotent loader: staff admins + dev accounts (content seeding dropped with §F)
 scripts/
-  gen-items-from-lexemes.ts  # lexeme pool → solvability-gated exercise CANDIDATES (human-reviewed)
-  export-overrides.ts     # live lexeme table vs base → committed lexeme.overrides.json
   export-openapi.ts  seed-e2e.ts  llm-smoke.ts
-item_bank.seed.json  lexeme.seed.json  lexeme.overrides.json
+                           # `item_bank.seed.json` and its generation scripts were deleted with the
+                           # Vokaltraining content set (ROADMAP.md §F) — re-add once new content is seeded.
 test/                     # Vitest; incl. golden snapshots for digest.md + Exercise JSON
 package.json  package-lock.json  tsconfig.json  eslint.config.mjs  .env.example  AGENTS.md
 ```
@@ -201,7 +201,9 @@ src/
     telemetry.ts          # attempt timing + emit (frontend SPEC §4)
   app/                    # shell, routing, tabs (lernen | liga | profil | chat), parent area
   features/
-    exercises/            # the 14 Vokaltraining renderers + the Exercise union type + audio.ts (audio_url playback + Web Speech fallback)
+    exercises/            # the Exercise union type (currently a single `placeholder` scaffold — the
+                          # Vokaltraining renderer set was dropped, ROADMAP.md §F) + audio.ts (audio_url
+                          # playback + Web Speech fallback)
     auth/  lessons/  progress/  profile/   # homework upload lives in the Chat tab; no billing/ — the app is free
   components/ui/          # shadcn components
   hooks/  styles/theme.css (@theme tokens)
@@ -213,20 +215,21 @@ index.html  vite.config.ts  package.json  package-lock.json  .env.example  AGENT
 ### Reviewer `-review` (internal staff portal)
 ```
 src/
-  main.tsx  App.tsx        # providers + routes: /login, /login/code, /queue, /review/:uploadId, /users, /lexemes
+  main.tsx  App.tsx        # providers + routes: /login, /login/code, /queue, /review/:uploadId, /users
+                           # (/lexemes dropped with the Wortschatz tab, ROADMAP.md §F)
   index.css               # neutral staff @theme tokens (teal accent, slate surface) — no PWA, no mascots
   app/AppLayout.tsx       # top bar: (b) brand + reviewer name, nav with live count badges, logout
   lib/
     api.ts                # transport only over the STAFF routes — staff cookie, error-envelope → ApiError
     api.gen.ts            # GENERATED from the backend OpenAPI (`npm run gen:api`), committed, never edited
     contract.ts           # ergonomic aliases over the generated `operations` (no hand-authored shapes)
-    endpoints.ts          # typed wrappers: staffAuthApi, reviewApi, usersApi, lexemesApi
+    endpoints.ts          # typed wrappers: staffAuthApi, reviewApi, usersApi
   features/
     auth/                 # StaffAuthProvider, /staff/me probe, RequireStaff guard, login + code screens
     queue/                # review list (Offen | Erledigt | Alle) — pseudonymised rows
     review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
     users/                # ADMIN: account approval / deactivate / delete + per-child progress
-    lexemes/              # ADMIN: "Wortschatz" word-pool curation (filters, stats, editor, export)
+                          # (the "Wortschatz" lexeme-curation tab was dropped with the content set, §F)
     progress/             # shared learner-progress panel (summary · skills · activity)
   components/ui/          # button, input, select, textarea, modal, filter-chips
 index.html  vite.config.ts  package.json  .env.example  README.md  AGENTS.md

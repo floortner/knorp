@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ZodDto } from '../../common/zod-dto';
-import { homeworkAnalysisSchema, lexemeCreateSchema, lexemeEditSchema } from '../../contract/staff';
+import { homeworkAnalysisSchema } from '../../contract/staff';
 
 export class StaffRequestCodeDto extends ZodDto(
   z.object({ email: z.email() }),
@@ -27,8 +27,3 @@ export const reviewSubmitSchema = z
 
 export class ReviewSubmitDto extends ZodDto(reviewSubmitSchema) {}
 export type ReviewSubmitInput = z.infer<typeof reviewSubmitSchema>;
-
-export class LexemeEditDto extends ZodDto(lexemeEditSchema) {}
-export class LexemeCreateDto extends ZodDto(lexemeCreateSchema) {}
-export type LexemeEditInput = z.infer<typeof lexemeEditSchema>;
-export type LexemeCreateInput = z.infer<typeof lexemeCreateSchema>;

@@ -22,10 +22,10 @@ vi.mock('@/features/profile/useMe', () => ({
   useActiveProfile: () => ({ id: 'prof-1', name: 'Mia', buddy: 'nepo', goalPerWeek: 5, streakDays: 3, stars: 100, soundOn: true, dyslexicFont: false, fontScale: 1, jokerAvailable: true, unlockedUnit: 1, createdAt: '2026-01-01T00:00:00Z' }),
 }));
 
-const realwordItem = (session as unknown as { items: Exercise[] }).items.find((i) => i.type === 'realword')!;
+const placeholderItem = (session as unknown as { items: Exercise[] }).items[0];
 
 function oneItemSession(): SessionResponse {
-  return { sessionId: 'sess-1', items: [realwordItem] } as unknown as SessionResponse;
+  return { sessionId: 'sess-1', items: [placeholderItem] } as unknown as SessionResponse;
 }
 
 describe('LessonRunner', () => {
@@ -39,10 +39,10 @@ describe('LessonRunner', () => {
       </MemoryRouter>,
     );
 
-    // realword fixture: "Tür" is a real word → tap "Echtes Wort"
-    await user.click(screen.getByRole('button', { name: /Echtes Wort/ }));
+    // placeholder fixture: answer is "Apfel"
+    await user.click(screen.getByRole('button', { name: 'Apfel' }));
     expect(recordAttempt).toHaveBeenCalledWith(
-      expect.objectContaining({ sessionId: 'sess-1', itemId: realwordItem.id, isCorrect: true }),
+      expect.objectContaining({ sessionId: 'sess-1', itemId: placeholderItem.id, isCorrect: true }),
     );
 
     // after the ~900ms post-solve delay the session completes and the reward screen shows
@@ -62,12 +62,12 @@ describe('LessonRunner', () => {
 
     // intro card first — no exercise visible, nothing emitted
     expect(screen.getByText('Merke: Klatsch die Silben mit!')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Echtes Wort/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Apfel' })).not.toBeInTheDocument();
     expect(recordAttempt).not.toHaveBeenCalled();
 
     // dismiss → first exercise appears; answering still emits exactly one attempt
     await user.click(screen.getByRole('button', { name: /Los geht's/i }));
-    await user.click(screen.getByRole('button', { name: /Echtes Wort/ }));
+    await user.click(screen.getByRole('button', { name: 'Apfel' }));
     expect(recordAttempt).toHaveBeenCalledTimes(1);
   });
 
@@ -78,6 +78,6 @@ describe('LessonRunner', () => {
       </MemoryRouter>,
     );
     expect(screen.queryByText(/Los geht's/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Echtes Wort/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Apfel' })).toBeInTheDocument();
   });
 });

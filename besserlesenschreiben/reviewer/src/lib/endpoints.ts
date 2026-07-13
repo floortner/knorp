@@ -7,12 +7,6 @@ import type {
   AdminUser,
   AdminUserPage,
   ClaimResponse,
-  Lexeme,
-  LexemeCreateBody,
-  LexemeEditBody,
-  LexemeExportResult,
-  LexemePage,
-  LexemeStats,
   QueuePage,
   QueueProgress,
   ReviewSubmitBody,
@@ -112,58 +106,4 @@ export const usersApi = {
   /** Identity-bearing learner progress for one account's children (admin only). */
   progress: (accountId: string) =>
     apiFetch<UserProgress>(`/staff/users/${encodeURIComponent(accountId)}/progress`),
-};
-
-/**
- * Lexeme foundation curation (backend SPEC §6) — ADMIN role only. Edit the annotated word pool that
- * grounds lecture generation. Edits land in the live table immediately; `export` persists the change-set
- * to the committed lexeme.overrides.json so corrections survive reseeds and reproduce in any fresh DB.
- */
-/** Filter params for the lexeme browser + stats (all optional; empty values are dropped). */
-export interface LexemeFilters {
-  search?: string;
-  skill?: string;
-  pos?: string;
-  genus?: string; // der | die | das | none
-  ageBand?: string; // 6-7 | 8-9 | none
-  source?: string; // rwe2015 | reviewer
-  feature?: string; // an orthographic feature key that must be present
-  hkMin?: string;
-  hkMax?: string;
-  syl?: string; // exact syllable count
-  morph?: string; // exact morpheme count
-  lernwort?: string; // '' | 'true' | 'false'
-  trennbar?: string;
-  merkwort?: string;
-}
-
-function toQuery(params: object): string {
-  const q = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== null && v !== '') q.set(k, String(v));
-  }
-  const s = q.toString();
-  return s ? `?${s}` : '';
-}
-
-export const lexemesApi = {
-  list: (params: LexemeFilters & { limit?: number; cursor?: string } = {}) =>
-    apiFetch<LexemePage>(`/staff/lexemes${toQuery(params)}`),
-
-  /** Aggregate stats over the same filter — total + breakdowns by property. */
-  stats: (filters: LexemeFilters = {}) => apiFetch<LexemeStats>(`/staff/lexemes/stats${toQuery(filters)}`),
-
-  /** Field-level edit — only the provided fields change. */
-  edit: (lemma: string, body: LexemeEditBody) =>
-    apiFetch<Lexeme>(`/staff/lexemes/${encodeURIComponent(lemma)}`, { method: 'PATCH', body }),
-
-  /** Add a new word (409 if the lemma already exists). */
-  add: (body: LexemeCreateBody) => apiFetch<Lexeme>('/staff/lexemes', { method: 'POST', body }),
-
-  /** Remove a word. Returns 204. */
-  remove: (lemma: string) =>
-    apiFetch<void>(`/staff/lexemes/${encodeURIComponent(lemma)}`, { method: 'DELETE' }),
-
-  /** Persist current corrections to the committed lexeme.overrides.json; returns the change counts. */
-  export: () => apiFetch<LexemeExportResult>('/staff/lexemes/export', { method: 'POST', body: {} }),
 };

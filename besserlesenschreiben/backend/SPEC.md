@@ -42,7 +42,8 @@ profile (1) ───< homework_upload ───< homework_review
 profile (1) ───< chat_message
 profile (1) ───< review_state
 item_bank (global, shared) ──referenced by── attempt.item_id
-lexeme (global word foundation) ──grounds── exercise generation (gen:items, LLM lectures)
+# The `lexeme` word foundation (and the exercise-generation pipeline it grounded) was dropped 2026-07-13
+# along with the Vokaltraining content set — see ROADMAP.md §F for the content-set redesign in progress.
 
 # STAFF realm (disjoint identity — ARCHITECTURE §1a):
 reviewer (internal staff) ───< homework_review        # authoritative homework verdicts
@@ -106,45 +107,22 @@ item_bank(
   id            uuid pk,
   seed_key      text unique,            -- stable natural key for idempotent seeding; null for generated_by='llm'
   unit          int not null,           -- which unit/Einheit (1..N)
-  exercise_type text not null,          -- raster|findvowel|realword|fixvowel|swapvowel|length|sylvalid|insertvowel|paircheck|pickword|sentencefix|compound|family|sylarrange
+  exercise_type text not null,          -- currently a single 'placeholder' type — the Vokaltraining
+                                         -- 14-type taxonomy was dropped 2026-07-13 (ROADMAP.md §F)
   payload       jsonb not null,         -- the exercise spec (see §8 for per-type shape)
   audio_url     text,                   -- pre-generated TTS for the word (presigned at read time)
   syllable_audio jsonb,                 -- optional per-syllable audio urls
-  skill_tags    text[] not null,        -- 14-tag taxonomy in src/contract/skills.ts (e.g. {'vowel_length','dehnung_h'})
+  skill_tags    text[] not null,        -- taxonomy in src/contract/skills.ts — currently a single
+                                         -- 'placeholder' tag; the 14-tag taxonomy was dropped with §F
   difficulty    int default 1,
   generated_by  text default 'seed',    -- seed | llm
   created_at    timestamptz default now()
 )
 
--- LEXEME FOUNDATION (global, curated word pool — grounds exercise generation). EXTENSIBLE BY DESIGN:
--- more word databases (new `source` values), new per-word properties, and new exercise generators are
--- expected additions — follow the schema→contract→overrides→editor pattern (age_band was the latest).
-lexeme(
-  id               uuid pk,
-  lemma            text unique not null,
-  hk               int not null,          -- Häufigkeitsklasse (frequency; lower = more common)
-  pos              text not null,         -- N | V | ADJ | ADV | …
-  genus            text,                  -- der | die | das (nouns)
-  morpheme_count   int not null,
-  ipa              text not null,
-  syllabification  text not null,         -- e.g. "was-ser"
-  syllable_count   int not null,
-  forms            text,                  -- inflections, best-effort
-  separable_prefix text,
-  age_band         text,                  -- target age band: "6-7" | "8-9" | null (unbanded)
-  family_stem      text,                  -- Wortfamilie grouping → family exercises
-  compound_parts   text[] default '{}',   -- ordered compound split → compound exercises
-  features         jsonb not null,        -- raw orthographic Lernstellen flags
-  skill_tags       text[] not null,       -- taxonomy: src/contract/skills.ts (GIN-indexed)
-  is_lernwort      bool default false,
-  is_trennbar      bool default false,
-  is_merkwort      bool default false,
-  source           text default 'rwe2015',-- which word database the row came from
-  created_at       timestamptz default now()
-)
--- Seeded from lexeme.seed.json (extracted base) ⊕ lexeme.overrides.json (a COMMITTED reviewer change-set
--- applied after the base, so human corrections survive reseeds). Curated in the reviewer portal
--- ("Wortschatz", admin-only); `npm run gen:items` derives exercise candidates from the pool.
+-- The LEXEME FOUNDATION table (curated word pool grounding exercise generation) was dropped 2026-07-13
+-- along with the whole Vokaltraining content set — see ROADMAP.md §F. A new word-list schema is being
+-- designed from scratch (which linguistic facts to keep vs. which annotation columns were approach-
+-- specific is an open design question, not a given).
 
 -- SESSION (a generated training session = ordered list of items)
 session(
@@ -422,23 +400,9 @@ DELETE /staff/users/{id}                               -> 204   # erasure: DB ca
   removes the account's blobs).
 - All routes here require the staff cookie **and** `role='admin'`; a plain reviewer gets `403`.
 
-### Staff — lexeme foundation curation (STAFF realm, **admin role only**)
-Curate the word pool that grounds exercise generation (§3 `lexeme`). Edits land in the live table
-immediately; `export` persists the diff-vs-base as the committed `lexeme.overrides.json` change-set so
-corrections survive reseeds (dev-only write; refused in production).
-```
-GET    /staff/lexemes         ?search=&skill=&pos=&genus=&ageBand=&feature=&source=&hkMin=&hkMax=&syl=&morph=
-                              &lernwort=&trennbar=&merkwort=&limit=&cursor=  -> {items, nextCursor, total}
-                              # ageBand ∈ 6-7 | 8-9 | none (unbanded); genus 'none' = not a noun
-GET    /staff/lexemes/stats   ?…same filters…       -> aggregate counts over the filter (total, byPos,
-                                                       byGenus, byAgeBand, bySource, bySkill,
-                                                       bySyllableCount, byMorpheme, flags, hk)
-GET    /staff/lexemes/{lemma}                       -> one lexeme
-POST   /staff/lexemes         {full record}         -> 201  # add a word (source='reviewer'; 409 on dup)
-PATCH  /staff/lexemes/{lemma} {sparse fields}       -> field-level edit
-DELETE /staff/lexemes/{lemma}                       -> 204
-POST   /staff/lexemes/export                        -> {edits, adds, deletes}  # writes lexeme.overrides.json
-```
+> The staff lexeme foundation curation routes (`/staff/lexemes/*`) were dropped 2026-07-13 along with the
+> `lexeme` table and the Vokaltraining content set (ROADMAP.md §F). Re-add a curation surface once the new
+> word-list schema is designed, if the new approach needs one.
 
 ### Parent
 ```
@@ -501,8 +465,10 @@ Two mechanisms — **most sessions never touch the LLM:**
 1. Query `attempt` for this profile: skills with low recent `is_correct` or high `time_ms`, weighted by recency.
 2. Cross-reference `review_state` for FSRS-due skills.
 3. Select `item_bank` rows matching weak/due `skill_tags`, mixed with some mastered items for confidence. Order easy→hard.
-4. Return as a `session` (`source='bank'`), carrying the unit's **Merksatz** as `intro` — the teaching layer
-   of the Vokaltraining program (units.catalog.ts), rendered as the lesson's intro card.
+4. Return as a `session` (`source='bank'`), carrying the unit's **Merksatz** as `intro` (from
+   `units.catalog.ts`) — the teaching layer of the unit sequence, rendered as the lesson's intro card. The
+   Vokaltraining 7-unit catalogue was dropped 2026-07-13; `units.catalog.ts` is currently empty pending the
+   new sequence design (ROADMAP.md §F).
 
 **FSRS:** use the `ts-fsrs` package (or SM-2 as a simpler fallback). Schedule **per skill_tag**, not per word. Update `review_state` on `/attempts`.
 
@@ -516,20 +482,17 @@ drill and *with which real words*; Claude only writes the teaching intro and the
    - **FSRS-due** skills (`review_state.due ≤ now`),
    - the **professionally-reviewed** homework focus — `reviewed_analysis.suggestedFocus` from the last 5
      `status='reviewed'` uploads (never the raw LLM draft).
-2. **Calibration band.** `gradeBand(unlockedUnit)` → `{ label (Klassenstufe text), difficulty 1–3,
-   maxHk (9 | 11 | 12 — frequency ceiling), ageBand ("6-7" | "8-9") }`.
+2. **Calibration band.** `gradeBand(unlockedUnit)` → `{ label (Klassenstufe text), difficulty 1–3 }`.
+   (Previously also carried `maxHk`/`ageBand` to drive lexeme word-pool grounding — dropped with the lexeme
+   foundation, ROADMAP.md §F.)
 3. **Behavioural context.** `digest.md` (§6) — per-skill accuracy, **response time** (`time_ms`), **retries**
    (`attempt_no`), recent trend. Slow-but-correct and hesitation are weak signals, not just errors. Best-effort.
-4. **Word grounding (the Wortschatz lever).** `wordPoolFor(focus, { maxHk, ageBand })` samples the `lexeme`
-   table per focus skill via `pickForSkill`:
-   `WHERE skill_tags @> ARRAY[skill] AND hk <= maxHk AND (age_band IS NULL OR age_band = band)` — real German
-   words that actually carry the target orthographic feature, **null-tolerant band ∩ frequency** (unbanded
-   words stay eligible while curation is sparse). Emitted as `Wasser (das; was-ser)` so the model reuses real
-   words and correct syllable splits instead of hallucinating. Best-effort: an empty pool just drops the block.
-5. **Prompt + structured output.** `LLM_SYSTEM` + a user message (Klassenstufe + Förderschwerpunkte +
-   word-pool block + Lernstand digest) → `llm.extract(generatedSessionSchema, …)`, so every exercise is
-   Zod-validated and solvable end-to-end.
-6. **Persist + return.** Each exercise → an `item_bank` row (`unit=LLM_ITEM_UNIT` sentinel, `generated_by='llm'`,
+4. **Prompt + structured output.** `LLM_SYSTEM` + a user message (Klassenstufe + Förderschwerpunkte +
+   Lernstand digest) → `llm.extract(generatedSessionSchema, …)`, so every exercise is Zod-validated and
+   solvable end-to-end. `LLM_SYSTEM` currently targets only the single `placeholder` type — the per-type
+   solvability rules and word-pool grounding block (the "Wortschatz lever") were dropped with the lexeme
+   foundation and will be rebuilt as new training types are designed (ROADMAP.md §F).
+5. **Persist + return.** Each exercise → an `item_bank` row (`unit=LLM_ITEM_UNIT` sentinel, `generated_by='llm'`,
    `difficulty=band.difficulty`); then a `session` (`source='llm'`) referencing them; return the teaching
    `intro` + items. (TTS synth is deferred — §9.)
 
@@ -538,13 +501,9 @@ flowchart TD
   A[attempt<br/>weak skills] --> F[focus =<br/>weak ∪ due ∪ hwFocus]
   R[review_state<br/>FSRS-due] --> F
   H[homework_upload<br/>reviewed suggestedFocus] --> F
-  U[profile.unlockedUnit] --> GB[gradeBand<br/>label · difficulty · maxHk · ageBand]
-  F --> WP[wordPoolFor<br/>maxHk ∩ ageBand, null-tolerant]
-  GB --> WP
-  L[(lexeme<br/>Wortschatz)] --> WP
+  U[profile.unlockedUnit] --> GB[gradeBand<br/>label · difficulty]
   F --> D[digest.md<br/>accuracy · time_ms · attempt_no]
-  GB --> P[prompt: LLM_SYSTEM +<br/>Klassenstufe · Förderschwerpunkte · Wörter · Lernstand]
-  WP --> P
+  GB --> P[prompt: LLM_SYSTEM +<br/>Klassenstufe · Förderschwerpunkte · Lernstand]
   D --> P
   P --> C{{Claude<br/>generatedSessionSchema}}
   C --> Z[Zod validate]
@@ -555,8 +514,9 @@ flowchart TD
 ```
 
 **Rule:** the database decides *what* to drill (deterministic, free) — informed by telemetry **and the
-professionally-validated** homework focus — and the Wortschatz decides *which words* to drill it with; the LLM
-only generates *new content* and *conversation*.
+professionally-validated** homework focus — the LLM only generates *new content* and *conversation*. (Word
+grounding — deciding *which real words* to drill it with — was a lexeme-foundation feature dropped with the
+content set; see ROADMAP.md §F.)
 
 ---
 

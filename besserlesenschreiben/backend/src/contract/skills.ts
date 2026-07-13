@@ -6,28 +6,11 @@ import { z } from 'zod';
  * lets the Exercise contract reject unknown tags, so seed content and LLM output can't silently invent a
  * skill that then never gets drilled.
  *
- * Taxonomy of the Vokaltraining program (FRESCH-style; SPEC §8 / units.catalog): vowels are the anchor of
- * every strategy — find them, judge their length, swap them, and build words and compounds around them.
+ * The Vokaltraining taxonomy was dropped along with its word lists and training types — the approach is
+ * being redesigned from scratch. `placeholder` keeps the contract (and FSRS/digest/LLM plumbing that key
+ * off a non-empty tag) wired end-to-end; replace with the new taxonomy as training types are designed.
  */
-export const SKILL_TAGS = [
-  // Vokale finden & einsetzen (Wortraster, Selbstlaute)
-  'vowel_identify',
-  'vowel_length',
-  'vowel_substitution',
-  'word_raster',
-  // Echtwort & Silben
-  'lexical_decision',
-  'syllable_validity',
-  'syllable_segmentation',
-  'visual_discrimination',
-  // Wortbau & Strategien
-  'compound_word',
-  'word_family',
-  'article',
-  'sentence_context',
-  'dehnung_h',
-  'double_consonant',
-] as const;
+export const SKILL_TAGS = ['placeholder'] as const;
 
 export type SkillTag = (typeof SKILL_TAGS)[number];
 

@@ -14,7 +14,8 @@ Node 24 LTS · TypeScript 5.x · React 19.2.x · Vite 8.1.x (+ @vitejs/plugin-re
 vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grotesque (display).
 
 ## Read order before coding
-1. `./SPEC.md` §3 (the 14 Vokaltraining exercise renderers + the `Exercise` union) and §4 (telemetry).
+1. `./SPEC.md` §3 (the `Exercise` union + renderers — currently a single `placeholder` stand-in type; the
+   Vokaltraining content set was dropped, ROADMAP.md §F) and §4 (telemetry).
 2. `../ARCHITECTURE.md` §4 (API rules), §5 (errors → UI behaviour), §10 (SVG-first media).
 
 ## Golden rules (do not violate)
@@ -25,7 +26,7 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 2. **`lib/api.ts` is transport only** — no JSX, no UI. Components never hand-roll fetch or error parsing.
 3. **Every answered item emits exactly one `/attempts` call** with a real `timeMs` (start timer on item mount,
    stop on answer). Fire-and-forget; queue + retry offline; never block the child's UI on the network (SPEC §4).
-4. **No hardcoded lesson data.** Render all 14 types from backend-served JSON.
+4. **No hardcoded lesson data.** Render every type in the current contract from backend-served JSON.
 5. **The app is free — no payment UI, ever** (ARCHITECTURE §1b/§9). Never show a price, paywall, or buy button
    anywhere; nothing emits or handles `402`. ★ ops are daily-capped server-side — a `429 RATE_LIMITED` carries a
    kindgerechte message and surfaces through the normal error paths.
@@ -53,8 +54,10 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 
 ## Build milestones
 Shipped milestones and the forward plan live in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)** — the
-single source of truth. Everything through Phase 2 is done; the exercise set is now the **14-type
-Vokaltraining program** (SPEC §3) with a 7-unit progression and ~360 seed items. No billing — the app is free.
+single source of truth. Everything through Phase 2.5 + Post-2.5 is done and the beta is live (§E); the
+Vokaltraining content set (14-type exercise set, 7-unit progression, ~360 seed items) was dropped 2026-07-13
+and is being redesigned from scratch (§F) — the exercise contract currently holds a single `placeholder`
+stand-in type. No billing — the app is free.
 
 ## Definition of done for a feature
 Renders from backend JSON; one `/attempts` per answer with sane timing; error codes map to the right UI;

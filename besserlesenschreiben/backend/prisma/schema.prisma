@@ -98,40 +98,9 @@ model ItemBank {
   @@map("item_bank")
 }
 
-// ── LEXEME (annotated word foundation) ───────────────────────────────────────
-// Raw, skill-tagged word material that feeds lecture generation (and later deterministic bank
-// generation). DISTINCT from item_bank (which holds finished exercises) — this is the source pool.
-// Idempotent seed upserts on `lemma` from lexeme.seed.json. Source: Rechtschreibwortschatz für
-// Erwachsene 2015 (Leidenfrost-Burth/Haider/Wöllstein, Mannheim) — CC BY-NC-ND 4.0, internal use only.
-model Lexeme {
-  id              String   @id @default(uuid()) @db.Uuid
-  lemma           String   @unique
-  hk              Int // Häufigkeitsklasse: a word is 2^HK rarer than der/die/das (HK 0); lower = more frequent
-  pos             String // N, V, ADJ, ADV, PRO, KONJ, ART, PREP, PTK, NUM, …
-  genus           String? // der | die | das (nouns)
-  morphemeCount   Int      @map("morpheme_count")
-  ipa             String
-  syllabification String // e.g. "was-ser"
-  syllableCount   Int      @map("syllable_count")
-  forms           String? // inflections / plural (Schemakonstanz), best-effort free text
-  separablePrefix String?  @map("separable_prefix")
-  ageBand         String?  @map("age_band") // target age band: "6-7" | "8-9" | null (unbanded)
-  familyStem      String?  @map("family_stem") // shared root grouping a Wortfamilie (members share it) → `family` exercises
-  compoundParts   String[] @default([]) @map("compound_parts") // ordered parts of a compound (["Holz","Treppe"]); [] = not a compound → `compound` exercises
-  features        Json // all 19 orthographic Lernstellen flags (raw, incl. non-vowel phenomena)
-  skillTags       String[] @map("skill_tags") // mapped to the app SKILL_TAGS taxonomy
-  isLernwort      Boolean  @default(false) @map("is_lernwort")
-  isTrennbar      Boolean  @default(false) @map("is_trennbar")
-  isMerkwort      Boolean  @default(false) @map("is_merkwort")
-  source          String   @default("rwe2015")
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  @@index([hk])
-  @@index([skillTags], type: Gin) // fast "words for skill X" selection
-  @@index([familyStem]) // fast "members of Wortfamilie X" selection
-  @@index([ageBand]) // fast band-facet filter/selection
-  @@map("lexeme")
-}
+// Lexeme (the annotated word foundation) was dropped along with the Vokaltraining content set — the
+// word-list schema, training types, sequence, and lecture-generation approach are being redesigned from
+// scratch. Re-add as a fresh model when the new approach's word-list shape is decided.
 
 // ── SESSION (a generated training session) ───────────────────────────────────
 model Session {

@@ -8,11 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `besserlesenschreiben/backend/` — NestJS API (`-api` repo)
 - `besserlesenschreiben/frontend/` — Vite/React SPA/PWA, the family app (`-web` repo)
-- `besserlesenschreiben/reviewer/` — Vite/React internal **staff portal** for professional homework review (`-review` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner progress, and the "Wortschatz" lexeme-curation tab.
+- `besserlesenschreiben/reviewer/` — Vite/React internal **staff portal** for professional homework review (`-review` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner progress. (The "Wortschatz" lexeme-curation tab was dropped 2026-07-13 with the Vokaltraining content set — ROADMAP.md §F.)
 
 Two disjoint **auth realms** (ARCHITECTURE §1a): the **family** realm (parents + children, `-web`) and the **staff** realm (internal reviewers, `-review`). A credential in one is never valid in the other — different cookie/`aud`, different guard (`JwtAuthGuard` vs `StaffAuthGuard`).
 
-The seed scripts live in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent; loads the item bank, the lexeme base ⊕ committed `lexeme.overrides.json` change-set, and — with `SEED_DEV_ACCOUNTS=true` — dev login accounts). `npm run gen:items` derives exercise candidates from the lexeme pool for human review. item_bank.seed.json is the curated source of truth — there is no regeneration script (never rebuild it wholesale).
+The seed script lives in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent; bootstraps staff admins from `STAFF_ADMIN_EMAILS`, and — with `SEED_DEV_ACCOUNTS=true` — dev login accounts). Content seeding (the item bank + lexeme base ⊕ overrides, `npm run gen:items`) was dropped 2026-07-13 along with the Vokaltraining content set — see ROADMAP.md §F for the content-set redesign in progress. `item_bank.seed.json` is the curated source of truth for exercise content once it exists — there is no regeneration script (never rebuild it wholesale).
 
 Currently one **monorepo** for fast cross-cutting iteration; the subprojects are independently buildable/deployable and split into the `-api`/`-web`/`-review` repos before launch (ARCHITECTURE §1).
 
@@ -44,10 +44,10 @@ npm run openapi:export          # regenerate committed openapi.json after any co
 npx prisma migrate dev          # local DB migrations
 npx prisma migrate deploy       # CI/prod migrations (run as pre-traffic step)
 npx prisma generate             # regenerate Prisma client after schema changes
-npm run seed                    # load item_bank.seed.json + lexeme base ⊕ overrides (idempotent)
-npm run gen:items               # lexeme pool → exercise CANDIDATES (item_bank.generated.json, human-reviewed)
-npm run export:overrides        # live lexeme table vs base → committed lexeme.overrides.json
+npm run seed                    # bootstrap staff admins + (with SEED_DEV_ACCOUNTS=true) dev accounts
 ```
+Content seeding (`item_bank.seed.json`, the lexeme foundation, `gen:items`/`export:overrides`) was dropped
+2026-07-13 along with the Vokaltraining content set — see ROADMAP.md §F.
 
 ### Frontend (`besserlesenschreiben/frontend/`)
 ```bash
@@ -73,7 +73,8 @@ Real user journeys over family frontend + backend, deterministic and offline: `A
 
 **CI (`.github/workflows/ci.yml`):** per-project jobs run `lint · typecheck · test · build` plus the **contract-drift gates** — `npm run openapi:export` then `git diff --exit-code openapi.json` (backend), and `npm run gen:api` then `git diff --exit-code api.gen.ts` (frontend/reviewer). Regenerate and commit these whenever a Zod contract changes or CI fails red.
 
-Other root dirs: `data-foundation/` — source corpora + `parse-rwe.py` for the lexeme pool (the *Rechtschreibwortschatz* data behind the `source` facet); `website/` — static marketing page.
+Other root dirs: `website/` — static marketing page. (`data-foundation/` — the *Rechtschreibwortschatz* source
+corpus + `parse-rwe.py` — was deleted 2026-07-13 along with the lexeme foundation, ROADMAP.md §F.)
 
 ## Architecture overview
 
@@ -92,19 +93,19 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 ### Backend structure
 - `src/contract/` — Zod schemas (`exercise.ts`, `models.ts`) that are the **source** of the contract pipeline: Zod → `openapi.json` → `api.gen.ts`. Edit here first, then re-export.
 - `src/modules/` — one folder per resource: controller (HTTP only) + service + Zod DTOs
-- `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (S3 presigned URLs / local-FS dev store), `email`, `llm`, `lexeme`
+- `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (S3 presigned URLs / local-FS dev store), `email`, `llm`. (`lexeme` was deleted 2026-07-13 with the content set, ROADMAP.md §F.)
 - `src/common/guards/` — `JwtAuthGuard` (family; requires `status='active'`), `ParentScopeGuard`, `StaffAuthGuard` (staff realm)
 - `src/common/filters/` — global exception filter → the one error envelope
 - `prisma/schema.prisma` — the model truth; DDL in `backend/SPEC.md §3` is its conceptual form
-- `prisma/seed.ts` — idempotent item-bank loader (upserts on `seed_key`)
+- `prisma/seed.ts` — bootstraps staff admins + dev accounts (content seeding dropped 2026-07-13, §F)
 
 ### Frontend structure
-- `docs/knorp.html` — **interactive design prototype**; visual source of truth for the shell, screens and brand. Its exercise interactions document the **legacy pre-Vokaltraining set** — the current exercise types live in `frontend/SPEC.md §3`. Recreate looks in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
-- `fixtures/` — committed golden JSON payloads (`session.example.json` = one of each exercise type; `units.example.json` = 7 units + theme colors). Build renderers and snapshot tests against these.
+- `docs/knorp.html` — **interactive design prototype**; visual source of truth for the shell, screens and brand. Its exercise interactions document a legacy type set — the current exercise types live in `frontend/SPEC.md §3`. Recreate looks in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
+- `fixtures/` — committed golden JSON payloads (`session.example.json`, `units.example.json`). The Vokaltraining content set (14 exercise types, 7 units) was dropped 2026-07-13 (ROADMAP.md §F) — these currently hold a single stand-in `placeholder` exercise and an empty units array. Build renderers and snapshot tests against these.
 - `src/lib/api.gen.ts` — types **generated** from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
 - `src/lib/api.ts` — typed fetch client, **transport only** (no JSX), built on `api.gen.ts` types
-- `src/features/exercises/types.ts` — the `Exercise` discriminated union (14 Vokaltraining types)
-- `src/features/exercises/` — the 14 exercise renderers (Wortraster, binary choice, single choice, tile order, sentence)
+- `src/features/exercises/types.ts` — the `Exercise` discriminated union (currently a single `placeholder` stand-in type; training types are being redesigned from scratch, §F)
+- `src/features/exercises/` — the exercise renderers + reusable scaffolding (`ExerciseCard`/`ChoiceTile`/`useAnswer`/`SingleChoiceExercise`). The Vokaltraining-specific renderers (Wortraster, tile order, sentence) were deleted with their types.
 - `src/features/exercises/audio.ts` — `audioUrl` playback + Web Speech API fallback
 - `src/lib/telemetry.ts` — attempt timing + fire-and-forget emit
 
@@ -121,9 +122,11 @@ Homework photos are uploaded by the family but validated by an **internal staff 
 
 ### Build status & roadmap
 The single source of truth for what's shipped and what's next is the repo-root **`ROADMAP.md`**. In short:
-everything through Phase 2.5 + Post-2.5 is **done**; **next** is D5/D6 (badges, weekly parent email), **then**
-the AWS deployment milestone (E). **Product decision — the app is FREE, including the AI features; access is
-gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred** and not built: no
+everything through Phase 2.5 + Post-2.5, plus the **AWS beta deployment (E)**, is **done** — the app is live
+on real HTTPS domains. The Vokaltraining content set (word lists, 14 exercise types, 7-unit sequence, lecture
+prompt) was **dropped 2026-07-13**; **next** is **F** — redesigning that content layer from scratch — **then**
+D5/D6 (badges, weekly parent email). **Product decision — the app is FREE, including the AI features; access
+is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred** and not built: no
 `EntitlementGuard`, credits, or `402` gating; the `entitlement`/`credits_ledger` tables stay dormant so
 metering stays a future option, and `★` means "AI-backed / cost-bearing op," free for any approved active
 account. TTS is deferred (Web-Speech fallback for now; target Amazon Polly).
@@ -151,7 +154,7 @@ account. TTS is deferred (Web-Speech fallback for now; target Amazon Polly).
 - **Golden tests:** `digest.md` format (LLM-facing) and `Exercise` JSON (client-facing) are pinned with golden files. Any change to these contract outputs must update the golden files intentionally.
 - **SVG-first media:** all app art, mascots (Nepo/Stella), icons, and badges are SVG. Sanitize any non-hand-authored SVG with DOMPurify before inlining — never `dangerouslySetInnerHTML` on raw SVG. Homework photos are the only raster exception (strip EXIF server-side, transcode to WebP).
 - **Prisma 7 + NestJS:** Prisma 7 is ESM-first — set `moduleFormat = "cjs"` in the Prisma client generator config for NestJS's CommonJS setup.
-- **Docs upkeep (keep them true):** a PR that changes routes, the Prisma schema, env vars, screens/tabs, or hosting must update the matching SPEC/ARCHITECTURE section in the same PR — and milestones (shipped + planned) are tracked only in the repo-root `ROADMAP.md`, ticked there when they ship. The lexeme foundation is **extensible by design**: new word databases (`source`), new per-word properties (e.g. an age band), and new exercise types/generators follow the schema→contract→overrides→editor pattern.
+- **Docs upkeep (keep them true):** a PR that changes routes, the Prisma schema, env vars, screens/tabs, or hosting must update the matching SPEC/ARCHITECTURE section in the same PR — and milestones (shipped + planned) are tracked only in the repo-root `ROADMAP.md`, ticked there when they ship. The lexeme foundation's schema→contract→overrides→editor extensibility pattern was dropped with the content set (2026-07-13, ROADMAP.md §F) — the new word-list schema's design, and whether it needs an equivalent pattern, is open.
 - **Telemetry:** every answered exercise emits exactly one `POST /attempts` with a real `timeMs` (timer starts on item mount). Fire-and-forget; queue + retry offline via Workbox; never block the child's UI.
 
 ## Hosting & env
