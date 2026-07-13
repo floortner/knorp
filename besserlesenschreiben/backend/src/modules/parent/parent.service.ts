@@ -4,6 +4,7 @@ import * as argon2 from 'argon2';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 import { assertProfileOwned } from '../../common/ownership';
+import { StorageService } from '../../services/storage/storage.service';
 import { UNIT_CATALOG } from '../sessions/units.catalog';
 
 const MAX_PIN_ATTEMPTS = 5;
@@ -19,6 +20,7 @@ export class ParentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly storage: StorageService,
   ) {}
 
   async setPin(accountId: string, pin: string): Promise<{ ok: true }> {
@@ -105,6 +107,29 @@ export class ParentService {
       }),
     ]);
     this.logger.log({ event: 'parent.reset', profileId }, 'profile progress reset');
+    return { ok: true };
+  }
+
+  /**
+   * Fully delete a child's trainer chat (parent scope, destructive): the messages + trainer lectures
+   * (chat_message rows) AND every uploaded homework photo — the stored image blobs plus the
+   * homework_upload rows and their review audit (cascade). Learning progress (attempts, plan, stars) is
+   * a separate concern — see reset() — and is NOT touched here.
+   *
+   * Storage is erased BEFORE the DB rows (mirrors account deletion) so a storage failure leaves the rows
+   * for a retry rather than orphaning image blobs behind already-deleted records.
+   */
+  async resetChat(accountId: string, profileId: string): Promise<{ ok: true }> {
+    await assertProfileOwned(this.prisma, accountId, profileId);
+    await this.storage.deleteProfileHomework(accountId, profileId);
+    const [messages, uploads] = await this.prisma.$transaction([
+      this.prisma.chatMessage.deleteMany({ where: { profileId } }),
+      this.prisma.homeworkUpload.deleteMany({ where: { profileId } }),
+    ]);
+    this.logger.log(
+      { event: 'parent.reset_chat', profileId, messages: messages.count, uploads: uploads.count },
+      'chat fully cleared',
+    );
     return { ok: true };
   }
 }

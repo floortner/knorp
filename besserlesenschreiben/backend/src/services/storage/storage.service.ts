@@ -108,7 +108,23 @@ export class StorageService {
    * comes from the deleted row, never client input. Idempotent: a missing prefix is a no-op.
    */
   async deleteUserPrefix(accountId: string): Promise<void> {
-    const prefix = `users/${accountId}/`;
+    const count = await this.deletePrefix(`users/${accountId}/`);
+    this.logger.log({ event: 'storage.delete_prefix', count }, 'account objects erased');
+  }
+
+  /**
+   * Erase one child's homework photos (`users/{accountId}/{profileId}/homework/`) — the object-storage
+   * half of the parent "delete chat" action (a full chat wipe removes the uploaded images too). Ids come
+   * from the caller (JWT + ownership check), never client input; the profile's other objects (e.g.
+   * digest.md, which reflects preserved learning progress) are left intact. Idempotent.
+   */
+  async deleteProfileHomework(accountId: string, profileId: string): Promise<void> {
+    const count = await this.deletePrefix(`users/${accountId}/${profileId}/homework/`);
+    this.logger.log({ event: 'storage.delete_homework', count }, 'profile homework objects erased');
+  }
+
+  /** Delete every object under a key prefix (S3 paginated / local recursive). Idempotent; returns the S3 count. */
+  private async deletePrefix(prefix: string): Promise<number> {
     if (this.useS3) {
       const { ListObjectsV2Command, DeleteObjectsCommand } = await import('@aws-sdk/client-s3');
       const s3 = await this.s3();
@@ -127,11 +143,10 @@ export class StorageService {
         }
         continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
       } while (continuationToken);
-      this.logger.log({ event: 'storage.delete_prefix', count: deleted }, 'account objects erased (s3)');
-      return;
+      return deleted;
     }
-    await rm(join(this.localRoot, 'users', accountId), { recursive: true, force: true });
-    this.logger.log({ event: 'storage.delete_prefix' }, 'account objects erased (dev local)');
+    await rm(join(this.localRoot, prefix), { recursive: true, force: true });
+    return 0;
   }
 
   /** Read binary content by full key (e.g. for vision analysis), or null if missing. */

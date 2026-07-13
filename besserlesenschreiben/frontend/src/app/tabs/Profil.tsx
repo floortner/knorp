@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, HeartHandshake, Lock, Star } from 'lucide-react';
-import { useActiveProfile } from '@/features/profile/useMe';
+import { Check, Flame, HeartHandshake, Pencil, Star, X } from 'lucide-react';
+import { useActiveProfile, useMe } from '@/features/profile/useMe';
 import { useUpdateSettings } from '@/features/profile/useUpdateSettings';
-import { BUDDIES, REWARD_PETS, buddySrc, buddyStateSrc, type BuddyState } from '@/lib/constants';
+import { BUDDIES, buddySrc, buddyStateSrc, type BuddyState } from '@/lib/constants';
 import { useAuth } from '@/features/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -15,11 +15,24 @@ const REACTIONS: BuddyState[] = ['froehlich', 'ueberrascht', 'cool'];
 export function Profil() {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { data: me } = useMe();
   const profile = useActiveProfile();
   const settings = useUpdateSettings(profile?.id ?? '');
   const [reaction, setReaction] = useState(-1); // -1 = neutral (buddySrc)
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
 
   if (!profile) return <p className="py-16 text-center font-medium text-ink-soft">Lädt …</p>;
+
+  const startEditName = () => {
+    setNameDraft(profile.name);
+    setEditingName(true);
+  };
+  const saveName = () => {
+    const name = nameDraft.trim();
+    if (!name || name === profile.name) return setEditingName(false);
+    settings.mutate({ name }, { onSuccess: () => setEditingName(false) });
+  };
 
   const activeSince = new Date(profile.createdAt).toLocaleDateString('de-DE', {
     day: 'numeric',
@@ -40,8 +53,54 @@ export function Profil() {
         >
           <img src={buddyImg} alt="" className="h-16 w-16" />
         </button>
-        <div className="min-w-0">
-          <h1 className="font-display text-xl font-bold text-ink">{profile.name}</h1>
+        <div className="min-w-0 flex-1">
+          {editingName ? (
+            <div className="flex items-center gap-1.5">
+              <input
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') saveName();
+                  if (e.key === 'Escape') setEditingName(false);
+                }}
+                maxLength={10}
+                autoFocus
+                aria-label="Name"
+                disabled={settings.isPending}
+                className="min-w-0 flex-1 rounded-lg bg-canvas px-2 py-1 font-display text-xl font-bold text-ink ring-1 ring-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60"
+              />
+              <button
+                type="button"
+                aria-label="Name speichern"
+                disabled={!nameDraft.trim() || settings.isPending}
+                onClick={saveName}
+                className="shrink-0 rounded-full p-1.5 text-teal-dark hover:bg-teal/10 disabled:opacity-40"
+              >
+                <Check className="h-5 w-5" aria-hidden />
+              </button>
+              <button
+                type="button"
+                aria-label="Abbrechen"
+                disabled={settings.isPending}
+                onClick={() => setEditingName(false)}
+                className="shrink-0 rounded-full p-1.5 text-ink-soft hover:bg-black/5"
+              >
+                <X className="h-5 w-5" aria-hidden />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <h1 className="truncate font-display text-xl font-bold text-ink">{profile.name}</h1>
+              <button
+                type="button"
+                aria-label="Namen ändern"
+                onClick={startEditName}
+                className="shrink-0 rounded-full p-1.5 text-ink-soft hover:bg-black/5"
+              >
+                <Pencil className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+          )}
           <p className="text-sm text-ink-soft">aktiv seit {activeSince}</p>
           <div className="mt-1 flex gap-3 text-sm font-semibold text-ink">
             <span className="flex items-center gap-1"><Flame className="h-4 w-4 text-orange" />{profile.streakDays}</span>
@@ -82,30 +141,6 @@ export function Profil() {
         </div>
       </section>
 
-      {/* Reward pets — a separate collection, EARNED through tasks (D5 badges milestone), never
-          freely selectable. Locked teaser until the earn mechanic exists. */}
-      <section>
-        <h2 className="mb-3 font-display font-bold text-ink">Belohnungen</h2>
-        <div className="grid grid-cols-4 gap-3">
-          {REWARD_PETS.map((p) => (
-            <div
-              key={p.id}
-              aria-label={`${p.name} (noch gesperrt)`}
-              className="relative flex flex-col items-center gap-1 rounded-card bg-white/60 p-2 shadow-sm ring-1 ring-black/5"
-            >
-              <img src={buddyStateSrc(p.id, 'cool')} alt="" className="h-12 w-12 opacity-40 grayscale" />
-              <span className="text-xs font-medium text-ink-soft/60">{p.name}</span>
-              <span className="absolute right-1.5 top-1.5 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/10">
-                <Lock className="h-3 w-3 text-ink-soft" aria-hidden />
-              </span>
-            </div>
-          ))}
-        </div>
-        <p className="mt-2 text-xs text-ink-soft">
-          🔒 Diese Freunde schaltest du frei, wenn du bestimmte Aufgaben schaffst.
-        </p>
-      </section>
-
       {/* Settings */}
       <section className="space-y-3">
         <h2 className="font-display font-bold text-ink">Einstellungen</h2>
@@ -117,6 +152,11 @@ export function Profil() {
             onChange={(soundOn) => settings.mutate({ soundOn })}
           />
         </Row>
+        {me?.account.email && (
+          <Row label="Anmelde-E-Mail">
+            <span className="min-w-0 truncate text-sm text-ink-soft">{me.account.email}</span>
+          </Row>
+        )}
       </section>
 
       {/* CTAs */}

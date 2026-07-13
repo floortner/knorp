@@ -290,7 +290,7 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 40
+                    "maxLength": 10
                   },
                   "buddy": {
                     "type": "string",
@@ -560,6 +560,11 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10
+                  },
                   "soundOn": {
                     "type": "boolean"
                   },
@@ -850,6 +855,44 @@
     "/api/v1/parent/reset": {
       "post": {
         "operationId": "ParentController_reset",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "parent"
+        ]
+      }
+    },
+    "/api/v1/parent/reset-chat": {
+      "post": {
+        "operationId": "ParentController_resetChat",
         "parameters": [],
         "responses": {
           "200": {

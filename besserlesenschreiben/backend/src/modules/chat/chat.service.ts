@@ -4,7 +4,7 @@ import type { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertProfileOwned } from '../../common/ownership';
 import { ApiException } from '../../common/exceptions/api-exception';
-import { startOfUtcDay } from '../../common/dates';
+import { startOfAppDay } from '../../common/dates';
 import { LlmService } from '../../services/llm/llm.service';
 import type { LlmMessage } from '../../services/llm/llm.types';
 import { StorageService } from '../../services/storage/storage.service';
@@ -140,7 +140,7 @@ export class ChatService {
     // Checked BEFORE persisting so an over-cap message costs nothing and doesn't skew the history.
     const cap = this.config.get('CHAT_MESSAGES_PER_DAY', { infer: true });
     const sentToday = await this.prisma.chatMessage.count({
-      where: { profileId, role: 'child', createdAt: { gte: startOfUtcDay(new Date()) } },
+      where: { profileId, role: 'child', createdAt: { gte: startOfAppDay(new Date()) } },
     });
     if (sentToday >= cap) {
       this.logger.log({ event: 'chat.capped', cap }, 'daily chat cap hit');

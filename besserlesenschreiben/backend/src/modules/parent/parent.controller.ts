@@ -50,4 +50,13 @@ export class ParentController {
   reset(@CurrentAccount() account: AuthAccount, @ParentProfileId() profileId: string) {
     return this.parent.reset(account.id, profileId);
   }
+
+  // ‡ Parent scope required. Target child read from the parentToken, never the request body (security §1).
+  @Post('reset-chat')
+  @HttpCode(200)
+  @UseGuards(ParentScopeGuard)
+  @ApiZodResponse(okSchema)
+  resetChat(@CurrentAccount() account: AuthAccount, @ParentProfileId() profileId: string) {
+    return this.parent.resetChat(account.id, profileId);
+  }
 }

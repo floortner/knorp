@@ -196,6 +196,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/parent/reset-chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ParentController_resetChat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/units": {
         parameters: {
             query?: never;
@@ -808,6 +824,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
+                    name?: string;
                     soundOn?: boolean;
                     dyslexicFont?: boolean;
                     fontScale?: number;
@@ -924,6 +941,28 @@ export interface operations {
         };
     };
     ParentController_reset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+        };
+    };
+    ParentController_resetChat: {
         parameters: {
             query?: never;
             header?: never;

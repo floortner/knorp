@@ -1,4 +1,4 @@
-import { startOfUtcWeek, utcDayDiff } from '../../common/dates';
+import { startOfAppWeek, appDayDiff } from '../../common/dates';
 
 /** Flat stars awarded for completing a session (matches the prototype's +15). */
 export const STARS_PER_SESSION = 15;
@@ -23,7 +23,7 @@ export function leagueFor(starsWeek: number): League {
 /** True if the joker hasn't been used in the current ISO week (Monday–Sunday UTC). */
 export function isJokerAvailable(jokerUsedWeek: Date | null, now: Date): boolean {
   if (!jokerUsedWeek) return true;
-  return jokerUsedWeek.getTime() < startOfUtcWeek(now).getTime();
+  return jokerUsedWeek.getTime() < startOfAppWeek(now).getTime();
 }
 
 /**
@@ -40,7 +40,7 @@ export function nextStreak(
   jokerUsedWeek: Date | null,
 ): { streakDays: number; jokerConsumed: boolean } {
   if (!lastActive) return { streakDays: 1, jokerConsumed: false };
-  const gap = utcDayDiff(lastActive, now);
+  const gap = appDayDiff(lastActive, now);
   if (gap <= 0) return { streakDays: current, jokerConsumed: false };
   if (gap === 1) return { streakDays: current + 1, jokerConsumed: false };
   if (gap === 2 && isJokerAvailable(jokerUsedWeek, now)) {

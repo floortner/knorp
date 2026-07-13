@@ -54,6 +54,30 @@ describe('Profil', () => {
     expect(screen.queryByText(/Trainerin kontaktieren/)).not.toBeInTheDocument();
   });
 
+  it('shows the login email address', async () => {
+    renderProfil();
+    expect(await screen.findByText('m@test.de')).toBeInTheDocument();
+  });
+
+  it('edits the username and PATCHes { name }', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    await user.click(await screen.findByRole('button', { name: 'Namen ändern' }));
+    const input = screen.getByRole('textbox', { name: 'Name' });
+    await user.clear(input);
+    await user.type(input, 'Max');
+    await user.click(screen.getByRole('button', { name: 'Name speichern' }));
+    expect(updateSettings).toHaveBeenCalledWith('p1', { name: 'Max' });
+  });
+
+  it('does not PATCH when the name is unchanged', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    await user.click(await screen.findByRole('button', { name: 'Namen ändern' }));
+    await user.click(screen.getByRole('button', { name: 'Name speichern' }));
+    expect(updateSettings).not.toHaveBeenCalled();
+  });
+
   it('toggles sound off via PATCH settings', async () => {
     const user = userEvent.setup();
     renderProfil();
@@ -74,17 +98,13 @@ describe('Profil', () => {
     expect(updateSettings).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the 4 reward pets LOCKED in their own "Belohnungen" section — visible teaser, never selectable', async () => {
+  it('does not show a "Belohnungen" reward-pets section', async () => {
     renderProfil();
     await screen.findByText('Dein Lernfreund');
-    expect(screen.getByText('Belohnungen')).toBeInTheDocument(); // separate section, not mixed into the buddy grid
+    expect(screen.queryByText('Belohnungen')).not.toBeInTheDocument();
     for (const pet of ['Bo', 'Echo', 'Inky', 'Pixel']) {
-      // rendered as a non-interactive tile (with lock), NOT as a button
-      expect(screen.getByLabelText(`${pet} (noch gesperrt)`)).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: pet })).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(`${pet} (noch gesperrt)`)).not.toBeInTheDocument();
     }
-    expect(screen.getByText(/schaltest du frei/)).toBeInTheDocument();
-    expect(updateSettings).not.toHaveBeenCalled();
   });
 
   it('tapping the big buddy cycles its emotional reaction', async () => {
