@@ -2,8 +2,9 @@
 export const TOTAL_UNITS = 7;
 
 /**
- * Freely selectable learn buddies (monster-pets mascots — 4 emotional states each in /monster-pets/).
- * Ids must match the backend's buddy enum (profiles.dto.ts). Nepo + Stella lead (the original pair).
+ * Freely selectable learn buddies (monster mascots from Planet Knorp — base figure + 4 emotional states
+ * each, served from /monster-pets/; master source art + catalog live at repo-root `assets/` — see
+ * `assets/manifest.json`). Ids must match the backend's buddy enum (profiles.dto.ts). Nepo + Stella lead.
  */
 export const BUDDIES = [
   { id: 'nepo', name: 'Nepo' },
@@ -12,36 +13,41 @@ export const BUDDIES = [
   { id: 'jax', name: 'Jax' },
   { id: 'junior', name: 'Junior' },
   { id: 'li', name: 'Li' },
-  { id: 'rudolph', name: 'Rudolph' },
-  { id: 'theo', name: 'Theo' },
+  { id: 'bruno', name: 'Bruno' },
+  { id: 'greta', name: 'Greta' },
 ] as const;
 
 /**
  * REWARD pets — earned by completing tasks, NOT freely selectable (shown locked in the Profil picker;
- * the backend buddy enum rejects them). The earn mechanic lands with the D5 badges milestone.
+ * the backend buddy enum rejects them). The earn mechanic lands with the D5 badges milestone. Pets have
+ * a base figure + `jubel`/`schlaf` POSES (no emotional states), so they render via their base asset.
  */
 export const REWARD_PETS = [
+  { id: 'bo', name: 'Bo' },
   { id: 'echo', name: 'Echo' },
   { id: 'inky', name: 'Inky' },
   { id: 'pixel', name: 'Pixel' },
-  { id: 'puff', name: 'Puff' },
 ] as const;
 
 export type BuddyId = (typeof BUDDIES)[number]['id'];
 
-const KNOWN = new Set<string>([...BUDDIES, ...REWARD_PETS].map((b) => b.id));
+const BUDDY_IDS = new Set<string>(BUDDIES.map((b) => b.id));
+const PET_IDS = new Set<string>(REWARD_PETS.map((p) => p.id));
+const KNOWN = new Set<string>([...BUDDY_IDS, ...PET_IDS]);
 
-/** Buddy id → default (neutral/happy) asset. Root svgs where they exist, else the fröhlich state. */
+/** Buddy/pet id → base (neutral) figure. Unknown ids (e.g. a retired buddy on an old profile) → Nepo. */
 export function buddySrc(buddy: string): string {
-  const root: Record<string, string> = { nepo: '/nepo.svg', stella: '/stella.svg', pixel: '/pixel.svg' };
-  if (root[buddy]) return root[buddy];
-  return KNOWN.has(buddy) ? `/monster-pets/${buddy}-froehlich.svg` : '/nepo.svg';
+  return KNOWN.has(buddy) ? `/monster-pets/${buddy}.svg` : '/nepo.svg';
 }
 
 export type BuddyState = 'froehlich' | 'traurig' | 'ueberrascht' | 'cool';
 
-/** Map buddy id + emotional state → monster-pets asset path. */
+/**
+ * Map buddy id + emotional state → asset path. Buddies have the 4 mood variants; pets have only poses,
+ * so they fall back to their base figure. Unknown ids fall back to Nepo (keeps a retired buddy from 404ing).
+ */
 export function buddyStateSrc(buddy: string, state: BuddyState): string {
-  const name = KNOWN.has(buddy) ? buddy : 'nepo';
-  return `/monster-pets/${name}-${state}.svg`;
+  if (BUDDY_IDS.has(buddy)) return `/monster-pets/${buddy}-${state}.svg`;
+  if (PET_IDS.has(buddy)) return `/monster-pets/${buddy}.svg`;
+  return `/monster-pets/nepo-${state}.svg`;
 }

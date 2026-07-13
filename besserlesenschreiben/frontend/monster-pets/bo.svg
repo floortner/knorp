@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+<defs>
+<clipPath id="clipBoF"><ellipse cx="120" cy="132" rx="50" ry="46"></ellipse></clipPath>
+</defs>
+<g>
+
+    <ellipse cx="90" cy="78" rx="24" ry="15" fill="#DFF3FB" transform="rotate(-24 90 78)"></ellipse>
+    <ellipse cx="150" cy="78" rx="24" ry="15" fill="#DFF3FB" transform="rotate(24 150 78)"></ellipse>
+    <path d="M108 92 Q102 74 90 68" stroke="#3A2A0A" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+    <circle cx="88" cy="66" r="5.5" fill="#3A2A0A"></circle>
+    <path d="M132 92 Q138 74 150 68" stroke="#3A2A0A" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+    <circle cx="152" cy="66" r="5.5" fill="#3A2A0A"></circle>
+    <ellipse cx="120" cy="132" rx="50" ry="46" fill="#FDC73B"></ellipse>
+    <g clip-path="url(#clipBoF)">
+      <rect x="66" y="150" width="108" height="14" fill="#3A2A0A"></rect>
+      <rect x="66" y="170" width="108" height="12" fill="#3A2A0A"></rect>
+    </g>
+    <path d="M114 176 L120 192 L126 176 Z" fill="#3A2A0A"></path>
+    <circle cx="105" cy="118" r="14" fill="#fff"></circle>
+    <circle cx="135" cy="118" r="14" fill="#fff"></circle>
+    <circle cx="107" cy="121" r="7" fill="#3A2A0A"></circle>
+    <circle cx="133" cy="121" r="7" fill="#3A2A0A"></circle>
+    <circle cx="109" cy="118" r="2.5" fill="#fff"></circle>
+    <circle cx="135" cy="118" r="2.5" fill="#fff"></circle>
+    <circle cx="85" cy="132" r="8" fill="#FF9FB0"></circle>
+    <circle cx="155" cy="132" r="8" fill="#FF9FB0"></circle>
+    <path d="M107 138 Q120 149 133 138" stroke="#3A2A0A" stroke-width="5" fill="none" stroke-linecap="round"></path>
+  
+</g>
+</svg>

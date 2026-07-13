@@ -66,7 +66,7 @@ describe('Profil', () => {
     renderProfil();
     await screen.findByText('Dein Lernfreund');
     expect(screen.getByRole('button', { name: 'Nepo' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: 'Theo' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Greta' })).toHaveAttribute('aria-pressed', 'false');
     await user.click(screen.getByRole('button', { name: 'Charly' }));
     expect(updateSettings).toHaveBeenCalledWith('p1', { buddy: 'charly' });
     // re-tapping the already-selected buddy does nothing
@@ -78,7 +78,7 @@ describe('Profil', () => {
     renderProfil();
     await screen.findByText('Dein Lernfreund');
     expect(screen.getByText('Belohnungen')).toBeInTheDocument(); // separate section, not mixed into the buddy grid
-    for (const pet of ['Echo', 'Inky', 'Pixel', 'Puff']) {
+    for (const pet of ['Bo', 'Echo', 'Inky', 'Pixel']) {
       // rendered as a non-interactive tile (with lock), NOT as a button
       expect(screen.getByLabelText(`${pet} (noch gesperrt)`)).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: pet })).not.toBeInTheDocument();
@@ -92,7 +92,7 @@ describe('Profil', () => {
     renderProfil();
     const buddyBtn = await screen.findByRole('button', { name: 'Dein Lernfreund reagiert' });
     const img = () => buddyBtn.querySelector('img')!.getAttribute('src');
-    expect(img()).toBe('/nepo.svg'); // neutral
+    expect(img()).toBe('/monster-pets/nepo.svg'); // neutral base figure
     await user.click(buddyBtn);
     expect(img()).toBe('/monster-pets/nepo-froehlich.svg');
     await user.click(buddyBtn);

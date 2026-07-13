@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<g>
+
+      <path d="M62 128 Q48 146 56 162" stroke="#6C5CE7" stroke-width="13" fill="none" stroke-linecap="round"></path>
+      <path d="M138 128 Q152 146 144 162" stroke="#6C5CE7" stroke-width="13" fill="none" stroke-linecap="round"></path>
+      <path d="M84 136 Q76 158 86 168" stroke="#5247C4" stroke-width="14" fill="none" stroke-linecap="round"></path>
+      <path d="M116 136 Q124 158 114 168" stroke="#5247C4" stroke-width="14" fill="none" stroke-linecap="round"></path>
+      <path d="M100 140 L100 168" stroke="#6C5CE7" stroke-width="14" stroke-linecap="round" fill="none"></path>
+      <ellipse cx="100" cy="96" rx="44" ry="42" fill="#6C5CE7"></ellipse>
+      <path d="M58 102 A42 40 0 0 0 142 102 Z" fill="#5247C4"></path>
+      <path d="M79 92 Q86 99 93 92" stroke="#2E2A5C" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+      <path d="M107 92 Q114 99 121 92" stroke="#2E2A5C" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+      <circle cx="68" cy="106" r="6" fill="#FF9FB0"></circle><circle cx="132" cy="106" r="6" fill="#FF9FB0"></circle>
+      <path d="M94 114 Q100 118 106 114" stroke="#2E2A5C" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <path d="M146 50 h14 l-14 14 h14" stroke="#2E2A5C" stroke-width="3.5" fill="none" stroke-linejoin="round" stroke-linecap="round"></path>
+      <path d="M168 32 h9 l-9 9 h9" stroke="#2E2A5C" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"></path>
+    
+</g>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+<defs>
+
+<clipPath id="avClip"><circle cx="120" cy="120" r="120"></circle></clipPath>
+</defs>
+<circle cx="120" cy="120" r="120" fill="#E7E9F8"></circle>
+<g clip-path="url(#avClip)">
+<g transform="translate(120,124) scale(1.8) translate(-100,-95)">
+
+      <path d="M72 88 C50 78 28 82 16 94 L26 99 Q31 108 38 101 Q43 111 50 104 Q55 113 62 106 L72 108 Z" fill="#353D8C"></path>
+      <path d="M128 88 C150 78 172 82 184 94 L174 99 Q169 108 162 101 Q157 111 150 104 Q145 113 138 106 L128 108 Z" fill="#353D8C"></path>
+      <path d="M84 64 L76 38 L100 62 Z" fill="#4650B0"></path>
+      <path d="M116 64 L124 38 L100 62 Z" fill="#4650B0"></path>
+      <path d="M86 60 L82 46 L93 60 Z" fill="#FFE29A"></path>
+      <path d="M114 60 L118 46 L107 60 Z" fill="#FFE29A"></path>
+      <ellipse cx="100" cy="98" rx="36" ry="38" fill="#4650B0"></ellipse>
+      <path d="M66 104 A36 36 0 0 0 134 104 Z" fill="#7B84D6"></path>
+      <circle cx="86" cy="92" r="13" fill="#fff"></circle><circle cx="114" cy="92" r="13" fill="#fff"></circle>
+      <circle cx="88" cy="95" r="7" fill="#191F4A"></circle><circle cx="112" cy="95" r="7" fill="#191F4A"></circle>
+      <circle cx="90" cy="92" r="2.4" fill="#fff"></circle><circle cx="114" cy="92" r="2.4" fill="#fff"></circle>
+      <circle cx="68" cy="106" r="6" fill="#FF9FB0"></circle><circle cx="132" cy="106" r="6" fill="#FF9FB0"></circle>
+      <path d="M90 112 Q100 121 110 112" stroke="#191F4A" stroke-width="4" fill="none" stroke-linecap="round"></path>
+    
+</g>
+</g>
+</svg>

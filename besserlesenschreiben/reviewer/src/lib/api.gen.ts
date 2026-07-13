@@ -724,7 +724,7 @@ export interface operations {
                 "application/json": {
                     name: string;
                     /** @enum {string} */
-                    buddy?: "nepo" | "stella" | "charly" | "jax" | "junior" | "li" | "rudolph" | "theo";
+                    buddy?: "nepo" | "stella" | "charly" | "jax" | "junior" | "li" | "bruno" | "greta";
                     goal?: number;
                 };
             };
@@ -813,7 +813,7 @@ export interface operations {
                     fontScale?: number;
                     goal?: number;
                     /** @enum {string} */
-                    buddy?: "nepo" | "stella" | "charly" | "jax" | "junior" | "li" | "rudolph" | "theo";
+                    buddy?: "nepo" | "stella" | "charly" | "jax" | "junior" | "li" | "bruno" | "greta";
                 };
             };
         };

@@ -15,8 +15,8 @@ const me: Me = {
   ],
 };
 const units: Unit[] = [
-  { unit: 1, title: 'Einheit 1', subtitle: 'Selbstlaute entdecken', focus: '', exerciseTypes: ['findvowel'], itemCount: 4, status: 'current', theme: { iconBg: '#DFF0EC', iconColor: '#1E8275' } },
-  { unit: 2, title: 'Einheit 2', subtitle: 'Das Wortraster', focus: '', exerciseTypes: ['raster'], itemCount: 4, status: 'locked', theme: { iconBg: '#EFE6FB', iconColor: '#8B45D6' } },
+  { unit: 1, title: 'Einheit 1', subtitle: 'Selbstlaute entdecken', focus: '', exerciseTypes: ['placeholder'], itemCount: 4, status: 'current', theme: { iconBg: '#DFF0EC', iconColor: '#1E8275' } },
+  { unit: 2, title: 'Einheit 2', subtitle: 'Das Wortraster', focus: '', exerciseTypes: ['placeholder'], itemCount: 4, status: 'locked', theme: { iconBg: '#EFE6FB', iconColor: '#8B45D6' } },
 ];
 
 const progress = {

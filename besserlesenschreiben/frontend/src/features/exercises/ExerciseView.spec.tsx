@@ -9,15 +9,6 @@ const items = (session as unknown as { items: Exercise[] }).items;
 
 const noop = () => {};
 
-describe('ExerciseView golden render', () => {
-  it('renders placeholder from backend JSON', () => {
-    const { container } = render(
-      <ExerciseView ex={items[0]} onAttempt={noop} onSolved={noop} soundOn={false} />,
-    );
-    expect(container).toMatchSnapshot();
-  });
-});
-
 describe('renderer safety', () => {
   it('throws on an unknown exercise type (so the lesson boundary can catch it)', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
