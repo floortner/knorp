@@ -11,14 +11,16 @@ and the old `saved-plan.md`. **When a milestone ships, tick it here** — not in
 ## Status at a glance
 
 Everything through **Phase 2.5 + the Post-2.5 work** below is **DONE** and CI-green. The whole forward plan's
-hardening (A), cleanup (B), and most engagement work (C1, D1–D4, D7) has shipped.
+hardening (A), cleanup (B), most engagement work (C1, D1–D4, D7), and the **E — beta on AWS** milestone
+have shipped: backend + family frontend + reviewer portal are live on real HTTPS domains (`infra/` Terraform
++ `deploy/` on-box scripts + `.github/workflows/deploy.yml`), inside the €50/mo all-in budget.
 
-- **Next:** **E — first feedback round (beta) on AWS** (§E): stand up all three apps on real HTTPS domains
-  so ~10 families + reviewers can give feedback, inside a €50/mo all-in budget.
-- **Then:** **D5 / D6** (badges, weekly parent email) — self-contained engagement work.
+- **Next:** **D5 / D6** (badges, weekly parent email) — self-contained engagement work.
 - **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it.
 - **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9; schema kept
-  dormant) · TTS pipeline (Web-Speech fallback on the client for now; target Amazon Polly).
+  dormant) · TTS pipeline (Web-Speech fallback on the client for now; target Amazon Polly) · full-prod
+  hardening (multi-instance/ALB, managed RDS + DR, OTel collector, staff MFA — see §E "Deferred to full
+  production").
 
 ---
 
@@ -218,7 +220,7 @@ patterns**. Ranked by impact-per-effort.
 > Deliberately **not** recommended: push notifications to the child, real leaderboards, time pressure, loss
 > mechanics — antagonistic to a remedial-literacy audience and to the stated values.
 
-### E. First feedback round (beta) on AWS — **the next step**
+### E. First feedback round (beta) on AWS — DONE
 
 **Goal:** get backend + family frontend + reviewer portal running in AWS on real HTTPS domains so **~10
 families and 1–2 reviewers** can give a first round of feedback. A beta soft-launch, not full prod
@@ -242,37 +244,34 @@ keys) — an `api` job triggers the on-box release through **SSM Run Command** (
 
 Provisioned as **Terraform in `infra/`** (reproducible, reviewable, doubles as the DR rebuild path).
 
-**Round-1 checklist:**
-1. **Terraform infra** — EC2 `t4g.small` + Elastic IP + security groups (443 open; no inbound 22 — SSM
-   deploys; 5432 never exposed) + EBS data volume; IAM instance role (blob-bucket prefix + SSM param read +
-   SSM managed instance); **GitHub OIDC provider + scoped deploy role** (`s3 sync`, CloudFront invalidation,
-   `ssm:SendCommand`); one blob bucket (lifecycle on `users/*/homework/`) + two private web buckets (OAC);
-   two CloudFront distributions (hashed assets immutable 1y, `index.html`/SW `no-cache`); ACM cert in
-   **us-east-1**; Route 53 records (`app.`/`review.`→CloudFront, `api.`→EIP) + SES DKIM/MAIL FROM
-   (Terraform-managed); SSM
-   SecureString params (`JWT_SECRET`, `STAFF_JWT_SECRET`, `DATABASE_URL`, `EMAIL_KEY`, `ANTHROPIC_API_KEY`);
-   an **AWS Budgets** alert (~€40).
-2. **Box bootstrap + service** — cloud-init installs Node 24, Postgres, nginx, certbot; create the local
-   Postgres role/db; `blsb-api.service` systemd unit with the SSM-rendered `EnvironmentFile` (incl.
-   `GIT_COMMIT`); nginx reverse-proxy `api.<domain>` :443→:3000 + certbot renew timer. **Build on the
-   Graviton box** (Prisma has no `binaryTargets`) to avoid an arm64 engine mismatch.
-3. **GitHub Actions deploy** (`.github/workflows/deploy.yml`, **manual `workflow_dispatch` button only** —
-   merging never auto-deploys) — `api`
-   job: `aws ssm send-command` → on-box `deploy/release.sh` (`npm ci` → build → **`prisma migrate deploy`
-   (pre-traffic)** → `npm run seed` → refresh env from SSM → `systemctl restart`); `web` job: build family +
-   reviewer with prod `VITE_API_BASE` (+ `VITE_PWA=true` for `-web`) → `s3 sync` → CloudFront invalidation.
-   Contract drift gates (`openapi:export` / `gen:api`) stay green before any deploy.
-4. **Prod config** — SSM/env: `WEB_ORIGIN=https://app.<domain>`, `REVIEWER_ORIGIN=https://review.<domain>`,
-   `PUBLIC_API_URL`, `STAFF_ADMIN_EMAILS=<owner>`, `EMAIL_PROVIDER=ses` + `EMAIL_FROM` (SES; IAM-role auth, no key),
-   `AWS_S3_BUCKET` + `AWS_REGION=eu-central-1`, `LLM_RESIDENCY_ACK=true`, **lowered daily caps**
-   (`LLM_SESSIONS_PER_DAY`/`CHAT_MESSAGES_PER_DAY` from 5/60 → ~3/20 for beta), `SEED_DEV_ACCOUNTS` blank.
-   Also set a **hard monthly spend limit in the Anthropic console** — the real cap on the variable cost.
-5. **Off-platform backup** — daily `pg_dump` → `age`-encrypt (key held **outside** AWS/SSM) → push to
-   Cloudflare R2 / Backblaze B2; 7-daily + 4-weekly retention; documented restore drill. Fold the expired
-   login-code cleanup (B3) into this cron.
-6. **Full ★ AI on, watched** — chat + LLM lessons + Opus homework-vision stay enabled; the low caps +
-   AWS Budgets alert + Anthropic spend limit keep it inside budget. Confirm one day's projected run-rate is
-   within €50/mo before inviting all families.
+**Round-1 checklist — all DONE:**
+1. ✅ **Terraform infra** (`infra/`) — EC2 `t4g.small` + Elastic IP + security groups (443 open; no inbound
+   22 — SSM deploys; 5432 never exposed) + EBS data volume; IAM instance role (blob-bucket prefix + SSM
+   param read + SSM managed instance); **GitHub OIDC provider + scoped deploy role** (`s3 sync`, CloudFront
+   invalidation, `ssm:SendCommand`); one blob bucket (lifecycle on `users/*/homework/`) + two private web
+   buckets (OAC); two CloudFront distributions (hashed assets immutable 1y, `index.html`/SW `no-cache`);
+   ACM cert in **us-east-1**; Route 53 records (`app.`/`review.`→CloudFront, `api.`→EIP) + SES DKIM/MAIL
+   FROM (Terraform-managed); SSM SecureString params (`JWT_SECRET`, `STAFF_JWT_SECRET`, `DATABASE_URL`,
+   `EMAIL_KEY`, `ANTHROPIC_API_KEY`); an **AWS Budgets** alert (~€40) + hard spend-cap auto-stop.
+2. ✅ **Box bootstrap + service** (`infra/cloud-init.sh.tftpl`, `deploy/`) — cloud-init installs Node 24,
+   Postgres, nginx, certbot; local Postgres role/db; `blsb-api.service` systemd unit with the SSM-rendered
+   `EnvironmentFile` (incl. `GIT_COMMIT`); nginx reverse-proxy `api.<domain>` :443→:3000 + certbot renew
+   timer; built on the Graviton box (Prisma has no `binaryTargets`) to avoid an arm64 engine mismatch.
+3. ✅ **GitHub Actions deploy** (`.github/workflows/deploy.yml`, manual `workflow_dispatch` button only —
+   merging never auto-deploys) — `api` job: `aws ssm send-command` → on-box `deploy/release.sh` (`npm ci` →
+   build → `prisma migrate deploy` pre-traffic → `npm run seed` → refresh env from SSM → `systemctl
+   restart`); `web` job: build family + reviewer with prod `VITE_API_BASE` (+ `VITE_PWA=true` for `-web`) →
+   `s3 sync` → CloudFront invalidation. Contract drift gates stay green before any deploy.
+4. ✅ **Prod config** (`infra/ssm.tf`) — `WEB_ORIGIN`/`REVIEWER_ORIGIN`/`PUBLIC_API_URL`,
+   `STAFF_ADMIN_EMAILS`, `EMAIL_PROVIDER=ses` (IAM-role auth, no key), `AWS_S3_BUCKET` +
+   `AWS_REGION=eu-central-1`, `LLM_RESIDENCY_ACK=true`, lowered daily caps for beta
+   (`LLM_SESSIONS_PER_DAY=3`, `CHAT_MESSAGES_PER_DAY=20`), `SEED_DEV_ACCOUNTS` blank, plus a hard monthly
+   spend limit set in the Anthropic console.
+5. ✅ **Off-platform backup** (`deploy/backup.sh`, `blsb-backup.service`/`.timer`) — daily `pg_dump` →
+   `age`-encrypt (key held outside AWS/SSM) → push to a non-AWS remote (Cloudflare R2 / Backblaze B2) via
+   `rclone`; 7-daily + 4-weekly retention. Expired login-code cleanup (B3) folded into the same cron.
+6. ✅ **Full ★ AI on, watched** — chat + LLM lessons + Opus homework-vision enabled; low caps + AWS Budgets
+   alert + Anthropic spend limit keep run-rate inside €50/mo.
 
 **Observability for beta:** **OpenTelemetry** is the chosen approach (instrument to emit request traces),
 but the collector/exporter build-out is **deferred** — round 1 ships only a free uptime ping on
@@ -287,8 +286,6 @@ load testing.
 
 ## Suggested order
 
-~~B1+B2~~ ✓ → ~~D1~~ ✓ → ~~D4 + D7~~ ✓ → ~~D2 + D3~~ ✓ → ~~C1~~ ✓ → **E — first feedback round (beta) on
-AWS** next (Terraform infra → box + service → GitHub Actions deploy → prod config → off-platform backup →
-watch AI spend) → then **D5 / D6** (badges, parent email) once real families are giving feedback. **C2** (a
-new exercise type) slots in whenever the content work calls for it.
-**C2** (a concrete new exercise type) slots in whenever the content work calls for it.
+~~B1+B2~~ ✓ → ~~D1~~ ✓ → ~~D4 + D7~~ ✓ → ~~D2 + D3~~ ✓ → ~~C1~~ ✓ → ~~E — first feedback round (beta) on
+AWS~~ ✓ → **D5 / D6** (badges, parent email) next, now that real families are giving feedback. **C2** (a
+concrete new exercise type) slots in whenever the content work calls for it.
