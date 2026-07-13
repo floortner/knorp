@@ -1,7 +1,7 @@
 import { type ClipboardEvent, type KeyboardEvent, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Flame, RotateCcw, Star } from 'lucide-react';
+import { ArrowLeft, Flame, RotateCcw, Star, Trash2 } from 'lucide-react';
 import { parentApi } from '@/lib/endpoints';
 import { ApiError, errorMessage } from '@/lib/api';
 import { TOTAL_UNITS, buddySrc } from '@/lib/constants';
@@ -198,6 +198,7 @@ function ParentHome({ parentToken, onLock }: { parentToken: string; onLock: () =
   const { data: me } = useMe();
   const qc = useQueryClient();
   const [confirming, setConfirming] = useState(false);
+  const [confirmingChat, setConfirmingChat] = useState(false);
 
   const profile = me?.profiles[0];
 
@@ -209,6 +210,15 @@ function ParentHome({ parentToken, onLock }: { parentToken: string; onLock: () =
       void qc.invalidateQueries({ queryKey: ['units'] });
       setConfirming(false);
       onLock();
+    },
+  });
+
+  const resetChat = useMutation({
+    mutationFn: () => parentApi.resetChat(parentToken),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['chat'] });
+      setConfirmingChat(false);
+      onLock(); // re-lock to the PIN gate after this destructive action, same as reset
     },
   });
 
@@ -294,6 +304,51 @@ function ParentHome({ parentToken, onLock }: { parentToken: string; onLock: () =
             {reset.isError && (
               <p role="alert" className="text-sm text-orange-dark">
                 {errorMessage(reset.error)}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Delete chat */}
+      <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <p className="font-semibold text-ink">Chat löschen</p>
+        <p className="mt-1 text-sm text-ink-soft">
+          Löscht den gesamten Chat mit dem Lerntrainer – Nachrichten, Rückmeldungen und alle hochgeladenen
+          Fotos der Hausübungen. Lernfortschritt und Einstellungen bleiben erhalten.
+        </p>
+
+        {!confirmingChat ? (
+          <Button
+            variant="ghost"
+            className="mt-3 w-full text-orange-dark hover:bg-orange/10"
+            onClick={() => setConfirmingChat(true)}
+          >
+            <Trash2 className="h-4 w-4" /> Chat löschen
+          </Button>
+        ) : (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm font-semibold text-orange-dark">Wirklich den ganzen Chat löschen?</p>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                className="flex-1"
+                onClick={() => setConfirmingChat(false)}
+                disabled={resetChat.isPending}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                className="flex-1 bg-orange-dark hover:bg-orange-dark/90"
+                onClick={() => resetChat.mutate()}
+                disabled={resetChat.isPending}
+              >
+                {resetChat.isPending ? 'Wird gelöscht…' : 'Ja, Chat löschen'}
+              </Button>
+            </div>
+            {resetChat.isError && (
+              <p role="alert" className="text-sm text-orange-dark">
+                {errorMessage(resetChat.error)}
               </p>
             )}
           </div>

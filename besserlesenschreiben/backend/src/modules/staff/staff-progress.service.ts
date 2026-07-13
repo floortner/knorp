@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
-import { daysAgo, startOfUtcWeek } from '../../common/dates';
+import { daysAgo, startOfAppWeek } from '../../common/dates';
 import { leagueFor } from '../progress/gamification';
 import { skillBreakdown } from '../progress/progress.stats';
 import { ReviewService } from './review.service';
@@ -32,7 +32,7 @@ export class StaffProgressService {
       this.prisma.reviewState.findMany({ where: { profileId, due: { lte: now } }, select: { skillTag: true } }),
       this.prisma.session.aggregate({
         _sum: { starsAward: true },
-        where: { profileId, completedAt: { gte: startOfUtcWeek(now) } },
+        where: { profileId, completedAt: { gte: startOfAppWeek(now) } },
       }),
       this.prisma.attempt.count({ where: { profileId } }),
       this.prisma.session.count({ where: { profileId, completedAt: { gte: daysAgo(now, 7) } } }),

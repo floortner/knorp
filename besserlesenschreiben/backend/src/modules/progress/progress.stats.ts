@@ -1,4 +1,4 @@
-import { daysAgo, startOfUtcWeek, utcDateKey, utcDayDiff } from '../../common/dates';
+import { daysAgo, startOfAppWeek, appDateKey, appDayDiff } from '../../common/dates';
 
 /** One attempt reduced to what the progress aggregations need. */
 export interface AttemptStat {
@@ -22,15 +22,14 @@ export interface SkillStat {
 /**
  * Attempts-per-day for the CURRENT ISO calendar week, Monday-first (index 0 = Mo … 6 = So), matching
  * the Mo–So week strip, the "diese Woche" goal ring, and the league's ISO-week window. Day boundaries
- * are UTC (codebase convention) — for a CET/CEST child a late-night session before ~01:00/02:00 local
- * still credits the previous day, which matches the "I practiced Monday night" mental model.
- * (Was: a rolling last-7-days window, which the Mo-first strip mis-rendered — practice landed on "So".)
+ * are the app's local timezone (Europe/Berlin), so a session at 01:15 local Tuesday counts as Tuesday —
+ * the child's "today", not the UTC day (which would still be Monday and mis-credit the previous day).
  */
 export function weeklyActivity(attempts: readonly AttemptStat[], now: Date): number[] {
-  const monday = startOfUtcWeek(now);
+  const monday = startOfAppWeek(now);
   const counts = [0, 0, 0, 0, 0, 0, 0];
   for (const a of attempts) {
-    const idx = utcDayDiff(monday, a.createdAt);
+    const idx = appDayDiff(monday, a.createdAt);
     if (idx >= 0 && idx < 7) counts[idx] += 1;
   }
   return counts;
@@ -74,9 +73,9 @@ export function skillBreakdown(
 
 function dayBuckets(attempts: readonly AttemptStat[], now: Date, days: number): HeatmapDay[] {
   const buckets = new Map<string, number>();
-  for (let i = days - 1; i >= 0; i--) buckets.set(utcDateKey(daysAgo(now, i)), 0);
+  for (let i = days - 1; i >= 0; i--) buckets.set(appDateKey(daysAgo(now, i)), 0);
   for (const a of attempts) {
-    const key = utcDateKey(a.createdAt);
+    const key = appDateKey(a.createdAt);
     if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1);
   }
   return [...buckets.entries()].map(([date, count]) => ({ date, count }));

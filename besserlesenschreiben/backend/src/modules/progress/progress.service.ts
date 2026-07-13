@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertProfileOwned } from '../../common/ownership';
-import { daysAgo, startOfUtcWeek } from '../../common/dates';
+import { daysAgo, startOfAppWeek } from '../../common/dates';
 import { isJokerAvailable, leagueFor } from './gamification';
 import { monthlyHeatmap, skillBreakdown, weeklyActivity } from './progress.stats';
 
@@ -28,7 +28,7 @@ export class ProgressService {
 
     const weekStars = await this.prisma.session.aggregate({
       _sum: { starsAward: true },
-      where: { profileId, completedAt: { gte: startOfUtcWeek(now) } },
+      where: { profileId, completedAt: { gte: startOfAppWeek(now) } },
     });
 
     return {

@@ -101,4 +101,7 @@ export const parentApi = {
 
   reset: (parentToken: string) =>
     apiFetch<{ ok: true }>('/parent/reset', { method: 'POST', body: {}, token: parentToken }),
+
+  resetChat: (parentToken: string) =>
+    apiFetch<{ ok: true }>('/parent/reset-chat', { method: 'POST', body: {}, token: parentToken }),
 };

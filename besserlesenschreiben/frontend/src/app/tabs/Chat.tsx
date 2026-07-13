@@ -93,9 +93,12 @@ export function Chat() {
   return (
     <section className="flex min-h-[calc(100dvh-8rem)] flex-col">
       <header className="flex items-center gap-3 pb-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-teal/15 text-2xl" aria-hidden>
-          👩‍🏫
-        </div>
+        <img
+          src="/angelika.svg"
+          alt=""
+          aria-hidden
+          className="h-11 w-11 rounded-full bg-teal/15 object-contain"
+        />
         <div>
           <h1 className="font-display text-xl font-bold text-ink">Angelika</h1>
           <p className="text-sm text-ink-soft">Deine Lese-Trainerin</p>
@@ -106,8 +109,8 @@ export function Chat() {
         {isPending && <p className="py-6 text-center text-sm text-ink-soft">Lädt …</p>}
         {!isPending && messages.length === 0 && (
           <p className="mx-auto mt-8 max-w-xs text-center text-ink-soft">
-            Schreib Angelika eine Nachricht – oder lade mit 📷 ein Foto deiner Hausübung hoch. Eine Fachkraft
-            schaut es sich an und passt die nächsten Übungen an.
+            Schreib Angelika eine Nachricht – oder lade ein Foto deiner Hausübung, Test oder Schularbeit hoch
+            und hol dir die nächste Übung.
           </p>
         )}
         {messages.map((m, i) => (

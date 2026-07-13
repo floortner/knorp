@@ -125,7 +125,7 @@ function ChooseBuddy({
         value={name}
         onChange={(e) => onName(e.target.value)}
         aria-label="Name"
-        maxLength={40}
+        maxLength={10}
         autoFocus
       />
 

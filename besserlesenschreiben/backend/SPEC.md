@@ -409,7 +409,8 @@ DELETE /staff/users/{id}                               -> 204   # erasure: DB ca
 POST /parent/set-pin       {pin}                     -> {ok}
 POST /parent/verify-pin    {pin}                     -> {parentToken}
 POST /parent/unlock-next   ‡ {profileId}             -> {ok}
-POST /parent/reset         ‡ {profileId}             -> {ok}     # destructive; parent scope mandatory
+POST /parent/reset         ‡ {profileId}             -> {ok}     # destructive; wipes learning progress
+POST /parent/reset-chat    ‡ {profileId}             -> {ok}     # destructive; wipes the whole chat: messages + homework uploads (rows + image blobs). Learning progress untouched
 ```
 **Billing — DEFERRED (not built):** `/billing/*` (`status`, `checkout`, `webhook`) belong to the deferred
 paid-tier option (ARCHITECTURE §9). The app is free; nothing here is implemented. Listed for the future only.

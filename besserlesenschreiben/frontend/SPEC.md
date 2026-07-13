@@ -146,7 +146,7 @@ GET  /units                    POST /sessions            POST /attempts        P
 GET  /progress/{id}            GET  /digest/{id}
 GET  /chat/{id}                POST /chat/{id}            # history messages may carry imageUrl (homework bubbles)
 POST /homework                 GET  /homework/{id}        # no /confirm — staff reviewer is the human gate (§9)
-POST /parent/verify-pin        POST /parent/unlock-next   POST /parent/reset
+POST /parent/verify-pin        POST /parent/unlock-next   POST /parent/reset   POST /parent/reset-chat
 ```
 
 TanStack Query keys: `['me']`, `['units']`, `['session', id]`, `['progress', profileId]`, `['chat', profileId]`.
@@ -166,7 +166,7 @@ error paths (the message is written for the child); no special routing. Nothing 
 ## 8. Parent area
 
 - Reached from `/profil`; entry requires `POST /parent/verify-pin` → hold the returned parent token for ~15 min.
-- **Trainer actions:** unlock next unit, reset progress (confirm dialog — destructive).
+- **Trainer actions:** unlock next unit; reset progress; delete chat — the whole conversation incl. homework photos, learning progress kept (each destructive, behind a confirm dialog).
 - **No billing.** The app is free (approval-gated, ARCHITECTURE §1b/§9); there is no supporter/credit UI.
 - No engagement/streak-pressure mechanics tied to anything monetary, anywhere.
 

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { JwtService } from '@nestjs/jwt';
 import { ParentService } from './parent.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { StorageService } from '../../services/storage/storage.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 
 // argon2.verify returns true iff the supplied pin equals the stored "hash" (which we set to the pin).
@@ -35,9 +36,14 @@ function setup(initial: Partial<AccountRow> = {}) {
     },
     // verify-pin now binds the token to a child → it checks ownership first.
     profile: { findFirst: vi.fn(async () => ({ id: 'p1', accountId: 'acc-1' })) },
+    chatMessage: { deleteMany: vi.fn(async () => ({ count: 3 })) },
+    homeworkUpload: { deleteMany: vi.fn(async () => ({ count: 2 })) },
+    // $transaction runs the array of prisma promises together (mirrors the real batch semantics).
+    $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   } as unknown as PrismaService;
   const jwt = { signAsync: vi.fn(async () => 'parent-token') } as unknown as JwtService;
-  return { svc: new ParentService(prisma, jwt), row };
+  const storage = { deleteProfileHomework: vi.fn(async () => undefined) } as unknown as StorageService;
+  return { svc: new ParentService(prisma, jwt, storage), row, prisma, storage };
 }
 
 async function statusOf(p: Promise<unknown>): Promise<number | 'ok'> {
@@ -88,5 +94,20 @@ describe('ParentService durable PIN lockout', () => {
     expect(row.pinAttempts).toBe(0);
     expect(row.pinLockedUntil).toBeNull();
     expect(row.parentPinHash).toBe('9999');
+  });
+
+  it('resetChat fully wipes the chat — messages, homework rows AND image blobs (ownership-checked)', async () => {
+    const { svc, prisma, storage } = setup();
+    const p = prisma as unknown as {
+      chatMessage: { deleteMany: ReturnType<typeof vi.fn> };
+      homeworkUpload: { deleteMany: ReturnType<typeof vi.fn> };
+      profile: { findFirst: ReturnType<typeof vi.fn> };
+    };
+    const s = storage as unknown as { deleteProfileHomework: ReturnType<typeof vi.fn> };
+    await expect(svc.resetChat('acc-1', 'p1')).resolves.toEqual({ ok: true });
+    expect(p.profile.findFirst).toHaveBeenCalled(); // assertProfileOwned ran
+    expect(s.deleteProfileHomework).toHaveBeenCalledWith('acc-1', 'p1'); // image blobs erased
+    expect(p.chatMessage.deleteMany).toHaveBeenCalledWith({ where: { profileId: 'p1' } });
+    expect(p.homeworkUpload.deleteMany).toHaveBeenCalledWith({ where: { profileId: 'p1' } });
   });
 });

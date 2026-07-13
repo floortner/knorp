@@ -5,7 +5,7 @@ import type { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 import { assertProfileOwned } from '../../common/ownership';
-import { daysAgo, startOfUtcDay, startOfUtcWeek } from '../../common/dates';
+import { daysAgo, startOfAppDay, startOfAppWeek } from '../../common/dates';
 import { STARS_PER_SESSION, isJokerAvailable, leagueFor, nextStreak, type League } from '../progress/gamification';
 import { LlmService } from '../../services/llm/llm.service';
 import { DigestService } from '../../services/digest/digest.service';
@@ -171,7 +171,7 @@ export class SessionsService {
     // existing session rows — no extra bookkeeping. The FE surfaces the friendly message via its error path.
     const cap = this.config.get('LLM_SESSIONS_PER_DAY', { infer: true });
     const usedToday = await this.prisma.session.count({
-      where: { profileId: profile.id, source: 'llm', createdAt: { gte: startOfUtcDay(now) } },
+      where: { profileId: profile.id, source: 'llm', createdAt: { gte: startOfAppDay(now) } },
     });
     if (usedToday >= cap) {
       this.logger.log({ event: 'session.llm_capped', profileId: profile.id, cap }, 'daily llm-session cap hit');
@@ -303,8 +303,8 @@ export class SessionsService {
     const profileUpdate = {
       stars: { increment: stars },
       streakDays,
-      lastActive: startOfUtcDay(now),
-      ...(jokerConsumed ? { jokerUsedWeek: startOfUtcWeek(now) } : {}),
+      lastActive: startOfAppDay(now),
+      ...(jokerConsumed ? { jokerUsedWeek: startOfAppWeek(now) } : {}),
       ...(shouldUnlock ? { unlockedUnit: { increment: 1 } } : {}),
     };
     await this.prisma.$transaction([
@@ -322,7 +322,7 @@ export class SessionsService {
       this.logger.log({ event: 'session.joker_consumed', streakDays }, 'weekly joker applied');
     }
     this.logger.log({ event: 'session.completed', sessionId, stars, streakDays }, 'session completed');
-    const jokerAvailable = isJokerAvailable(jokerConsumed ? startOfUtcWeek(now) : profile.jokerUsedWeek, now);
+    const jokerAvailable = isJokerAvailable(jokerConsumed ? startOfAppWeek(now) : profile.jokerUsedWeek, now);
     return { starsAwarded: stars, streakDays, jokerAvailable, jokerConsumed, league: await this.weeklyLeague(profile.id, now), allUnitsComplete };
   }
 
@@ -330,7 +330,7 @@ export class SessionsService {
   private async weeklyLeague(profileId: string, now: Date): Promise<League> {
     const agg = await this.prisma.session.aggregate({
       _sum: { starsAward: true },
-      where: { profileId, completedAt: { gte: startOfUtcWeek(now) } },
+      where: { profileId, completedAt: { gte: startOfAppWeek(now) } },
     });
     return leagueFor(agg._sum.starsAward ?? 0);
   }
