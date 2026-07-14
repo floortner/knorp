@@ -146,7 +146,7 @@ export function Chat() {
           variant="ghost"
           size="md"
           aria-label="Hausübung fotografieren"
-          title="Hausübung hochladen – eine Fachkraft schaut sie sich an"
+          title="Foto deiner Hausübung, Test oder Schularbeit hochladen"
           onClick={() => fileRef.current?.click()}
           disabled={upload.isPending || !profileId}
         >
