@@ -88,12 +88,33 @@ describe('ParentService durable PIN lockout', () => {
     expect(await statusOf(svc.verifyPin('acc-1', '1234', 'p1'))).toBe(409);
   });
 
-  it('setPin clears any standing lockout', async () => {
-    const { svc, row } = setup({ pinAttempts: 5, pinLockedUntil: new Date(Date.now() + 1000) });
+  it('first-time setPin (no PIN yet) succeeds without a current PIN and clears any lockout', async () => {
+    const { svc, row } = setup({ parentPinHash: null, pinAttempts: 5, pinLockedUntil: new Date(Date.now() + 1000) });
     await svc.setPin('acc-1', '9999');
     expect(row.pinAttempts).toBe(0);
     expect(row.pinLockedUntil).toBeNull();
     expect(row.parentPinHash).toBe('9999');
+  });
+
+  it('changing an existing PIN requires the current one — succeeds when it matches', async () => {
+    const { svc, row } = setup(); // existing PIN '1234'
+    await svc.setPin('acc-1', '9999', '1234');
+    expect(row.parentPinHash).toBe('9999');
+  });
+
+  it('changing an existing PIN without the current one is refused (403) and does not overwrite', async () => {
+    const { svc, row } = setup(); // existing PIN '1234'
+    expect(await statusOf(svc.setPin('acc-1', '9999'))).toBe(403);
+    expect(row.parentPinHash).toBe('1234');
+  });
+
+  it('changing an existing PIN with a wrong current PIN counts toward the durable lockout', async () => {
+    const { svc, row } = setup({ pinAttempts: 4 }); // existing PIN '1234'
+    expect(await statusOf(svc.setPin('acc-1', '9999', '0000'))).toBe(403);
+    expect(row.pinLockedUntil).toBeInstanceOf(Date); // 5th failure trips the lock
+    expect(row.parentPinHash).toBe('1234');
+    // correct current PIN is now refused with 429 while locked
+    expect(await statusOf(svc.setPin('acc-1', '9999', '1234'))).toBe(429);
   });
 
   it('resetChat fully wipes the chat — messages, homework rows AND image blobs (ownership-checked)', async () => {

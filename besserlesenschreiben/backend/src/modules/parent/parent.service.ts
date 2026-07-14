@@ -23,9 +23,32 @@ export class ParentService {
     private readonly storage: StorageService,
   ) {}
 
-  async setPin(accountId: string, pin: string): Promise<{ ok: true }> {
+  async setPin(accountId: string, pin: string, currentPin?: string): Promise<{ ok: true }> {
+    const account = await this.prisma.account.findUnique({ where: { id: accountId } });
+    // Changing an EXISTING PIN requires the current one. Without this the parent gate is trivially
+    // bypassable by whoever holds the family session — the exact actor (the child) it exists to stop
+    // (security review P1-1). The free first-time set is allowed only when no PIN is set yet.
+    if (account?.parentPinHash) {
+      if (account.pinLockedUntil && account.pinLockedUntil.getTime() > Date.now()) {
+        throw new ApiException(429, 'RATE_LIMITED', 'Zu viele Fehlversuche. Bitte später erneut.');
+      }
+      const ok = currentPin ? await argon2.verify(account.parentPinHash, currentPin) : false;
+      if (!ok) {
+        // Reuse the durable lockout so this path can't be used to brute-force the PIN either.
+        const fails = account.pinAttempts + 1;
+        const locked = fails >= MAX_PIN_ATTEMPTS;
+        await this.prisma.account.update({
+          where: { id: accountId },
+          data: {
+            pinAttempts: locked ? 0 : fails,
+            pinLockedUntil: locked ? new Date(Date.now() + LOCK_MS) : null,
+          },
+        });
+        throw new ApiException(403, 'FORBIDDEN', 'Aktuelle PIN falsch.');
+      }
+    }
     const parentPinHash = await argon2.hash(pin);
-    // Setting/replacing the PIN clears any standing lockout.
+    // A successful (re)set clears any standing lockout.
     await this.prisma.account.update({
       where: { id: accountId },
       data: { parentPinHash, pinAttempts: 0, pinLockedUntil: null },

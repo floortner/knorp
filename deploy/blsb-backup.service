@@ -5,4 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/opt/blsb/current/deploy/backup.sh
+# Run from a ROOT-owned location, never /opt/blsb/current/deploy (which the app user can write) — a
+# root-run timer must not execute a file the unprivileged app user could rewrite (security review P1-2).
+# release.sh installs this copy with `install -m 755 -o root -g root`.
+ExecStart=/usr/local/sbin/blsb-backup.sh

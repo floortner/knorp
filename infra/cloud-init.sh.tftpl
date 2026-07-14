@@ -85,7 +85,11 @@ dnf install -y nodejs
 # --- 3. App system user + directories ---
 id -u blsb >/dev/null 2>&1 || useradd --system --create-home --shell /usr/sbin/nologin blsb
 mkdir -p /opt/blsb/releases /etc/blsb
-chown -R blsb:blsb /opt/blsb
+# /opt/blsb and its release tree stay ROOT-owned: root extracts each release and installs the systemd
+# units, and a root-run timer (backup) must never execute a file the unprivileged app user could rewrite
+# (security review P1-2). release.sh chowns only the backend build dir to blsb — all it needs to build.
+chown root:root /opt/blsb /opt/blsb/releases
+chmod 755 /opt/blsb /opt/blsb/releases
 chmod 750 /etc/blsb
 
 # --- 4. Mount the data volume NOW (waits for the attachment), then initialise Postgres on it ---

@@ -661,7 +661,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        token: string;
                         isNewAccount: boolean;
                     };
                 };
@@ -871,6 +870,7 @@ export interface operations {
             content: {
                 "application/json": {
                     pin: string;
+                    currentPin?: string;
                 };
             };
         };

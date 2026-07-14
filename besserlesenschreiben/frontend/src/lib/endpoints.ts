@@ -93,8 +93,12 @@ export const chatApi = {
  * body, and no global token mutation.
  */
 export const parentApi = {
-  setPin: (pin: string) =>
-    apiFetch<{ ok: true }>('/parent/set-pin', { method: 'POST', body: { pin } }),
+  // `currentPin` is required only to CHANGE an existing PIN; the first-time set omits it (backend P1-1).
+  setPin: (pin: string, currentPin?: string) =>
+    apiFetch<{ ok: true }>('/parent/set-pin', {
+      method: 'POST',
+      body: { pin, ...(currentPin ? { currentPin } : {}) },
+    }),
 
   verifyPin: (pin: string, profileId: string) =>
     apiFetch<{ parentToken: string }>('/parent/verify-pin', { method: 'POST', body: { pin, profileId } }),

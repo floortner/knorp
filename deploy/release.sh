@@ -34,7 +34,10 @@ LETSENCRYPT_EMAIL="$(envval LETSENCRYPT_EMAIL)"
 : "${DATABASE_URL:?missing DATABASE_URL in SSM}"
 
 # 2. Build the backend as the runtime user (devDeps needed for nest/tsx/prisma CLIs; NOT NODE_ENV=production).
-chown -R blsb:blsb "$RELEASE_DIR"
+# Chown ONLY the backend build dir to blsb — the rest of the release (deploy/ scripts + the systemd units
+# that root installs, and the backup script a root timer runs) stays root-owned, so the unprivileged app
+# user can never rewrite a file that later executes as root (security review P1-2).
+chown -R blsb:blsb "$BE"
 sudo -u blsb bash -c "cd '$BE' && npm ci --include=dev && npx prisma generate && npm run build"
 
 # 3. Migrations (pre-traffic) + idempotent seed, as blsb (peer auth over the unix socket).
@@ -52,10 +55,17 @@ sudo -u blsb bash -c "cd '$BE' && DATABASE_URL='$DATABASE_URL' STAFF_ADMIN_EMAIL
 # 4. Flip the current symlink the systemd unit points at.
 ln -sfn "$RELEASE_DIR" /opt/blsb/current
 
-# 5. systemd unit.
-install -m 644 "$RELEASE_DIR/deploy/blsb-api.service" /etc/systemd/system/blsb-api.service
+# 5. systemd units + root-run scripts. Install into root-owned locations (install writes a fresh
+# root:root dest regardless of the source's owner) so nothing root executes is writable by the app user
+# (security review P1-2). The backup script lives in /usr/local/sbin, never under /opt/blsb.
+install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-api.service"    /etc/systemd/system/blsb-api.service
+install -m 755 -o root -g root "$RELEASE_DIR/deploy/backup.sh"          /usr/local/sbin/blsb-backup.sh
+install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-backup.service" /etc/systemd/system/blsb-backup.service
+install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-backup.timer"   /etc/systemd/system/blsb-backup.timer
 systemctl daemon-reload
 systemctl enable blsb-api
+# Note: the backup timer is enabled by the operator once /etc/blsb/backup.env exists (see deploy/README.md)
+# — installing the units here just guarantees the root-owned ExecStart path is always current.
 
 # 6. nginx site + TLS. Render the template ONLY on first deploy — after that certbot OWNS the file
 # (it rewrites it with the :443 server + redirect); re-rendering would clobber TLS. (Exactly that bug

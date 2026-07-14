@@ -10,7 +10,9 @@ import { homeworkAnalysisSchema } from './staff';
 export const okSchema = z.object({ ok: z.literal(true) });
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
-export const verifyResponseSchema = z.object({ token: z.string(), isNewAccount: z.boolean() });
+// The session JWT is delivered ONLY as an httpOnly cookie (set by the controller) — never in the body, so
+// no long-lived credential is ever exposed to page JavaScript (security review P1-4).
+export const verifyResponseSchema = z.object({ isNewAccount: z.boolean() });
 
 // ── Profiles ───────────────────────────────────────────────────────────────────
 export const profileSchema = z.object({

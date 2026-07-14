@@ -14,28 +14,30 @@ Findings were produced by four focused reviewers and the load-bearing ones re-ve
 
 ## Priority 1 — fix before beta
 
-### P1-1 · Parent PIN can be reset without knowing it (parental-control bypass) — Medium
+> **Status: all four fixed in this branch** (`claude/security-review-improvements-um2l6v`). Backend + both frontends typecheck and pass their full test suites; `openapi.json` and both `api.gen.ts` regenerated. The CloudFront CSP should be smoke-tested in staging before it fronts real traffic (a too-tight CSP fails closed). Terraform not `validate`d locally (no CLI in the review env) — run `terraform validate`/`plan` before apply.
+
+### P1-1 · Parent PIN can be reset without knowing it (parental-control bypass) — Medium · ✅ fixed
 `backend/src/modules/parent/parent.controller.ts:20-26` + `parent.service.ts:26-34`
 
 `POST /parent/set-pin` sits behind only the global family `JwtAuthGuard` — **not** `ParentScopeGuard` — and `setPin()` overwrites `parentPinHash` unconditionally, clearing the lockout, with no check of the current PIN. Anyone holding the family session (in practice **the child, on the family's own logged-in device**) can call `set-pin {pin:"0000"}`, then `verify-pin`, then `unlock-next` / `reset` / `reset-chat`. The PIN is the gate on exactly those destructive routes, and it's bypassable by the actor it exists to stop. The durable 5-try/15-min lockout is moot — you don't guess the PIN, you replace it.
 
 **Fix:** allow the free first-time set only when `parentPinHash` is null; once a PIN exists, require either the current PIN (add a `currentPin` field verified in `setPin`) or a fresh `parent`-scope token to change it.
 
-### P1-2 · `blsb` → root privilege escalation via root-executed, blsb-writable files — High
+### P1-2 · `blsb` → root privilege escalation via root-executed, blsb-writable files — High · ✅ fixed
 `deploy/release.sh:37`, `deploy/blsb-backup.service:8`, `infra/cloud-init.sh.tftpl:88`
 
 `release.sh` does `chown -R blsb:blsb "$RELEASE_DIR"`, which includes `deploy/` — so `backup.sh` becomes owned by the unprivileged app user. `blsb-backup.service` then runs that file **as root** on a timer. Any code-execution as `blsb` (an npm postinstall, a Node/Nest bug on the multipart/LLM path) can rewrite `backup.sh` and get root at the next timer fire — reading `/etc/blsb/env` (all JWT secrets + the Anthropic key), the whole DB, and the backup credentials. This defeats the otherwise-careful root/blsb split.
 
 **Fix:** install root-owned copies of the scripts/units (`install -m 755 -o root -g root deploy/backup.sh /usr/local/sbin/blsb-backup.sh` and point the unit there); `chown` only the backend build dir, not `deploy/`; make `/opt/blsb/releases` root-owned.
 
-### P1-3 · No CSP or security headers on any of the three hostnames — Medium
+### P1-3 · No CSP or security headers on any of the three hostnames — Medium · ✅ fixed
 `infra/cdn.tf` (both distributions, no `response_headers_policy_id`), `deploy/nginx-api.conf.template` (no `add_header`), both `index.html` files
 
 No CSP, no HSTS, no `X-Content-Type-Options`, no `frame-ancestors`, no `Referrer-Policy` anywhere. There are no HTML-injection sinks in the code today (verified — see below), so this is defense-in-depth, but it's the single control that would contain a *future* mistake (a markdown chat renderer, an inlined SVG, a compromised dependency exfiltrating data). The reviewer portal in particular renders adversarial-derived content (vision-OCR'd homework drafts) and drives identity-bearing admin actions. `Referrer-Policy` also keeps presigned-URL query strings out of `Referer` headers.
 
 **Fix:** add one `aws_cloudfront_response_headers_policy` and attach it to both distributions; add HSTS via nginx `add_header` (both apps are fully self-contained — fonts are npm-bundled, no CDN scripts — so a tight CSP like `default-src 'self'; script-src 'self'; frame-ancestors 'none'` is realistic). Attaching AWS's managed `SecurityHeadersPolicy` is the one-line version.
 
-### P1-4 · `/auth/verify` returns the 30-day session JWT in the JSON body — Medium
+### P1-4 · `/auth/verify` returns the 30-day session JWT in the JSON body — Medium · ✅ fixed
 `backend/src/contract/models.ts:13` (`verifyResponseSchema` includes `token`), returned at `auth.controller.ts:44`
 
 The whole auth design is "no token in JS, httpOnly cookie, `/me` probe" — yet verify hands the full 30-day JWT to JavaScript at the moment it's minted. The SPA ignores it, but any script-context compromise (future XSS, malicious extension, a stray logging hook) can read a long-lived credential that works from anywhere, defeating the reason the cookie is httpOnly.

@@ -263,7 +263,7 @@ chat_message(
 The session JWT alone is not enough: the family `JwtAuthGuard` re-reads the account each request and rejects anything not `status='active'`, so deactivate/delete take effect immediately (not at 30-day token expiry).
 
 **Parent PIN**
-- Set at onboarding: `POST /parent/set-pin {pin}` → store **argon2 hash** (never plaintext); also clears any standing lockout.
+- Set at onboarding: `POST /parent/set-pin {pin}` → store **argon2 hash** (never plaintext); also clears any standing lockout. **Changing** an existing PIN requires the current one: `POST /parent/set-pin {pin, currentPin}` verifies `currentPin` (subject to the same durable lockout) before overwriting — otherwise whoever holds the family session (the child, on the family device) could reset the PIN and defeat the gate on the `‡` routes. The free set is allowed only when no PIN exists yet.
 - `POST /parent/verify-pin {pin}` → compare hash; **lock after 5 fails for 15 min** (4 digits = 10k combos). The lockout is **durable** — persisted on `account.pin_attempts` + `account.pin_locked_until`, not an in-memory Map — so it survives restarts and holds across scaled-out replicas (ARCHITECTURE §8). A correct PIN during the window returns `429 RATE_LIMITED`; a wrong PIN returns `403`. On success the counter is cleared and `parentToken` is returned: a **separate short-lived JWT** carrying a `parent` claim (~15 min). The client holds it and sends it on `‡` routes; `ParentScopeGuard` requires a valid, unexpired `parent` claim. It **does not replace** the session JWT.
 - The prototype's "any 4 digits" client check must NOT survive into production — the PIN guards `reset` and analytics.
 
@@ -297,7 +297,7 @@ This contract is **generated, not hand-written**: Zod schemas in `src/contract/*
 ### Auth
 ```
 POST /auth/request-code     {email}                  -> 200 {ok:true}
-POST /auth/verify           {email, code}            -> 200 {token, isNewAccount}   # also Set-Cookie: session
+POST /auth/verify           {email, code}            -> 200 {isNewAccount}          # session JWT via Set-Cookie ONLY (never in the body)
 POST /auth/logout                                    -> 200 {ok:true}               # clears the session cookie
 ```
 
@@ -415,7 +415,7 @@ DELETE /staff/users/{id}                               -> 204   # erasure: DB ca
 
 ### Parent
 ```
-POST /parent/set-pin       {pin}                     -> {ok}
+POST /parent/set-pin       {pin, currentPin?}        -> {ok}   # currentPin required to CHANGE an existing PIN
 POST /parent/verify-pin    {pin}                     -> {parentToken}
 POST /parent/unlock-next   ‡ {profileId}             -> {ok}
 POST /parent/reset         ‡ {profileId}             -> {ok}     # destructive; wipes learning progress

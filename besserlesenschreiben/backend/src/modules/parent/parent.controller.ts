@@ -22,7 +22,7 @@ export class ParentController {
   @ApiZodBody(SetPinDto.schema)
   @ApiZodResponse(okSchema)
   setPin(@CurrentAccount() account: AuthAccount, @Body() dto: SetPinDto) {
-    return this.parent.setPin(account.id, dto.pin);
+    return this.parent.setPin(account.id, dto.pin, dto.currentPin);
   }
 
   @Post('verify-pin')
