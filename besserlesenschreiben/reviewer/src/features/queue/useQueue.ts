@@ -1,13 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { reviewApi, type QueueFilter } from '@/lib/endpoints';
 
 export type { QueueFilter };
 
-/** A slice of the review pipeline (first page). Pseudonymised rows; cursor paging is wired in `reviewApi`. */
+const PAGE_SIZE = 50;
+
+/**
+ * The review pipeline as an infinite, cursor-paged list ("Mehr laden"). Pseudonymised rows.
+ * Keyed under ['staff-queue', 'list', …] — distinct from the PLAIN page the review screen caches at
+ * ['staff-queue', 'open'] (different data shape); the shared 'staff-queue' prefix still invalidates both.
+ */
 export function useQueue(status: QueueFilter = 'open') {
-  return useQuery({
-    queryKey: ['staff-queue', status],
-    queryFn: () => reviewApi.queue({ status, limit: 50 }),
+  return useInfiniteQuery({
+    queryKey: ['staff-queue', 'list', status],
+    queryFn: ({ pageParam }) => reviewApi.queue({ status, limit: PAGE_SIZE, cursor: pageParam }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
     // Small fixed staff pool — a short refetch keeps the shared queue roughly live without polling hard.
     refetchInterval: 30_000,
   });

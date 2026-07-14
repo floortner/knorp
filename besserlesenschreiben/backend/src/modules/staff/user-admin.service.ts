@@ -29,10 +29,16 @@ export class UserAdminService {
     private readonly storage: StorageService,
   ) {}
 
-  /** Identity-bearing account list (real email), newest first, optionally filtered by status. Cursor-paged. */
-  async list(limit: number, status?: AccountStatus, cursor?: string) {
+  /**
+   * Identity-bearing account list (real email), newest first, optionally filtered by status and/or an
+   * email search fragment (case-insensitive contains). Cursor-paged.
+   */
+  async list(limit: number, status?: AccountStatus, cursor?: string, q?: string) {
     const take = Math.min(Math.max(limit, 1), MAX_LIMIT);
-    const where = status ? { status } : undefined;
+    const where = {
+      ...(status ? { status } : {}),
+      ...(q ? { email: { contains: q, mode: 'insensitive' as const } } : {}),
+    };
     const [rows, total] = await Promise.all([
       this.prisma.account.findMany({
         where,

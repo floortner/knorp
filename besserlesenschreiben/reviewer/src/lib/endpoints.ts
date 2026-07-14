@@ -34,6 +34,9 @@ export const staffAuthApi = {
   logout: () => apiFetch<{ ok: true }>('/staff/auth/logout', { method: 'POST', body: {} }),
 
   me: () => apiFetch<StaffMe>('/staff/me'),
+
+  /** Update the caller's own display name (profile page). */
+  updateMe: (name: string) => apiFetch<StaffMe>('/staff/me', { method: 'PATCH', body: { name } }),
 };
 
 export const reviewApi = {
@@ -76,12 +79,13 @@ export const reviewApi = {
  * gets 403 on every call here.
  */
 export const usersApi = {
-  list: (params: { status?: AccountStatus; limit?: number; cursor?: string } = {}) => {
-    const q = new URLSearchParams();
-    if (params.status) q.set('status', params.status);
-    if (params.limit !== undefined) q.set('limit', String(params.limit));
-    if (params.cursor) q.set('cursor', params.cursor);
-    const qs = q.toString();
+  list: (params: { status?: AccountStatus; limit?: number; cursor?: string; q?: string } = {}) => {
+    const query = new URLSearchParams();
+    if (params.status) query.set('status', params.status);
+    if (params.limit !== undefined) query.set('limit', String(params.limit));
+    if (params.cursor) query.set('cursor', params.cursor);
+    if (params.q) query.set('q', params.q); // email search fragment (case-insensitive contains)
+    const qs = query.toString();
     return apiFetch<AdminUserPage>(`/staff/users${qs ? `?${qs}` : ''}`);
   },
 

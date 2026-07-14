@@ -21,8 +21,11 @@ interface QueueItem {
   imageUrl: string;
   llmAnalysis: HomeworkAnalysis;
   createdAt: string;
+  claimed: boolean;
   decision: string | null;
   reviewedAt: string | null;
+  reviewedAnalysis: HomeworkAnalysis | null;
+  notes: string | null;
 }
 
 /** Which slice of the review pipeline to list. */
@@ -34,16 +37,17 @@ export type QueueFilter = 'open' | 'done' | 'all';
  */
 function queueQuery(
   filter: QueueFilter,
-  now: Date,
 ): { where: Prisma.HomeworkUploadWhereInput; orderBy: Prisma.HomeworkUploadOrderByWithRelationInput[] } {
   switch (filter) {
     case 'done':
       return { where: { status: { in: ['reviewed', 'rejected'] } }, orderBy: [{ reviewedAt: 'desc' }, { id: 'desc' }] };
     case 'all':
       return { where: {}, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] };
-    default: // open: pickable pending items, oldest-first (FIFO)
+    default:
+      // open: ALL undecided items, oldest-first (FIFO). Live-claimed rows are included and flagged
+      // `claimed` (in Prüfung) so other reviewers see work in progress instead of items vanishing.
       return {
-        where: { status: 'pending_review', OR: [{ claimedBy: null }, { claimedUntil: { lt: now } }] },
+        where: { status: 'pending_review' },
         orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       };
   }
@@ -76,24 +80,31 @@ export class ReviewService {
   }
 
   /**
-   * List review items. `open` = pickable pending items (unclaimed / lease-expired), oldest-first — the live
-   * queue. `done` = already-actioned (reviewed/rejected), newest-first — the history. `all` = everything.
-   * Every row stays PSEUDONYMISED. Cursor-paged, with a total for the current filter.
+   * List review items. `open` = every undecided item, oldest-first — the live queue, with live-claimed
+   * rows flagged `claimed` (in Prüfung by someone else). `done` = already-actioned (reviewed/rejected),
+   * newest-first — the history, carrying the verdict (`reviewedAnalysis`/`notes`) for the read-only
+   * detail view. `all` = everything. Every row stays PSEUDONYMISED. Cursor-paged, with a total.
    */
   async queue(
+    reviewerId: string,
     limit: number,
     cursor?: string,
     filter: QueueFilter = 'open',
   ): Promise<{ items: QueueItem[]; nextCursor: string | null; total: number }> {
     const take = Math.min(Math.max(limit, 1), MAX_LIMIT);
-    const { where, orderBy } = queueQuery(filter, new Date());
+    const now = new Date();
+    const { where, orderBy } = queueQuery(filter);
     const [rows, total] = await Promise.all([
       this.prisma.homeworkUpload.findMany({
         where,
         orderBy,
         take: take + 1, // one extra to know if there's a next page
         ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-        include: { profile: { select: { unlockedUnit: true } } },
+        include: {
+          profile: { select: { unlockedUnit: true } },
+          // Latest review's child-visible comment — surfaced on historical rows only.
+          reviews: { orderBy: { createdAt: 'desc' }, take: 1, select: { notes: true } },
+        },
       }),
       this.prisma.homeworkUpload.count({ where }),
     ]);
@@ -111,17 +122,25 @@ export class ReviewService {
     });
 
     const items: QueueItem[] = await Promise.all(
-      valid.map(async ({ row, analysis }) => ({
-        uploadId: row.id,
-        profileHandle: ReviewService.handle(row.profileId),
-        gradeBand: `Einheit ${row.profile.unlockedUnit}`,
-        skillTags: analysis.suggestedFocus,
-        imageUrl: await this.storage.signedHomeworkReadUrl(row.imageKey, this.claimTtlMs / 1000),
-        llmAnalysis: analysis,
-        createdAt: row.createdAt.toISOString(),
-        decision: row.reviewDecision ?? null,
-        reviewedAt: row.reviewedAt ? row.reviewedAt.toISOString() : null,
-      })),
+      valid.map(async ({ row, analysis }) => {
+        const reviewed = homeworkAnalysisSchema.safeParse(row.reviewedAnalysis);
+        return {
+          uploadId: row.id,
+          profileHandle: ReviewService.handle(row.profileId),
+          gradeBand: `Einheit ${row.profile.unlockedUnit}`,
+          skillTags: analysis.suggestedFocus,
+          imageUrl: await this.storage.signedHomeworkReadUrl(row.imageKey, this.claimTtlMs / 1000),
+          llmAnalysis: analysis,
+          createdAt: row.createdAt.toISOString(),
+          // In Prüfung by ANOTHER reviewer (live lease). Own claims stay actionable (re-openable).
+          claimed: row.claimedBy != null && row.claimedBy !== reviewerId &&
+            row.claimedUntil != null && row.claimedUntil > now,
+          decision: row.reviewDecision ?? null,
+          reviewedAt: row.reviewedAt ? row.reviewedAt.toISOString() : null,
+          reviewedAnalysis: reviewed.success ? reviewed.data : null,
+          notes: row.reviews?.[0]?.notes ?? null,
+        };
+      }),
     );
 
     const nextCursor = rows.length > take ? page[page.length - 1].id : null;

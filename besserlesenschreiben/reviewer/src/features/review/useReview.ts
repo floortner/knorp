@@ -16,6 +16,18 @@ export function useQueueItem(uploadId: string) {
   });
 }
 
+/**
+ * A DECIDED item for the read-only history detail — sourced from the done slice (newest-first; covers
+ * the recent history the list shows). Same cache-or-refetch pattern as `useQueueItem`.
+ */
+export function useHistoryItem(uploadId: string) {
+  return useQuery({
+    queryKey: ['staff-queue', 'history'],
+    queryFn: () => reviewApi.queue({ status: 'done', limit: 50 }),
+    select: (page: QueuePage) => page.items.find((i) => i.uploadId === uploadId) ?? null,
+  });
+}
+
 /** Soft-lock the item on entering the review screen so two reviewers don't grade it twice. */
 export function useClaim() {
   return useMutation({ mutationFn: (uploadId: string) => reviewApi.claim(uploadId) });

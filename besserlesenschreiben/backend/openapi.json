@@ -1933,12 +1933,20 @@
                         "reviewer",
                         "admin"
                       ]
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
                     }
                   },
                   "required": [
                     "reviewerId",
                     "name",
-                    "role"
+                    "role",
+                    "email",
+                    "createdAt"
                   ],
                   "additionalProperties": false
                 }
@@ -2008,12 +2016,88 @@
                         "reviewer",
                         "admin"
                       ]
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
                     }
                   },
                   "required": [
                     "reviewerId",
                     "name",
-                    "role"
+                    "role",
+                    "email",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      },
+      "patch": {
+        "operationId": "StaffController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reviewerId": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "reviewer",
+                        "admin"
+                      ]
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "reviewerId",
+                    "name",
+                    "role",
+                    "email",
+                    "createdAt"
                   ],
                   "additionalProperties": false
                 }
@@ -2115,11 +2199,70 @@
                           "createdAt": {
                             "type": "string"
                           },
+                          "claimed": {
+                            "type": "boolean"
+                          },
                           "decision": {
                             "nullable": true,
                             "type": "string"
                           },
                           "reviewedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "reviewedAnalysis": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "topic": {
+                                "type": "string"
+                              },
+                              "exerciseType": {
+                                "type": "string"
+                              },
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "prompt": {
+                                      "type": "string"
+                                    },
+                                    "childAnswer": {
+                                      "type": "string"
+                                    },
+                                    "correct": {
+                                      "type": "boolean"
+                                    },
+                                    "errorType": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "prompt",
+                                    "childAnswer",
+                                    "correct"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "suggestedFocus": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "required": [
+                              "topic",
+                              "exerciseType",
+                              "items",
+                              "suggestedFocus"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "notes": {
                             "nullable": true,
                             "type": "string"
                           }
@@ -2132,8 +2275,11 @@
                           "imageUrl",
                           "llmAnalysis",
                           "createdAt",
+                          "claimed",
                           "decision",
-                          "reviewedAt"
+                          "reviewedAt",
+                          "reviewedAnalysis",
+                          "notes"
                         ],
                         "additionalProperties": false
                       }

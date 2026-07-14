@@ -17,6 +17,19 @@ export interface StaffMe {
   reviewerId: string;
   name: string;
   role: 'reviewer' | 'admin';
+  email: string;
+  createdAt: string;
+}
+
+/** Wire view of the reviewer's own identity (contract staffMeSchema). */
+function meView(r: { id: string; name: string; role: string; email: string; createdAt: Date }): StaffMe {
+  return {
+    reviewerId: r.id,
+    name: r.name,
+    role: r.role === 'admin' ? 'admin' : 'reviewer',
+    email: r.email,
+    createdAt: r.createdAt.toISOString(),
+  };
 }
 
 /**
@@ -98,7 +111,7 @@ export class StaffAuthService {
       },
     );
     this.logger.log({ event: 'staff.verified', reviewerId: reviewer.id }, 'staff login ok');
-    return { token, me: { reviewerId: reviewer.id, name: reviewer.name, role } };
+    return { token, me: meView(reviewer) };
   }
 
   async me(reviewerId: string): Promise<StaffMe> {
@@ -106,10 +119,13 @@ export class StaffAuthService {
     if (!reviewer || reviewer.status !== 'active') {
       throw new ApiException(401, 'UNAUTHENTICATED', 'Kein gültiger Zugang.');
     }
-    return {
-      reviewerId: reviewer.id,
-      name: reviewer.name,
-      role: reviewer.role === 'admin' ? 'admin' : 'reviewer',
-    };
+    return meView(reviewer);
+  }
+
+  /** Update the caller's OWN display name (profile page). Id from the staff JWT, never the request. */
+  async updateMe(reviewerId: string, name: string): Promise<StaffMe> {
+    const reviewer = await this.prisma.reviewer.update({ where: { id: reviewerId }, data: { name } });
+    this.logger.log({ event: 'staff.me_updated', reviewerId }, 'reviewer renamed'); // id + outcome only
+    return meView(reviewer);
   }
 }

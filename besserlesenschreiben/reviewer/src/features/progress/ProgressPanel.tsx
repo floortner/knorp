@@ -14,8 +14,8 @@ export function ProgressPanel({ data }: { data: ProgressData }) {
     <div className="space-y-3 text-sm">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-ink-soft">
         <Stat label="Einheit" value={summary.unit} />
-        <Stat label="🔥 Serie" value={`${summary.streakDays} Tage`} />
-        <Stat label="⭐ Sterne" value={summary.stars} />
+        <Stat label="Serie" value={`${summary.streakDays} Tage`} />
+        <Stat label="Sterne" value={summary.stars} />
         <Stat label="Liga" value={<span className="capitalize">{summary.league.tier}</span>} />
         <Stat label="Zuletzt aktiv" value={de(summary.lastActive)} />
       </div>

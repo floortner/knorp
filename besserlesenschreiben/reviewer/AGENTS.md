@@ -55,15 +55,22 @@ job. Comfortable tap targets for tablet are welcome.
 - Auth state is derived from a `/staff/me` probe (survives refresh); see `features/auth/`.
 - Brand accent is teal (shared), but the surface is neutral slate/white — see `src/index.css` `@theme`.
 - German UI copy (the staff are German/Austrian).
+- **No emoticons/emoji in UI copy** unless explicitly asked for — this is a professional tool, not the
+  family app. Icons come from **lucide-react only**, used consistently (same icon for the same concept
+  everywhere, e.g. the nav icon reappears in that screen's empty state).
 
 ## Commands
 - Install: `npm install`  ·  Dev: `npm run dev` (port **5174**)  ·  Build: `npm run build` (tsc -b + vite)
 - Lint: `npm run lint`  ·  Test: `npm test` (Vitest)  ·  Types from API: `npm run gen:api`
 
 ## What's built (Phase 2.5 + post-2.5 — all DONE; full roadmap in [`../../ROADMAP.md`](../../ROADMAP.md))
-- Shell + staff auth · queue "Chats" with history filter (Offen | Erledigt | Alle) + nav count badges ·
-  two-pane review screen (claim, approve/correct/reject).
-- ADMIN surface: **Nutzer** (approve/deactivate/delete + per-child learner progress). The **Wortschatz**
+- Shell + staff auth · queue "Chats" with history filter (Offen | Erledigt | Alle), "Mehr laden" cursor
+  paging, waiting-since cue and "in Prüfung" claim locks + nav count badges · two-pane review screen (claim,
+  approve/correct/reject-with-confirm, submit→next-item flow, unsaved-changes guard, image lightbox with
+  zoom/rotate) · read-only history detail (`/history/:uploadId`) for decided items · own profile page
+  (**Profil** nav tab → `/profile`: rename self, see login email/role/access date; audit trail deferred
+  to the OTel build-out).
+- ADMIN surface: **Nutzer** (approve/deactivate/delete + per-child learner progress + email search). The **Wortschatz**
   lexeme-curation tab was dropped 2026-07-13 along with the `lexeme` table and the Vokaltraining content set
   (ROADMAP.md §F) — re-add a curation surface if the new word-list schema needs one.
 Identity note: the ADMIN user administration shows real emails by design; the review queue never does.

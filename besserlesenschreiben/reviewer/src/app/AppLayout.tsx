@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { ClipboardCheck, Users } from 'lucide-react';
+import { ClipboardCheck, UserRound, Users } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { useOpenRequestCount } from '@/features/queue/useQueue';
 import { usePendingUserCount } from '@/features/users/useUsers';
@@ -48,6 +48,9 @@ export function AppLayout() {
                   <NavBadge count={pendingUsers} tone="amber" />
                 </NavLink>
               )}
+              <NavLink to="/profile" className={navClass}>
+                <UserRound className="size-4" aria-hidden /> Profil
+              </NavLink>
             </nav>
           </div>
           <Button variant="ghost" size="sm" onClick={() => void logout()}>

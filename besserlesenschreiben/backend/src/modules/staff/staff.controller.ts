@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import type { FastifyReply } from 'fastify';
@@ -21,7 +21,7 @@ import type { Env } from '../../config/env';
 import { StaffAuthService } from './staff-auth.service';
 import { ReviewService, type QueueFilter } from './review.service';
 import { StaffProgressService } from './staff-progress.service';
-import { ReviewSubmitDto, StaffRequestCodeDto, StaffVerifyDto } from './staff.dto';
+import { ReviewSubmitDto, StaffRequestCodeDto, StaffUpdateMeDto, StaffVerifyDto } from './staff.dto';
 
 /**
  * STAFF realm routes (ARCHITECTURE §1a). `@Public()` skips the GLOBAL family `JwtAuthGuard` (a family JWT
@@ -82,16 +82,25 @@ export class StaffController {
     return this.auth.me(reviewer.id);
   }
 
+  /** Update the caller's OWN profile (display name). Reviewer id from the staff JWT, never the body. */
+  @Patch('me')
+  @ApiZodBody(StaffUpdateMeDto.schema)
+  @ApiZodResponse(staffMeSchema)
+  updateMe(@CurrentReviewer() reviewer: AuthReviewer, @Body() dto: StaffUpdateMeDto) {
+    return this.auth.updateMe(reviewer.id, dto.name);
+  }
+
   @Get('queue')
   @ApiZodResponse(queuePageSchema)
   queue(
+    @CurrentReviewer() reviewer: AuthReviewer,
     @Query('limit') limit?: string,
     @Query('cursor') cursor?: string,
     @Query('status') status?: string,
   ) {
     const n = limit ? Number.parseInt(limit, 10) : 50;
     const filter: QueueFilter = status === 'done' || status === 'all' ? status : 'open';
-    return this.review.queue(Number.isFinite(n) ? n : 50, cursor, filter);
+    return this.review.queue(reviewer.id, Number.isFinite(n) ? n : 50, cursor, filter);
   }
 
   /** Pseudonymised learner progress for a queued upload (ADMIN only) — review context, never a name. */
