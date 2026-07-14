@@ -531,8 +531,11 @@ Calm, non-punitive progression (ARCHITECTURE values — no lives/energy/time/los
 `profile.stars` is a monotonic lifetime total. Awarding is **idempotent**: re-completing a session whose
 `completed_at` is already set awards 0.
 
-**Weekly league.** Standing is derived from stars earned **this ISO week** (rolling Mon–Sun UTC sum of
-`session.stars_award` since `startOfUtcWeek(now)`), so it **resets every week** — nothing is ever deducted.
+**Weekly league.** Standing is derived from stars earned **this ISO week** (Mon–Sun sum of
+`session.stars_award` since `startOfAppWeek(now)`), so it **resets every week** — nothing is ever deducted.
+All civil-day/week bucketing (league week, streak, week strip, heatmap, daily caps, joker) uses the app's
+fixed timezone **Europe/Berlin** (`common/dates.ts`), not UTC — a 01:15-local session counts toward the
+child's local day. Single-region product (ARCHITECTURE §7); DST-safe via `Intl`.
 
 | Tier | Weekly stars | `starsToNext` |
 |------|-------------|---------------|
@@ -544,13 +547,13 @@ At +15/session that's ≈ **7 sessions → Silber**, **20 → Gold** in a week. 
 "Erfolge / -Stufe" (personal milestones), not a competitive league — there are no peers.
 
 **Streak + weekly joker.** On completion, `nextStreak(lastActive, now, current, jokerUsedWeek)` compares whole
-UTC days (`lastActive` is stored as start-of-UTC-day):
+Europe/Berlin civil days (`lastActive` is stored as start-of-local-day):
 
 ```mermaid
 stateDiagram-v2
   [*] --> S1: first session (lastActive null)
   S1 --> Sn: builds up
-  Sn --> Sn: same UTC day (gap ≤ 0) — unchanged
+  Sn --> Sn: same local day (gap ≤ 0) — unchanged
   Sn --> Nplus1: consecutive day (gap = 1) → +1
   Nplus1 --> Sn
   Sn --> Rescued: one missed day (gap = 2) + joker available → +1, joker consumed
