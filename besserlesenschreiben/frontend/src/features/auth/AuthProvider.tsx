@@ -2,7 +2,25 @@ import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMe } from '@/features/profile/useMe';
 import { authApi } from '@/lib/endpoints';
+import { clearAttemptQueue } from '@/lib/telemetry';
 import { AuthContext } from './auth-context';
+
+// Runtime SW cache name — must match `cacheName` in vite.config.ts (security review P2-1/P2-2).
+const API_CACHE = 'blsb-api';
+
+/**
+ * Erase per-user data held on the device beyond the httpOnly cookie: the SW runtime cache (units/progress)
+ * and the queued telemetry (child answers). Without this, a shared/family device keeps the previous
+ * child's data after logout, and queued attempts could flush under the next account's cookie.
+ */
+async function clearLocalUserData(): Promise<void> {
+  clearAttemptQueue();
+  try {
+    if ('caches' in window) await caches.delete(API_CACHE);
+  } catch {
+    /* cache API unavailable / blocked — nothing to clear */
+  }
+}
 
 /**
  * Cookie-session auth (SPEC §4): the session JWT lives in an httpOnly cookie the JS can't read, so
@@ -27,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setSignedOut(true);
     qc.removeQueries({ queryKey: ['me'] });
+    await clearLocalUserData();
   }, [qc]);
 
   const value = useMemo<{

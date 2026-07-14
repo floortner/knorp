@@ -105,15 +105,11 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "token": {
-                      "type": "string"
-                    },
                     "isNewAccount": {
                       "type": "boolean"
                     }
                   },
                   "required": [
-                    "token",
                     "isNewAccount"
                   ],
                   "additionalProperties": false
@@ -703,6 +699,10 @@
                 "type": "object",
                 "properties": {
                   "pin": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                  },
+                  "currentPin": {
                     "type": "string",
                     "pattern": "^\\d{4}$"
                   }
@@ -1763,28 +1763,35 @@
                       "type": "object",
                       "properties": {
                         "topic": {
-                          "type": "string"
+                          "type": "string",
+                          "maxLength": 200
                         },
                         "exerciseType": {
-                          "type": "string"
+                          "type": "string",
+                          "maxLength": 200
                         },
                         "items": {
+                          "maxItems": 50,
                           "type": "array",
                           "items": {
                             "type": "object",
                             "properties": {
                               "prompt": {
-                                "type": "string"
+                                "type": "string",
+                                "maxLength": 2000
                               },
                               "childAnswer": {
-                                "type": "string"
+                                "type": "string",
+                                "maxLength": 2000
                               },
                               "correct": {
                                 "type": "boolean"
                               },
                               "errorType": {
                                 "nullable": true,
-                                "type": "string"
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
                               }
                             },
                             "required": [
@@ -1796,9 +1803,12 @@
                           }
                         },
                         "suggestedFocus": {
+                          "maxItems": 20,
                           "type": "array",
                           "items": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
                           }
                         }
                       },
@@ -2149,28 +2159,35 @@
                             "type": "object",
                             "properties": {
                               "topic": {
-                                "type": "string"
+                                "type": "string",
+                                "maxLength": 200
                               },
                               "exerciseType": {
-                                "type": "string"
+                                "type": "string",
+                                "maxLength": 200
                               },
                               "items": {
+                                "maxItems": 50,
                                 "type": "array",
                                 "items": {
                                   "type": "object",
                                   "properties": {
                                     "prompt": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "maxLength": 2000
                                     },
                                     "childAnswer": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "maxLength": 2000
                                     },
                                     "correct": {
                                       "type": "boolean"
                                     },
                                     "errorType": {
                                       "nullable": true,
-                                      "type": "string"
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 64
                                     }
                                   },
                                   "required": [
@@ -2182,9 +2199,12 @@
                                 }
                               },
                               "suggestedFocus": {
+                                "maxItems": 20,
                                 "type": "array",
                                 "items": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 64
                                 }
                               }
                             },
@@ -2215,28 +2235,35 @@
                             "type": "object",
                             "properties": {
                               "topic": {
-                                "type": "string"
+                                "type": "string",
+                                "maxLength": 200
                               },
                               "exerciseType": {
-                                "type": "string"
+                                "type": "string",
+                                "maxLength": 200
                               },
                               "items": {
+                                "maxItems": 50,
                                 "type": "array",
                                 "items": {
                                   "type": "object",
                                   "properties": {
                                     "prompt": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "maxLength": 2000
                                     },
                                     "childAnswer": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "maxLength": 2000
                                     },
                                     "correct": {
                                       "type": "boolean"
                                     },
                                     "errorType": {
                                       "nullable": true,
-                                      "type": "string"
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 64
                                     }
                                   },
                                   "required": [
@@ -2248,9 +2275,12 @@
                                 }
                               },
                               "suggestedFocus": {
+                                "maxItems": 20,
                                 "type": "array",
                                 "items": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 64
                                 }
                               }
                             },
@@ -2585,28 +2615,35 @@
                     "type": "object",
                     "properties": {
                       "topic": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 200
                       },
                       "exerciseType": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 200
                       },
                       "items": {
+                        "maxItems": 50,
                         "type": "array",
                         "items": {
                           "type": "object",
                           "properties": {
                             "prompt": {
-                              "type": "string"
+                              "type": "string",
+                              "maxLength": 2000
                             },
                             "childAnswer": {
-                              "type": "string"
+                              "type": "string",
+                              "maxLength": 2000
                             },
                             "correct": {
                               "type": "boolean"
                             },
                             "errorType": {
                               "nullable": true,
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
                             }
                           },
                           "required": [
@@ -2617,9 +2654,12 @@
                         }
                       },
                       "suggestedFocus": {
+                        "maxItems": 20,
                         "type": "array",
                         "items": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
                         }
                       }
                     },

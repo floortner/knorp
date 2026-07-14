@@ -11,6 +11,62 @@ resource "aws_cloudfront_origin_access_control" "web" {
 locals {
   cache_optimized = "658327ea-f89d-4fab-a63d-7e88639e58f6" # CachingOptimized (hashed, immutable assets)
   cache_disabled  = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # CachingDisabled (index.html + service worker)
+
+  # Content-Security-Policy for both SPAs (security review P1-3). Both apps are fully self-contained
+  # (fonts bundled via @fontsource, no CDN scripts, no inline <script>), so script/default stay 'self'.
+  # Inline styles ARE used (per-unit theme colours, a11y font scaling) → style-src needs 'unsafe-inline'.
+  # Cross-origin needs: the API (a sibling subdomain) for XHR, and the blob bucket for presigned homework
+  # image GETs. Validate in staging before relying on it — a too-tight CSP fails closed.
+  csp = join("; ", [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' https://${local.blob_bucket}.s3.${var.region}.amazonaws.com data:",
+    "font-src 'self'",
+    "connect-src 'self' https://${local.api_fqdn}",
+    "manifest-src 'self'",
+    "worker-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ])
+}
+
+# Shared security-response-headers policy attached to both distributions' behaviours (security review
+# P1-3): HSTS, the CSP above, nosniff, frame-deny, and a referrer policy that keeps presigned-URL query
+# strings out of the Referer header.
+resource "aws_cloudfront_response_headers_policy" "security" {
+  name = "${local.name}-security-headers"
+
+  security_headers_config {
+    content_security_policy {
+      content_security_policy = local.csp
+      override                = true
+    }
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    referrer_policy {
+      referrer_policy = "strict-origin-when-cross-origin"
+      override        = true
+    }
+    strict_transport_security {
+      access_control_max_age_sec = 63072000 # 2 years
+      include_subdomains         = true
+      preload                    = true
+      override                   = true
+    }
+    xss_protection {
+      mode_block = true
+      protection = true
+      override   = true
+    }
+  }
 }
 
 resource "aws_cloudfront_distribution" "app" {
@@ -27,32 +83,35 @@ resource "aws_cloudfront_distribution" "app" {
   }
 
   default_cache_behavior {
-    target_origin_id       = "app-s3"
-    viewer_protocol_policy  = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
-    cached_methods         = ["GET", "HEAD"]
-    compress               = true
-    cache_policy_id        = local.cache_optimized
+    target_origin_id           = "app-s3"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
+    cache_policy_id            = local.cache_optimized
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
   # SPA shell + service worker must never be cached, so deploys are picked up immediately.
   ordered_cache_behavior {
-    path_pattern           = "/index.html"
-    target_origin_id       = "app-s3"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    compress               = true
-    cache_policy_id        = local.cache_disabled
+    path_pattern               = "/index.html"
+    target_origin_id           = "app-s3"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
+    cache_policy_id            = local.cache_disabled
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
   ordered_cache_behavior {
-    path_pattern           = "/sw.js"
-    target_origin_id       = "app-s3"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    compress               = true
-    cache_policy_id        = local.cache_disabled
+    path_pattern               = "/sw.js"
+    target_origin_id           = "app-s3"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
+    cache_policy_id            = local.cache_disabled
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
   # Client-side routing: unknown paths return the SPA shell.
@@ -94,22 +153,24 @@ resource "aws_cloudfront_distribution" "reviewer" {
   }
 
   default_cache_behavior {
-    target_origin_id       = "reviewer-s3"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
-    cached_methods         = ["GET", "HEAD"]
-    compress               = true
-    cache_policy_id        = local.cache_optimized
+    target_origin_id           = "reviewer-s3"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
+    cache_policy_id            = local.cache_optimized
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
   ordered_cache_behavior {
-    path_pattern           = "/index.html"
-    target_origin_id       = "reviewer-s3"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    compress               = true
-    cache_policy_id        = local.cache_disabled
+    path_pattern               = "/index.html"
+    target_origin_id           = "reviewer-s3"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
+    cache_policy_id            = local.cache_disabled
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
   custom_error_response {

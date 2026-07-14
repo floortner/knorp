@@ -8,6 +8,15 @@ server {
     # Homework photo upload is capped at 10 MB in the app; allow a little overhead.
     client_max_body_size 12m;
 
+    # Security response headers (security review P1-3). Set at server level so they're inherited by the
+    # location below and carried into the :443 server that `certbot --nginx` rewrites this block into.
+    # HSTS is ignored by browsers over plain HTTP, so it only takes effect once TLS is in place. `always`
+    # ensures the headers ride error responses (4xx/5xx) too. No CSP here: the API is JSON + Swagger UI.
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header X-Frame-Options "DENY" always;
+
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;

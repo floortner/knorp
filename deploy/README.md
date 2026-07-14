@@ -22,7 +22,8 @@ These run on the beta EC2 box (provisioned by `../infra`). The GitHub Actions `a
 - Real secrets set in SSM (`infra/README.md` step 2); SES production access + verified domain (Terraform-managed DKIM).
 
 ## Backups (once)
-Install `age` + `rclone`, configure the remote, drop the key + config, then enable the timer:
+`release.sh` already installs the root-owned backup script (`/usr/local/sbin/blsb-backup.sh`) and the
+`blsb-backup.{service,timer}` units on every deploy — you only supply the config and enable the timer:
 ```bash
 # age (static arm64 binary) and rclone
 curl -fsSL https://github.com/FiloSottile/age/releases/latest/download/age-*-linux-arm64.tar.gz | tar xz
@@ -34,17 +35,21 @@ age-keygen -o backup-key.txt          # keep this private key off-platform!
 sudo tee /etc/blsb/backup.env >/dev/null <<'EOF'
 AGE_RECIPIENT=age1...your_public_key
 BACKUP_REMOTE=r2:blsb-backups
-PRUNE_MIN_AGE=35d
+# HEALTHCHECK_URL=https://hc-ping.com/<uuid>   # recommended: alerts on a missed OR failed run
+# PRUNE_MIN_AGE=35d                            # ONLY with a delete-capable token — prefer lifecycle rules
 EOF
 sudo chmod 600 /etc/blsb/backup.env
 rclone config                         # add the "r2" (or b2) remote
 
-sudo cp /opt/blsb/current/deploy/blsb-backup.{service,timer} /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now blsb-backup.timer
 sudo systemctl start blsb-backup.service   # test run
 ```
-Periodically run a **restore drill** (see the comment at the bottom of `backup.sh`) — an untested backup
-is a hope, not a backup.
+**Make the backups survive an incident (security review P2-7):** use a **write-only** rclone token
+(Backblaze B2 / Cloudflare R2 both support keys without delete) and do retention via the provider's
+**object-lifecycle rules** — leave `PRUNE_MIN_AGE` unset. Then someone who roots the box can add backups
+but cannot wipe the existing ones. Set `HEALTHCHECK_URL` so a missed/failed run pages you instead of
+failing silently. Periodically run a **restore drill** (see the comment at the bottom of `backup.sh`) —
+an untested backup is a hope, not a backup.
 
 ## Break-glass
 `aws ssm start-session --target <instance_id>` — then `sudo journalctl -u blsb-api -f`, etc.

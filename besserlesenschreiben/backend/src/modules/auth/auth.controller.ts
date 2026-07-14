@@ -38,10 +38,10 @@ export class AuthController {
   @ApiZodResponse(verifyResponseSchema)
   async verify(@Body() dto: VerifyDto, @Res({ passthrough: true }) reply: FastifyReply) {
     const result = await this.auth.verify(dto.email, dto.code);
-    // Browser auth is the httpOnly cookie (survives refresh); the body token remains for non-browser
-    // clients/tests and is ignored by the SPA.
+    // Browser auth is the httpOnly cookie (survives refresh, kept out of JS). The JWT is NOT returned in
+    // the body — a 30-day credential must never reach page JavaScript (security review P1-4).
     reply.setCookie(SESSION_COOKIE, result.token, sessionCookieOptions(this.isProd));
-    return result;
+    return { isNewAccount: result.isNewAccount };
   }
 
   @Public()
