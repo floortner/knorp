@@ -13,6 +13,11 @@ export class StaffVerifyDto extends ZodDto(
   }),
 ) {}
 
+/** The caller's own profile update (PATCH /staff/me) — display name only; email/role are admin-provisioned. */
+export class StaffUpdateMeDto extends ZodDto(
+  z.object({ name: z.string().trim().min(1).max(60) }),
+) {}
+
 export const reviewSubmitSchema = z
   .object({
     decision: z.enum(['approved', 'corrected', 'rejected']),

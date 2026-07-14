@@ -3,13 +3,14 @@ import { usersApi } from '@/lib/endpoints';
 import type { AccountStatus } from '@/lib/contract';
 
 /**
- * Identity-bearing account list, filtered by lifecycle status (admin only; backend SPEC §6). `enabled`
- * lets the caller skip the fetch for a non-admin (the backend would 403 it anyway).
+ * Identity-bearing account list, filtered by lifecycle status and/or an email search fragment (admin
+ * only; backend SPEC §6). `enabled` lets the caller skip the fetch for a non-admin (the backend would
+ * 403 it anyway).
  */
-export function useUsers(status?: AccountStatus, enabled = true) {
+export function useUsers(status?: AccountStatus, enabled = true, q?: string) {
   return useQuery({
-    queryKey: ['staff-users', status ?? 'all'],
-    queryFn: () => usersApi.list({ status, limit: 100 }),
+    queryKey: ['staff-users', status ?? 'all', q ?? ''],
+    queryFn: () => usersApi.list({ status, limit: 100, q: q || undefined }),
     enabled,
   });
 }

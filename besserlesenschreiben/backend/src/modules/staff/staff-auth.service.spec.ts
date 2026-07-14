@@ -13,7 +13,7 @@ vi.mock('argon2', () => ({
 }));
 
 function setup(opts: {
-  reviewer?: { id: string; email: string; name: string; role: string; status: string } | null;
+  reviewer?: { id: string; email: string; name: string; role: string; status: string; createdAt?: Date } | null;
   code?: { id: string; codeHash: string; expiresAt: Date; attempts: number } | null;
 } = {}) {
   const email = { sendLoginCode: vi.fn(async () => undefined) } as unknown as EmailService;
@@ -79,11 +79,15 @@ describe('StaffAuthService.verify', () => {
   it('issues a staff token + me for a valid code owned by an active reviewer', async () => {
     const { svc } = setup({
       code: validCode,
-      reviewer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'admin', status: 'active' },
+      reviewer: {
+        id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'admin', status: 'active',
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+      },
     });
     await expect(svc.verify('dana@team.test', '123456')).resolves.toEqual({
       token: 'staff-token',
-      me: { reviewerId: 'rev-1', name: 'Dana', role: 'admin' },
+      // me now carries the caller's OWN staff identity (profile page): email + createdAt.
+      me: { reviewerId: 'rev-1', name: 'Dana', role: 'admin', email: 'dana@team.test', createdAt: '2026-01-01T00:00:00.000Z' },
     });
   });
 

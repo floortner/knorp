@@ -360,14 +360,21 @@ GET  /homework/{id}        -> {status, reviewedAnalysis?}    # family sees the A
 POST /staff/auth/request-code  {email}               -> 200 (always; no staff-enumeration)
 POST /staff/auth/verify        {email, code}         -> sets httpOnly staff cookie
 POST /staff/auth/logout                              -> clears staff cookie
-GET  /staff/me                                       -> {reviewerId, name, role}
+GET  /staff/me                                       -> {reviewerId, name, role, email, createdAt}
+                                                        # the caller's OWN staff identity (profile page)
+PATCH /staff/me                 {name}               -> same shape   # rename self; email/role stay admin-provisioned
 GET  /staff/queue           ?status=&limit=&cursor=  -> {items:[{uploadId, profileHandle, gradeBand,
                                                           skillTags, imageUrl, llmAnalysis, createdAt,
-                                                          decision, reviewedAt}], nextCursor, total}
+                                                          claimed, decision, reviewedAt,
+                                                          reviewedAnalysis, notes}], nextCursor, total}
                                                         # PSEUDONYMISED: no name/email/chat/billing (ARCHITECTURE §1a)
-                                                        # status: open (default, pickable pending) | done
-                                                        #   (reviewed/rejected history, read-only) | all.
-                                                        #   decision/reviewedAt are null while open.
+                                                        # status: open (default: ALL undecided, oldest-first;
+                                                        #   claimed=true marks a live lease held by ANOTHER
+                                                        #   reviewer — shown locked, own claims stay false)
+                                                        #   | done (reviewed/rejected history; carries the
+                                                        #   verdict reviewedAnalysis+notes for the read-only
+                                                        #   detail) | all. decision/reviewedAt/reviewedAnalysis/
+                                                        #   notes are null while open.
 GET  /staff/queue/{uploadId}/progress                -> pseudonymised learner progress (ADMIN only):
                                                         {profileHandle, summary, skills, activity} — never a name
 POST /staff/queue/{uploadId}/claim                   -> {uploadId, claimedUntil}   # soft-lock; 409 if held by another
@@ -387,8 +394,10 @@ Distinct from the pseudonymised review queue: these handle real account identity
 `role='admin'` (not plain reviewers) and **do** return the family email. This is the owner's approval/control
 surface.
 ```
-GET    /staff/users          ?status=&limit=&cursor=   -> {items:[{accountId, email, status, createdAt,
+GET    /staff/users          ?status=&limit=&cursor=&q=  -> {items:[{accountId, email, status, createdAt,
                                                             profileCount, lastActive}], nextCursor, total}
+                                                          # q: email search fragment (case-insensitive
+                                                          #   contains; trimmed, capped, never logged)
 GET    /staff/users/{id}/progress                      -> {profiles:[{profileId, name, summary, skills,
                                                             activity}]}   # identity-bearing per-child progress
 POST   /staff/users/{id}/approve                       -> {accountId, status:'active'}   # pending → active; releases the login code by email

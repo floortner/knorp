@@ -30,11 +30,14 @@ export class StaffUsersController {
     @Query('status') status?: 'pending' | 'active' | 'deactivated',
     @Query('limit') limit?: string,
     @Query('cursor') cursor?: string,
+    @Query('q') q?: string,
   ) {
     const n = limit ? Number.parseInt(limit, 10) : 50;
     const validStatus =
       status === 'pending' || status === 'active' || status === 'deactivated' ? status : undefined;
-    return this.users.list(Number.isFinite(n) ? n : 50, validStatus, cursor);
+    // Email search fragment; trimmed + length-capped. Never logged (it's an email — security rule 6).
+    const query = q?.trim().slice(0, 100) || undefined;
+    return this.users.list(Number.isFinite(n) ? n : 50, validStatus, cursor, query);
   }
 
   /** Identity-bearing learner progress for one account's children (Nutzer oversight). */

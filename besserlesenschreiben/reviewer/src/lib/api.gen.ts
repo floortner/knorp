@@ -417,7 +417,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["StaffController_updateMe"];
         trace?: never;
     };
     "/api/v1/staff/queue": {
@@ -1368,6 +1368,8 @@ export interface operations {
                         name: string;
                         /** @enum {string} */
                         role: "reviewer" | "admin";
+                        email: string;
+                        createdAt: string;
                     };
                 };
             };
@@ -1414,6 +1416,40 @@ export interface operations {
                         name: string;
                         /** @enum {string} */
                         role: "reviewer" | "admin";
+                        email: string;
+                        createdAt: string;
+                    };
+                };
+            };
+        };
+    };
+    StaffController_updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        reviewerId: string;
+                        name: string;
+                        /** @enum {string} */
+                        role: "reviewer" | "admin";
+                        email: string;
+                        createdAt: string;
                     };
                 };
             };
@@ -1452,8 +1488,21 @@ export interface operations {
                                 suggestedFocus: string[];
                             };
                             createdAt: string;
+                            claimed: boolean;
                             decision: string | null;
                             reviewedAt: string | null;
+                            reviewedAnalysis: {
+                                topic: string;
+                                exerciseType: string;
+                                items: {
+                                    prompt: string;
+                                    childAnswer: string;
+                                    correct: boolean;
+                                    errorType?: string | null;
+                                }[];
+                                suggestedFocus: string[];
+                            } | null;
+                            notes: string | null;
                         }[];
                         nextCursor: string | null;
                         total: number;

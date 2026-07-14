@@ -10,6 +10,9 @@ export const staffMeSchema = z.object({
   reviewerId: z.string(),
   name: z.string(),
   role: z.enum(['reviewer', 'admin']),
+  // The reviewer's OWN staff identity (profile page) — staff-realm data, never a family email.
+  email: z.string(),
+  createdAt: z.string(),
 });
 
 // Structured homework vision output (SPEC §10). The LLM produces a DRAFT of this; the reviewer's verdict
@@ -40,9 +43,16 @@ export const queueItemSchema = z.object({
   // The LLM DRAFT to validate against (never applied on its own).
   llmAnalysis: homeworkAnalysisSchema,
   createdAt: z.string(),
+  // ANOTHER reviewer holds a live claim lease (in Prüfung) — shown locked/non-actionable in the queue.
+  // false for the caller's own claim, so a reviewer can always re-open their own item.
+  claimed: z.boolean(),
   // Historical items (status=done): the reviewer's verdict + when. null while still open.
   decision: z.string().nullable(),
   reviewedAt: z.string().nullable(),
+  // Historical items: the authoritative verdict + the reviewer's child-visible comment (read-only
+  // detail view). Both null while open or when the item was rejected (reject applies nothing).
+  reviewedAnalysis: homeworkAnalysisSchema.nullable(),
+  notes: z.string().nullable(),
 });
 
 export const queuePageSchema = z.object({

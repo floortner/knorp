@@ -17,8 +17,11 @@ const item: QueueItem = {
   imageUrl: 'https://example.test/u1.webp',
   llmAnalysis: { topic: 'Anlaute', exerciseType: 'fixvowel', items: [], suggestedFocus: ['vowel_length'] },
   createdAt: '2026-06-29T10:00:00.000Z',
+  claimed: false,
   decision: null,
   reviewedAt: null,
+  reviewedAnalysis: null,
+  notes: null,
 };
 
 function renderQueue() {
@@ -49,13 +52,45 @@ describe('QueueScreen', () => {
     expect(await screen.findByText(/Keine offenen Hausübungen/)).toBeInTheDocument();
   });
 
-  it('renders the Erledigt history with verdicts, read-only (no review link)', async () => {
-    const done: QueueItem = { ...item, uploadId: 'u2', decision: 'corrected', reviewedAt: '2026-06-28T11:00:00.000Z' };
+  it('renders a live-claimed row locked ("in Prüfung"), not clickable', async () => {
+    vi.mocked(reviewApi.queue).mockResolvedValue({
+      items: [{ ...item, claimed: true }],
+      nextCursor: null,
+      total: 1,
+    });
+    renderQueue();
+    expect(await screen.findByText('in Prüfung')).toBeInTheDocument();
+    expect(screen.queryByRole('link')).toBeNull(); // someone else is on it — no way in from here
+  });
+
+  it('Erledigt rows carry the verdict and open the read-only history detail', async () => {
+    const done: QueueItem = {
+      ...item,
+      uploadId: 'u2',
+      decision: 'corrected',
+      reviewedAt: '2026-06-28T11:00:00.000Z',
+      reviewedAnalysis: item.llmAnalysis,
+      notes: 'Gut gemacht!',
+    };
     vi.mocked(reviewApi.queue).mockResolvedValue({ items: [done], nextCursor: null, total: 1 });
     const user = userEvent.setup();
     renderQueue();
     await user.click(await screen.findByRole('tab', { name: 'Erledigt' }));
     expect(await screen.findByText(/Korrigiert/)).toBeInTheDocument();
-    expect(screen.queryByRole('link')).toBeNull(); // history rows don't open the review screen
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/history/u2'); // read-only detail, never /review
+  });
+
+  it('offers "Mehr laden" when a next cursor exists and fetches the next page', async () => {
+    vi.mocked(reviewApi.queue)
+      .mockResolvedValueOnce({ items: [item], nextCursor: 'u1', total: 2 })
+      .mockResolvedValueOnce({ items: [{ ...item, uploadId: 'u9' }], nextCursor: null, total: 2 });
+    const user = userEvent.setup();
+    renderQueue();
+    await user.click(await screen.findByRole('button', { name: 'Mehr laden' }));
+    expect(await screen.findAllByText(/Lerner-4821/)).toHaveLength(2);
+    expect(vi.mocked(reviewApi.queue)).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cursor: 'u1', status: 'open' }),
+    );
+    expect(screen.queryByRole('button', { name: 'Mehr laden' })).toBeNull(); // no further page
   });
 });

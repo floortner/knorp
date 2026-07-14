@@ -75,7 +75,7 @@ describe('ReviewService.queue (pseudonymisation)', () => {
         { id: 'up-1', profileId: 'prof-1234', imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { unlockedUnit: 3 } },
       ],
     });
-    const { items, nextCursor, total } = await svc.queue(50);
+    const { items, nextCursor, total } = await svc.queue('rev-1', 50);
     expect(items).toHaveLength(1);
     expect(total).toBe(1);
     expect(items[0].profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
@@ -86,6 +86,20 @@ describe('ReviewService.queue (pseudonymisation)', () => {
     expect(JSON.stringify(items[0])).not.toMatch(/name|email/i);
     expect(nextCursor).toBeNull();
     expect(items[0].decision).toBeNull(); // open item has no verdict yet
+    expect(items[0].claimed).toBe(false); // unclaimed → pickable
+  });
+
+  it('flags rows live-claimed by ANOTHER reviewer, but never my own claim', async () => {
+    const base = { imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { unlockedUnit: 1 } };
+    const { svc } = setup({
+      findMany: [
+        { ...base, id: 'up-1', profileId: 'p1', claimedBy: 'rev-2', claimedUntil: new Date(Date.now() + 60_000) },
+        { ...base, id: 'up-2', profileId: 'p2', claimedBy: 'rev-1', claimedUntil: new Date(Date.now() + 60_000) },
+        { ...base, id: 'up-3', profileId: 'p3', claimedBy: 'rev-2', claimedUntil: new Date(Date.now() - 1_000) },
+      ],
+    });
+    const { items } = await svc.queue('rev-1', 50);
+    expect(items.map((i) => i.claimed)).toEqual([true, false, false]); // other's live | mine | expired lease
   });
 
   it('history (done) surfaces the verdict + reviewedAt, still pseudonymised', async () => {
@@ -99,13 +113,17 @@ describe('ReviewService.queue (pseudonymisation)', () => {
           reviewDecision: 'corrected',
           reviewedAt: new Date('2026-06-28T11:00:00Z'),
           llmAnalysis: analysis,
+          reviewedAnalysis: analysis,
+          reviews: [{ notes: 'Gut gemacht!' }],
           profile: { unlockedUnit: 2 },
         },
       ],
     });
-    const { items } = await svc.queue(50, undefined, 'done');
+    const { items } = await svc.queue('rev-1', 50, undefined, 'done');
     expect(items[0].decision).toBe('corrected');
     expect(items[0].reviewedAt).toBe('2026-06-28T11:00:00.000Z');
+    expect(items[0].reviewedAnalysis).toEqual(analysis); // verdict for the read-only detail view
+    expect(items[0].notes).toBe('Gut gemacht!');
     expect(items[0].profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
     expect(JSON.stringify(items[0])).not.toMatch(/prof-9|name|email/i);
   });

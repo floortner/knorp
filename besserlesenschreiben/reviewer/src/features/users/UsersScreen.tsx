@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronRight, ShieldAlert } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronDown, ChevronRight, Search, ShieldAlert, Users } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { FilterChips } from '@/components/ui/filter-chips';
+import { Input } from '@/components/ui/input';
 import { ProgressPanel } from '@/features/progress/ProgressPanel';
 import { cn } from '@/lib/cn';
 import type { AccountStatus, AdminUser } from '@/lib/contract';
@@ -35,8 +36,14 @@ export function UsersScreen() {
   const { reviewer } = useStaffAuth();
   const isAdmin = reviewer?.role === 'admin';
   const [filter, setFilter] = useState<AccountStatus | 'all'>('pending');
+  const [search, setSearch] = useState('');
+  const [q, setQ] = useState(''); // debounced copy of `search` — one request per pause, not per keystroke
+  useEffect(() => {
+    const t = setTimeout(() => setQ(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
   const status = filter === 'all' ? undefined : filter;
-  const { data, isPending, isError, error } = useUsers(status, isAdmin);
+  const { data, isPending, isError, error } = useUsers(status, isAdmin, q);
 
   if (reviewer && !isAdmin) {
     return (
@@ -49,7 +56,21 @@ export function UsersScreen() {
 
   return (
     <section>
-      <FilterChips value={filter} onChange={setFilter} options={FILTERS} label="Status filtern" />
+      {/* FilterChips brings its own mb-4 — it spaces this whole row from the list below. */}
+      <div className="flex flex-wrap items-start gap-3">
+        <FilterChips value={filter} onChange={setFilter} options={FILTERS} label="Status filtern" />
+        <div className="relative ml-auto w-64">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" aria-hidden />
+          <Input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="E-Mail suchen …"
+            aria-label="Nach E-Mail suchen"
+            className="pl-8"
+          />
+        </div>
+      </div>
 
       {isPending ? (
         <p className="py-16 text-center text-ink-soft">Lädt Nutzer …</p>
@@ -59,7 +80,8 @@ export function UsersScreen() {
         </p>
       ) : data.items.length === 0 ? (
         <div className="grid place-items-center rounded-card border border-dashed border-line py-20 text-ink-soft">
-          <p>Keine Konten in dieser Ansicht.</p>
+          <Users className="mb-2 size-7" aria-hidden />
+          <p>{q ? 'Keine Konten für diese Suche.' : 'Keine Konten in dieser Ansicht.'}</p>
         </div>
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-card bg-surface shadow-sm ring-1 ring-line">

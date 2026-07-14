@@ -11,7 +11,7 @@ vi.mock('@/lib/endpoints', () => ({
   usersApi: { list: vi.fn(), approve: vi.fn(), deactivate: vi.fn(), remove: vi.fn() },
 }));
 
-let me: StaffMe = { reviewerId: 'r1', name: 'Owner', role: 'admin' };
+let me: StaffMe = { reviewerId: 'r1', name: 'Owner', role: 'admin', email: 'owner@team.test', createdAt: '2026-01-01T00:00:00.000Z' };
 vi.mock('@/features/auth/auth-context', () => ({ useStaffAuth: () => ({ reviewer: me }) }));
 
 const pendingUser: AdminUser = {
@@ -36,7 +36,7 @@ function renderUsers() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  me = { reviewerId: 'r1', name: 'Owner', role: 'admin' };
+  me = { reviewerId: 'r1', name: 'Owner', role: 'admin', email: 'owner@team.test', createdAt: '2026-01-01T00:00:00.000Z' };
 });
 
 describe('UsersScreen', () => {
@@ -65,7 +65,7 @@ describe('UsersScreen', () => {
   });
 
   it('hides the admin surface from a plain reviewer', async () => {
-    me = { reviewerId: 'r2', name: 'Rev', role: 'reviewer' };
+    me = { reviewerId: 'r2', name: 'Rev', role: 'reviewer', email: 'rev@team.test', createdAt: '2026-01-01T00:00:00.000Z' };
     renderUsers();
     expect(await screen.findByText(/Nur Administrator/)).toBeInTheDocument();
     expect(usersApi.list).not.toHaveBeenCalled();

@@ -6,6 +6,8 @@ import { RequireStaff } from '@/features/auth/RequireStaff';
 import { ApiErrorBridge } from '@/features/auth/ApiErrorBridge';
 import { QueueScreen } from '@/features/queue/QueueScreen';
 import { ReviewScreen } from '@/features/review/ReviewScreen';
+import { HistoryScreen } from '@/features/review/HistoryScreen';
+import { ProfileScreen } from '@/features/profile/ProfileScreen';
 import { UsersScreen } from '@/features/users/UsersScreen';
 
 export function App() {
@@ -25,6 +27,8 @@ export function App() {
         >
           <Route path="/queue" element={<QueueScreen />} />
           <Route path="/review/:uploadId" element={<ReviewScreen />} />
+          <Route path="/history/:uploadId" element={<HistoryScreen />} />
+          <Route path="/profile" element={<ProfileScreen />} />
           <Route path="/users" element={<UsersScreen />} />
         </Route>
 
