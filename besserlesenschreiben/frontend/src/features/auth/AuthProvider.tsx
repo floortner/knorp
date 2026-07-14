@@ -44,7 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       /* clear locally regardless */
     }
     setSignedOut(true);
-    qc.removeQueries({ queryKey: ['me'] });
+    // Clear the WHOLE cache, not just ['me']: chat history and homework image URLs must not linger in
+    // memory after logout on a shared/family device (security review P3).
+    qc.clear();
     await clearLocalUserData();
   }, [qc]);
 

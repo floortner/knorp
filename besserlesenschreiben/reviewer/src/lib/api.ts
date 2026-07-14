@@ -9,6 +9,11 @@
  * in `openapi.json`, then regenerated via `npm run gen:api`).
  */
 
+// A production build MUST be given its API origin — never ship an artifact that silently talks to
+// localhost over plain HTTP (security review P3). The localhost fallback is dev-only.
+if (import.meta.env.PROD && !import.meta.env.VITE_API_BASE) {
+  throw new Error('VITE_API_BASE must be set for production builds.');
+}
 const BASE: string = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000/api/v1';
 
 /**

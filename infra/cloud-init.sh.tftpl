@@ -78,9 +78,17 @@ systemctl enable blsb-pgdata.service
 # --- 2. Packages: Node 24 (NodeSource), Postgres, nginx, certbot, git, aws cli, jq ---
 dnf install -y nginx postgresql15 postgresql15-server git jq tar gzip xfsprogs
 dnf install -y python3-pip
-python3 -m pip install --quiet certbot certbot-nginx || true
+# Don't swallow certbot install failure (security review P3): a silent failure here means no TLS tooling.
+python3 -m pip install --quiet certbot certbot-nginx
 curl -fsSL https://rpm.nodesource.com/setup_24.x | bash -
 dnf install -y nodejs
+
+# Unattended security patching (security review P3): this box is internet-facing and holds children's
+# data — apply security updates automatically so nginx/Postgres/kernel don't drift unpatched. €0.
+dnf install -y dnf-automatic
+sed -i 's/^apply_updates = .*/apply_updates = yes/' /etc/dnf/automatic.conf
+sed -i 's/^upgrade_type = .*/upgrade_type = security/' /etc/dnf/automatic.conf
+systemctl enable --now dnf-automatic.timer
 
 # --- 3. App system user + directories ---
 id -u blsb >/dev/null 2>&1 || useradd --system --create-home --shell /usr/sbin/nologin blsb

@@ -26,7 +26,9 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
       /* clear locally regardless */
     }
     setSignedOut(true);
-    qc.removeQueries({ queryKey: ['staff-me'] });
+    // Clear the WHOLE cache, not just ['staff-me']: the reviewer holds real family emails, homework
+    // image URLs, and queue data that must not linger after logout on a shared staff machine (P3).
+    qc.clear();
   }, [qc]);
 
   const value = useMemo(
