@@ -63,6 +63,14 @@ describe('AuthService.requestCode (silent pending-on-first-code)', () => {
     expect(prisma.loginCode.create).toHaveBeenCalledOnce();
     expect(email.sendLoginCode).toHaveBeenCalledOnce();
   });
+
+  it('active account with a still-fresh code → throttled: no new code, no email, still ok', async () => {
+    const { svc, prisma, email } = setup({ id: 'a1', status: 'active' });
+    (prisma.loginCode.findFirst as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ id: 'lc-fresh' });
+    await expect(svc.requestCode('p@x.de')).resolves.toEqual({ ok: true });
+    expect(prisma.loginCode.create).not.toHaveBeenCalled();
+    expect(email.sendLoginCode).not.toHaveBeenCalled();
+  });
 });
 
 describe('AuthService.verify (requires active, no upsert)', () => {

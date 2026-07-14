@@ -17,18 +17,25 @@ export const staffMeSchema = z.object({
 
 // Structured homework vision output (SPEC §10). The LLM produces a DRAFT of this; the reviewer's verdict
 // is an authoritative copy of the same shape.
+// Length/count bounds (security review P2-4): the draft is derived from an uploaded photo (adversarial
+// OCR surface) and its focus tags are written straight into the scheduler on approval — bound every field
+// so an injected wall of text can't become a skill tag or an unbounded write. Constraints only (no
+// transforms) so the same schema still drives the LLM structured-output JSON schema. Trimming/dedupe and
+// taxonomy-filtering happen at apply time in review.service.
+const skillTag = z.string().min(1).max(64);
+
 export const homeworkAnalysisItemSchema = z.object({
-  prompt: z.string(),
-  childAnswer: z.string(),
+  prompt: z.string().max(2000),
+  childAnswer: z.string().max(2000),
   correct: z.boolean(),
-  errorType: z.string().nullable().optional(),
+  errorType: skillTag.nullable().optional(),
 });
 
 export const homeworkAnalysisSchema = z.object({
-  topic: z.string(),
-  exerciseType: z.string(),
-  items: z.array(homeworkAnalysisItemSchema),
-  suggestedFocus: z.array(z.string()),
+  topic: z.string().max(200),
+  exerciseType: z.string().max(200),
+  items: z.array(homeworkAnalysisItemSchema).max(50),
+  suggestedFocus: z.array(skillTag).max(20),
 });
 
 export const queueItemSchema = z.object({

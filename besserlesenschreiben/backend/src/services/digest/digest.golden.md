@@ -1,4 +1,4 @@
-# Lernprofil: Mia · Buddy nepo · Ziel 5×/Woche · Schrift: Standard ×1.0
+# Lernprofil · Buddy nepo · Ziel 5×/Woche · Schrift: Standard ×1.0
 
 ## Letzte 14 Tage
 | Skill | Versuche | Richtig % | Ø Zeit | Trend |

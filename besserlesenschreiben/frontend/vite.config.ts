@@ -18,10 +18,12 @@ export default defineConfig({
         // Read-mostly API data: serve from network, fall back to the last good response after a short
         // timeout so a connectivity blip doesn't blank /lernen or /profil (ARCHITECTURE — offline-playable).
         // Writes (POST /attempts etc.) are never cached; the telemetry queue handles their retry.
+        // NOTE: `/me` is deliberately NOT cached — it's the auth probe, and a cached 200 would let a
+        // logged-out user reload offline back into the previous session (security review P2-1).
         runtimeCaching: [
           {
             urlPattern: ({ url, request }: { url: URL; request: Request }) =>
-              request.method === 'GET' && /\/api\/v1\/(units|progress|me)(\/|$|\?)/.test(url.pathname + url.search),
+              request.method === 'GET' && /\/api\/v1\/(units|progress)(\/|$|\?)/.test(url.pathname + url.search),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'blsb-api',

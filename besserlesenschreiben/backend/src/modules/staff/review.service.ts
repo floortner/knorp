@@ -6,12 +6,38 @@ import { StorageService } from '../../services/storage/storage.service';
 import { FsrsService } from '../../services/fsrs/fsrs.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 import { homeworkAnalysisSchema } from '../../contract/staff';
+import { SKILL_TAG_SET, SKILL_TAGS } from '../../contract/skills';
 import { Prisma } from '../../generated/prisma/client';
 import type { z } from 'zod';
 import type { Env } from '../../config/env';
 import type { ReviewSubmitInput } from './staff.dto';
 
 type HomeworkAnalysis = z.infer<typeof homeworkAnalysisSchema>;
+
+const MAX_APPLIED_TAGS = 20;
+// While the skill taxonomy is being redesigned it is a single 'placeholder' — filtering strictly against
+// it would drop every homework focus tag and neuter scheduling. Enum-filtering therefore auto-activates
+// only once a real taxonomy is populated; until then we still trim/bound/dedupe (security review P2-4).
+const TAXONOMY_ACTIVE = !(SKILL_TAGS.length === 1 && SKILL_TAG_SET.has('placeholder'));
+
+/**
+ * Sanitise reviewed skill tags before they become scheduling keys: trim, drop empties/over-long strings,
+ * dedupe, cap the count, and — once the taxonomy is real — keep only known tags so an injected or
+ * hallucinated string from the photo can't become a permanent scheduling key (security review P2-4).
+ */
+function normalizeSkillTags(tags: readonly string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of tags) {
+    const t = raw.trim();
+    if (!t || t.length > 64 || seen.has(t)) continue;
+    if (TAXONOMY_ACTIVE && !SKILL_TAG_SET.has(t)) continue;
+    seen.add(t);
+    out.push(t);
+    if (out.length >= MAX_APPLIED_TAGS) break;
+  }
+  return out;
+}
 
 interface QueueItem {
   uploadId: string;
@@ -300,11 +326,11 @@ export class ReviewService {
             isCorrect: item.correct,
             timeMs: 0,
             attemptNo: i + 1,
-            skillTags: item.errorType ? [item.errorType] : [],
+            skillTags: item.errorType ? normalizeSkillTags([item.errorType]) : [],
           },
         });
       }
-      for (const skillTag of reviewed.suggestedFocus) {
+      for (const skillTag of normalizeSkillTags(reviewed.suggestedFocus)) {
         const where = { profileId_skillTag: { profileId: upload.profileId, skillTag } };
         const rs = await tx.reviewState.findUnique({ where });
         const fields = this.fsrs.next(rs, false, 1, now); // homework flagged it → treat as a failed review

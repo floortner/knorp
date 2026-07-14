@@ -65,9 +65,13 @@ async function bootstrap(): Promise<void> {
   // ★ caps) remain the precise guards — this is the blunt outer shell. Emits the §5 error envelope.
   // Loopback addresses are skipped so e2e tests (all traffic from 127.0.0.1) are not throttled.
   const { default: fastifyRateLimit } = await import('@fastify/rate-limit');
+  const isProd = process.env.NODE_ENV === 'production';
   await app.register(fastifyRateLimit, {
     timeWindow: '1 minute',
-    allowList: (req: { ip?: string }) => req.ip === '127.0.0.1' || req.ip === '::1',
+    // The loopback exemption exists only so the e2e suite (all traffic from 127.0.0.1) isn't throttled;
+    // it must never apply in production, where a request that reaches the app as loopback (direct :3000
+    // hit + spoofed XFF) would otherwise dodge all auth rate limiting (security review P2-6).
+    allowList: (req: { ip?: string }) => !isProd && (req.ip === '127.0.0.1' || req.ip === '::1'),
     max: (req: { url?: string }) => ((req.url ?? '').includes('/auth/') ? 10 : 300),
     errorResponseBuilder: (req: { id?: string }, context: { after: string }) => ({
       error: {
@@ -95,7 +99,11 @@ async function bootstrap(): Promise<void> {
   });
 
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-  await app.listen({ port, host: '0.0.0.0' });
+  // In prod the app sits behind nginx on the same box — bind loopback only so nothing but nginx can reach
+  // it, even if the security group is ever misconfigured (defence-in-depth, security review P2-6). Dev/e2e
+  // bind all interfaces so the app is reachable from the host/other containers. Override via HOST.
+  const host = process.env.HOST ?? (isProd ? '127.0.0.1' : '0.0.0.0');
+  await app.listen({ port, host });
 }
 
 void bootstrap();

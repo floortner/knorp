@@ -90,6 +90,19 @@ export function pendingAttempts(): number {
   return loadQueue().length;
 }
 
+/**
+ * Drop the local attempt queue. Called on logout so a shared/family device doesn't retain the previous
+ * child's answers, and so queued attempts aren't later flushed under a different account's cookie
+ * (security review P2-2).
+ */
+export function clearAttemptQueue(): void {
+  try {
+    localStorage.removeItem(QUEUE_KEY);
+  } catch {
+    /* storage unavailable — nothing to clear */
+  }
+}
+
 // Replay whatever's queued as soon as connectivity returns (and once at startup).
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () => void flushAttempts());

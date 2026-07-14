@@ -48,42 +48,46 @@ The whole auth design is "no token in JS, httpOnly cookie, `/me` probe" — yet 
 
 ## Priority 2 — soon after beta
 
-### P2-1 · Service-worker cache defeats logout offline and retains child data — Medium
+> **Status: all seven fixed in this branch.** Backend 160 tests, frontend 50, reviewer 14 all pass; typecheck + lint clean; `openapi.json` regenerated (the `api.gen.ts` files are unchanged since length/count bounds don't alter TS types).
+
+### P2-1 · Service-worker cache defeats logout offline and retains child data — Medium · ✅ fixed
 `frontend/vite.config.ts:21-33` (Workbox `NetworkFirst` on `/me`, `/units`, `/progress`, 24h) + `AuthProvider.tsx:22-30` (logout clears cookie + `['me']` query only, never `caches`)
 
 `/me` (child names, streaks) and `/progress` persist in Cache Storage for 24h and are never evicted on logout. Two consequences: (1) on a shared/family device, the last user's profile is readable from Cache Storage after logout; (2) **offline logout bypass** — after logout, reloading while offline resets in-memory `signedOut`, the `/me` probe fails over to the cached 200, and `RequireAuth` renders the previous user's app.
 
 **Fix:** in `logout()` (and the `onUnauthorized` handler) add `if ('caches' in window) await caches.delete('blsb-api');` — closes both halves. Consider excluding `/me` (the auth probe) from runtime caching entirely.
 
-### P2-2 · Telemetry queue keeps child answers in localStorage (48h) and survives logout — Low
+### P2-2 · Telemetry queue keeps child answers in localStorage (48h) and survives logout — Low · ✅ fixed
 `frontend/src/lib/telemetry.ts:14-16,82-86`; body includes `prompt`/`expected`/`given` (`attempts.dto.ts:9-19`)
 
 Literal answer text sits in plaintext `localStorage` (`blsb.attempts.queue`), not cleared on logout, and `flushAttempts()` runs at startup/on `online` — so attempts queued under account A get POSTed with account B's cookie after an account switch (backend rejects the foreign `sessionId`, but the cross-account send still happens). **Fix:** `localStorage.removeItem('blsb.attempts.queue')` in `logout()`.
 
-### P2-3 · Family login-code requests have no per-address resend throttle — Low/Medium
+### P2-3 · Family login-code requests have no per-address resend throttle — Low/Medium · ✅ fixed
 `backend/src/modules/auth/auth.service.ts:46-58`
 
 The **staff** flow throttles code emails to one per address per 60s; the **family** flow doesn't — every call to an active email mints a new code and sends mail, bounded only by the blunt 10/min per-IP limiter. One IP can send ~600 code emails/hour to a victim's inbox (SES cost + spam + churns the victim's current code). Not a takeover vector (the attacker never sees the code), but an email-bomb/cost issue. **Fix:** mirror the staff throttle — skip issuing if a still-fresh unconsumed code exists for the address.
 
-### P2-4 · Homework analysis skill tags written to the scheduler unvalidated — Low/Medium
+### P2-4 · Homework analysis skill tags written to the scheduler unvalidated — Low/Medium · ✅ fixed
 `backend/src/contract/staff.ts:27-32`, applied at `review.service.ts:290-316`
 
 `suggestedFocus`/`errorType` are unbounded `z.string()` with no taxonomy allow-list. On approval they're written verbatim into `attempt.skillTags` / `reviewState.skillTag` — unlike LLM *exercises*, which are validated against `SKILL_TAGS`. A hallucinated or image-injected tag becomes a permanent scheduling key that maps to no drillable content and later surfaces in `digest.md` sent to the LLM. **Fix:** validate against `SKILL_TAG_SET` at apply time (drop unknowns) and bound array/string lengths in the schema.
 
-### P2-5 · Child's real first name is sent to Anthropic in the LLM prompt — Medium (privacy)
+### P2-5 · Child's real first name is sent to Anthropic in the LLM prompt — Medium (privacy) · ✅ fixed
 `backend/src/services/digest/digest.render.ts:124`, fed to the prompt at `sessions.service.ts:210,223`
 
 The digest header carries the child's real first name into the session-generation prompt, though the name plays no role in generation (the system prompt forbids greetings). More minor PII than necessary reaches a third-party processor — the kind of field a DPA review flags for a children's product. **Fix:** drop `name` (or use the pseudonym `handle`) from the digest header; update the golden intentionally. Client-side personalization can stay.
 
-### P2-6 · Bind the backend to `127.0.0.1` in production — Low
+### P2-6 · Bind the backend to `127.0.0.1` in production — Low · ✅ fixed
 `backend/src/main.ts:98` (`host: '0.0.0.0'`), vs `deploy/blsb-api.service` which states "binds :3000 on localhost"
 
 Only the security group stands between the internet and raw port 3000, and it's the **default VPC**. Anything reaching :3000 directly bypasses nginx's `X-Forwarded-For` overwrite; with `trustProxy: true` a caller could then spoof `X-Forwarded-For: 127.0.0.1` and hit the rate-limiter's loopback exemption. Defended today at two layers (nginx overwrites XFF, SG opens only 80/443) but one SG misedit from exposure. **Fix:** bind `127.0.0.1` when `NODE_ENV=production` (one line). Also gate the loopback rate-limit exemption to non-production so the e2e-only carve-out can't matter in prod.
 
-### P2-7 · Backups are destructible from the box, opt-in, and silent on failure — Medium
+### P2-7 · Backups are destructible from the box, opt-in, and silent on failure — Medium · ✅ partly fixed (see note)
 `deploy/backup.sh:22-28`, `deploy/blsb-backup.service`, `deploy/README.md`
 
 The on-box rclone credential needs **delete** rights (for the prune step), so rooting the box (P1-2) wipes the DB *and* every backup at once. Setup is a manual README step (easy to run live with zero backups), and the service has no `OnFailure=` / dead-man's-switch, so months of failed backups go unnoticed. **Fix:** use a write-only bucket token + provider lifecycle rules for pruning (Backblaze B2 / R2 support this); add a free healthchecks.io ping as the last line of `backup.sh`; install the timer from `release.sh` so a rebuilt box can't silently lose it.
+
+**Done in code:** `backup.sh` now pings `HEALTHCHECK_URL` on success and — via an `ERR` trap — on failure (dead-man's-switch), the units are installed root-owned by `release.sh` (P1-2), and `README.md` documents the write-only-token + lifecycle-prune posture. **Operator action still required:** create the write-only remote token, leave `PRUNE_MIN_AGE` unset (use the provider's lifecycle rule), and set `HEALTHCHECK_URL` in `/etc/blsb/backup.env` — the code can't provision the external bucket/token for you.
 
 ---
 

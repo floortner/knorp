@@ -8,6 +8,7 @@ import { ApiException } from '../../common/exceptions/api-exception';
 
 const CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_VERIFY_ATTEMPTS = 5; // lock the code after this many wrong tries
+const RESEND_INTERVAL_MS = 60 * 1000; // min gap between code emails per address (anti email-bomb, P2-3)
 const SESSION_TTL = '30d';
 
 @Injectable()
@@ -40,6 +41,18 @@ export class AuthService {
     if (account.status !== 'active') {
       // Known but not yet approved (or deactivated) — emit nothing, but never reveal that.
       this.logger.log({ event: 'auth.code_suppressed', accountId: account.id }, 'code suppressed (not active)');
+      return { ok: true };
+    }
+
+    // Throttle: at most one code email per address per minute (anti email-bomb / SES cost — security
+    // review P2-3). A still-fresh unconsumed code blocks a re-send but stays valid for its 10-min TTL,
+    // so legitimate retries still work. Mirrors the staff realm. Uniform {ok:true} either way.
+    const recent = await this.prisma.loginCode.findFirst({
+      where: { email, consumedAt: null, createdAt: { gt: new Date(Date.now() - RESEND_INTERVAL_MS) } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (recent) {
+      this.logger.log({ event: 'auth.code_throttled', accountId: account.id }, 'code resend throttled');
       return { ok: true };
     }
 
