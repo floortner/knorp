@@ -113,6 +113,13 @@ reviewed homework now shapes lectures.
   scratch — see **§F** below.
 - ✅ **Reviewer portal expansion** — brand-aligned chrome, nav count badges, queue history (`Offen/Erledigt/
   Alle`), admin-only learner-progress views (identity-bearing per account; pseudonymised per upload).
+- ✅ **Reviewer workflow batch (2026-07-14, #79)** — queue: cursor "Mehr laden" paging, waiting-since cue,
+  `claimed`/"in Prüfung" locks (open now lists ALL undecided items), read-only history detail
+  (`/history/:uploadId`). Review flow: submit→next-item, unsaved-changes guard, claim-conflict read-only
+  lockout, reject confirmation, homework-image lightbox (zoom/pan/rotate). Own **Profil** tab (`/profile`
+  → `PATCH /staff/me` rename; `GET /staff/me` gains `email`+`createdAt`). Admin email search
+  (`GET /staff/users?q=`). Content rule: reviewer copy is emoji-free, lucide icons used consistently
+  (AGENTS.md). Audit trail still deferred to the OTel build-out (§E).
 - ✅ **Homework-in-chat** — upload moved into the family Chat tab; durable photo + status bubbles served by
   chat history; verdict echoed in-chat.
 - ✅ **E2E harness** — top-level `e2e/` Playwright suite (backend + frontends via `webServer`, capture email
@@ -140,6 +147,14 @@ correctness fixes; committed `api.gen.ts` + drift gate; flow tests.
 **Phase 2:** Chat (★) + the ✨ generated-lecture entry on `/lernen` with the intro card; homework
 "Foto & verbessern" upload (moved into the **Chat tab** — photo as a chat message; no confirm UI; the staff
 portal owns review). No billing UI — the app is free.
+
+**Family-app tweaks (2026-07-14, #77/#78):** parent **"Chat löschen"** fully wipes the trainer chat —
+messages + homework uploads (rows, review-audit cascade, stored image blobs) — and re-locks to the PIN
+gate like the progress reset; editable **username** on `/profil` (capped at 10 chars) + read-only login
+email; Angelika SVG as the chat trainer icon; **Switch** thumb-alignment fix. **Regression fix:**
+civil-day/week bucketing moved **UTC → Europe/Berlin** (`common/dates.ts`, DST-safe) — the week strip was
+crediting an early-morning-local session to the previous day; also corrects streak, daily caps, joker
+week, and heatmap.
 
 **Vokaltraining pivot — DROPPED 2026-07-13.** The exercise set that replaced the legacy prototype — the
 **14 types** (Wortraster, Selbstlaute, kurz/lang, Quatschwörter, Komposita, Wortfamilien), a 7-unit
