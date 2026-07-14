@@ -14,10 +14,23 @@ ExecStart=/usr/bin/node dist/main.js
 Restart=on-failure
 RestartSec=3
 # The app binds :3000 on localhost; nginx terminates TLS and proxies to it.
-# Hardening
+# Hardening (security review P3). The app is a non-root Node service that only needs TCP (listen :3000)
+# + a unix socket (Postgres peer auth) + read of /etc/blsb/env; the rest is locked down. MemoryDenyWrite-
+# Execute is intentionally omitted — Node's JIT needs W^X. Verify `systemctl status blsb-api` after deploy.
 NoNewPrivileges=true
 ProtectSystem=full
 PrivateTmp=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
 
 [Install]
 WantedBy=multi-user.target

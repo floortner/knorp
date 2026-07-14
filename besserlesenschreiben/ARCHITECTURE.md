@@ -263,6 +263,12 @@ media rule, and the security-boundary invariants. It measurably improves agent o
   a `/me` probe, so a refresh never logs the child out. `JwtAuthGuard` also accepts `Authorization: Bearer <jwt>`
   for non-browser/API clients. Parent-scoped routes additionally require a fresh `parent` claim (SPEC §4).
   (Refresh-token rotation is deferred; the 30-day cookie is the v1 posture.)
+- **CSRF posture:** there is no CSRF token — protection rests entirely on `SameSite=Lax` (so a genuinely
+  cross-site `evil.com` POST carries no cookie) plus the explicit production CORS allowlist (the backend
+  refuses to boot without one). This is adequate for beta because the apps and API are subdomains of one
+  registrable domain. **Caveat to keep in mind:** SameSite=Lax treats all same-site subdomains as trusted,
+  so an XSS or takeover on *any* sibling subdomain (e.g. the marketing site on the apex) is same-site and
+  could ride the family cookie. A per-request CSRF token is the post-beta hardening if that surface grows.
 - **Naming:** resource nouns, plural, kebab-free snake in JSON bodies is *not* used — **JSON uses camelCase**,
   DB columns use snake_case; the backend maps between them. Pick one and never mix on the wire: **camelCase wins.**
 - **Status codes:** `200` ok · `201` created · `204` no body · `400` malformed · `401` unauthenticated ·

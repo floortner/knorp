@@ -341,6 +341,30 @@ Exercise contract, session algorithm), `frontend/SPEC.md` §3, both `CLAUDE.md`/
 and this file. They currently carry "dropped 2026-07-13 (§F)" annotations marking exactly the sections to
 restore.
 
+### G. Security review follow-ups (pre-beta review, 2026-07-14)
+
+Full-surface review in `SECURITY_REVIEW.md`; tracking issue **#81**.
+
+- **P1 (must-fix) — DONE** (PR #80): parent-PIN reset bypass, `blsb`→root deploy escalation, CloudFront/nginx
+  security headers + CSP, and JWT removed from the `/auth/verify` body.
+- **P2 — DONE** (PR #80): SW-cache offline-logout bypass, telemetry-queue clear on logout, family login-code
+  resend throttle, homework skill-tag bounds/sanitisation, child name dropped from the LLM digest, API bound
+  to localhost in prod, and a backup dead-man's-switch.
+- **P3 batch 1 — DONE**: Swagger gated out of prod, `VITE_API_BASE` prod guard, `qc.clear()` on logout,
+  `dnf-automatic` patching, systemd unit hardening, `sudo --preserve-env` in `release.sh`, CSRF note in
+  ARCHITECTURE.
+- **P3 remaining — DEFERRED (do here, opportunistically):**
+  1. 6-digit family login code (align with staff; touches the code regex + tests).
+  2. Normalise emails (`trim().toLowerCase()`) at the auth boundary (family + staff, matching `seed.ts`).
+  3. Dedicated image-token secret instead of reusing `STAFF_JWT_SECRET` (new env var → `env.ts`/`.env.example`).
+  4. Scope the S3 blob lifecycle rule to the `…/homework/` prefix (not all of `users/`).
+  5. Operational CloudWatch alarms (instance status-check, data-volume disk-full, cert-renewal) → existing SNS topic.
+  6. GitHub deploy approval gate (environment protection rule + OIDC `sub` scoped to `environment:beta`) and
+     SHA-pin third-party actions.
+- **Operator actions (not code):** `terraform validate`/`plan` + staging CSP smoke-test before apply;
+  provision a write-only backup token + `HEALTHCHECK_URL`; re-verify the dormant P2-4 taxonomy filter once
+  `SKILL_TAGS` is populated in §F. (All in #81.)
+
 ---
 
 ## Suggested order

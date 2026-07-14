@@ -49,8 +49,14 @@ mountpoint -q /var/lib/pgsql || {
   echo "       Check 'systemctl status blsb-pgdata' / 'lsblk' on the box, then re-run the deploy." >&2
   exit 1
 }
-sudo -u blsb bash -c "cd '$BE' && DATABASE_URL='$DATABASE_URL' npx prisma migrate deploy"
-sudo -u blsb bash -c "cd '$BE' && DATABASE_URL='$DATABASE_URL' STAFF_ADMIN_EMAILS='${STAFF_ADMIN_EMAILS:-}' NODE_ENV=production npx prisma db seed"
+# Pass secrets through the ENVIRONMENT, not the command line — an inline `DATABASE_URL=…` would show up in
+# `ps` for the lifetime of the command (security review P3). Harmless today (passwordless socket DSN) but
+# correct the moment a password lands in the DSN. `--preserve-env` carries the exported vars into the
+# sudo'd shell without them appearing in argv.
+export DATABASE_URL
+export STAFF_ADMIN_EMAILS="${STAFF_ADMIN_EMAILS:-}"
+sudo --preserve-env=DATABASE_URL -u blsb bash -c "cd '$BE' && npx prisma migrate deploy"
+sudo --preserve-env=DATABASE_URL,STAFF_ADMIN_EMAILS -u blsb bash -c "cd '$BE' && NODE_ENV=production npx prisma db seed"
 
 # 4. Flip the current symlink the systemd unit points at.
 ln -sfn "$RELEASE_DIR" /opt/blsb/current
