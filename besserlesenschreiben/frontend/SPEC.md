@@ -27,20 +27,20 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (child u
 
 ```
 /login            email entry → 4-digit code entry → (session-expired state)
-/onboarding       welcome (buddy intro) → choose buddy (Nepo|Stella) → choose weekly goal
+/onboarding       welcome (buddy intro) → choose buddy (8 Lernbuddies, Nepo default) → choose weekly goal
 /app
   ├ /lernen       home: greeting, unit cards (title/subtitle/status), ✨ generated-lecture card, reward strip, START
-  │   └ /lesson   exercise runner (14 renderers), feedback, confetti on complete; sessions
+  │   └ /lesson   exercise runner (one renderer per contract type — §3), feedback, confetti on complete; sessions
   │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!") —
   │               bank sessions carry the unit's Merksatz, generated lectures their own intro
-  ├ /liga         league (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
-  ├ /profil       name, buddy, "aktiv seit", streak, stars, weekly activity, progress rows, contact-trainer CTA
+  ├ /erfolge      achievement standing (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
+  ├ /profil       editable name, buddy picker, "aktiv seit", streak, stars, Ton toggle, login email, Eltern-Bereich CTA
   └ /chat         message thread with trainer Angelika + input; 📷 homework upload — the photo shows as
   │               a chat message, the review status/verdict comes back as trainer bubbles (§9)
-/parent           PIN gate → trainer actions (unlock next, reset)
+/parent           PIN gate → trainer actions (unlock next, reset progress, delete chat)
 ```
 
-**Tabs** (bottom nav, mobile): `lernen · liga · profil · chat`. Parent area reached from profile, **PIN-gated**.
+**Tabs** (bottom nav, mobile): `lernen · erfolge · chat · profil`. Parent area reached from profile, **PIN-gated**.
 
 **The app is free.** No price, paywall, or buy button exists anywhere — child or parent view. The ✨ lecture
 card requests `POST /sessions {source:'llm'}` (loading state: generation takes a few seconds) and falls back
