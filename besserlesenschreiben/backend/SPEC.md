@@ -88,7 +88,7 @@ profile(
   id            uuid pk,
   account_id    uuid fk -> account,
   name          text not null,
-  buddy         text default 'nepo',    -- selectable buddy: nepo | stella (more mascot art in frontend/monster-pets, reserved for later)
+  buddy         text default 'nepo',    -- selectable Lernbuddy (8-value enum in profiles.dto.ts; art in frontend/monster-pets)
   goal_per_week int  default 5,
   -- accessibility / settings (mirrors prototype state)
   sound_on      bool default true,

@@ -15,11 +15,18 @@ hardening (A), cleanup (B), most engagement work (C1, D1–D4, D7), and the **E 
 have shipped: backend + family frontend + reviewer portal are live on real HTTPS domains (`infra/` Terraform
 + `deploy/` on-box scripts + `.github/workflows/deploy.yml`), inside the €50/mo all-in budget.
 
-- **Next:** **F — content-set redesign** (§F): the Vokaltraining word lists/training types/sequence/lecture
-  prompt were intentionally dropped 2026-07-13; a new pedagogical approach is being designed from scratch on
-  top of the kept skeleton (auth, homework review, chat, staff portal, AWS deploy).
+- **In progress (external):** **F — content-set redesign** (§F): a linguist is authoring the new word
+  lists, training types, and sequence. Engineering picks each piece up as it lands (F steps 2–6, via the
+  §C2 playbook). Don't start F implementation unprompted — the pedagogy is the linguist's.
+- **Next (engineering):** **H — staff-authored lectures + student tracking** (§H): turn the reviewer
+  portal into the teaching console — trainers compose individual lectures, assign them to specific
+  students (known-trainer model: real names), and **review thoroughly what each student did** (sessions
+  started/duration, every question & answer, retries, timing). **H1 (rails) + H3 (tracking) are
+  type-agnostic and buildable now** against the `placeholder` type; the per-type authoring UI (H2)
+  grows as the linguist's training types land.
 - **Then:** **D5 / D6** (badges, weekly parent email) — self-contained engagement work.
-- **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it.
+- **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it. Each
+  new type now also adds its §H2 authoring-form section (the playbook gains a step).
 - **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9; schema kept
   dormant) · TTS pipeline (Web-Speech fallback on the client for now; target Amazon Polly) · full-prod
   hardening (multi-instance/ALB, managed RDS + DR, OTel collector, staff MFA — see §E "Deferred to full
@@ -349,7 +356,8 @@ review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline).
    solvability rules + few-shot examples for the new training types; re-add word-pool grounding
    (`wordPoolFor`/`LexemeService`) and the `gradeBand` `maxHk`/`ageBand` calibration if the new schema wants it.
 7. **Reviewer curation surface** — decide whether the new word-list schema needs a staff curation tab (the old
-   Wortschatz tab + `/staff/lexemes` routes are at `0d4948b` as a reference).
+   Wortschatz tab + `/staff/lexemes` routes are at `0d4948b` as a reference). The lecture **authoring**
+   surface is a separate, decided milestone — see **§H** (this step is only about word-list curation).
 
 **Docs to re-true when this lands** (per the ARCHITECTURE docs-upkeep rule): `backend/SPEC.md` §2/§3/§8 (DDL,
 Exercise contract, session algorithm), `frontend/SPEC.md` §3, both `CLAUDE.md`/`AGENTS.md` exercise sections,
@@ -380,12 +388,98 @@ Full-surface review in `SECURITY_REVIEW.md`; tracking issue **#81**.
   provision a write-only backup token + `HEALTHCHECK_URL`; re-verify the dormant P2-4 taxonomy filter once
   `SKILL_TAGS` is populated in §F. (All in #81.)
 
+### H. Staff-authored lectures — the reviewer portal as teaching console
+
+**Goal:** a trainer composes an individual lecture — teaching intro (Merksatz) + an ordered set of
+exercises — and **assigns it to specific students**, who see it in the family app ("Übung von deiner
+Trainerin"), complete it as a normal session, and the author sees the result. This extends
+ARCHITECTURE §11: the portal stops being review-only and becomes the teaching console. It reuses the
+existing machinery almost wholesale — the gap is one authoring surface, two tables, and one
+family-app card.
+
+**Why tracking is core, not a nice-to-have:** the trainer must see *thoroughly* what the student did —
+which lectures/sessions were started when, how long completion took, every question with the given
+answer(s), retries, and timing — to adapt the next training material. That same signal is what lets
+the LLM generate proper future lectures, and it's the economic basis for the app being free in the
+beginning (the app data powers the trainer's paid in-person work). The raw data already exists —
+`attempt` records every answer with `time_ms`/`attempt_no`, `session` records start/completion — H
+adds the trainer-facing read model and screens, not new telemetry.
+
+**Product reality (2026-07-15, supersedes the pseudonymisation rationale):** the trainers (2–3 in the
+beginning) **know each student personally** and speak with the parents in person. The staff portal is a
+known-trainer tool, not an anonymous review desk — trainers work with **real child names**. The old
+pseudonymised-queue rule (ARCHITECTURE §1a / security rule 10) was designed for anonymous reviewers
+and no longer matches the product; **H1 revises it**: staff surfaces show the child's name + progress;
+parent email/account administration stays admin-only. (The `L-xxxxxx` handle can remain internally as
+a stable id, but it stops being a display requirement.)
+
+**Invariants (extend §11's):**
+- **Staff-authored exercises pass the same solvability gate as LLM output** (`solvableExerciseSchema`
+  on create/update) — the child can never receive an unanswerable item, regardless of author.
+- **Never blocking, never pushy:** an assignment is an *offer* on `/lernen` alongside bank/★ sessions —
+  no push at the child, no due-date pressure mechanics (same values as §D).
+- Attempts from assigned sessions are ordinary telemetry: they feed FSRS, the digest, and weak-skill
+  selection exactly like bank/LLM sessions.
+- Trainers see child names + learning data; **parent email + account lifecycle stay admin-only**.
+
+**H1 — the rails (type-agnostic; buildable NOW against `placeholder`):**
+1. **Schema:** `lecture` (id, created_by → reviewer, title, intro, item_ids uuid[], skill_tags,
+   status `draft|published`, timestamps) + `assignment` (lecture_id, profile_id, assigned_by,
+   assigned_at, session_id nullable, completed_at nullable). `item_bank.generated_by` gains `'staff'`;
+   `session.source` gains `'assigned'`.
+2. **Staff routes** (backend SPEC §6): lecture CRUD (create validates every exercise via
+   `solvableExerciseSchema`), publish, assign to N profiles, list assignments with status
+   (`open | started | completed`) and per-item results after completion.
+3. **Learner directory:** a student list for **all reviewers** — child name, grade band, skill
+   breakdown, recent activity — the picker for assignment and the context for authoring. This is the
+   rule-10 revision point: replace the `profileHandle` display with the child's name across staff
+   surfaces (queue included), and re-true ARCHITECTURE §1a/§11 + CLAUDE.md security rule 10 in the
+   same PR.
+4. **Family surface:** `/lernen` shows an assignment card when one is open;
+   `POST /sessions {source:'assigned', assignmentId}` serves the lecture's items (intro = the lecture's
+   Merksatz); the normal attempts/complete loop marks the assignment completed.
+5. Contract regen + golden fixtures + an e2e journey (trainer authors → assigns → child completes →
+   trainer sees the result).
+
+**H2 — authoring UX (per training type; lands as the linguist's types land, F2/F3):**
+- Per-type exercise editor in the portal with inline solvability feedback (server-validated) and a
+  simple preview. Reuse-vs-duplicate of the family renderers for preview is the open technical
+  decision (portal and app are separate builds; start with a schematic preview, share components only
+  if it hurts).
+- Compose from existing `item_bank` items (filter by skill tag/difficulty) *or* author new ones.
+- The §C2 playbook gains a step: every new exercise type ships with its authoring-form section.
+
+**H3 — student activity tracking (the trainer's review loop):**
+1. **Staff read model** (backend SPEC §6): per-student session history —
+   `GET /staff/students/{profileId}/sessions` (each: source `bank|llm|assigned|homework`, lecture
+   title when assigned, startedAt, completedAt/duration, abandoned flag, items answered/total,
+   correct %) — and per-session drill-down with the full attempt detail (prompt, expected, given,
+   correct, `time_ms`, `attempt_no` retries, in order). All of this reads the existing
+   `session`/`attempt` tables — no new telemetry.
+2. **Portal screens:** a student activity timeline on the learner detail (filter by source/date),
+   session drill-down as a question-by-question review; per-assignment outcome directly on the
+   lecture's assignment list. Informs the next authored lecture and the in-person parent conversation.
+3. **Digest extension:** `digest.md` gains a "Zugewiesene Übungen" section (recent assigned lectures:
+   title, focus skills, outcome) so LLM-generated lectures build on the trainer's material instead of
+   ignoring it.
+4. Abandoned/never-started assignments are visible (assignment without session / session without
+   `completed_at`) — signal for the parent conversation, never pressure at the child.
+
+> **Sequencing note:** H3.1–H3.2 are type-agnostic and don't depend on lectures existing — they're
+> valuable for today's bank/★ sessions already. Build them **with H1** (same PR series), not after H2.
+
+**Docs to true when H lands:** ARCHITECTURE §1a + §11 (known-trainer model replaces the pseudonymised
+queue; teaching-console extension + the new invariants), CLAUDE.md security rule 10, backend SPEC
+§3/§6/§8 (tables, staff routes, `source='assigned'`), frontend SPEC §2 (assignment card), reviewer
+AGENTS.md (new screens + updated golden rules), and this file.
+
 ---
 
 ## Suggested order
 
 ~~B1+B2~~ ✓ → ~~D1~~ ✓ → ~~D4 + D7~~ ✓ → ~~D2 + D3~~ ✓ → ~~C1~~ ✓ → ~~E — first feedback round (beta) on
-AWS~~ ✓ → **F — content-set redesign** next (word-list schema → skill taxonomy → training types → sequence →
-lecture prompt), then **D5 / D6** (badges, parent email) once the new content is live. **C2** (a concrete new
-exercise type) is how new training types land during §F, and keeps slotting in afterward whenever the
-content work calls for it.
+AWS~~ ✓ → **H1 assignment rails + H3 student-activity tracking** now (both type-agnostic, unblocked)
+while the linguist works on **F** (word-list schema → skill taxonomy → training types → sequence →
+lecture prompt, landed piece by piece as delivered) → **H2 authoring UX** per type as F types arrive →
+then **D5 / D6** (badges, parent email) once the new content is live. **C2** (a concrete new exercise
+type) is how new training types land during §F — each now also ships its §H2 authoring form.
