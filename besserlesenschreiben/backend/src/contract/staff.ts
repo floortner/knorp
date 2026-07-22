@@ -3,7 +3,7 @@ import { z } from 'zod';
 /**
  * Wire schemas for the STAFF realm (ARCHITECTURE §1a, SPEC §6). These publish the OpenAPI the reviewer
  * portal types from. The queue payload is PSEUDONYMISED: image + LLM draft + skill tags + a coarse band
- * only — never a child name, parent email, chat, or billing.
+ * only — never a student name, parent email, chat, or billing.
  */
 
 export const staffMeSchema = z.object({
@@ -26,6 +26,7 @@ const skillTag = z.string().min(1).max(64);
 
 export const homeworkAnalysisItemSchema = z.object({
   prompt: z.string().max(2000),
+  // Legacy wire key, kept for compatibility with stored drafts (llm_analysis JSON) — means "the student's answer".
   childAnswer: z.string().max(2000),
   correct: z.boolean(),
   errorType: skillTag.nullable().optional(),
@@ -40,7 +41,7 @@ export const homeworkAnalysisSchema = z.object({
 
 export const queueItemSchema = z.object({
   uploadId: z.string(),
-  // Opaque, stable pseudonym for the child profile — never a real name.
+  // Opaque, stable pseudonym for the student profile — never a real name.
   profileHandle: z.string(),
   // Coarse progress band (current unit), never an age/DOB.
   gradeBand: z.string(),
@@ -56,7 +57,7 @@ export const queueItemSchema = z.object({
   // Historical items (status=done): the reviewer's verdict + when. null while still open.
   decision: z.string().nullable(),
   reviewedAt: z.string().nullable(),
-  // Historical items: the authoritative verdict + the reviewer's child-visible comment (read-only
+  // Historical items: the authoritative verdict + the reviewer's student-visible comment (read-only
   // detail view). Both null while open or when the item was rejected (reject applies nothing).
   reviewedAnalysis: homeworkAnalysisSchema.nullable(),
   notes: z.string().nullable(),

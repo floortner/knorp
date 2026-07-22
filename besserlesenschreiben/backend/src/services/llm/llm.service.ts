@@ -32,7 +32,7 @@ export class LlmService {
   /**
    * Structured output validated against `schema` (homework analysis, generated exercises, …). Validation
    * now includes SOLVABILITY refinements (src/contract/exercise), so a plausible-but-wrong batch (answer
-   * not in options, unknown skill tag) is rejected. To avoid failing a child's session on a single bad
+   * not in options, unknown skill tag) is rejected. To avoid failing a student's session on a single bad
    * batch, we re-ask ONCE with the validation error fed back before surfacing a provider error.
    */
   async extract<T>(schema: ZodType<T>, schemaName: string, req: ExtractRequest): Promise<T> {

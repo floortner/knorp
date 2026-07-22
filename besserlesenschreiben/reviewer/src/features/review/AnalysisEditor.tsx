@@ -60,7 +60,7 @@ export function AnalysisEditor({
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm text-ink">{it.prompt}</p>
-                  <p className="truncate text-xs text-ink-soft">Kind: „{it.childAnswer}“</p>
+                  <p className="truncate text-xs text-ink-soft">Schüler: „{it.childAnswer}“</p>
                 </div>
                 <Input
                   value={it.errorType ?? ''}

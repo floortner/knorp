@@ -1,6 +1,6 @@
 # SPEC — besserlesenschreiben **Backend**
 
-Adaptive German children's literacy tutor. This is the **backend** project (separate repo/folder).
+Adaptive German literacy tutor for students (ages 8-14). This is the **backend** project (separate repo/folder).
 The frontend is a separate Vite/React SPA that talks to this service only over the HTTP API defined here.
 **The API contract in §6 is the boundary — the frontend depends on it. Treat it as the source of truth.**
 
@@ -14,7 +14,7 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
   (via `nestjs-zod`) for all request/response DTOs; `@nestjs/swagger` emits the OpenAPI the frontend types from.
 - **DB:** PostgreSQL 17 via **Prisma 7** (`prisma/schema.prisma` is the model truth). Migrations with **Prisma Migrate**.
 - **Object storage:** **Amazon S3** (per-user prefixes, short-lived **presigned** URLs) via `@aws-sdk/client-s3`.
-- **Auth:** passwordless email code → JWT session token. Separate **parent PIN** elevation.
+- **Auth:** passwordless email code → JWT session token. (The former parent-PIN elevation was removed 2026-07-22 — destructive actions are ownership-checked and double-confirmed in the UI instead.)
 - **LLM:** `@anthropic-ai/sdk` (session generation, chat, homework vision); structured JSON via `zodOutputFormat` +
   `messages.parse` reuses the same Zod schemas. Model string configurable via env. See `../ARCHITECTURE.md` §8 for
   the LLM data-flow decision (Anthropic-direct, `inference_geo: "eu"`).
@@ -25,18 +25,18 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
 **Hard rules (security boundary):**
 1. `user_id` / `profile_id` is **always derived from the JWT**, never from a client-supplied path or body field.
 2. All object-storage access is via **presigned URLs scoped to a single object under the authenticated user's prefix**. Bucket credentials/paths are never exposed.
-3. Parent-scoped and billing endpoints require a valid **parent elevation claim** (§4).
+3. Destructive profile endpoints (`/profiles/:id/reset`, `/profiles/:id/reset-chat`) assert ownership of `:id` against the JWT account (missing/foreign → 404); the family UI fronts them with a two-step confirmation (§4).
 4. AI endpoints (`★`) are **free** — no entitlement/credit/`402` check (billing deferred, ARCHITECTURE §9); access is gated by `account.status='active'` instead (§4).
 
 ---
 
 ## 2. Domain model
 
-**Account = one parent email. Profiles = one or more children under it.** The child uses the device;
-the parent email authenticates the household; the PIN re-gates parent controls and billing.
+**Account = one parent email. Profiles = one or more students under it.** The student uses the device;
+the parent email authenticates the household.
 
 ```
-account (1) ───< profile (N children)
+account (1) ───< profile (N students)
 profile (1) ───< session ───< attempt
 profile (1) ───< homework_upload ───< homework_review
 profile (1) ───< chat_message
@@ -63,9 +63,6 @@ account(
   id               uuid pk,
   email            text unique not null,
   status           text default 'pending',  -- 'pending' | 'active' | 'deactivated' (lifecycle, ARCHITECTURE §1b)
-  parent_pin_hash  text,                 -- argon2; null until set at onboarding
-  pin_attempts     int default 0,        -- durable PIN lockout (§4)
-  pin_locked_until timestamptz,
   created_at       timestamptz default now()
 )
 -- Access = approval, not payment (ARCHITECTURE §1b/§9): a first login-code request creates a `pending`
@@ -83,7 +80,7 @@ login_code(
   attempts    int default 0             -- rate-limit verify
 )
 
--- PROFILE (a child)
+-- PROFILE (a student)
 profile(
   id            uuid pk,
   account_id    uuid fk -> account,
@@ -98,7 +95,7 @@ profile(
   stars         int default 0,
   streak_days   int default 0,
   last_active   date,
-  unlocked_unit int default 1,          -- highest unit unlocked; /parent/unlock-next increments it; drives /units status
+  unlocked_unit int default 1,          -- highest unit unlocked; drives /units status (reset by /profiles/:id/reset)
   created_at    timestamptz default now()
 )
 
@@ -145,7 +142,7 @@ attempt(
   exercise_type text not null,
   prompt        text not null,          -- word/glyph shown
   expected      text not null,          -- correct answer (stringified)
-  given         text not null,          -- what the child chose (stringified)
+  given         text not null,          -- what the student chose (stringified)
   is_correct    bool not null,
   time_ms       int  not null,          -- render-of-item -> answer
   attempt_no    int  default 1,         -- retries within the same item
@@ -223,15 +220,15 @@ homework_review(
   llm_analysis      jsonb not null,            -- snapshot of the draft shown to the reviewer
   reviewed_analysis jsonb,                     -- the verdict (null when rejected)
   agreed_with_llm   boolean not null,          -- false ⇒ the reviewer changed something (LLM-quality signal)
-  notes             text,                      -- optional reviewer note (QA only; never child-identifying)
+  notes             text,                      -- optional reviewer note (QA only; never student-identifying)
   created_at        timestamptz default now()
 )
 
--- CHAT (trainer conversation thread, per child profile; backs the /chat endpoints §6)
+-- CHAT (trainer conversation thread, per student profile; backs the /chat endpoints §6)
 chat_message(
   id           uuid pk,
   profile_id   uuid fk -> profile,
-  role         text not null,           -- 'child' | 'trainer' (mapped to me:bool on the wire)
+  role         text not null,           -- 'student' | 'trainer' (mapped to me:bool on the wire; read tolerates legacy 'child' rows)
   text         text not null,
   created_at   timestamptz default now()
 )
@@ -242,15 +239,7 @@ chat_message(
 
 ---
 
-## 4. Auth & parent PIN
-
-**Two distinct mechanisms — do not conflate:**
-
-| | Email + 4-digit code | Parent PIN |
-|---|---|---|
-| Purpose | Account login (authenticate household) | Elevation gate inside a logged-in session (`sudo`) |
-| Returns | JWT session token | Short-lived `parent` scope (~15 min) added to claims |
-| Guards | Everything | `/parent/*` and `/billing/*` (destructive + sensitive) |
+## 4. Auth
 
 **Login flow (approval-gated — ARCHITECTURE §1b)**
 1. `POST /auth/request-code {email}` → look up the account:
@@ -262,10 +251,12 @@ chat_message(
 
 The session JWT alone is not enough: the family `JwtAuthGuard` re-reads the account each request and rejects anything not `status='active'`, so deactivate/delete take effect immediately (not at 30-day token expiry).
 
-**Parent PIN**
-- Set at onboarding: `POST /parent/set-pin {pin}` → store **argon2 hash** (never plaintext); also clears any standing lockout. **Changing** an existing PIN requires the current one: `POST /parent/set-pin {pin, currentPin}` verifies `currentPin` (subject to the same durable lockout) before overwriting — otherwise whoever holds the family session (the child, on the family device) could reset the PIN and defeat the gate on the `‡` routes. The free set is allowed only when no PIN exists yet.
-- `POST /parent/verify-pin {pin}` → compare hash; **lock after 5 fails for 15 min** (4 digits = 10k combos). The lockout is **durable** — persisted on `account.pin_attempts` + `account.pin_locked_until`, not an in-memory Map — so it survives restarts and holds across scaled-out replicas (ARCHITECTURE §8). A correct PIN during the window returns `429 RATE_LIMITED`; a wrong PIN returns `403`. On success the counter is cleared and `parentToken` is returned: a **separate short-lived JWT** carrying a `parent` claim (~15 min). The client holds it and sends it on `‡` routes; `ParentScopeGuard` requires a valid, unexpired `parent` claim. It **does not replace** the session JWT.
-- The prototype's "any 4 digits" client check must NOT survive into production — the PIN guards `reset` and analytics.
+**No PIN / parent elevation.** The former Eltern-Bereich and its 4-digit PIN were removed (2026-07-22):
+the household is small and personally known to the trainers, and the PIN was more friction than protection.
+The destructive actions (`/profiles/:id/reset`, `/profiles/:id/reset-chat`) are plain family-session routes —
+ownership-checked server-side, fronted by a **two-step confirmation** in the `/profil` tab (frontend SPEC §8).
+Consequence to be aware of: anyone holding the family session (i.e. the student on the family device) can
+trigger them; the double confirm is deliberate friction, not a security boundary.
 
 **Session cookie.** The session JWT (30-day TTL) is set as an **httpOnly, Secure, SameSite=Lax cookie** on `/auth/verify` and cleared on `POST /auth/logout`. `JwtAuthGuard` reads the cookie or a `Bearer` header (the SPA uses the cookie and holds no token in JS, deriving auth from a `/me` probe; API clients/tests may use Bearer).
 
@@ -290,7 +281,7 @@ Postgres holds metadata + pointers; S3 holds markdown + media. Reads via presign
 
 ## 6. API contract  *(shared boundary with frontend)*
 
-All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*`. `‡` = requires parent scope. `★` = AI-backed / cost-bearing op — **free** today (no credit gating; billing deferred, ARCHITECTURE §9); the marker only flags what *could* be metered later.
+All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*`. `★` = AI-backed / cost-bearing op — **free** today (no credit gating; billing deferred, ARCHITECTURE §9); the marker only flags what *could* be metered later.
 
 This contract is **generated, not hand-written**: Zod schemas in `src/contract/*` → `openapi.json` (`npm run openapi:export`) → frontend `api.gen.ts` (`npm run gen:api`), with a CI drift gate. Every 2xx response is also validated at runtime against its Zod schema by a global `ZodResponseInterceptor` (dev: throws on mismatch; prod: logs + strips), so the documented shape can't drift from the served one.
 
@@ -339,7 +330,7 @@ GET /digest/{profileId}     -> {markdown}   # regenerated from attempt table on 
 GET  /chat/{profileId}                               -> {messages:[{me:bool, text, ts, imageUrl?}]}
 POST /chat/{profileId}      {text}                   -> {reply:{me:false, text}}   # ★ LLM
 ```
-- History also surfaces the profile's recent homework uploads as durable chat bubbles: the child's photo
+- History also surfaces the profile's recent homework uploads as durable chat bubbles: the student's photo
   (`imageUrl` = a short-lived presigned read URL of the family's OWN image) plus a trainer status line
   reflecting the current review status — drawn from the authoritative `reviewedAnalysis`, never the LLM
   draft. Display-only: homework never enters the LLM chat context.
@@ -353,7 +344,7 @@ GET  /homework/{id}        -> {status, reviewedAnalysis?}    # family sees the A
 - The former `POST /homework/{id}/confirm` parent-confirm step is **removed**. The human gate is now the
   **staff reviewer** (ARCHITECTURE §11). The upload happens from the family app's **Chat tab** (the photo
   shows as a chat message); the verdict is echoed back as a chat status bubble. No family action to take;
-  the child is never blocked.
+  the student is never blocked.
 
 ### Staff — homework review (STAFF realm only; `aud:"staff"` cookie, `StaffAuthGuard` — never a family JWT)
 ```
@@ -383,7 +374,7 @@ POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
                                                      -> {status}   # authoritative; applies on approved|corrected
 ```
 - `imageUrl` is a short-lived presigned URL scoped to that one upload — the reviewer never gets a
-  bucket credential or any other child's prefix.
+  bucket credential or any other student's prefix.
 - `claim` leases the item (`claimed_until`) so two reviewers don't grade it twice; the lease auto-expires.
 - On `approved`/`corrected` the backend writes derived `attempt` rows + adjusts `review_state` from
   `reviewed_analysis`, sets `status='reviewed'`, and records a `homework_review` row (with `agreed_with_llm`).
@@ -399,7 +390,7 @@ GET    /staff/users          ?status=&limit=&cursor=&q=  -> {items:[{accountId, 
                                                           # q: email search fragment (case-insensitive
                                                           #   contains; trimmed, capped, never logged)
 GET    /staff/users/{id}/progress                      -> {profiles:[{profileId, name, summary, skills,
-                                                            activity}]}   # identity-bearing per-child progress
+                                                            activity}]}   # identity-bearing per-student progress
 POST   /staff/users/{id}/approve                       -> {accountId, status:'active'}   # pending → active; releases the login code by email
 POST   /staff/users/{id}/deactivate                    -> {accountId, status:'deactivated'} # blocks login; data retained
 DELETE /staff/users/{id}                               -> 204   # erasure: DB cascade + blob prefix users/{account}/…
@@ -413,14 +404,13 @@ DELETE /staff/users/{id}                               -> 204   # erasure: DB ca
 > `lexeme` table and the Vokaltraining content set (ROADMAP.md §F). Re-add a curation surface once the new
 > word-list schema is designed, if the new approach needs one.
 
-### Parent
+### Profiles — destructive actions
 ```
-POST /parent/set-pin       {pin, currentPin?}        -> {ok}   # currentPin required to CHANGE an existing PIN
-POST /parent/verify-pin    {pin}                     -> {parentToken}
-POST /parent/unlock-next   ‡ {profileId}             -> {ok}
-POST /parent/reset         ‡ {profileId}             -> {ok}     # destructive; wipes learning progress
-POST /parent/reset-chat    ‡ {profileId}             -> {ok}     # destructive; wipes the whole chat: messages + homework uploads (rows + image blobs). Learning progress untouched
+POST /profiles/{id}/reset       -> {ok}   # destructive; wipes learning progress (attempts, plan, stars); identity/settings kept
+POST /profiles/{id}/reset-chat  -> {ok}   # destructive; wipes the whole chat: messages + homework uploads (rows + image blobs). Learning progress untouched
 ```
+Ownership of `{id}` is asserted against the JWT account (missing/foreign → 404). No PIN/elevation —
+the family UI fronts both with a two-step confirmation (frontend SPEC §8).
 **Billing — DEFERRED (not built):** `/billing/*` (`status`, `checkout`, `webhook`) belong to the deferred
 paid-tier option (ARCHITECTURE §9). The app is free; nothing here is implemented. Listed for the future only.
 
@@ -458,12 +448,12 @@ This is the **LLM-facing view** — compact, not raw rows. Target format:
 - **Free tier:** unlimited bank sessions, scheduling, progress, Web-Speech voice. No gate.
 - **Gated (★) ops:** `source='llm'` sessions, `/chat` LLM replies, `/homework`, premium TTS.
   - Supporter subscription → included monthly quota.
-  - Credit packs → decrement `credits_ledger` by 1 per op; **reject with 402 if balance ≤ 0** (frontend shows parent-area upsell, never shown to child).
+  - Credit packs → decrement `credits_ledger` by 1 per op; **reject with 402 if balance ≤ 0** (frontend shows a parent-facing upsell, never shown to student).
 - **Pay-it-forward:** `/billing/checkout` accepts `payItForwardAmount`; on payment, log `credits_ledger(+N, reason='pay_it_forward_gift')` to a **subsidy pool**; grant pool credits to flagged free accounts as `subsidy_grant`.
 - **Webhook:** verify provider signature, update `entitlement` + ledger. Idempotent on the provider **event id** — dedupe via the `processed_webhook(provider, event_id)` table (ARCHITECTURE §4/§9).
-- **Transparency endpoint** feeds the parent-area "this month cost €X, you funded Y" line.
+- **Transparency endpoint** feeds a parent-facing "this month cost €X, you funded Y" line.
 
-Payment surface rules: **all billing UI is parent-scoped**; the child app never references price, paywall, or purchase. No lives/energy/loot mechanics anywhere.
+Payment surface rules: billing UI (if ever built) must be parent-facing only; the student app never references price, paywall, or purchase. No lives/energy/loot mechanics anywhere. (A parent-verification gate would need to be re-designed first — the PIN was removed 2026-07-22.)
 
 ---
 
@@ -544,7 +534,7 @@ Calm, non-punitive progression (ARCHITECTURE values — no lives/energy/time/los
 `session.stars_award` since `startOfAppWeek(now)`), so it **resets every week** — nothing is ever deducted.
 All civil-day/week bucketing (league week, streak, week strip, heatmap, daily caps, joker) uses the app's
 fixed timezone **Europe/Berlin** (`common/dates.ts`), not UTC — a 01:15-local session counts toward the
-child's local day. Single-region product (ARCHITECTURE §7); DST-safe via `Intl`.
+student's local day. Single-region product (ARCHITECTURE §7); DST-safe via `Intl`.
 
 | Tier | Weekly stars | `starsToNext` |
 |------|-------------|---------------|
@@ -605,17 +595,17 @@ allUnitsComplete}`.
    ```
 3. Store the JSON as `llm_analysis` (a **DRAFT — never applied on its own**), `status='pending_review'`, and
    enqueue it on the shared staff review queue.
-4. **Human-in-the-loop = STAFF REVIEWER (mandatory, authoritative).** Child handwriting OCR is unreliable, so a
+4. **Human-in-the-loop = STAFF REVIEWER (mandatory, authoritative).** Student handwriting OCR is unreliable, so a
    vetted internal literacy professional validates it in the **reviewer portal** (`/staff/*`, §6): they see the
    image and the LLM draft **side by side** and `approve` | `correct` | `reject`. This **replaces** the old
    parent-confirm. Only on `approve`/`correct` do we write `reviewed_analysis`, derive `attempt` rows / adjust
    `review_state`, and let the next LLM session (§8) target the validated focus. A `homework_review` row retains
    the draft + verdict + `agreed_with_llm` so we can **compare reviewer vs LLM** and track vision quality.
-5. **Async, never blocking:** the child plays on; review latency lands in the *next* generated lecture. The
+5. **Async, never blocking:** the student plays on; review latency lands in the *next* generated lecture. The
    family only ever sees the authoritative `reviewed_analysis` (once `status='reviewed'`), never the draft.
 
 **Pseudonymisation (hard rule):** the reviewer queue exposes image + draft + skill tags + grade band only — no
-child name, parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived presigned URL.
+student name, parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived presigned URL.
 
 **Data-protection (minors):** parent-consented at upload (copy states a trained professional reviews the
 photo), short retention on raw images regardless of review state, EU data residency where the provider offers
@@ -649,16 +639,16 @@ SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_REVIEWER_EMAIL=   # dev-only seeded log
 
 ## 12. Acceptance checks
 - `user_id` never read from request body/path; only from JWT. (grep the codebase.)
-- Parent reset returns 403 without a fresh parent scope.
+- `/profiles/{id}/reset` + `/reset-chat` return 404 for a profile not owned by the JWT account, and touch nothing.
 - `/attempts` insert < 50ms p95; data sufficient to rebuild `digest.md`.
 - A bank session is generated with **zero** LLM calls.
 - A generated exercise that fails `solvableExerciseSchema` (answer not among options, unknown skill tag, …)
-  is never persisted to `item_bank` and never reaches a child.
+  is never persisted to `item_bank` and never reaches a student.
 - ★ ops are free but capped per profile per day (`LLM_SESSIONS_PER_DAY`, `CHAT_MESSAGES_PER_DAY`); over cap
   returns a friendly `429 RATE_LIMITED`, and no model call or row write happens.
 - Homework analysis cannot mutate `review_state` before a **staff reviewer** verdict (`llm_analysis` is a
   draft; only `reviewed_analysis` applies). The former parent-confirm path no longer exists.
 - A staff (`aud:"staff"`) cookie is rejected on every family route, and a family JWT is rejected on every
   `/staff/*` route — the two realms never cross.
-- The `/staff/queue` payload contains no child name, parent email, chat text, or billing field.
+- The `/staff/queue` payload contains no student name, parent email, chat text, or billing field.
 - A claimed upload returns `409` to a second reviewer until the lease expires.

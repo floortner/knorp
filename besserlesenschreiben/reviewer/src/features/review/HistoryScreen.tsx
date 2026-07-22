@@ -9,7 +9,7 @@ import { useHistoryItem } from './useReview';
 /**
  * Read-only detail of a DECIDED review (audit convenience): the homework photo, the authoritative
  * verdict (or the LLM draft when it was rejected — reject applies nothing), the decision and the
- * child-visible comment. Same two-pane layout as the review screen, nothing editable.
+ * student-visible comment. Same two-pane layout as the review screen, nothing editable.
  */
 export function HistoryScreen() {
   const { uploadId = '' } = useParams();
@@ -59,7 +59,7 @@ export function HistoryScreen() {
 
           {item.notes && (
             <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-line">
-              <p className="text-sm font-medium text-ink-soft">Kommentar ans Kind</p>
+              <p className="text-sm font-medium text-ink-soft">Kommentar an den Schüler</p>
               <p className="mt-1 text-sm text-ink">{item.notes}</p>
             </div>
           )}

@@ -24,7 +24,7 @@ test.describe(() => {
     await page.waitForURL(/\/(onboarding$|app\/lernen$)/);
     if (new URL(page.url()).pathname.endsWith('/onboarding')) {
       await page.getByRole('button', { name: 'Weiter' }).click();
-      await page.getByLabel('Name').fill('Testkind');
+      await page.getByLabel('Name').fill('Testschüler');
       await page.getByRole('button', { name: 'Weiter' }).click();
       await page.getByRole('button', { name: /Los geht/ }).click();
     }
@@ -35,9 +35,10 @@ test.describe(() => {
       .locator('input[type="file"]')
       .setInputFiles({ name: 'hausuebung.png', mimeType: 'image/png', buffer: PNG });
 
-    // The photo appears as the child's chat bubble; the trainer confirms a Fachkraft will look at it.
+    // The photo appears as the student's chat bubble; the trainer confirms it arrived and that the
+    // adapted exercises will follow (copy pinned in chat.service.spec.ts).
     await expect(page.getByRole('img', { name: 'Hausübung' })).toBeVisible();
-    await expect(page.getByText(/Fachkraft/).first()).toBeVisible();
+    await expect(page.getByText(/Dein Foto ist da/).first()).toBeVisible();
 
     // ── Staff: second page in the same browser — a DISJOINT realm (staff cookie, other origin) ──
     const staff = await context.newPage();

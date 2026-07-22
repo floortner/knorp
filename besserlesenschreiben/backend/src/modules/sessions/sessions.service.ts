@@ -49,8 +49,8 @@ export const LLM_SYSTEM = [
 ].join(' ');
 
 /**
- * A coarse difficulty band from the child's current unit (unlockedUnit 1..N). Sent to the model so a
- * grade-1 child and an advanced child get differently-calibrated content, and stored as the generated
+ * A coarse difficulty band from the student's current unit (unlockedUnit 1..N). Sent to the model so a
+ * grade-1 student and an advanced student get differently-calibrated content, and stored as the generated
  * item's `difficulty` so bank selection can order it sensibly.
  */
 function gradeBand(unlockedUnit: number): { label: string; difficulty: number } {
@@ -122,7 +122,7 @@ export class SessionsService {
     const priority = new Set<string>([...weakSkills(recent), ...due.map((d) => d.skillTag)]);
 
     // Amortize LLM-generated content: validated unit-0 items matching the weak/due skills join the
-    // candidate pool (item_bank is global by design, so one child's generated lecture benefits all).
+    // candidate pool (item_bank is global by design, so one student's generated lecture benefits all).
     // The selector already ranks purely on skillTags/difficulty/id, so no change there.
     const generated = priority.size
       ? await this.prisma.itemBank.findMany({
@@ -277,7 +277,7 @@ export class SessionsService {
     const profile = await assertProfileOwned(this.prisma, accountId, session.profileId);
     const now = new Date();
 
-    // A finished session whose unit is the last in the catalogue means the child cleared everything —
+    // A finished session whose unit is the last in the catalogue means the student cleared everything —
     // the backend owns this so the client never hardcodes the unit count (SPEC §12).
     const allUnitsComplete = session.unit === UNIT_CATALOG.length;
 

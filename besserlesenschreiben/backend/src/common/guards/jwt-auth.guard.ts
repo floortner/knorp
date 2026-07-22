@@ -10,10 +10,6 @@ import type { Env } from '../../config/env';
 
 export interface TokenPayload {
   sub: string;
-  scope?: 'parent';
-  // Parent-scoped tokens bind to ONE child: profileId is signed in at verify-pin time so the
-  // destructive routes (reset/unlock-next) never read a child id from the request (security §1).
-  profileId?: string;
   aud?: string | string[];
 }
 

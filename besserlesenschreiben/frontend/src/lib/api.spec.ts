@@ -38,19 +38,12 @@ describe('apiFetch', () => {
     expect((err as ApiError).code).toBe('INTERNAL');
   });
 
-  it('attaches a per-request bearer token via the token option', async () => {
-    const fetchMock = mockFetch(200, { ok: true });
-    vi.stubGlobal('fetch', fetchMock);
-    await apiFetch('/parent/reset', { method: 'POST', body: {}, token: 'tok-123' });
-    const headers = (fetchMock.mock.calls[0][1] as RequestInit).headers as Record<string, string>;
-    expect(headers.authorization).toBe('Bearer tok-123');
-  });
-
-  it('sends no authorization header when no token is given', async () => {
+  it('authenticates via the cookie only — no authorization header is ever set', async () => {
     const fetchMock = mockFetch(200, { ok: true });
     vi.stubGlobal('fetch', fetchMock);
     await apiFetch('/me');
-    const headers = (fetchMock.mock.calls[0][1] as RequestInit).headers as Record<string, string>;
-    expect(headers.authorization).toBeUndefined();
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    expect(init.credentials).toBe('include');
+    expect((init.headers as Record<string, string>).authorization).toBeUndefined();
   });
 });

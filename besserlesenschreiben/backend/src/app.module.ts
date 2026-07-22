@@ -14,7 +14,6 @@ import { StorageModule } from './services/storage/storage.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
-import { ParentModule } from './modules/parent/parent.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { AttemptsModule } from './modules/attempts/attempts.module';
 import { ProgressModule } from './modules/progress/progress.module';
@@ -54,7 +53,6 @@ import { HealthController } from './modules/health/health.controller';
     LlmModule,
     AuthModule,
     ProfilesModule,
-    ParentModule,
     SessionsModule,
     AttemptsModule,
     ProgressModule,

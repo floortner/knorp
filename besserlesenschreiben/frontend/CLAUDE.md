@@ -4,13 +4,14 @@
 > On any conflict, `../ARCHITECTURE.md` wins.
 
 This folder is the **`-web` frontend** of *besserlesenschreiben* — the SPA/PWA for an adaptive German
-children's literacy tutor. It is a **pure HTTP client**: it renders the exercises the backend serves and
+literacy tutor for students (ages 8-14). It is a **pure HTTP client**: it renders the exercises the backend serves and
 reports what happened. No lesson logic lives here.
 
 ## Contents
 
 - **`docs/knorp.html`** — the interactive design prototype. Visual source of truth for the **shell, screens
-  and brand** (login, onboarding, tabs, feedback, parent area). Its exercise interactions document a legacy
+  and brand** (login, onboarding, tabs, feedback). Its parent area/PIN gate was removed from the app
+  (2026-07-22 — those trainer actions now live in `/profil` behind a two-step confirmation). Its exercise interactions document a legacy
   type set that predates even the (now also dropped) Vokaltraining program — the current `Exercise` contract
   lives in `SPEC.md` §3 and the built renderers, not in the prototype. **Recreate** looks in the real stack
   (React + TS + Tailwind + shadcn) — do **not** paste the prototype's HTML/inline styles into the app.
@@ -33,13 +34,14 @@ spine — see `SPEC.md` §4. Telemetry plumbing was built before the renderers �
 ## Prototype vs spec (what to copy vs build fresh)
 
 - **In the prototype** (recreate the look/interactions): login + code entry, onboarding, `/lernen` home,
-  feedback/confetti, `/liga`, `/profil`, `/chat`, parent PIN gate + trainer actions, a11y toggles.
+  feedback/confetti, `/liga`, `/profil`, `/chat`, a11y toggles. (The prototype's parent PIN gate is
+  obsolete — reset/chat-delete live in `/profil` behind a two-step confirmation.)
 - **Spec-only, NOT in the prototype** (build from `SPEC.md` — match the brand and the existing renderer
   patterns): the exercise type(s) in the current `Exercise` contract (the prototype shows only the legacy
   set); the ✨ **generated-lecture entry** on `/lernen` + the lesson **intro card** (§2) and the **homework
   "Foto & verbessern"** flow (§9). The app is **free** — no billing/supporter UI anywhere (ARCHITECTURE §9).
-  **Homework upload lives in the child Chat tab** (`tabs/Chat.tsx`): the photo is sent as a chat message and
-  the reviewer's verdict is echoed back in-chat — it is **not** PIN-gated. The professional-in-the-loop model
+  **Homework upload lives in the student Chat tab** (`tabs/Chat.tsx`): the photo is sent as a chat message and
+  the reviewer's verdict is echoed back in-chat. The professional-in-the-loop model
   is unchanged (the photo still goes to the pseudonymised staff queue; the LLM never auto-applies it).
 
 ## Brand quick-reference

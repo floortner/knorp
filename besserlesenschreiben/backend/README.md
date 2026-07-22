@@ -1,6 +1,6 @@
 # besserlesenschreiben — backend (`-api`)
 
-The API service for an adaptive German children's literacy tutor. TypeScript · NestJS (Fastify) ·
+The API service for an adaptive German literacy tutor for students (ages 8-14). TypeScript · NestJS (Fastify) ·
 PostgreSQL · Prisma · AWS. Pure HTTP/JSON — it serves no HTML; the frontends are the only clients.
 
 **Read order for conventions & contract:** [`AGENTS.md`](./AGENTS.md) → [`../ARCHITECTURE.md`](../ARCHITECTURE.md) → [`SPEC.md`](./SPEC.md).
@@ -18,7 +18,7 @@ Local dev runs the **Nest app on your host** (`npm run start:dev`, hot-reload) a
 PostgreSQL** (a Homebrew service). Production is a small AWS EC2 instance running the built app under
 systemd (ARCHITECTURE §7 — deployment is a future milestone) and is unrelated to this setup.
 
-Milestone 1 (auth + profiles + parent PIN) needs **only Postgres** — no AWS/Anthropic/TTS. The
+Milestone 1 (auth + profiles) needs **only Postgres** — no AWS/Anthropic/TTS. The
 external services sit behind interfaces with dev fakes (see [stubs](#external-service-stubs)), so the
 early milestones run fully offline.
 
@@ -77,10 +77,6 @@ curl -X POST localhost:3000/api/v1/auth/verify \
 # 3. call an authed route with the Bearer token
 curl localhost:3000/api/v1/me -H 'Authorization: Bearer eyJ…'
 ```
-
-For parent-scoped (`‡`) routes — e.g. `/parent/reset`, `/billing/*` — first
-`POST /api/v1/parent/verify-pin {pin}` to get a short-lived `parentToken` (JWT with a `parent`
-claim, ~15 min), then send it on those requests (SPEC §4).
 
 ## External-service stubs
 

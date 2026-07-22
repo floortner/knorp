@@ -19,7 +19,7 @@ export class AttemptsService {
    * POST /attempts — thin, idempotent telemetry insert that also advances FSRS scheduling for each
    * drilled skill (SPEC §6/§8). Idempotent on (sessionId, itemId, attemptNo): a duplicate emit (offline
    * replay, retry) is a no-op and never double-counts a review. `profileId` is taken from the session,
-   * never the client. We never log prompt/expected/given (child-answer content).
+   * never the client. We never log prompt/expected/given (student-answer content).
    */
   async record(accountId: string, dto: CreateAttemptInput): Promise<{ ok: true }> {
     const session = await this.prisma.session.findUnique({

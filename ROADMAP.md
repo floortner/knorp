@@ -55,12 +55,12 @@ guard/flow tests; the docs.
 
 **Phase 1.6 — content + UX polish:** auto-unlock next unit on session complete (atomic, backend);
 all-units-complete celebration (pixel mascot, fanfare, confetti); 5 new exercise types (`swipe`, `odd`,
-`listen`, `sentence`, `build` — Zod contract + renderers + seed items); parent area (PIN gate, set-PIN, child
+`listen`, `sentence`, `build` — Zod contract + renderers + seed items); parent area (PIN gate, set-PIN, student
 progress, two-step reset); profile Ton toggle wired end-to-end (removed Legasthenie-Schrift + Schriftgröße
 stubs).
 
 **Phase 1.6 technical debt — RESOLVED:**
-- ✅ Parent-scoped child id no longer comes from the request body: `verify-pin` binds the target `profileId`
+- ✅ Parent-scoped student id no longer comes from the request body: `verify-pin` binds the target `profileId`
   into the `parentToken` JWT (ownership validated at issue); `reset`/`unlock-next` read it via
   `@ParentProfileId()`. Destructive routes take no body id.
 - ✅ `apiFetch` takes a per-request `token`; the global `setAuthToken` mutation is gone.
@@ -163,6 +163,17 @@ civil-day/week bucketing moved **UTC → Europe/Berlin** (`common/dates.ts`, DST
 crediting an early-morning-local session to the previous day; also corrects streak, daily caps, joker
 week, and heatmap.
 
+**Elternbereich + parent PIN removed (2026-07-22).** The separate `/parent` area and its 4-digit PIN
+gate are gone — the trainers know each family personally (known-trainer model, §H) and the PIN was more
+friction than protection. **"Lernfortschritt zurücksetzen"** and **"Chat löschen"** moved into the
+**Profil tab** ("Verwaltung"), each behind a **two-step confirmation** (no PIN). Backend: `/parent/*` and
+the `ParentScopeGuard`/`parentToken` machinery deleted; the actions are now `POST /profiles/:id/reset` +
+`/profiles/:id/reset-chat` (family session, ownership-checked); the `account` PIN columns
+(`parent_pin_hash`, `pin_attempts`, `pin_locked_until`) are removed from the schema/client now, and the
+`DROP COLUMN` migration follows in the **next release** — dropping them in the same release would 500 the
+old binary during the pre-traffic-migrate→restart window (its Prisma client selects every schema column).
+Docs (ARCHITECTURE, both SPECs, CLAUDE/AGENTS) updated in the same change.
+
 **Vokaltraining pivot — DROPPED 2026-07-13.** The exercise set that replaced the legacy prototype — the
 **14 types** (Wortraster, Selbstlaute, kurz/lang, Quatschwörter, Komposita, Wortfamilien), a 7-unit
 progression with per-unit Merksatz intro cards, and a ~360-item seed bank — was itself removed along with
@@ -240,11 +251,11 @@ patterns**. Ranked by impact-per-effort.
 6. **Weekly parent email (OPEN — highest leverage for the target audience).** Retention at this age runs
    through the parent. `digest.md` already computes everything — a Friday "Mia hat 3× geübt, stark bei Silben,
    als Nächstes: Dehnungs-h" via the existing email service turns parents into the reminder system, without
-   pushing notifications at a child.
+   pushing notifications at a student.
 7. ~~Rename `/liga` → "Erfolge".~~ **DONE** — route, tab, heading, tier labels updated (PR #52).
 8. **Spoken praise variety (later — needs Polly).** Audio reward beats visual for pre-readers.
 
-> Deliberately **not** recommended: push notifications to the child, real leaderboards, time pressure, loss
+> Deliberately **not** recommended: push notifications to the student, real leaderboards, time pressure, loss
 > mechanics — antagonistic to a remedial-literacy audience and to the stated values.
 
 ### E. First feedback round (beta) on AWS — DONE
@@ -371,7 +382,7 @@ Full-surface review in `SECURITY_REVIEW.md`; tracking issue **#81**.
 - **P1 (must-fix) — DONE** (PR #80): parent-PIN reset bypass, `blsb`→root deploy escalation, CloudFront/nginx
   security headers + CSP, and JWT removed from the `/auth/verify` body.
 - **P2 — DONE** (PR #80): SW-cache offline-logout bypass, telemetry-queue clear on logout, family login-code
-  resend throttle, homework skill-tag bounds/sanitisation, child name dropped from the LLM digest, API bound
+  resend throttle, homework skill-tag bounds/sanitisation, student name dropped from the LLM digest, API bound
   to localhost in prod, and a backup dead-man's-switch.
 - **P3 batch 1 — DONE**: Swagger gated out of prod, `VITE_API_BASE` prod guard, `qc.clear()` on logout,
   `dnf-automatic` patching, systemd unit hardening, `sudo --preserve-env` in `release.sh`, CSRF note in
@@ -407,20 +418,20 @@ adds the trainer-facing read model and screens, not new telemetry.
 
 **Product reality (2026-07-15, supersedes the pseudonymisation rationale):** the trainers (2–3 in the
 beginning) **know each student personally** and speak with the parents in person. The staff portal is a
-known-trainer tool, not an anonymous review desk — trainers work with **real child names**. The old
+known-trainer tool, not an anonymous review desk — trainers work with **real student names**. The old
 pseudonymised-queue rule (ARCHITECTURE §1a / security rule 10) was designed for anonymous reviewers
-and no longer matches the product; **H1 revises it**: staff surfaces show the child's name + progress;
+and no longer matches the product; **H1 revises it**: staff surfaces show the student's name + progress;
 parent email/account administration stays admin-only. (The `L-xxxxxx` handle can remain internally as
 a stable id, but it stops being a display requirement.)
 
 **Invariants (extend §11's):**
 - **Staff-authored exercises pass the same solvability gate as LLM output** (`solvableExerciseSchema`
-  on create/update) — the child can never receive an unanswerable item, regardless of author.
+  on create/update) — the student can never receive an unanswerable item, regardless of author.
 - **Never blocking, never pushy:** an assignment is an *offer* on `/lernen` alongside bank/★ sessions —
-  no push at the child, no due-date pressure mechanics (same values as §D).
+  no push at the student, no due-date pressure mechanics (same values as §D).
 - Attempts from assigned sessions are ordinary telemetry: they feed FSRS, the digest, and weak-skill
   selection exactly like bank/LLM sessions.
-- Trainers see child names + learning data; **parent email + account lifecycle stay admin-only**.
+- Trainers see student names + learning data; **parent email + account lifecycle stay admin-only**.
 
 **H1 — the rails (type-agnostic; buildable NOW against `placeholder`):**
 1. **Schema:** `lecture` (id, created_by → reviewer, title, intro, item_ids uuid[], skill_tags,
@@ -430,15 +441,15 @@ a stable id, but it stops being a display requirement.)
 2. **Staff routes** (backend SPEC §6): lecture CRUD (create validates every exercise via
    `solvableExerciseSchema`), publish, assign to N profiles, list assignments with status
    (`open | started | completed`) and per-item results after completion.
-3. **Learner directory:** a student list for **all reviewers** — child name, grade band, skill
+3. **Learner directory:** a student list for **all reviewers** — student name, grade band, skill
    breakdown, recent activity — the picker for assignment and the context for authoring. This is the
-   rule-10 revision point: replace the `profileHandle` display with the child's name across staff
+   rule-10 revision point: replace the `profileHandle` display with the student's name across staff
    surfaces (queue included), and re-true ARCHITECTURE §1a/§11 + CLAUDE.md security rule 10 in the
    same PR.
 4. **Family surface:** `/lernen` shows an assignment card when one is open;
    `POST /sessions {source:'assigned', assignmentId}` serves the lecture's items (intro = the lecture's
    Merksatz); the normal attempts/complete loop marks the assignment completed.
-5. Contract regen + golden fixtures + an e2e journey (trainer authors → assigns → child completes →
+5. Contract regen + golden fixtures + an e2e journey (trainer authors → assigns → student completes →
    trainer sees the result).
 
 **H2 — authoring UX (per training type; lands as the linguist's types land, F2/F3):**
@@ -463,7 +474,7 @@ a stable id, but it stops being a display requirement.)
    title, focus skills, outcome) so LLM-generated lectures build on the trainer's material instead of
    ignoring it.
 4. Abandoned/never-started assignments are visible (assignment without session / session without
-   `completed_at`) — signal for the parent conversation, never pressure at the child.
+   `completed_at`) — signal for the parent conversation, never pressure at the student.
 
 > **Sequencing note:** H3.1–H3.2 are type-agnostic and don't depend on lectures existing — they're
 > valuable for today's bank/★ sessions already. Build them **with H1** (same PR series), not after H2.

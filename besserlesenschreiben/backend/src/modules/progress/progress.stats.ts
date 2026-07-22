@@ -23,7 +23,7 @@ export interface SkillStat {
  * Attempts-per-day for the CURRENT ISO calendar week, Monday-first (index 0 = Mo … 6 = So), matching
  * the Mo–So week strip, the "diese Woche" goal ring, and the league's ISO-week window. Day boundaries
  * are the app's local timezone (Europe/Berlin), so a session at 01:15 local Tuesday counts as Tuesday —
- * the child's "today", not the UTC day (which would still be Monday and mis-credit the previous day).
+ * the student's "today", not the UTC day (which would still be Monday and mis-credit the previous day).
  */
 export function weeklyActivity(attempts: readonly AttemptStat[], now: Date): number[] {
   const monday = startOfAppWeek(now);

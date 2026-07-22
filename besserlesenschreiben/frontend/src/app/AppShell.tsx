@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { A11yProvider } from '@/features/settings/a11y';
 import { BottomNav } from './BottomNav';
 
-/** App frame for the child tabs: a centered mobile column with the bottom tab bar. */
+/** App frame for the student tabs: a centered mobile column with the bottom tab bar. */
 export function AppShell() {
   return (
     <A11yProvider>

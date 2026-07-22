@@ -3,7 +3,7 @@ import { coreApi } from '@/lib/endpoints';
 import type { UpdateSettingsBody } from '@/lib/types';
 
 /**
- * Update a child's settings (PATCH /profiles/:id/settings) and refresh ['me'] so the a11y runtime
+ * Update a student's settings (PATCH /profiles/:id/settings) and refresh ['me'] so the a11y runtime
  * (A11yProvider) and the rest of the app pick up the change immediately.
  */
 export function useUpdateSettings(profileId: string) {

@@ -26,7 +26,7 @@ const SWEEP_BATCH = 10;
 // Exported so the cutover smoke script (scripts/llm-smoke.ts) probes the real vision prompt.
 export const VISION_SYSTEM = [
   'Du analysierst das Foto einer deutschen Grundschul-Hausübung (Lesen/Schreiben).',
-  'Erkenne die einzelnen Aufgaben und die Antworten des Kindes. Markiere je Aufgabe, ob sie korrekt ist,',
+  'Erkenne die einzelnen Aufgaben und die Antworten des Schülers oder der Schülerin. Markiere je Aufgabe, ob sie korrekt ist,',
   'und benenne bei Fehlern eine knappe Fehlerkategorie (z. B. "vowel_length", "dehnung_h", "double_consonant").',
   'Leite daraus suggestedFocus ab: Skill-Tags, die als Nächstes geübt werden sollten.',
   'Dies ist ein ENTWURF zur fachlichen Prüfung — rate nicht, wenn etwas unleserlich ist.',

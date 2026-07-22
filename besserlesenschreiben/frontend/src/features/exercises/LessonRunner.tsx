@@ -97,7 +97,7 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
   );
 }
 
-/** The lecture's teaching moment: mascot + Merksatz, dismissed by the child when ready. */
+/** The lecture's teaching moment: mascot + Merksatz, dismissed by the student when ready. */
 function IntroCard({ text, onStart }: { text: string; onStart: () => void }) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 py-8 text-center">

@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Check, Flame, HeartHandshake, Pencil, Star, X } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, Flame, Pencil, RotateCcw, Star, Trash2, X, type LucideIcon } from 'lucide-react';
 import { useActiveProfile, useMe } from '@/features/profile/useMe';
 import { useUpdateSettings } from '@/features/profile/useUpdateSettings';
 import { BUDDIES, buddySrc, buddyStateSrc, type BuddyState } from '@/lib/constants';
 import { useAuth } from '@/features/auth/auth-context';
+import { coreApi } from '@/lib/endpoints';
+import { errorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/cn';
@@ -13,9 +15,9 @@ import { cn } from '@/lib/cn';
 const REACTIONS: BuddyState[] = ['froehlich', 'ueberrascht', 'cool'];
 
 export function Profil() {
-  const navigate = useNavigate();
   const { logout } = useAuth();
   const { data: me } = useMe();
+  const qc = useQueryClient();
   const profile = useActiveProfile();
   const settings = useUpdateSettings(profile?.id ?? '');
   const [reaction, setReaction] = useState(-1); // -1 = neutral (buddySrc)
@@ -109,7 +111,7 @@ export function Profil() {
         </div>
       </section>
 
-      {/* Buddy picker — the child's companion is theirs to choose. */}
+      {/* Buddy picker — the student's companion is theirs to choose. */}
       <section>
         <h2 className="mb-3 font-display font-bold text-ink">Dein Lernfreund</h2>
         <div className="grid grid-cols-4 gap-3">
@@ -159,15 +161,133 @@ export function Profil() {
         )}
       </section>
 
+      {/* Destructive actions — no PIN gate; each is fronted by a TWO-step confirmation instead. */}
+      <section className="space-y-3">
+        <h2 className="font-display font-bold text-ink">Verwaltung</h2>
+        <DangerAction
+          icon={RotateCcw}
+          title="Lernfortschritt zurücksetzen"
+          description="Löscht alle Versuche, Übungsplan und Sterne. Name und Einstellungen bleiben erhalten."
+          actionLabel="Zurücksetzen"
+          confirmQuestion="Wirklich zurücksetzen?"
+          finalLabel="Ja, endgültig zurücksetzen"
+          pendingLabel="Wird zurückgesetzt…"
+          action={() => coreApi.resetProgress(profile.id)}
+          onSuccess={() => {
+            void qc.invalidateQueries({ queryKey: ['me'] });
+            void qc.invalidateQueries({ queryKey: ['progress'] });
+            void qc.invalidateQueries({ queryKey: ['units'] });
+          }}
+        />
+        <DangerAction
+          icon={Trash2}
+          title="Chat löschen"
+          description="Löscht den gesamten Chat mit dem Lerntrainer – Nachrichten, Rückmeldungen und alle hochgeladenen Fotos der Hausübungen. Lernfortschritt und Einstellungen bleiben erhalten."
+          actionLabel="Chat löschen"
+          confirmQuestion="Wirklich den ganzen Chat löschen?"
+          finalLabel="Ja, endgültig löschen"
+          pendingLabel="Wird gelöscht…"
+          action={() => coreApi.resetChat(profile.id)}
+          onSuccess={() => void qc.invalidateQueries({ queryKey: ['chat'] })}
+        />
+      </section>
+
       {/* CTAs */}
       <section className="space-y-3">
-        <Button variant="ghost" className="w-full justify-start" onClick={() => navigate('/parent')}>
-          <HeartHandshake className="h-5 w-5 text-teal-dark" /> Eltern-Bereich
-        </Button>
         <Button variant="link" className="w-full" onClick={logout}>
           Abmelden
         </Button>
       </section>
+    </div>
+  );
+}
+
+// The second-step wording is deliberately identical for every destructive action (uniform gate UX).
+const FINAL_QUESTION = 'Bist du ganz sicher? Das kann nicht rückgängig gemacht werden.';
+
+/**
+ * A destructive card with a two-step confirmation ("are you really sure" gate): action → confirm →
+ * final confirm → mutate. Replaces the removed parent-PIN gate — anyone holding the family session may
+ * trigger these, so the friction is deliberate.
+ */
+function DangerAction({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  confirmQuestion,
+  finalLabel,
+  pendingLabel,
+  action,
+  onSuccess,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  actionLabel: string;
+  confirmQuestion: string;
+  finalLabel: string;
+  pendingLabel: string;
+  action: () => Promise<{ ok: true }>;
+  onSuccess: () => void;
+}) {
+  const [step, setStep] = useState<'idle' | 'confirm' | 'really'>('idle');
+  const mutation = useMutation({ mutationFn: action, onSuccess });
+
+  const cancel = () => {
+    setStep('idle');
+    mutation.reset(); // else a stale error from an aborted attempt greets the next open
+  };
+  const run = () => mutation.mutate(undefined, { onSuccess: cancel });
+
+  return (
+    <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+      <p className="font-semibold text-ink">{title}</p>
+      <p className="mt-1 text-sm text-ink-soft">{description}</p>
+
+      {step === 'idle' && (
+        <Button
+          variant="ghost"
+          className="mt-3 w-full text-orange-dark hover:bg-orange/10"
+          onClick={() => setStep('confirm')}
+        >
+          <Icon className="h-4 w-4" aria-hidden /> {actionLabel}
+        </Button>
+      )}
+
+      {step !== 'idle' && (
+        <div className="mt-3 space-y-2">
+          <p className="text-sm font-semibold text-orange-dark">
+            {step === 'confirm' ? confirmQuestion : FINAL_QUESTION}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={cancel} disabled={mutation.isPending}>
+              Abbrechen
+            </Button>
+            {step === 'confirm' ? (
+              <Button
+                className="flex-1 bg-orange-dark hover:bg-orange-dark/90"
+                onClick={() => setStep('really')}
+              >
+                Weiter
+              </Button>
+            ) : (
+              <Button
+                className="flex-1 bg-orange-dark hover:bg-orange-dark/90"
+                onClick={run}
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? pendingLabel : finalLabel}
+              </Button>
+            )}
+          </div>
+          {mutation.isError && (
+            <p role="alert" className="text-sm text-orange-dark">
+              {errorMessage(mutation.error)}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

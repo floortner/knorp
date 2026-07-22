@@ -84,7 +84,7 @@ const MAX_LIMIT = 50;
 /**
  * Homework review queue + authoritative apply (ARCHITECTURE §11, SPEC §10). The reviewer's verdict is
  * authoritative: only `reviewed_analysis` ever mutates the learning profile. The queue is PSEUDONYMISED
- * (no child name/email/chat/billing). Reviewer id comes ONLY from the staff JWT, never the request.
+ * (no student name/email/chat/billing). Reviewer id comes ONLY from the staff JWT, never the request.
  */
 @Injectable()
 export class ReviewService {
@@ -100,7 +100,7 @@ export class ReviewService {
     this.claimTtlMs = config.get('HOMEWORK_REVIEW_CLAIM_TTL', { infer: true }) * 1000;
   }
 
-  /** Stable opaque pseudonym for a profile — never reveals the child's name (ARCHITECTURE §1a). */
+  /** Stable opaque pseudonym for a profile — never reveals the student's name (ARCHITECTURE §1a). */
   static handle(profileId: string): string {
     return `L-${createHash('sha256').update(profileId).digest('hex').slice(0, 6)}`;
   }
@@ -128,7 +128,7 @@ export class ReviewService {
         ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
         include: {
           profile: { select: { unlockedUnit: true } },
-          // Latest review's child-visible comment — surfaced on historical rows only.
+          // Latest review's student-visible comment — surfaced on historical rows only.
           reviews: { orderBy: { createdAt: 'desc' }, take: 1, select: { notes: true } },
         },
       }),

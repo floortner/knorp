@@ -46,7 +46,7 @@ export const envSchema = z.object({
   // at a fraction of Opus pricing — the right default for a free app. (temperature/top_p/top_k are rejected
   // on current models; steer via the prompt + output effort instead.)
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
-  // Homework vision uses a stronger model — child handwriting OCR is accuracy-critical and the draft is
+  // Homework vision uses a stronger model — student handwriting OCR is accuracy-critical and the draft is
   // the reviewer's starting point.
   ANTHROPIC_VISION_MODEL: z.string().default('claude-opus-4-8'),
   // EU data-residency / DPA acknowledgement for Anthropic-direct. Required in production before any LLM

@@ -28,7 +28,7 @@ export function usePendingUserCount(enabled = true) {
   });
 }
 
-/** Per-child progress for one account (admin only). Lazy — pass `enabled` from the panel's open state. */
+/** Per-student progress for one account (admin only). Lazy — pass `enabled` from the panel's open state. */
 export function useUserProgress(accountId: string, enabled: boolean) {
   return useQuery({
     queryKey: ['staff-user-progress', accountId],

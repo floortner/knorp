@@ -27,7 +27,7 @@ export function Lernen() {
   if (me.isLoading) return <CenterNote>Lädt …</CenterNote>;
   if (me.isError) return <ErrorRetry error={me.error} onRetry={() => void me.refetch()} />;
 
-  // Authenticated but no child profile yet → send them through onboarding.
+  // Authenticated but no student profile yet → send them through onboarding.
   if (!profile) {
     return (
       <div className="py-16 text-center">
@@ -45,7 +45,7 @@ export function Lernen() {
     createSession.mutate({ profileId: profile.id, unit }, { onSuccess: toLesson });
   };
 
-  // ✨ generated lecture: a teaching intro + fresh exercises, made for this child (takes a few seconds).
+  // ✨ generated lecture: a teaching intro + fresh exercises, made for this student (takes a few seconds).
   // When the LLM is unavailable (503) we fall back to a normal bank session with a friendly note.
   const startLecture = () => {
     setLectureNote(null);

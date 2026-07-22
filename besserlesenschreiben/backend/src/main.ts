@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
 
   // Fastify's built-in JSON parser 400s on an empty body sent with `content-type: application/json`
   // ("Body cannot be empty…"). Our clients set that header on every request, incl. bodyless POSTs
-  // (/sessions/:id/complete, /auth/logout, /parent/*), so an empty body must mean "no body", not a 400.
+  // (/sessions/:id/complete, /auth/logout, /profiles/:id/reset), so an empty body must mean "no body", not a 400.
   // Non-empty bodies parse as before; malformed JSON still 400s.
   const fastify = app.getHttpAdapter().getInstance();
   fastify.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, body: string, done) => {
@@ -61,8 +61,8 @@ async function bootstrap(): Promise<void> {
     methods: ['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   });
   // Request-level rate limiting (per IP): tight on the auth/code endpoints (email-sending cost +
-  // brute-force surface), loose elsewhere. Domain-level counters (verify attempts, PIN lockout, daily
-  // ★ caps) remain the precise guards — this is the blunt outer shell. Emits the §5 error envelope.
+  // brute-force surface), loose elsewhere. Domain-level counters (verify attempts, daily ★ caps)
+  // remain the precise guards — this is the blunt outer shell. Emits the §5 error envelope.
   // Loopback addresses are skipped so e2e tests (all traffic from 127.0.0.1) are not throttled.
   const { default: fastifyRateLimit } = await import('@fastify/rate-limit');
   const isProd = process.env.NODE_ENV === 'production';
@@ -93,7 +93,7 @@ async function bootstrap(): Promise<void> {
   if (!isProd) {
     const config = new DocumentBuilder()
       .setTitle('besserlesenschreiben API')
-      .setDescription('Adaptive German children\'s literacy tutor — backend API (v1).')
+      .setDescription('Adaptive German literacy tutor for students (ages 8-14) — backend API (v1).')
       .setVersion('0.1.0')
       .addBearerAuth()
       .build();

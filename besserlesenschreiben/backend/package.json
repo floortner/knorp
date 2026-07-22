@@ -2,7 +2,7 @@
   "name": "besserlesenschreiben-api",
   "version": "0.1.0",
   "private": true,
-  "description": "Adaptive German children's literacy tutor — backend API",
+  "description": "Adaptive German literacy tutor for students (ages 8-14) — backend API",
   "scripts": {
     "build": "nest build",
     "start": "node dist/main.js",

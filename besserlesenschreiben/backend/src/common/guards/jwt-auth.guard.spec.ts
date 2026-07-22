@@ -22,7 +22,7 @@ function ctxFor(req: ReqShape): ExecutionContext {
 
 function makeGuard(opts: {
   isPublic?: boolean;
-  verify?: (token: string) => Promise<{ sub: string; scope?: 'parent'; aud?: string | string[] }>;
+  verify?: (token: string) => Promise<{ sub: string; aud?: string | string[] }>;
   accountStatus?: string | null; // null → account not found; undefined → defaults to 'active'
 }) {
   const reflector = { getAllAndOverride: () => opts.isPublic ?? false } as unknown as Reflector;

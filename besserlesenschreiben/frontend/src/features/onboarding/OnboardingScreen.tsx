@@ -27,7 +27,7 @@ export function OnboardingScreen() {
 
   const finish = () => {
     createProfile.mutate(
-      { name: name.trim() || 'Kind', buddy, goal },
+      { name: name.trim() || 'Schüler', buddy, goal },
       { onSuccess: () => navigate('/app/lernen', { replace: true }) },
     );
   };

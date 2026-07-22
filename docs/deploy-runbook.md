@@ -67,7 +67,7 @@ Do it now so it's approved (~24h) by the time you invite families:
 aws sesv2 put-account-details --region eu-central-1 \
   --production-access-enabled --mail-type TRANSACTIONAL \
   --website-url "https://app.knorp.org" \
-  --use-case-description "Passwordless login codes for an approved-access children's literacy app (beta)."
+  --use-case-description "Passwordless login codes for an approved-access literacy app for students (beta)."
 # To test login BEFORE approval, verify your own address:
 aws sesv2 create-email-identity --region eu-central-1 --email-identity florian.ortner@gmail.com
 ```

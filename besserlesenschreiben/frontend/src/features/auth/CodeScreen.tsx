@@ -21,7 +21,7 @@ export function CodeScreen() {
     mutationFn: (code: string) => authApi.verify(email ?? '', code),
     onSuccess: async (res) => {
       await login(); // cookie is set by /auth/verify; refresh the session probe before navigating
-      // New accounts set up their child profile first; existing users land on the home tab.
+      // New accounts set up their student profile first; existing users land on the home tab.
       navigate(res.isNewAccount ? '/onboarding' : '/app/lernen', { replace: true });
     },
   });

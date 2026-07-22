@@ -89,7 +89,7 @@ export const sessionCompleteSchema = z.object({
   jokerAvailable: z.boolean(),
   jokerConsumed: z.boolean(),
   league: leagueSchema,
-  // True once the child has completed the final unit — the backend is authoritative so the client never
+  // True once the student has completed the final unit — the backend is authoritative so the client never
   // has to hardcode the unit count to decide whether to show the all-units celebration.
   allUnitsComplete: z.boolean(),
 });
@@ -119,7 +119,7 @@ export const homeworkStatusEnum = z.enum(['pending_analysis', 'pending_review', 
 
 // ── Chat (trainer) ─────────────────────────────────────────────────────────────
 export const chatMessageSchema = z.object({
-  me: z.boolean(), // true = the child, false = the trainer (Angelika)
+  me: z.boolean(), // true = the student, false = the trainer (Angelika)
   text: z.string(),
   ts: z.string(), // ISO timestamp
   imageUrl: z.string().optional(), // homework photo bubble (a short-lived read URL); absent on text messages
@@ -140,7 +140,3 @@ export const homeworkResultSchema = z.object({
   status: homeworkStatusEnum,
   reviewedAnalysis: homeworkAnalysisSchema.nullable(),
 });
-
-// ── Parent ─────────────────────────────────────────────────────────────────────
-export const parentTokenSchema = z.object({ parentToken: z.string() });
-export const unlockNextSchema = z.object({ ok: z.literal(true), unlockedUnit: z.number().int() });

@@ -4,7 +4,7 @@ Instructions for AI coding agents (Claude Code) working in this folder. Read thi
 `../ARCHITECTURE.md`, then `./SPEC.md`. On any conflict, `../ARCHITECTURE.md` wins.
 
 ## What this is
-The API service for an adaptive German children's literacy tutor. TypeScript · NestJS · PostgreSQL · AWS.
+The API service for an adaptive German literacy tutor for students (ages 8-14). TypeScript · NestJS · PostgreSQL · AWS.
 Pure HTTP/JSON service — it serves no HTML. The frontend (`../frontend`) is the only client.
 
 ## Stack (pinned lines — see ARCHITECTURE §2 for the table)
@@ -21,7 +21,9 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 ## Golden rules (do not violate)
 1. **`user_id` / `profile_id` come ONLY from the JWT** — never from a request body or path. Grep for this.
 2. **Object-storage access = presigned URLs scoped to one object under the caller's prefix.** Never expose bucket credentials/paths.
-3. **Parent-scoped routes require a fresh `parent` claim** (`ParentScopeGuard`). Reset/unlock are destructive.
+3. **Destructive profile routes** (`/profiles/:id/reset`, `/profiles/:id/reset-chat`) assert ownership of `:id`
+   against the JWT account (missing/foreign → 404). There is no PIN/parent elevation (removed 2026-07-22) —
+   the family UI fronts them with a two-step confirmation instead.
 4. **Access is gated by account status, not payment.** The family `JwtAuthGuard` requires `account.status='active'`
    (a per-request check → immediate revocation). AI (`★`) endpoints are **free** — no entitlement/credit/`402`
    check (billing deferred, ARCHITECTURE §9). Signup is silent pending-on-first-code: a first `/auth/request-code`
@@ -30,7 +32,7 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
    `StaffAuthGuard`, signed with `STAFF_JWT_SECRET` ≠ `JWT_SECRET`); a family JWT never validates there and vice
    versa. The reviewer queue is **pseudonymised** (image + LLM draft + skill tags + grade band only). Staff
    user-administration (approve/deactivate/delete real emails) is **admin-role-only**, separate from the queue.
-6. **Never log** child answers, homework/OCR content, emails, login codes, PIN/hash, JWTs, presigned URLs, or bodies.
+6. **Never log** student answers, homework/OCR content, emails, login codes, JWTs, presigned URLs, or bodies.
    Log identifiers + outcomes only (ARCHITECTURE §6).
 7. **Errors use the one envelope** (`{error:{code,message,requestId,details}}`) via a global exception filter —
    never leak stack traces, Prisma errors, or provider errors to clients.
@@ -39,8 +41,8 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
    `npm run openapi:export` (regenerates the committed `openapi.json`) and the frontend's `npm run gen:api`,
    and commit both. CI fails on drift. Annotate responses with `ApiZodResponse`/`ApiZodCreatedResponse` so the
    global `ZodResponseInterceptor` validates them at runtime (dev throws, prod logs+strips).
-9. **No in-memory security state.** Lockout counters / rate-limit windows live in the DB (the PIN lockout uses
-   `account.pin_attempts` + `pin_locked_until`), never a process-local Map — the service scales to zero/out.
+9. **No in-memory security state.** Lockout counters / rate-limit windows live in the DB (e.g. login-code
+   attempts on `login_code`), never a process-local Map — the service scales to zero/out.
 
 ## Conventions
 - **Wire format is camelCase JSON; DB columns are snake_case.** Use Prisma `@map`/`@@map` to bridge; keep the

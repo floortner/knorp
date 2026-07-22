@@ -163,7 +163,7 @@ function ReviewItem({ uploadId }: { uploadId: string }) {
 
           <label className="flex flex-col gap-1">
             <span className="text-sm font-medium text-ink-soft">
-              Kommentar ans Kind (optional — erscheint im Chat unter dem Foto)
+              Kommentar an den Schüler (optional — erscheint im Chat unter dem Foto)
             </span>
             <Textarea
               rows={2}

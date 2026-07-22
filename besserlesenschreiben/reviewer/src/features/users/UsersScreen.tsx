@@ -107,7 +107,7 @@ function UserRow({ user }: { user: AdminUser }) {
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-ink">{user.email}</p>
           <p className="text-sm text-ink-soft">
-            {user.profileCount} {user.profileCount === 1 ? 'Kind' : 'Kinder'} · seit{' '}
+            {user.profileCount} Schüler · seit{' '}
             {new Date(user.createdAt).toLocaleDateString('de-AT')}
             {user.lastActive && ` · zuletzt aktiv ${new Date(user.lastActive).toLocaleDateString('de-AT')}`}
           </p>
@@ -165,7 +165,7 @@ function UserRow({ user }: { user: AdminUser }) {
           ) : progress.isError ? (
             <p className="text-sm text-danger">Fortschritt konnte nicht geladen werden.</p>
           ) : progress.data.profiles.length === 0 ? (
-            <p className="text-sm text-ink-soft">Keine Kinderprofile.</p>
+            <p className="text-sm text-ink-soft">Keine Schülerprofile.</p>
           ) : (
             <div className="space-y-4">
               {progress.data.profiles.map((p) => (

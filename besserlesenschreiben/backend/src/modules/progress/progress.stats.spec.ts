@@ -19,11 +19,11 @@ describe('weeklyActivity', () => {
     expect(weeklyActivity([at(4, ['x'], true), at(10, ['x'], true)], now)).toEqual([0, 0, 0, 0, 0, 0, 0]);
   });
 
-  it('buckets by the child local day (Europe/Berlin), not UTC', () => {
-    // Monday 21:15 UTC = 23:15 local (CEST) → still Monday for the child → Mo.
+  it('buckets by the student local day (Europe/Berlin), not UTC', () => {
+    // Monday 21:15 UTC = 23:15 local (CEST) → still Monday for the student → Mo.
     const monNight: AttemptStat = { skillTags: ['x'], isCorrect: true, createdAt: new Date('2026-06-22T21:15:00Z') };
     expect(weeklyActivity([monNight], now)).toEqual([1, 0, 0, 0, 0, 0, 0]);
-    // Monday 23:15 UTC = 01:15 local Tuesday → the child's Tuesday → Di, NOT Mo (the UTC-bucketing regression).
+    // Monday 23:15 UTC = 01:15 local Tuesday → the student's Tuesday → Di, NOT Mo (the UTC-bucketing regression).
     const tueEarly: AttemptStat = { skillTags: ['x'], isCorrect: true, createdAt: new Date('2026-06-22T23:15:00Z') };
     expect(weeklyActivity([tueEarly], now)).toEqual([0, 1, 0, 0, 0, 0, 0]);
   });

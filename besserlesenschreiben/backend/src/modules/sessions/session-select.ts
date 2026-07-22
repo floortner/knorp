@@ -6,7 +6,7 @@ export const DEFAULT_SESSION_SIZE = 8;
 export const MIN_CONFIDENCE_ITEMS = 2;
 /** A skill is "weak" below this first-pass correct rate over the recent window. */
 export const WEAK_CORRECT_RATE = 0.7;
-/** …or when the child is consistently slow on it (mean answer time over this many ms). */
+/** …or when the student is consistently slow on it (mean answer time over this many ms). */
 export const SLOW_MS = 15_000;
 
 /** One recent attempt, reduced to what weak-skill detection needs. */
@@ -17,7 +17,7 @@ export interface AttemptSignal {
 }
 
 /**
- * Skills the child is struggling with, derived from recent attempts (SPEC §8A step 1): low correct
+ * Skills the student is struggling with, derived from recent attempts (SPEC §8A step 1): low correct
  * rate or slow responses. Pure and deterministic.
  */
 export function weakSkills(attempts: readonly AttemptSignal[]): Set<string> {

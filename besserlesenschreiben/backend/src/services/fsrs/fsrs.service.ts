@@ -47,7 +47,7 @@ export class FsrsService {
   private readonly scheduler: FSRS = fsrs(generatorParameters());
 
   /**
-   * Map a child's answer to an FSRS rating. We have no 4-button grading UI, so we infer it:
+   * Map a student's answer to an FSRS rating. We have no 4-button grading UI, so we infer it:
    *   wrong → Again · first-try correct → Good · correct only after a retry → Hard.
    */
   ratingFor(isCorrect: boolean, attemptNo: number): Grade {
