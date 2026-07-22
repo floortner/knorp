@@ -169,9 +169,9 @@ friction than protection. **"Lernfortschritt zurücksetzen"** and **"Chat lösch
 **Profil tab** ("Verwaltung"), each behind a **two-step confirmation** (no PIN). Backend: `/parent/*` and
 the `ParentScopeGuard`/`parentToken` machinery deleted; the actions are now `POST /profiles/:id/reset` +
 `/profiles/:id/reset-chat` (family session, ownership-checked); the `account` PIN columns
-(`parent_pin_hash`, `pin_attempts`, `pin_locked_until`) are removed from the schema/client now, and the
-`DROP COLUMN` migration follows in the **next release** — dropping them in the same release would 500 the
-old binary during the pre-traffic-migrate→restart window (its Prisma client selects every schema column).
+(`parent_pin_hash`, `pin_attempts`, `pin_locked_until`) were removed in **two releases** for deploy-window
+safety — schema/client first, then the `DROP COLUMN` migration once no serving binary selected them
+(dropping in one release would 500 the old binary during the pre-traffic-migrate→restart window).
 Docs (ARCHITECTURE, both SPECs, CLAUDE/AGENTS) updated in the same change.
 
 **Vokaltraining pivot — DROPPED 2026-07-13.** The exercise set that replaced the legacy prototype — the
