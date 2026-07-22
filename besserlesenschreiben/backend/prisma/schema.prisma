@@ -12,11 +12,6 @@ datasource db {
 }
 
 // ── ACCOUNT (household, keyed by parent email) ───────────────────────────────
-// NOTE (parent-PIN removal, 2026-07-22): the former PIN columns (parent_pin_hash, pin_attempts,
-// pin_locked_until) still exist in the DB — dropping them here first only removes them from the
-// generated client. DROP COLUMN must wait for a follow-up release: migrations run pre-traffic, and a
-// drop would 500 the still-running old binary (its client selects every schema column on account reads).
-// Add the drop migration once this schema's binary is live.
 model Account {
   id            String   @id @default(uuid()) @db.Uuid
   email         String   @unique
