@@ -45,11 +45,11 @@ async function main(): Promise<void> {
         create: { email: devFamily, status: "active" },
       });
       console.log(`dev family account ensured (active): ${devFamily}`);
-      // Ready-made child profile so login lands straight in /app/lernen (skips onboarding). Only when
+      // Ready-made student profile so login lands straight in /app/lernen (skips onboarding). Only when
       // the account has no profile yet — never duplicate on reseed or clobber one you created by hand.
       if ((await prisma.profile.count({ where: { accountId: acct.id } })) === 0) {
-        await prisma.profile.create({ data: { accountId: acct.id, name: "Testkind", buddy: "nepo" } });
-        console.log(`  ↳ child profile created: Testkind`);
+        await prisma.profile.create({ data: { accountId: acct.id, name: "Testschüler", buddy: "nepo" } });
+        console.log(`  ↳ student profile created: Testschüler`);
       }
     }
     // Seeded as ADMIN so the whole reviewer portal (review queue + user admin) is testable.

@@ -12,6 +12,11 @@ datasource db {
 }
 
 // ── ACCOUNT (household, keyed by parent email) ───────────────────────────────
+// NOTE (parent-PIN removal, 2026-07-22): the former PIN columns (parent_pin_hash, pin_attempts,
+// pin_locked_until) still exist in the DB — dropping them here first only removes them from the
+// generated client. DROP COLUMN must wait for a follow-up release: migrations run pre-traffic, and a
+// drop would 500 the still-running old binary (its client selects every schema column on account reads).
+// Add the drop migration once this schema's binary is live.
 model Account {
   id            String   @id @default(uuid()) @db.Uuid
   email         String   @unique
@@ -19,10 +24,6 @@ model Account {
   // creates a `pending` account and emails NOTHING; a staff admin approves before the first code is sent.
   // The family JwtAuthGuard requires `active` per-request, so deactivate/delete take effect immediately.
   status        String   @default("pending") @map("status") // pending | active | deactivated
-  parentPinHash String?  @map("parent_pin_hash") // argon2; null until set at onboarding
-  // Durable PIN-lockout state (replaces the old in-memory Map → survives restart & scale-out).
-  pinAttempts    Int       @default(0) @map("pin_attempts")
-  pinLockedUntil DateTime? @map("pin_locked_until") @db.Timestamptz(6)
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   profiles   Profile[]
@@ -48,7 +49,7 @@ model LoginCode {
   @@map("login_code")
 }
 
-// ── PROFILE (a child) ────────────────────────────────────────────────────────
+// ── PROFILE (a student) ──────────────────────────────────────────────────────
 model Profile {
   id           String   @id @default(uuid()) @db.Uuid
   accountId    String   @map("account_id") @db.Uuid
@@ -243,7 +244,7 @@ model HomeworkReview {
   llmAnalysis      Json     @map("llm_analysis") // snapshot of the draft shown to the reviewer
   reviewedAnalysis Json?    @map("reviewed_analysis") // the verdict (null when rejected)
   agreedWithLlm    Boolean  @map("agreed_with_llm") // false ⇒ reviewer changed something (LLM-quality signal)
-  notes            String? // optional reviewer comment — CHILD-VISIBLE (chat status bubble); never child-identifying
+  notes            String? // optional reviewer comment — STUDENT-VISIBLE (chat status bubble); never student-identifying
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   upload   HomeworkUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
@@ -254,11 +255,11 @@ model HomeworkReview {
   @@map("homework_review")
 }
 
-// ── CHAT (trainer conversation thread, per child profile) ────────────────────
+// ── CHAT (trainer conversation thread, per student profile) ──────────────────
 model ChatMessage {
   id        String   @id @default(uuid()) @db.Uuid
   profileId String   @map("profile_id") @db.Uuid
-  role      String // 'child' | 'trainer'
+  role      String // 'student' | 'trainer' (read path also tolerates legacy 'child' rows)
   text      String
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 

@@ -1,6 +1,6 @@
 # besserlesenschreiben
 
-Adaptive German children's literacy tutor (reading & writing). A mobile-friendly PWA frontend, a separate
+Adaptive German literacy tutor (reading & writing) for students aged 8–14. A mobile-friendly PWA frontend, a separate
 API backend, and an internal staff portal for professional homework review — built to be developed with
 **Claude Code** and iterated visually in **Claude Design**.
 
@@ -36,7 +36,7 @@ a subfolder to build one at a time. Either way, the agent should read, in order:
 
 Suggested order of work (shipped milestones and the forward plan live in the repo-root
 [`../ROADMAP.md`](../ROADMAP.md) — the single source of truth):
-1. **Backend first** — auth + profiles + parent PIN (the security boundary everything depends on), then the
+1. **Backend first** — auth + profiles (the security boundary everything depends on), then the
    item bank (load `item_bank.seed.json`), sessions + attempts, progress, digest, chat, homework, then the
    **staff realm** (reviewer auth, review queue, authoritative apply — Phase 2.5). No billing — the app is free.
 2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, then the 14 renderers +
@@ -55,9 +55,8 @@ feature needs before the frontend/portal feature that calls them.
 - **Two disjoint auth realms.** The family app and the staff reviewer portal authenticate separately
   (different cookie/`aud`, different signing key); a credential in one is never valid in the other.
 - **Security boundary.** `user_id`/`profile_id` come only from the auth token; object-storage access is via
-  presigned URLs scoped to the caller's prefix; parent-scope gates the routes that need it; PIN/login-code are
-  hashed + rate-limited. Staff see only a **pseudonymised** review queue — no child name, parent email, chat, or billing.
-- **This is a children's app.** The logging rules, the SVG-first media policy, EXIF stripping on photos, and
+  presigned URLs scoped to the caller's prefix; login codes are hashed + rate-limited. Staff see only a **pseudonymised** review queue — no student name, parent email, chat, or billing.
+- **This is an app for minors.** The logging rules, the SVG-first media policy, EXIF stripping on photos, and
   EU data residency are part of the build, not afterthoughts.
 - **The app is free.** No payment UI exists anywhere (billing deferred — ARCHITECTURE §9); access is gated by staff approval.
 

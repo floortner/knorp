@@ -41,7 +41,7 @@ CloudFront + ACM validation take ~10–20 min on first apply. State is local (gi
    aws sesv2 put-account-details --region eu-central-1 \
      --production-access-enabled --mail-type TRANSACTIONAL \
      --website-url "https://app.<your-domain>" \
-     --use-case-description "Passwordless login codes for an approved-access children's literacy app (beta)."
+     --use-case-description "Passwordless login codes for an approved-access students' literacy app (beta)."
    ```
    Approval is usually ~24h. Until then, verify your own test addresses to try login
    (`aws sesv2 create-email-identity --email-identity you@example.com`).

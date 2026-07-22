@@ -62,18 +62,12 @@ export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
   signal?: AbortSignal;
-  // Per-request Bearer override for short-lived scoped tokens (e.g. the parentToken). Browser auth is
-  // normally the httpOnly cookie; this lets one call carry a different token without a global mutation.
-  token?: string;
 }
 
 export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: opts.method ?? 'GET',
-    headers: {
-      'content-type': 'application/json',
-      ...(opts.token ? { authorization: `Bearer ${opts.token}` } : {}),
-    },
+    headers: { 'content-type': 'application/json' },
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     credentials: 'include',
     signal: opts.signal,

@@ -3,7 +3,7 @@
  *
  * Civil-day/week bucketing (streak, daily caps, the Mo–So week strip, the "diese Woche" ring, the
  * heatmap, the joker week) is done in the app's fixed timezone **Europe/Berlin**, NOT UTC. The product
- * is single-region (German children, hosted in Frankfurt), so "today" must mean the child's local day:
+ * is single-region (German students, hosted in Frankfurt), so "today" must mean the student's local day:
  * a session at 01:15 local Tuesday is Tuesday, even though it is still Monday in UTC. Bucketing in UTC
  * mis-credited such early-morning sessions to the previous day (the week strip showed Mo done / Di todo).
  *

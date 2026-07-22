@@ -34,5 +34,5 @@ fast backend/frontend/reviewer unit + golden + contract jobs; run the Playwright
 
 ## Adding specs
 - Login helper: `helpers/auth.ts` (`loginAsFamily`).
-- Follow-ons (harness already supports them): homework upload behind the parent PIN; reviewer smoke
+- Follow-ons (harness already supports them): the homework-upload chat flow; reviewer smoke
   (staff realm on :5274 — add a third `webServer`); LLM chat/lesson against the stub.

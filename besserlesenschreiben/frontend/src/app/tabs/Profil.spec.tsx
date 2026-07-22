@@ -18,12 +18,16 @@ const progress: Progress = {
   skillBreakdown: [{ skill: 'vowel_length', attempts: 3, correctPct: 100, due: false }],
 };
 const updateSettings = vi.fn().mockResolvedValue({ profile: me.profiles[0] });
+const resetProgress = vi.fn().mockResolvedValue({ ok: true });
+const resetChat = vi.fn().mockResolvedValue({ ok: true });
 
 vi.mock('@/lib/endpoints', () => ({
   coreApi: {
     me: () => Promise.resolve(me),
     progress: () => Promise.resolve(progress),
     updateSettings: (id: string, body: unknown) => updateSettings(id, body),
+    resetProgress: (id: string) => resetProgress(id),
+    resetChat: (id: string) => resetChat(id),
   },
 }));
 
@@ -42,14 +46,18 @@ function renderProfil() {
   );
 }
 
-beforeEach(() => updateSettings.mockClear());
+beforeEach(() => {
+  updateSettings.mockClear();
+  resetProgress.mockClear();
+  resetChat.mockClear();
+});
 
 describe('Profil', () => {
-  it('shows the child header WITHOUT the machine-key skill diagnostics or a chat CTA', async () => {
+  it('shows the student header WITHOUT the machine-key skill diagnostics or a chat CTA', async () => {
     renderProfil();
     expect(await screen.findByText('Mia')).toBeInTheDocument();
     expect(screen.getByText(/aktiv seit/)).toBeInTheDocument();
-    // diagnostics stay out of the child app (reviewer portal owns them); Chat is a bottom tab already
+    // diagnostics stay out of the student app (reviewer portal owns them); Chat is a bottom tab already
     expect(screen.queryByText('vowel_length')).not.toBeInTheDocument();
     expect(screen.queryByText(/Trainerin kontaktieren/)).not.toBeInTheDocument();
   });
@@ -123,4 +131,57 @@ describe('Profil', () => {
 
   // NOTE: the Schriftgröße ("Groß") control was removed in milestone 1.6 (the font-scale stub was cut),
   // so there is no longer a font-scale PATCH from this screen — the test for it was removed with it.
+
+  it('has no Eltern-Bereich CTA (the parent area + PIN were removed)', async () => {
+    renderProfil();
+    await screen.findByText('Verwaltung');
+    expect(screen.queryByText('Eltern-Bereich')).not.toBeInTheDocument();
+  });
+
+  it('resets progress only after BOTH confirmation steps', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    await user.click(await screen.findByRole('button', { name: /Zurücksetzen/ }));
+    expect(screen.getByText('Wirklich zurücksetzen?')).toBeInTheDocument();
+    expect(resetProgress).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Weiter' }));
+    expect(screen.getByText(/Bist du ganz sicher/)).toBeInTheDocument();
+    expect(resetProgress).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Ja, endgültig zurücksetzen' }));
+    expect(resetProgress).toHaveBeenCalledWith('p1');
+  });
+
+  it('a failed attempt\'s error is gone after Abbrechen → reopen (mutation state resets)', async () => {
+    const user = userEvent.setup();
+    resetProgress.mockRejectedValueOnce(new Error('offline'));
+    renderProfil();
+    await user.click(await screen.findByRole('button', { name: /Zurücksetzen/ }));
+    await user.click(screen.getByRole('button', { name: 'Weiter' }));
+    await user.click(screen.getByRole('button', { name: 'Ja, endgültig zurücksetzen' }));
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
+    await user.click(screen.getByRole('button', { name: /Zurücksetzen/ }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('Abbrechen at the final step aborts without calling the API', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    await user.click(await screen.findByRole('button', { name: 'Chat löschen' }));
+    expect(screen.getByText('Wirklich den ganzen Chat löschen?')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Weiter' }));
+    await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
+    expect(resetChat).not.toHaveBeenCalled();
+    // back to the idle card — the action button is offered again
+    expect(screen.getByRole('button', { name: 'Chat löschen' })).toBeInTheDocument();
+  });
+
+  it('deletes the chat after both confirmation steps', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    await user.click(await screen.findByRole('button', { name: 'Chat löschen' }));
+    await user.click(screen.getByRole('button', { name: 'Weiter' }));
+    await user.click(screen.getByRole('button', { name: 'Ja, endgültig löschen' }));
+    expect(resetChat).toHaveBeenCalledWith('p1');
+  });
 });

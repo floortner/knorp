@@ -16,7 +16,7 @@ export interface LlmUsage {
  * Anthropic-direct provider (ARCHITECTURE §8). Structured output is done with a single **forced tool** whose
  * `input_schema` is the JSON Schema of the caller's Zod schema — version-stable across SDK releases and the
  * idiomatic Claude way to get typed JSON. The SDK is lazy-imported so the stub path needs nothing installed
- * at runtime. We never log prompts, child answers, or image bytes (CLAUDE.md §6) — identifiers + outcomes only.
+ * at runtime. We never log prompts, student answers, or image bytes (CLAUDE.md §6) — identifiers + outcomes only.
  *
  * Notes for current models (Sonnet 5 / Opus 4.8): `temperature`/`top_p`/`top_k` are rejected (400) — we send
  * none and steer via the prompt. Sonnet 5 runs **adaptive thinking by default** when `thinking` is omitted;

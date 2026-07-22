@@ -9,7 +9,7 @@ const STEP = 1.25;
 
 /**
  * Homework-photo viewer: an inline preview that opens a fullscreen overlay with wheel/button zoom,
- * drag-to-pan and 90°-rotate — phone shots of a child's pencil writing need magnification
+ * drag-to-pan and 90°-rotate — phone shots of a student's pencil writing need magnification
  * (ARCHITECTURE §11: reading the actual handwriting is the review). Dependency-free CSS transforms.
  */
 export function ImageLightbox({ src, alt }: { src: string; alt: string }) {

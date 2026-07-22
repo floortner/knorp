@@ -19,7 +19,7 @@ separately in Claude Design; this spec defines structure, data flow, and the API
 - **Fonts:** Atkinson Hyperlegible (body, dyslexia-friendly) + Bricolage Grotesque (display) — already in the prototype.
 - **No localStorage for the auth token** — prefer httpOnly cookie from backend; if header-based, keep token in memory + silent refresh.
 
-Mobile-first: design at ~390px width first, scale up. Large tap targets (child users).
+Mobile-first: design at ~390px width first, scale up. Large tap targets (student users).
 
 ---
 
@@ -34,15 +34,16 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (child u
   │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!") —
   │               bank sessions carry the unit's Merksatz, generated lectures their own intro
   ├ /erfolge      achievement standing (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
-  ├ /profil       editable name, buddy picker, "aktiv seit", streak, stars, Ton toggle, login email, Eltern-Bereich CTA
+  ├ /profil       editable name, buddy picker, "aktiv seit", streak, stars, Ton toggle, login email,
+  │               Verwaltung: reset progress + delete chat (destructive, two-step confirmation — §8)
   └ /chat         message thread with trainer Angelika + input; 📷 homework upload — the photo shows as
   │               a chat message, the review status/verdict comes back as trainer bubbles (§9)
-/parent           PIN gate → trainer actions (unlock next, reset progress, delete chat)
 ```
 
-**Tabs** (bottom nav, mobile): `lernen · erfolge · chat · profil`. Parent area reached from profile, **PIN-gated**.
+**Tabs** (bottom nav, mobile): `lernen · erfolge · chat · profil`. There is no separate parent area and no
+PIN (both removed 2026-07-22) — the trainer actions live in `/profil`.
 
-**The app is free.** No price, paywall, or buy button exists anywhere — child or parent view. The ✨ lecture
+**The app is free.** No price, paywall, or buy button exists anywhere — student or parent view. The ✨ lecture
 card requests `POST /sessions {source:'llm'}` (loading state: generation takes a few seconds) and falls back
 to a bank session with a friendly note when the LLM is unavailable (503).
 
@@ -128,7 +129,7 @@ Driven by `profile.settings` (from `GET /profiles/{id}`, edited via `PATCH /prof
   setting is spacing-only (don't relabel it as a font swap in the UI).
 - `fontScale` → root font-size multiplier.
 - `soundOn` → master audio toggle.
-- High contrast, large tap targets, keyboard operability throughout (children + assistive use).
+- High contrast, large tap targets, keyboard operability throughout (students + assistive use).
 
 ---
 
@@ -146,7 +147,7 @@ GET  /units                    POST /sessions            POST /attempts        P
 GET  /progress/{id}            GET  /digest/{id}
 GET  /chat/{id}                POST /chat/{id}            # history messages may carry imageUrl (homework bubbles)
 POST /homework                 GET  /homework/{id}        # no /confirm — staff reviewer is the human gate (§9)
-POST /parent/verify-pin        POST /parent/unlock-next   POST /parent/reset   POST /parent/reset-chat
+POST /profiles/{id}/reset      POST /profiles/{id}/reset-chat                  # destructive — §8
 ```
 
 TanStack Query keys: `['me']`, `['units']`, `['session', id]`, `['progress', profileId]`, `['chat', profileId]`.
@@ -159,14 +160,21 @@ hand-written transport wrapper on top of those types.
 
 **429 handling:** ★ ops are free but capped per day (backend `LLM_SESSIONS_PER_DAY` / `CHAT_MESSAGES_PER_DAY`).
 Over cap the backend returns `429 RATE_LIMITED` with a kindgerechte message — surface it through the normal
-error paths (the message is written for the child); no special routing. Nothing in this app emits or handles 402.
+error paths (the message is written for the student); no special routing. Nothing in this app emits or handles 402.
 
 ---
 
-## 8. Parent area
+## 8. Verwaltung (destructive actions in `/profil`)
 
-- Reached from `/profil`; entry requires `POST /parent/verify-pin` → hold the returned parent token for ~15 min.
-- **Trainer actions:** unlock next unit; reset progress; delete chat — the whole conversation incl. homework photos, learning progress kept (each destructive, behind a confirm dialog).
+The former parent area and its PIN were removed (2026-07-22). The two destructive actions live in the
+`/profil` tab under **Verwaltung**, each fronted by a **two-step confirmation** (action → "Wirklich …?" →
+"Bist du ganz sicher? Das kann nicht rückgängig gemacht werden.") — deliberate friction, since anyone
+holding the family session can trigger them:
+
+- **Lernfortschritt zurücksetzen** → `POST /profiles/{id}/reset` — wipes attempts/plan/stars; name +
+  settings kept. Invalidate `['me']`, `['progress']`, `['units']`.
+- **Chat löschen** → `POST /profiles/{id}/reset-chat` — wipes the whole conversation incl. homework
+  photos; learning progress kept. Invalidate `['chat']`.
 - **No billing.** The app is free (approval-gated, ARCHITECTURE §1b/§9); there is no supporter/credit UI.
 - No engagement/streak-pressure mechanics tied to anything monetary, anywhere.
 
@@ -186,10 +194,10 @@ draft and has **no confirm/edit UI** (the reviewer portal `-review` owns that, a
 3. On `reviewed`, the status bubble carries the **authoritative** result (topic + suggested focus from
    `reviewedAnalysis`) — read-only, no accept/reject.
 4. The validated focus shapes the **next** generated lecture; surface that session in `/lernen` when it
-   appears. There is no family confirm step and the child is never blocked while a photo is in review.
-- Children's handwriting OCR is unreliable → the mandatory human gate is the **staff reviewer**, whose verdict
+   appears. There is no family confirm step and the student is never blocked while a photo is in review.
+- Student handwriting OCR is unreliable → the mandatory human gate is the **staff reviewer**, whose verdict
   is authoritative (the former parent-confirm step is removed). The upload is **not** PIN-gated — it lives in
-  the child-facing chat by product decision; the professional-in-the-loop pipeline is unchanged.
+  the student-facing chat by product decision; the professional-in-the-loop pipeline is unchanged.
 
 ---
 
@@ -206,5 +214,5 @@ VITE_PWA=true
 - App renders every exercise type in the current contract (currently just `placeholder`) from
   backend-served JSON with no hardcoded lesson data.
 - `dyslexicFont` + `fontScale` visibly change rendering; `soundOn` mutes all audio.
-- No price/paywall/buy control is reachable from the child tabs — only from `/parent` behind the PIN.
+- No price/paywall/buy control exists anywhere in the app.
 - Works installed as a PWA; attempts queue and sync after an offline blip.

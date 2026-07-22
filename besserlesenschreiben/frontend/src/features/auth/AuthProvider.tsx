@@ -10,8 +10,8 @@ const API_CACHE = 'blsb-api';
 
 /**
  * Erase per-user data held on the device beyond the httpOnly cookie: the SW runtime cache (units/progress)
- * and the queued telemetry (child answers). Without this, a shared/family device keeps the previous
- * child's data after logout, and queued attempts could flush under the next account's cookie.
+ * and the queued telemetry (student answers). Without this, a shared/family device keeps the previous
+ * student's data after logout, and queued attempts could flush under the next account's cookie.
  */
 async function clearLocalUserData(): Promise<void> {
   clearAttemptQueue();

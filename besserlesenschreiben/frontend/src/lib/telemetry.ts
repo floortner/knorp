@@ -3,7 +3,7 @@ import type { CreateAttemptBody } from './types';
 
 /**
  * Telemetry plumbing — the product's spine (SPEC §4). Every answered item emits exactly one
- * `POST /attempts`, fire-and-forget: the child's UI never waits on the network. Failed sends queue in
+ * `POST /attempts`, fire-and-forget: the student's UI never waits on the network. Failed sends queue in
  * localStorage and replay on reconnect (offline blip → sync). The backend dedupes on
  * (sessionId, itemId, attemptNo), so replays are safe.
  *
@@ -13,7 +13,7 @@ import type { CreateAttemptBody } from './types';
 
 const QUEUE_KEY = 'blsb.attempts.queue';
 const MAX_QUEUE = 500; // hard cap so a long offline stretch can't grow localStorage without bound
-const MAX_AGE_MS = 48 * 60 * 60 * 1000; // purge unsent attempts older than 48h (don't keep child data forever)
+const MAX_AGE_MS = 48 * 60 * 60 * 1000; // purge unsent attempts older than 48h (don't keep student data forever)
 
 /** Stored shape: the wire body plus an enqueue timestamp (used only for retention; stripped on send). */
 type QueuedAttempt = CreateAttemptBody & { queuedAt?: number };
@@ -92,7 +92,7 @@ export function pendingAttempts(): number {
 
 /**
  * Drop the local attempt queue. Called on logout so a shared/family device doesn't retain the previous
- * child's answers, and so queued attempts aren't later flushed under a different account's cookie
+ * student's answers, and so queued attempts aren't later flushed under a different account's cookie
  * (security review P2-2).
  */
 export function clearAttemptQueue(): void {

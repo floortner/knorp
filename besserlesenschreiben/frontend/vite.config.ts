@@ -37,7 +37,7 @@ export default defineConfig({
       manifest: {
         name: 'besserlesenschreiben',
         short_name: 'blesen',
-        description: 'Adaptive German children’s literacy tutor',
+        description: 'Adaptive German literacy tutor for students (ages 8–14)',
         theme_color: '#27A99B',
         background_color: '#FCF7EF',
         display: 'standalone',

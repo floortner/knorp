@@ -33,7 +33,7 @@ describe('StaffProgressService', () => {
     const { svc } = make();
     const res = await svc.forUpload('up-1');
     expect(res.profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
-    // The child's real name must never leak through the queue surface.
+    // The student's real name must never leak through the queue surface.
     expect(JSON.stringify(res)).not.toMatch(/Mia/);
     expect('name' in res).toBe(false);
     expect(res.summary.unit).toBe(3);
@@ -41,7 +41,7 @@ describe('StaffProgressService', () => {
     expect(res.activity.totalAttempts).toBe(42);
   });
 
-  it('forAccount is identity-bearing: includes each child name (Nutzer oversight)', async () => {
+  it('forAccount is identity-bearing: includes each student name (Nutzer oversight)', async () => {
     const { svc } = make();
     const res = await svc.forAccount('a1');
     expect(res.profiles).toHaveLength(1);

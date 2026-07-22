@@ -14,7 +14,7 @@ media handling**), **this document wins**.
 │  FRONTEND (repo: -web)  │  ───────────────────────────▶ │  BACKEND (repo: -api)   │
 │  Vite + React SPA / PWA │   family cookie (httpOnly)    │  NestJS · AWS EC2        │
 │  static, S3+CloudFront  │ ◀───────────────────────────  │  (systemd, no container) │
-│  child + parent areas   │                               │                          │
+│  student app (family)     │                               │                          │
 └─────────────────────────┘                               │                          │
 ┌─────────────────────────┐         HTTPS / JSON          │                          │
 │ REVIEWER (repo: -review)│  ───────────────────────────▶ │                          │
@@ -46,20 +46,20 @@ and the JWTs carry a different `aud`/role so a guard can never confuse them.
 
 | Realm | Who | Surface | Auth | Sees |
 |---|---|---|---|---|
-| **Family** | parent (account) + their children (profiles) | `-web` SPA/PWA | email login code → 30-day httpOnly family cookie; parent area re-gated by PIN | only their own account's data |
+| **Family** | parent (account) + their students (profiles) | `-web` SPA/PWA | email login code → 30-day httpOnly family cookie | only their own account's data |
 | **Staff** | internal literacy professionals ("reviewers") + admins | `-review` portal | own staff login → httpOnly **staff** cookie (`aud:"staff"`); MFA before prod | a **pseudonymised** review queue across all families — homework image + LLM draft only |
 
 - **Reviewers are a small internal staff pool (~3 in v1), not tied to one family.** Accounts are
   **hand-provisioned by an admin** (no self-signup); they pull homework from a shared queue and are
   employees/contractors under a staff DPA, not a family's own teacher. There is **no per-family professional**
   in v1, and the pool is small enough that the queue is about preventing double-review, not load-balancing.
-- **Minimisation at the realm boundary (hard rule):** a reviewer never sees a child's name, the parent email,
+- **Minimisation at the realm boundary (hard rule):** a reviewer never sees a student's name, the parent email,
   free-text chat, billing, or any direct identifier. The queue exposes a **pseudonymous profile handle**
   (opaque id), coarse grade/age band, relevant skill tags, the homework **image**, and the **LLM draft
   analysis** — nothing more. This keeps staff access to minors' data scoped to exactly what the review task
   needs (§8).
 - The reviewer's verdict is **authoritative** and **replaces the parent-confirm step** for homework
-  (§10). Review is **asynchronous**: it never blocks a child mid-lesson; it shapes the *next* generated
+  (§10). Review is **asynchronous**: it never blocks a student mid-lesson; it shapes the *next* generated
   lecture.
 
 ### 1b. Family access = approval, not payment
@@ -163,13 +163,13 @@ src/
   prisma/
     prisma.service.ts     # PrismaClient lifecycle (OnModuleInit/Destroy)
   common/
-    guards/               # JwtAuthGuard (family) · ParentScopeGuard · StaffAuthGuard (staff, §1a) + admin-role check
+    guards/               # JwtAuthGuard (family) · StaffAuthGuard (staff, §1a) + admin-role check
     filters/              # all-exceptions filter → the §5 error envelope
     interceptors/         # requestId + logging
-    security/             # JWT, argon2 PIN hashing, rate limiting
+    security/             # JWT, argon2 hashing, rate limiting
   modules/                # one folder per resource: controller (HTTP) + service + Zod DTOs
     auth/  profiles/  sessions/  attempts/  progress/
-    chat/  homework/  parent/         # (no billing/ module — billing deferred, §9)
+    chat/  homework/          # (no billing/ module — billing deferred, §9)
     staff/                # STAFF realm (§1a): reviewer auth, review queue + authoritative apply,
                           #   admin user administration, learner progress (lexeme curation dropped, §F)
   services/               # DOMAIN logic only — plain injectables, NO controllers/HTTP here (dtctl lesson)
@@ -199,7 +199,7 @@ src/
     api.ts                # typed fetch client — mirrors backend/SPEC.md §6 EXACTLY
     queryClient.ts        # TanStack Query config
     telemetry.ts          # attempt timing + emit (frontend SPEC §4)
-  app/                    # shell, routing, tabs (lernen | liga | profil | chat), parent area
+  app/                    # shell, routing, tabs (lernen | liga | profil | chat)
   features/
     exercises/            # the Exercise union type (currently a single `placeholder` scaffold — the
                           # Vokaltraining renderer set was dropped, ROADMAP.md §F) + audio.ts (audio_url
@@ -229,7 +229,7 @@ src/
     auth/                 # StaffAuthProvider, /staff/me probe, RequireStaff guard, login + code screens
     queue/                # review list (Offen | Erledigt | Alle) — pseudonymised rows
     review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
-    users/                # ADMIN: account approval / deactivate / delete + per-child progress
+    users/                # ADMIN: account approval / deactivate / delete + per-student progress
                           # (the "Wortschatz" lexeme-curation tab was dropped with the content set, §F)
     progress/             # shared learner-progress panel (summary · skills · activity)
   components/ui/          # button, input, select, textarea, modal, filter-chips
@@ -260,9 +260,10 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 - **Transport:** JSON only (`application/json`), UTF-8. `multipart/form-data` solely for `/homework` upload.
 - **Auth:** the session JWT (30-day TTL) is delivered as an **httpOnly, Secure, SameSite=Lax cookie** set on
   `/auth/verify` and cleared on `/auth/logout`. The browser SPA holds **no token in JS** — it derives auth from
-  a `/me` probe, so a refresh never logs the child out. `JwtAuthGuard` also accepts `Authorization: Bearer <jwt>`
-  for non-browser/API clients. Parent-scoped routes additionally require a fresh `parent` claim (SPEC §4).
-  (Refresh-token rotation is deferred; the 30-day cookie is the v1 posture.)
+  a `/me` probe, so a refresh never logs the student out. `JwtAuthGuard` also accepts `Authorization: Bearer <jwt>`
+  for non-browser/API clients. (Refresh-token rotation is deferred; the 30-day cookie is the v1 posture.)
+  The former parent-PIN elevation was removed 2026-07-22 — destructive profile routes are plain
+  family-session routes, ownership-checked and double-confirmed in the UI (backend SPEC §4).
 - **CSRF posture:** there is no CSRF token — protection rests entirely on `SameSite=Lax` (so a genuinely
   cross-site `evil.com` POST carries no cookie) plus the explicit production CORS allowlist (the backend
   refuses to boot without one). This is adequate for beta because the apps and API are subdomains of one
@@ -272,14 +273,14 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 - **Naming:** resource nouns, plural, kebab-free snake in JSON bodies is *not* used — **JSON uses camelCase**,
   DB columns use snake_case; the backend maps between them. Pick one and never mix on the wire: **camelCase wins.**
 - **Status codes:** `200` ok · `201` created · `204` no body · `400` malformed · `401` unauthenticated ·
-  `403` authenticated-but-forbidden (incl. missing parent scope) · `404` · `409` conflict ·
+  `403` authenticated-but-forbidden · `404` · `409` conflict ·
   `422` validation · `429` rate-limited · `5xx` server. (`402` is **deferred** — reserved for paid tiers, §9.)
 - **Idempotency:** `POST /attempts` must be idempotent (dedupe on `(session_id, item_id, attempt_no)`).
   The billing webhook's idempotency (on the provider event id) is preserved but **deferred** (§9).
 - **Correlation:** the backend assigns an `X-Request-Id` per request (or echoes the client's). It appears in
   every log line and in error envelopes. The frontend generates one per user action and sends it.
 - **Pagination:** cursor-based where lists can grow (`?limit=&cursor=`); responses carry `nextCursor`.
-- **Rate limits:** auth-code request/verify and parent-PIN verify are strictly limited (SPEC §4). Gated AI
+- **Rate limits:** auth-code request/verify are strictly limited (SPEC §4). Gated AI
   endpoints are limited per account. `429` responses include `Retry-After`.
 - **CORS:** backend allows only the known web origin(s) from config; credentials enabled (for the cookie).
 - **The contract is generated, not hand-drifted** (the **contract pipeline**):
@@ -315,7 +316,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 {
   "error": {
     "code": "INSUFFICIENT_CREDITS",
-    "message": "Human-readable, safe to surface in the parent area.",
+    "message": "Human-readable, safe to surface in the family app.",
     "requestId": "req_8f3a…",
     "details": [ { "field": "code", "issue": "expired" } ]
   }
@@ -327,7 +328,6 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 | HTTP | `code` | Frontend behaviour |
 |---|---|---|
 | 401 | `UNAUTHENTICATED` / `SESSION_EXPIRED` | route to `/login`, show "Sitzung abgelaufen" |
-| 403 | `PARENT_SCOPE_REQUIRED` | prompt parent PIN |
 | 403 | `FORBIDDEN` | generic "not allowed" |
 | 402 | `INSUFFICIENT_CREDITS` / `TIER_REQUIRED` | **deferred (§9)** — not emitted today; the app is free |
 | 422 | `VALIDATION_ERROR` | field-level messages from `details[]` |
@@ -342,8 +342,8 @@ media rule, and the security-boundary invariants. It measurably improves agent o
   traces, ORM errors, or provider errors ever reach the client — they're logged with the `requestId` and
   replaced by `INTERNAL`.
 - Zod validation failures (via `nestjs-zod`) are reshaped into `VALIDATION_ERROR` with a `details[]` array (field + issue).
-- **Never leak** which emails exist (`/auth/request-code` always `200`), whether a PIN was "close",
-  or any other account-enumeration signal.
+- **Never leak** which emails exist (`/auth/request-code` always `200`), or any other
+  account-enumeration signal.
 - Expensive AI ops wrap provider failures: on Anthropic/TTS error, return `503 PROVIDER_UNAVAILABLE` and
   **do not** consume a credit.
 
@@ -352,7 +352,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
   error parsing.
 - `401/SESSION_EXPIRED` clears auth state and redirects once (no loops).
 - Telemetry (`POST /attempts`) failures are swallowed and queued (PWA offline queue), never surfaced to a
-  child mid-exercise.
+  student mid-exercise.
 - Always show `requestId` on a hard error so a parent can quote it in support.
 
 **Retries:** idempotent GETs and `POST /attempts` retry with exponential backoff + jitter (max ~3). Never
@@ -366,20 +366,20 @@ auto-retry non-idempotent POSTs (checkout, homework upload, chat send).
 wrapper over `console` (optionally shipping warn/error to Sentry).
 
 **Every backend log line carries:** `timestamp`, `level`, `event`, `requestId`, `accountId` (if authed),
-`route`, `latencyMs`, `status`. Never the `profileId` of a child alongside content.
+`route`, `latencyMs`, `status`. Never the `profileId` of a student alongside content.
 
 **Levels**
 - `DEBUG` — local only; never enabled in prod.
 - `INFO` — request completed, session generated (counts, source), webhook processed, migration ran, homework
   review actioned (`{event:"homework.reviewed","reviewerId":"…","uploadId":"…","decision":"corrected","agreedWithLlm":false}` — ids + outcome, never the analysis content).
-- `WARNING` — rate-limit hit, credit exhausted, provider slow/retried, PIN lockout, staff-auth failure.
+- `WARNING` — rate-limit hit, credit exhausted, provider slow/retried, login-code lockout, staff-auth failure.
 - `ERROR` — unhandled exception (with `requestId`), provider failure, webhook signature mismatch.
 
-**NEVER log (this is a children's app — treat it as the hard line):**
-- The contents of exercises a child answered, their answers, or homework image contents / OCR text.
-- Email addresses, the 4-digit login code, the parent PIN (or its hash), JWTs, cookies, presigned storage URLs.
+**NEVER log (this is an app for minors — treat it as the hard line):**
+- The contents of exercises a student answered, their answers, or homework image contents / OCR text.
+- Email addresses, the 4-digit login code, JWTs, cookies, presigned storage URLs.
 - Full request/response bodies. Payment tokens or provider secrets.
-- Any field that, combined, re-identifies a specific child's performance.
+- Any field that, combined, re-identifies a specific student's performance.
 
 Log **identifiers and outcomes, not payloads**: `{"event":"session.generated","accountId":"…","source":"bank","items":8}` — never the items themselves.
 
@@ -434,15 +434,15 @@ costs uptime, not data and users.
   or another cloud's object storage). Keep the in-AWS automated backups too; this is the off-platform tier.
 - **Objects:** periodic export of the user prefixes (`users/{account}/{profile}/…` — homework images, generated
   sessions/digests, TTS audio) to the same off-platform target, encrypted. TTS audio is regenerable so it's
-  lowest priority; child homework + learning artifacts are the priority.
+  lowest priority; student homework + learning artifacts are the priority.
 - **Retention:** short rolling window (e.g. 7 daily + 4 weekly), aligned with the minors'-data retention
-  posture in §8 — backups are not an excuse to keep child data forever; expire them on the same clock.
+  posture in §8 — backups are not an excuse to keep student data forever; expire them on the same clock.
 - **Encryption & access:** the off-platform copy is encrypted with a key **not stored in SSM/AWS**
   (otherwise an account freeze locks you out of your own backups). Hold that key separately.
 - **Restore drills:** a backup you haven't restored is a hope, not a backup. Periodically rebuild Postgres from
   a dump into a throwaway instance and verify row counts + a sample profile. Document the restore runbook.
 - **Scope:** this is **disaster recovery, not analytics** — encrypted archives, not a queryable mirror, and
-  subject to the same "no child content in logs/exports we don't need" discipline as everything else.
+  subject to the same "no student content in logs/exports we don't need" discipline as everything else.
 
 Result: an AWS account suspension becomes a recoverable outage (stand the app + DB back up elsewhere,
 restore from the off-platform dumps) rather than the loss of every family's data.
@@ -454,13 +454,13 @@ restore from the off-platform dumps) rather than the loss of every family's data
   immediately.
 - **PWA update strategy (important):** vite-plugin-pwa + Workbox, **prompt-to-update** (never silent reload
   mid-lesson). On new SW detected → let the current exercise finish, then a gentle "Neue Version verfügbar –
-  neu laden?" in the shell/parent area, never interrupting a child's answer. App shell precached → installable
+  neu laden?" in the shell, never interrupting a student's answer. App shell precached → installable
   and offline-capable.
 - **Offline:** the attempt queue (frontend SPEC §4) flushes on reconnect via Workbox background sync.
 
 ### Versioning & releases
 - **SemVer per repo.** Version + commit injected at build (`VITE_APP_VERSION` / backend `version`) and shown
-  in `/health` and the parent "About" — a pattern borrowed from dtctl's `ldflags` version stamping.
+  in `/health` and the Profil tab — a pattern borrowed from dtctl's `ldflags` version stamping.
 - **The API version (`/v1`) is the cross-repo contract** and moves independently of repo SemVer.
 - Tag releases; `CHANGELOG.md` per repo. A frontend deploy must never assume an unreleased backend route.
 
@@ -487,17 +487,18 @@ restore from the off-platform dumps) rather than the loss of every family's data
   Parameter Store (SecureString)**. Full var list: `backend/SPEC.md §11`.
 - **Security boundary (recap, non-negotiable):** `user_id`/`profile_id` derive only from the JWT; object-storage
   access is via **short-lived presigned URLs scoped to a single object** under the caller's prefix (never a
-  path from the client); routes are gated by **account status (approved/active, §1b)** + **parent-scope** where
-  needed (entitlement/credit gating is deferred, §9); PIN and login code are hashed and rate-limited.
-- **No in-memory security state in prod.** Anything that gates access — PIN-lockout counters, rate-limit
+  path from the client); routes are gated by **account status (approved/active, §1b)**
+  (entitlement/credit gating is deferred, §9); login codes are hashed and rate-limited. Destructive
+  profile routes are ownership-checked and double-confirmed in the UI (no PIN — removed 2026-07-22).
+- **No in-memory security state in prod.** Anything that gates access — lockout counters, rate-limit
   windows — lives in a durable store (DB columns / Redis), never a process-local Map. A restart or a second
-  replica must never reset a lockout (a brute-force hole). The parent-PIN lockout (5 fails / 15 min) is
-  persisted on `account` (`pin_attempts`, `pin_locked_until`).
+  replica must never reset a lockout (a brute-force hole). The login-code lockout (5 fails) is persisted
+  on `login_code.attempts`.
 - **LLM access is abstracted.** AI work (free, but access-gated by account status) goes through a single
   swappable `LlmService` (Anthropic-direct is the default) so the provider could move (e.g. Bedrock /
   Vertex EU) without touching callers. **EU data-residency for minors is a hard gate before any production LLM
   call** — see the data-flow options below.
-- **Staff access to minors' data (reviewers).** Homework review (§11) means internal staff see a child's
+- **Staff access to minors' data (reviewers).** Homework review (§11) means internal staff see a student's
   homework photo — the strongest minors'-data exposure in the system. Gate it hard: (a) reviewers are a small,
   **vetted, DPA-bound** staff pool with named accounts and MFA, never anonymous; (b) the queue is
   **pseudonymised** — image + LLM draft + skill tags + grade band only, no name/email/chat/billing (§1a); (c)
@@ -510,7 +511,7 @@ restore from the off-platform dumps) rather than the loss of every family's data
   the logging rules in §6 are part of this commitment. **LLM data-flow (decided):**
   1. **Anthropic API direct (chosen).** Simplest path and always the newest models. For EU inference
      residency, pin `inference_geo: "eu"` on supported models (Sonnet 4.6+). It's an external seam: keep a
-     **DPA**, send the *digest* (not raw child identifiers) where possible, and document the data flow.
+     **DPA**, send the *digest* (not raw student identifiers) where possible, and document the data flow.
   2. **Claude via Bedrock or Vertex AI (EU regions).** Fallback escape hatches only if a strictly
      cloud-internal data boundary is ever required — at the cost of feature lag (no same-day models,
      missing platform features) and a heavier integration.
@@ -538,8 +539,9 @@ be metered later. The former dormant `entitlement` / `credits_ledger` / `process
 **Reserved seam (only if metering is ever introduced — its own milestone, not current):** use a **Merchant of
 Record** (Lemon Squeezy / Paddle) so card data never touches the backend and EU VAT/OSS is filed for you — a
 hosted checkout, a signed **idempotent** `POST /billing/webhook` (on the provider event id) that updates an
-`entitlement` + append-only `credits_ledger` (re-added by migration), billing UI **parent-area-only** (never
-shown to a child), and an optional pay-it-forward subsidy. No lives/energy/loot mechanics, ever.
+`entitlement` + append-only `credits_ledger` (re-added by migration), billing UI **parent-facing only** (never
+shown to a student; a parent-verification gate would need designing — the PIN was removed 2026-07-22), and an
+optional pay-it-forward subsidy. No lives/energy/loot mechanics, ever.
 
 ---
 
@@ -548,7 +550,7 @@ shown to a child), and an optional pay-it-forward subsidy. No lives/energy/loot 
 **Policy: every app-authored or generated visual is SVG.** Mascots (Nepo/Stella), the "b" logo mark, badges,
 reward art, exercise illustrations, icons, decorative elements — all SVG. Rationale that matters *for this app*:
 
-- **DPI-independent** — crisp on every phone/tablet a child might use, no `@2x/@3x` asset sets.
+- **DPI-independent** — crisp on every phone/tablet a student might use, no `@2x/@3x` asset sets.
 - **Tiny** — a few KB, often inlineable; fast on weak connections.
 - **Themeable** — `currentColor` + CSS vars let the same asset adapt to high-contrast / accessibility modes
   (which this app needs) without re-exporting.
@@ -565,13 +567,13 @@ reward art, exercise illustrations, icons, decorative elements — all SVG. Rati
   SVG via `dangerouslySetInnerHTML`.
 - Prefer **inline** SVG for themeable/animated icons; `<img src=…svg>` for static decorative art.
 - **Emoji** (the prototype uses 🍎🦔🌸 in exercises): keep as Unicode, or swap to an SVG emoji set (e.g. Twemoji)
-  if you want identical rendering across devices — a real concern when a letter's *Anlaut* depends on the child
+  if you want identical rendering across devices — a real concern when a letter's *Anlaut* depends on the student
   recognising the picture.
 
 **The one unavoidable raster exception: homework photos.** A camera photo of a worksheet is inherently raster
 and must **not** be faked into SVG. Handle it as the deliberate exception:
 - Accept **WebP/JPEG/PNG**; transcode to **WebP** for storage (smaller), keep one original for re-analysis.
-- **Strip EXIF on upload** — phone photos embed GPS/time; for a child's image that metadata is a privacy
+- **Strip EXIF on upload** — phone photos embed GPS/time; for a student's image that metadata is a privacy
   hazard and must be removed server-side before the blob is persisted.
 - Downscale to a sane max dimension before sending to the vision model (cost + speed); store under the user
   prefix with the lifecycle auto-delete from §7.
@@ -582,10 +584,10 @@ and must **not** be faked into SVG. Handle it as the deliberate exception:
 
 ## 11. Homework review — professional-in-the-loop (authoritative human gate)
 
-Child handwriting OCR is unreliable and the stakes (shaping a struggling child's lessons) are high, so a
+Student handwriting OCR is unreliable and the stakes (shaping a struggling student's lessons) are high, so a
 homework photo's LLM analysis is **never** applied on its own. A vetted **internal literacy professional**
 (staff reviewer, §1a) validates it first. The reviewer's verdict is **authoritative** and **replaces** the
-former parent-confirm step. The flow is **asynchronous** — the child is never blocked.
+former parent-confirm step. The flow is **asynchronous** — the student is never blocked.
 
 ```
 family uploads photo (Chat tab) ─▶  backend: strip EXIF, →WebP, store under user prefix
@@ -612,7 +614,7 @@ the family chat shows the verdict as a status bubble (informational, non-blockin
   `agreed_with_llm` flag — this is how we measure and improve vision quality over time ("compare against the
   LLM response"). It is product/QA data, governed like learning telemetry (§6), never operational logging.
 - **The reviewer sees pseudonymised data only** (§1a): image + draft + skill tags + grade band, never the
-  child's name, parent email, chat, or billing.
+  student's name, parent email, chat, or billing.
 - **Async, never blocking:** review latency lands in the *next* lecture, not the current lesson. A pending or
   rejected upload simply means the next lecture isn't yet homework-informed.
 - **Rejected** uploads (unreadable, not homework, or contains unexpected personal data) mutate nothing and are

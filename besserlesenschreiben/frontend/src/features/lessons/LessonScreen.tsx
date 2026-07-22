@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
  * + telemetry pipeline (M5). A deep-link/refresh without a session in nav state returns to the home tab.
  *
  * The runner is wrapped in its own ErrorBoundary: a single malformed exercise (or renderer throw)
- * drops back to a friendly card and lets the child leave the lesson, without blanking the whole app.
+ * drops back to a friendly card and lets the student leave the lesson, without blanking the whole app.
  */
 export function LessonScreen() {
   const navigate = useNavigate();

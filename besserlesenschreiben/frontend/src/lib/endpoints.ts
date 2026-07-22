@@ -47,6 +47,20 @@ export const coreApi = {
       body,
     }),
 
+  // Destructive; the UI fronts both with a two-step confirmation (SPEC §8). Ownership of the
+  // profile is asserted server-side against the session's account.
+  resetProgress: (profileId: string) =>
+    apiFetch<{ ok: true }>(`/profiles/${encodeURIComponent(profileId)}/reset`, {
+      method: 'POST',
+      body: {},
+    }),
+
+  resetChat: (profileId: string) =>
+    apiFetch<{ ok: true }>(`/profiles/${encodeURIComponent(profileId)}/reset-chat`, {
+      method: 'POST',
+      body: {},
+    }),
+
   progress: (profileId: string) =>
     apiFetch<Progress>(`/progress/${encodeURIComponent(profileId)}`),
 
@@ -79,33 +93,10 @@ export const homeworkApi = {
   status: (uploadId: string) => apiFetch<HomeworkResult>(`/homework/${encodeURIComponent(uploadId)}`),
 };
 
-/** Trainer chat (free AI). History + send, both scoped to the child profile. */
+/** Trainer chat (free AI). History + send, both scoped to the student profile. */
 export const chatApi = {
   history: (profileId: string) => apiFetch<ChatHistory>(`/chat/${encodeURIComponent(profileId)}`),
 
   send: (profileId: string, text: string) =>
     apiFetch<ChatReply>(`/chat/${encodeURIComponent(profileId)}`, { method: 'POST', body: { text } }),
-};
-
-/**
- * Parent-area endpoints. verify-pin binds the parentToken to ONE child (profileId is signed into the
- * token), so the destructive calls just carry the token as a per-request Bearer — no profileId in the
- * body, and no global token mutation.
- */
-export const parentApi = {
-  // `currentPin` is required only to CHANGE an existing PIN; the first-time set omits it (backend P1-1).
-  setPin: (pin: string, currentPin?: string) =>
-    apiFetch<{ ok: true }>('/parent/set-pin', {
-      method: 'POST',
-      body: { pin, ...(currentPin ? { currentPin } : {}) },
-    }),
-
-  verifyPin: (pin: string, profileId: string) =>
-    apiFetch<{ parentToken: string }>('/parent/verify-pin', { method: 'POST', body: { pin, profileId } }),
-
-  reset: (parentToken: string) =>
-    apiFetch<{ ok: true }>('/parent/reset', { method: 'POST', body: {}, token: parentToken }),
-
-  resetChat: (parentToken: string) =>
-    apiFetch<{ ok: true }>('/parent/reset-chat', { method: 'POST', body: {}, token: parentToken }),
 };

@@ -18,7 +18,7 @@ function useApplyA11y(profile: Profile | undefined): void {
 }
 
 /**
- * Applies the active child's accessibility settings app-wide and exposes `soundOn`. Wraps the
+ * Applies the active student's accessibility settings app-wide and exposes `soundOn`. Wraps the
  * authenticated app frame; the editing UI lands with the profile/settings screen (M6).
  */
 export function A11yProvider({ children }: { children: ReactNode }) {

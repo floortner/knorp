@@ -12,7 +12,7 @@ import { cn } from '@/lib/cn';
 const TERMINAL = new Set(['reviewed', 'rejected']);
 
 /**
- * Trainer chat ("Angelika") — a free AI feature. Sends the child's message and shows the trainer's reply.
+ * Trainer chat ("Angelika") — a free AI feature. Sends the student's message and shows the trainer's reply.
  * Also the entry point for homework "Foto & verbessern": a photo uploads here and the backend surfaces it
  * (plus its review status) as durable chat bubbles in /chat history — so it persists across reloads.
  */
@@ -184,7 +184,7 @@ function Bubble({ message }: { message: ChatMessage }) {
           <>
             {message.text}
             {message.homeworkStatus === 'reviewed' && (
-              // Reviewed verdict → take the child straight to where the adapted exercises live
+              // Reviewed verdict → take the student straight to where the adapted exercises live
               // (the ✨ entry on /lernen). Navigation only — generating the lecture stays a
               // deliberate tap there (it consumes a daily ★ session).
               <Link

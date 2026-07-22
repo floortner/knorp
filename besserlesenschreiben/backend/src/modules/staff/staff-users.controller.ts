@@ -40,7 +40,7 @@ export class StaffUsersController {
     return this.users.list(Number.isFinite(n) ? n : 50, validStatus, cursor, query);
   }
 
-  /** Identity-bearing learner progress for one account's children (Nutzer oversight). */
+  /** Identity-bearing learner progress for one account's students (Nutzer oversight). */
   @Get(':id/progress')
   @ApiZodResponse(userProgressSchema)
   accountProgress(@Param('id') id: string) {

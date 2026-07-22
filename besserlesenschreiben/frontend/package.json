@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Adaptive German children's literacy tutor — frontend SPA/PWA",
+  "description": "Adaptive German literacy tutor for students (ages 8-14) — frontend SPA/PWA",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

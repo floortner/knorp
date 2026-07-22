@@ -14,6 +14,6 @@ export default function globalSetup(): void {
   const env = { ...process.env, ...backendEnv };
   const run = (cmd: string) => execSync(cmd, { cwd: BACKEND, env, stdio: 'inherit' });
   run('npx prisma migrate deploy'); // schema
-  run('npm run seed'); // item bank (deterministic bank sessions)
+  run('npm run seed'); // staff admins + dev accounts (content seeding dropped 2026-07-13, ROADMAP §F)
   run('npm run seed:e2e'); // active family account + reviewer fixtures
 }

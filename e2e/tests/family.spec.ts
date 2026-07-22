@@ -10,7 +10,10 @@ import { loginAsFamily } from '../helpers/auth';
  * capture). The onboarding step is conditional so a retry — which reuses the profile the first attempt
  * created — is safe.
  */
-test('family: login → onboarding → bank lesson emits one /attempts', async ({ page }, testInfo) => {
+// FIXME(§F): the bank-lesson half cannot pass until the new content set exists — `npm run seed` stopped
+// seeding the item bank when Vokaltraining was dropped (2026-07-13, ROADMAP §F), so /units is empty and
+// no "üben" entry renders. Un-fixme when §F ships seeded content.
+test.fixme('family: login → onboarding → bank lesson emits one /attempts', async ({ page }, testInfo) => {
   await loginAsFamily(page, `e2e-parent-${testInfo.project.name}@example.test`);
 
   // Post-login routing: /onboarding when the account has no profile (fresh run), else /app/lernen
@@ -18,13 +21,13 @@ test('family: login → onboarding → bank lesson emits one /attempts', async (
   await page.waitForURL(/\/(onboarding$|app\/lernen$)/);
   if (new URL(page.url()).pathname.endsWith('/onboarding')) {
     await page.getByRole('button', { name: 'Weiter' }).click(); // step 0 → 1
-    await page.getByLabel('Name').fill('Testkind');
+    await page.getByLabel('Name').fill('Testschüler');
     await page.getByRole('button', { name: 'Weiter' }).click(); // step 1 → 2
     await page.getByRole('button', { name: /Los geht/ }).click(); // create profile → /app/lernen
   }
 
   await expect(page).toHaveURL(/\/app\/lernen$/);
-  await expect(page.getByText('Testkind')).toBeVisible();
+  await expect(page.getByText('Testschüler')).toBeVisible();
 
   // Start the current (unlocked) unit → a deterministic bank session, and land on the lesson.
   await page.getByRole('button', { name: /üben/i }).first().click();

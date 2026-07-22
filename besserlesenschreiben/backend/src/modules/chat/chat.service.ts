@@ -29,7 +29,7 @@ const HW_URL_TTL_S = 3600; // family read-URL lifetime for their own homework ph
  * The trainer's line under a homework photo, reflecting its CURRENT review status. On `reviewed` it shows
  * the topic (from the AUTHORITATIVE `reviewedAnalysis` — never the LLM draft) plus the reviewer's optional
  * comment. The raw `suggestedFocus` tags are deliberately NOT shown — they are machine keys for lecture
- * generation, cryptic for a child; the client renders a "Zu deinen neuen Übungen" button instead
+ * generation, cryptic for a student; the client renders a "Zu deinen neuen Übungen" button instead
  * (`homeworkStatus` on the wire message).
  */
 function homeworkStatusText(status: string, reviewedAnalysis: unknown, reviewerNotes?: string | null): string {
@@ -49,9 +49,22 @@ function homeworkStatusText(status: string, reviewedAnalysis: unknown, reviewerN
 }
 
 /**
- * Trainer chat ("Angelika") — a free ★ AI feature (ARCHITECTURE §9 deferred → no credit gate). The child
- * talks to a warm, child-safe German literacy tutor. `profileId` ownership is verified from the JWT account
- * (security §1). We never log message text (child content, §6).
+ * The persona + guardrails for the tutor. Kept server-side (not the client) so it can't be tampered
+ * with. Exported (like LLM_SYSTEM / VISION_SYSTEM) so the smoke script probes the REAL persona.
+ */
+export const CHAT_SYSTEM = [
+  'Du bist Angelika, eine warmherzige Lese- und Schreibtrainerin für Schülerinnen und Schüler von 8 bis 14 Jahren.',
+  'Antworte immer auf Deutsch, kurz (1–3 Sätze), einfach, geduldig und ermutigend.',
+  'Bleib beim Thema Lesen, Schreiben, Buchstaben, Silben, Reime und Lernen.',
+  'Lenke freundlich zurück, wenn das Gespräch abschweift. Stelle höchstens eine kleine Frage.',
+  'Frage NIE nach persönlichen Daten (Name, Adresse, Alter, Schule, Telefon). Verlange keine Fotos.',
+  'Keine unangemessenen, beängstigenden oder gewalttätigen Inhalte. Sei sicher und altersgerecht.',
+].join(' ');
+
+/**
+ * Trainer chat ("Angelika") — a free ★ AI feature (ARCHITECTURE §9 deferred → no credit gate). The student
+ * talks to a warm, age-appropriate German literacy tutor. `profileId` ownership is verified from the JWT account
+ * (security §1). We never log message text (student content, §6).
  */
 @Injectable()
 export class ChatService {
@@ -64,19 +77,9 @@ export class ChatService {
     private readonly storage: StorageService,
   ) {}
 
-  /** The persona + guardrails for the tutor. Kept here (not the client) so it can't be tampered with. */
-  private static readonly SYSTEM = [
-    'Du bist Angelika, eine warmherzige Lese- und Schreibtrainerin für Kinder im Grundschulalter.',
-    'Antworte immer auf Deutsch, kurz (1–3 Sätze), einfach, geduldig und ermutigend.',
-    'Bleib beim Thema Lesen, Schreiben, Buchstaben, Silben, Reime und Lernen.',
-    'Lenke freundlich zurück, wenn das Kind abschweift. Stelle höchstens eine kleine Frage.',
-    'Frage NIE nach persönlichen Daten (Name, Adresse, Alter, Schule, Telefon). Verlange keine Fotos.',
-    'Keine unangemessenen, beängstigenden oder gewalttätigen Inhalte. Sei sicher und kindgerecht.',
-  ].join(' ');
-
   /**
-   * Conversation history, oldest→newest, capped. `me=true` is the child, `me=false` the trainer. The
-   * child's homework uploads are surfaced here as durable chat bubbles — a photo (a short-lived read URL
+   * Conversation history, oldest→newest, capped. `me=true` is the student, `me=false` the trainer. The
+   * student's homework uploads are surfaced here as durable chat bubbles — a photo (a short-lived read URL
    * to the family's OWN image) plus a trainer line reflecting the upload's current review status — so they
    * persist across reloads. These are synthesized for DISPLAY only; the LLM `send` context reads the stored
    * chatMessage rows, so homework never enters the model prompt.
@@ -94,7 +97,7 @@ export class ChatService {
           status: true,
           createdAt: true,
           reviewedAnalysis: true,
-          // Latest review's optional comment — CHILD-VISIBLE in the status bubble.
+          // Latest review's optional comment — STUDENT-VISIBLE in the status bubble.
           reviews: { orderBy: { createdAt: 'desc' }, take: 1, select: { notes: true } },
         },
       }),
@@ -103,7 +106,8 @@ export class ChatService {
     // An entry is a wire message + an optional imageKey to sign LATER — only if it survives the window.
     type Entry = { msg: WireMessage; imageKey?: string };
     const entries: Entry[] = chatRows.map((r) => ({
-      msg: { me: r.role === 'child', text: r.text, ts: r.createdAt.toISOString() },
+      // Not-'trainer' (rather than === 'student') so legacy 'child' rows keep rendering as the student.
+      msg: { me: r.role !== 'trainer', text: r.text, ts: r.createdAt.toISOString() },
     }));
     for (const h of hwRows) {
       // Photo + status share the upload's timestamp so the pair stays adjacent (stable sort keeps insert order).
@@ -132,15 +136,15 @@ export class ChatService {
     return { messages };
   }
 
-  /** Persist the child's message, get the trainer's reply from the LLM, persist + return it. */
+  /** Persist the student's message, get the trainer's reply from the LLM, persist + return it. */
   async send(accountId: string, profileId: string, text: string): Promise<{ reply: WireMessage }> {
     await assertProfileOwned(this.prisma, accountId, profileId);
 
-    // Daily cap on the cost-bearing path (counts the child's sent messages today, from existing rows).
+    // Daily cap on the cost-bearing path (counts the student's sent messages today, from existing rows).
     // Checked BEFORE persisting so an over-cap message costs nothing and doesn't skew the history.
     const cap = this.config.get('CHAT_MESSAGES_PER_DAY', { infer: true });
     const sentToday = await this.prisma.chatMessage.count({
-      where: { profileId, role: 'child', createdAt: { gte: startOfAppDay(new Date()) } },
+      where: { profileId, role: { not: 'trainer' }, createdAt: { gte: startOfAppDay(new Date()) } },
     });
     if (sentToday >= cap) {
       this.logger.log({ event: 'chat.capped', cap }, 'daily chat cap hit');
@@ -151,7 +155,7 @@ export class ChatService {
       );
     }
 
-    await this.prisma.chatMessage.create({ data: { profileId, role: 'child', text } });
+    await this.prisma.chatMessage.create({ data: { profileId, role: 'student', text } });
 
     // Recent turns for context (chronological), mapped to the LLM message shape.
     const recent = await this.prisma.chatMessage.findMany({
@@ -161,11 +165,11 @@ export class ChatService {
     });
     recent.reverse();
     const messages: LlmMessage[] = recent.map((r) => ({
-      role: r.role === 'child' ? 'user' : 'assistant',
+      role: r.role === 'trainer' ? 'assistant' : 'user',
       text: r.text,
     }));
 
-    const replyText = await this.llm.chat({ system: ChatService.SYSTEM, messages, maxTokens: REPLY_MAX_TOKENS });
+    const replyText = await this.llm.chat({ system: CHAT_SYSTEM, messages, maxTokens: REPLY_MAX_TOKENS });
 
     const saved = await this.prisma.chatMessage.create({
       data: { profileId, role: 'trainer', text: replyText },

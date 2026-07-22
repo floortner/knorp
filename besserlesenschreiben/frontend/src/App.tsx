@@ -10,7 +10,6 @@ import { CodeScreen } from '@/features/auth/CodeScreen';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { ApiErrorBridge } from '@/features/auth/ApiErrorBridge';
 import { OnboardingScreen } from '@/features/onboarding/OnboardingScreen';
-import { ParentScreen } from '@/features/parent/ParentScreen';
 
 export function App() {
   return (
@@ -25,15 +24,6 @@ export function App() {
           element={
             <RequireAuth>
               <OnboardingScreen />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/parent"
-          element={
-            <RequireAuth>
-              <ParentScreen />
             </RequireAuth>
           }
         />

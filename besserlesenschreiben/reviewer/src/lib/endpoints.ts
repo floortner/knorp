@@ -107,7 +107,7 @@ export const usersApi = {
   remove: (accountId: string) =>
     apiFetch<void>(`/staff/users/${encodeURIComponent(accountId)}`, { method: 'DELETE' }),
 
-  /** Identity-bearing learner progress for one account's children (admin only). */
+  /** Identity-bearing learner progress for one account's students (admin only). */
   progress: (accountId: string) =>
     apiFetch<UserProgress>(`/staff/users/${encodeURIComponent(accountId)}/progress`),
 };

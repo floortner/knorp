@@ -64,16 +64,19 @@ describe('ChatService', () => {
     expect(await statusOf(svc.send('a1', 'p1', 'hallo'))).toBe(404);
   });
 
-  it('maps history roles to me (child=true, trainer=false), chronological', async () => {
+  it('maps history roles to me (student=true, trainer=false), chronological', async () => {
     const { svc } = setup({
-      // query is orderBy createdAt desc (newest first); the service reverses to chronological
+      // query is orderBy createdAt desc (newest first); the service reverses to chronological.
+      // The 'child' row pins the legacy-literal tolerance: pre-rename rows still render as the student.
       rows: [
-        { role: 'child', text: 'Hi', createdAt: new Date('2026-06-30T09:01:00Z') },
+        { role: 'student', text: 'Hi', createdAt: new Date('2026-06-30T09:01:00Z') },
         { role: 'trainer', text: 'Hallo!', createdAt: new Date('2026-06-30T09:00:00Z') },
+        { role: 'child', text: 'Alte Nachricht', createdAt: new Date('2026-06-30T08:59:00Z') },
       ],
     });
     const { messages } = await svc.history('a1', 'p1');
     expect(messages).toEqual([
+      { me: true, text: 'Alte Nachricht', ts: '2026-06-30T08:59:00.000Z' },
       { me: false, text: 'Hallo!', ts: '2026-06-30T09:00:00.000Z' },
       { me: true, text: 'Hi', ts: '2026-06-30T09:01:00.000Z' },
     ]);
@@ -81,7 +84,7 @@ describe('ChatService', () => {
 
   it('surfaces homework uploads as durable chat bubbles (photo + verdict), the pair kept adjacent', async () => {
     const { svc } = setup({
-      rows: [{ role: 'child', text: 'Hi', createdAt: new Date('2026-06-30T08:00:00Z') }],
+      rows: [{ role: 'student', text: 'Hi', createdAt: new Date('2026-06-30T08:00:00Z') }],
       homework: [
         {
           imageKey: 'k',
@@ -97,7 +100,7 @@ describe('ChatService', () => {
     // photo bubble: a read URL, no text
     expect(messages[1]).toEqual({ me: true, text: '', ts: '2026-06-30T09:00:00.000Z', imageUrl: 'https://example.test/hw.webp' });
     // status line shares the photo's timestamp (stays adjacent): topic + reviewer comment; the raw
-    // suggestedFocus machine keys are NOT leaked at the child — the CTA rides on homeworkStatus instead.
+    // suggestedFocus machine keys are NOT leaked at the student — the CTA rides on homeworkStatus instead.
     expect(messages[2].ts).toBe('2026-06-30T09:00:00.000Z');
     expect(messages[2].me).toBe(false);
     expect(messages[2].text).toContain('geprüft');
@@ -119,12 +122,12 @@ describe('ChatService', () => {
     expect(messages[1].homeworkStatus).toBe('pending_review');
   });
 
-  it('send persists the child message + trainer reply and returns the reply', async () => {
+  it('send persists the student message + trainer reply and returns the reply', async () => {
     const { svc, llm, created } = setup();
     const res = await svc.send('a1', 'p1', 'Was ist ein Reim?');
     expect((llm.chat as ReturnType<typeof vi.fn>)).toHaveBeenCalledOnce();
-    // a child row then a trainer row were written
-    expect(created.map((c) => c.role)).toEqual(['child', 'trainer']);
+    // a student row then a trainer row were written
+    expect(created.map((c) => c.role)).toEqual(['student', 'trainer']);
     expect(created[0].text).toBe('Was ist ein Reim?');
     expect(res.reply.me).toBe(false);
     expect(res.reply.text).toContain('Gut gemacht');
@@ -137,7 +140,7 @@ describe('ChatService', () => {
     expect((llm.chat as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
   });
 
-  it('passes the child-safe persona as the system prompt', async () => {
+  it('passes the age-appropriate persona as the system prompt', async () => {
     const { svc, llm } = setup();
     await svc.send('a1', 'p1', 'hallo');
     const arg = (llm.chat as ReturnType<typeof vi.fn>).mock.calls[0][0];

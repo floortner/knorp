@@ -132,7 +132,7 @@ export interface paths {
         patch: operations["ProfilesController_updateSettings"];
         trace?: never;
     };
-    "/api/v1/parent/set-pin": {
+    "/api/v1/profiles/{id}/reset": {
         parameters: {
             query?: never;
             header?: never;
@@ -141,14 +141,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["ParentController_setPin"];
+        post: operations["ProfilesController_reset"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parent/verify-pin": {
+    "/api/v1/profiles/{id}/reset-chat": {
         parameters: {
             query?: never;
             header?: never;
@@ -157,55 +157,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["ParentController_verifyPin"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/parent/unlock-next": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["ParentController_unlockNext"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/parent/reset": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["ParentController_reset"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/parent/reset-chat": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["ParentController_resetChat"];
+        post: operations["ProfilesController_resetChat"];
         delete?: never;
         options?: never;
         head?: never;
@@ -859,88 +811,7 @@ export interface operations {
             };
         };
     };
-    ParentController_setPin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    pin: string;
-                    currentPin?: string;
-                };
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        ok: true;
-                    };
-                };
-            };
-        };
-    };
-    ParentController_verifyPin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    pin: string;
-                    /** Format: uuid */
-                    profileId: string;
-                };
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        parentToken: string;
-                    };
-                };
-            };
-        };
-    };
-    ParentController_unlockNext: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        ok: true;
-                        unlockedUnit: number;
-                    };
-                };
-            };
-        };
-    };
-    ParentController_reset: {
+    ProfilesController_reset: {
         parameters: {
             query?: never;
             header?: never;
@@ -962,7 +833,7 @@ export interface operations {
             };
         };
     };
-    ParentController_resetChat: {
+    ProfilesController_resetChat: {
         parameters: {
             query?: never;
             header?: never;

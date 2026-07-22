@@ -1,6 +1,6 @@
 /**
  * LLM cutover smoke — probes the REAL Anthropic pipeline exactly as the app uses it, with synthetic
- * content only (never child data). No Nest boot, no database: the provider + LlmService are plain classes.
+ * content only (never student data). No Nest boot, no database: the provider + LlmService are plain classes.
  *
  *   npm run llm:smoke             # chat probe + double generation probe (cache assert)
  *   npm run llm:smoke -- --vision # additionally probe homework vision (Opus call — costs more)
@@ -14,6 +14,7 @@ import type { LlmUsage } from '../src/services/llm/anthropic.provider';
 import { LlmService } from '../src/services/llm/llm.service';
 import { generatedSessionSchema, LLM_SYSTEM } from '../src/modules/sessions/sessions.service';
 import { VISION_SYSTEM } from '../src/modules/homework/homework.service';
+import { CHAT_SYSTEM } from '../src/modules/chat/chat.service';
 import { homeworkAnalysisSchema } from '../src/contract/staff';
 
 // Rough list prices per MTok for the cost estimate (update if pricing changes).
@@ -42,14 +43,10 @@ async function main(): Promise<void> {
   }
   const llm = new LlmService(provider);
 
-  // ── 1. Chat probe (Angelika persona, same maxTokens as ChatService) ────────
+  // ── 1. Chat probe (the REAL Angelika persona from ChatService) ─────────────
   console.log('\n── Chat probe ──');
-  const chatSystem = [
-    'Du bist Angelika, eine warmherzige Lese- und Schreibtrainerin für Kinder im Grundschulalter.',
-    'Antworte immer auf Deutsch, kurz (1–3 Sätze), einfach, geduldig und ermutigend.',
-  ].join(' ');
   const reply = await llm.chat({
-    system: chatSystem,
+    system: CHAT_SYSTEM,
     messages: [{ role: 'user', text: 'Warum hat jede Silbe einen Selbstlaut?' }],
     maxTokens: 400,
   });
@@ -100,7 +97,7 @@ async function main(): Promise<void> {
   if (process.argv.includes('--vision')) {
     console.log('\n── Vision probe ──');
     const { default: sharp } = await import('sharp');
-    // A synthetic "homework sheet": three words, one misspelled — no real child content.
+    // A synthetic "homework sheet": three words, one misspelled — no real student content.
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300">
       <rect width="100%" height="100%" fill="white"/>
       <text x="40" y="80"  font-size="36" font-family="sans-serif">1. die Hand</text>

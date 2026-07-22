@@ -687,174 +687,9 @@
         ]
       }
     },
-    "/api/v1/parent/set-pin": {
+    "/api/v1/profiles/{id}/reset": {
       "post": {
-        "operationId": "ParentController_setPin",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "pin": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
-                  },
-                  "currentPin": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
-                  }
-                },
-                "required": [
-                  "pin"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    }
-                  },
-                  "required": [
-                    "ok"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "parent"
-        ]
-      }
-    },
-    "/api/v1/parent/verify-pin": {
-      "post": {
-        "operationId": "ParentController_verifyPin",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "pin": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
-                  },
-                  "profileId": {
-                    "type": "string",
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                  }
-                },
-                "required": [
-                  "pin",
-                  "profileId"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "parentToken": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "parentToken"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "parent"
-        ]
-      }
-    },
-    "/api/v1/parent/unlock-next": {
-      "post": {
-        "operationId": "ParentController_unlockNext",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
-                    "unlockedUnit": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    }
-                  },
-                  "required": [
-                    "ok",
-                    "unlockedUnit"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "parent"
-        ]
-      }
-    },
-    "/api/v1/parent/reset": {
-      "post": {
-        "operationId": "ParentController_reset",
+        "operationId": "ProfilesController_reset",
         "parameters": [],
         "responses": {
           "200": {
@@ -886,13 +721,13 @@
           }
         ],
         "tags": [
-          "parent"
+          "profiles"
         ]
       }
     },
-    "/api/v1/parent/reset-chat": {
+    "/api/v1/profiles/{id}/reset-chat": {
       "post": {
-        "operationId": "ParentController_resetChat",
+        "operationId": "ProfilesController_resetChat",
         "parameters": [],
         "responses": {
           "200": {
@@ -924,7 +759,7 @@
           }
         ],
         "tags": [
-          "parent"
+          "profiles"
         ]
       }
     },

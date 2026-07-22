@@ -4,7 +4,7 @@ import { ZodDto } from '../../common/zod-dto';
 /**
  * POST /attempts body — one row per answered item (the telemetry spine, SPEC §6). `profileId` is NOT
  * accepted from the client: it is derived from the session. `prompt`/`expected`/`given` are stored
- * but MUST never be logged (child-answer content, security rule §6).
+ * but MUST never be logged (student-answer content, security rule §6).
  */
 export const createAttemptSchema = z.object({
   sessionId: z.string().uuid(),

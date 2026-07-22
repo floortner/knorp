@@ -111,7 +111,7 @@ export class AuthService {
     });
 
     // No account creation here any more (signup is the pending-on-first-code path). "New" now means a
-    // freshly-approved account that hasn't created a child profile yet → the SPA routes to onboarding.
+    // freshly-approved account that hasn't created a student profile yet → the SPA routes to onboarding.
     const isNewAccount = account._count.profiles === 0;
     const token = await this.jwt.signAsync({ sub: account.id }, { expiresIn: SESSION_TTL });
     this.logger.log({ event: 'auth.verified', accountId: account.id, isNewAccount }, 'login ok');

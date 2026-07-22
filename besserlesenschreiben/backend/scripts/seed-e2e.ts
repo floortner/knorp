@@ -10,7 +10,7 @@
  *     isolate them. Keep this list in sync with the `projects` in e2e/playwright.config.ts.
  *   - a generic e2e-parent (helper default) and an ACTIVE reviewer (staff realm; admin-provisioned).
  *
- * Each family account's child profiles (and their cascade) are wiped each run so the
+ * Each family account's student profiles (and their cascade) are wiped each run so the
  * login → onboarding → first-lesson journey starts from a deterministic zero-profile state.
  */
 import 'dotenv/config';

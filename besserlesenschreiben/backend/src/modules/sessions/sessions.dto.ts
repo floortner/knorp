@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ZodDto } from '../../common/zod-dto';
 
 /**
- * POST /sessions body. `profileId` selects which child (validated against the JWT account, never
+ * POST /sessions body. `profileId` selects which student (validated against the JWT account, never
  * trusted blindly). `unit` defaults to the profile's current unit. `source`: `bank` (default,
  * deterministic, free) or `llm` (★ generated on the fly — free, but needs the LLM configured).
  */

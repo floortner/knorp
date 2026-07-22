@@ -113,8 +113,8 @@ export class StorageService {
   }
 
   /**
-   * Erase one child's homework photos (`users/{accountId}/{profileId}/homework/`) — the object-storage
-   * half of the parent "delete chat" action (a full chat wipe removes the uploaded images too). Ids come
+   * Erase one student's homework photos (`users/{accountId}/{profileId}/homework/`) — the object-storage
+   * half of the "Chat löschen" action in the Profil tab (a full chat wipe removes the uploaded images too). Ids come
    * from the caller (JWT + ownership check), never client input; the profile's other objects (e.g.
    * digest.md, which reflects preserved learning progress) are left intact. Idempotent.
    */
@@ -188,7 +188,7 @@ export class StorageService {
   /**
    * A short-lived, read-only URL for one stored object (a homework photo) — what the reviewer queue hands
    * to staff (SPEC §6/§10). On S3 this is a **presigned GET** scoped to that single object key (never a
-   * bucket credential, never another child's prefix — security §2). `key` is the full stored key
+   * bucket credential, never another student's prefix — security §2). `key` is the full stored key
    * (`users/{account}/{profile}/homework/…`), taken from `homework_upload.image_key`, never client input.
    */
   async signedHomeworkReadUrl(key: string, ttlSeconds: number, opts?: { stable?: boolean }): Promise<string> {

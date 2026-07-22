@@ -13,7 +13,7 @@ it**: how *native it feels* (§1) and how far it works *offline* (§2).
 Framing that shapes everything: most native capabilities below are **Capacitor plugins → shared JS, one
 codebase, work on iOS + Android, no-op on web.** Exactly one (the home-screen widget) is *truly* native
 per-platform code — flagged where it appears. And all recommendations respect the product's stated values
-(ROADMAP §D): **calm feedback, no dark patterns, no push/leaderboards/loss-mechanics aimed at the child.**
+(ROADMAP §D): **calm feedback, no dark patterns, no push/leaderboards/loss-mechanics aimed at the student.**
 
 ---
 
@@ -46,7 +46,7 @@ per-platform code — flagged where it appears. And all recommendations respect 
 
 - **Local notifications — only as a parent-controlled, opt-in, gentle reminder** (`@capacitor/local-notifications`).
   *Not* push. A **parent-set** "Zeit zum Üben? 🦉" at a chosen time is defensible *if* opt-in, calm, and never
-  streak-shaming. Sits right next to the "no push to the child" line, so ship it framed as a parent tool, and
+  streak-shaming. Sits right next to the "no push to the student" line, so ship it framed as a parent tool, and
   probably only after the beta says families want it. The weekly parent email (ROADMAP D6) already carries
   most of this load.
 
@@ -54,7 +54,7 @@ per-platform code — flagged where it appears. And all recommendations respect 
 
 - **App-icon badge counts** (the red "1") — a nagging dark pattern; exactly what "no dark patterns" rules out.
   *(Distinct from the in-app achievement **badges** in D5 — those are great.)*
-- **Push notifications to the child**, streak-loss nudges, countdowns / Live Activities — all against the
+- **Push notifications to the student**, streak-loss nudges, countdowns / Live Activities — all against the
   "deliberately not recommended" list.
 
 ### Recommendation
@@ -75,7 +75,7 @@ leaning on the Workbox SW (runtime read-caching, background sync) must move to a
 - App shell + all assets load offline (bundled).
 - The **attempt telemetry queue** survives offline: `src/lib/telemetry.ts` queues failed `POST /attempts` in
   **localStorage** (not Workbox), 48 h / 500-cap, replays on reconnect. The backend's `attempt_idempotency`
-  migration makes replay safe. So a blip mid-lesson never loses the child's answers.
+  migration makes replay safe. So a blip mid-lesson never loses the student's answers.
 
 ### The levels
 
@@ -103,11 +103,11 @@ leaning on the Workbox SW (runtime read-caching, background sync) must move to a
 - **F — Drop the PWA service worker in native builds.** Redundant + can misbehave; wire `VITE_PWA=false` into
   `vite.config` for the native build. *(Trivial.)*
 - **G — Durable queue storage (hardening).** localStorage can be evicted under iOS storage pressure; move the
-  attempt queue to Preferences/SQLite so queued child answers can't be lost. *(Small.)*
+  attempt queue to Preferences/SQLite so queued student answers can't be lost. *(Small.)*
 
 ### Recommendation
 For a beta, **Level 1** is the cheap sweet spot (B + E + F): the app already opens and preserves answers
-offline; the missing piece is just not logging the child out on a dropped connection + dropping the redundant
+offline; the missing piece is just not logging the student out on a dropped connection + dropping the redundant
 SW. **Level 3** (offline lessons) is the genuinely valuable "practice without wifi" feature — but a product
 decision, best scoped **after the beta reveals whether families need it**.
 
@@ -118,4 +118,5 @@ decision, best scoped **after the beta reveals whether families need it**.
   in `AppShell`.
 - Token storage: iOS **Keychain** (vs. the spike's Preferences).
 - Distribution: Apple **Developer Program + TestFlight** for wireless beta delivery to families; **Kids
-  Category** compliance (the PIN gate qualifies; no ads/trackers — none present).
+  Category** compliance: no ads/trackers (none present), but the required **parental gate no longer exists** —
+  the PIN was removed 2026-07-22 (ROADMAP), so a gate must be (re)designed before any Kids-Category submission.

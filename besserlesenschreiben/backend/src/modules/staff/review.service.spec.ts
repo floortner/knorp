@@ -69,7 +69,7 @@ async function statusOf(p: Promise<unknown>): Promise<number | 'ok'> {
 describe('ReviewService.queue (pseudonymisation)', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('exposes an opaque handle + coarse band, never a child name', async () => {
+  it('exposes an opaque handle + coarse band, never a student name', async () => {
     const { svc } = setup({
       findMany: [
         { id: 'up-1', profileId: 'prof-1234', imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { unlockedUnit: 3 } },

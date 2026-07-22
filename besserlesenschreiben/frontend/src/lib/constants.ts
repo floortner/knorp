@@ -1,6 +1,3 @@
-/** Total number of learning units in the app. Must match the backend's UNIT_CATALOG length. */
-export const TOTAL_UNITS = 7;
-
 /**
  * Freely selectable learn buddies (monster mascots from Planet Knorp — base figure + 4 emotional states
  * each, served from /monster-pets/; master source art + catalog live at repo-root `assets/` — see
