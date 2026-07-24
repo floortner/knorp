@@ -27,13 +27,13 @@ const HW_URL_TTL_S = 3600; // family read-URL lifetime for their own homework ph
 
 /**
  * The trainer's line under a homework photo, reflecting its CURRENT review status. On `reviewed` it shows
- * the topic (from the AUTHORITATIVE `reviewedAnalysis` — never the LLM draft) plus the reviewer's optional
+ * the topic (from the AUTHORITATIVE `reviewedAnalysis` — never the LLM draft) plus the trainer's optional
  * comment. The raw `suggestedFocus` tags are deliberately NOT shown — they are machine keys for lecture
  * generation, cryptic for a student; the client renders a "Zu deinen neuen Übungen" button instead
  * (`homeworkStatus` on the wire message).
  */
-function homeworkStatusText(status: string, reviewedAnalysis: unknown, reviewerNotes?: string | null): string {
-  const comment = reviewerNotes?.trim() ? ` ${reviewerNotes.trim()}` : '';
+function homeworkStatusText(status: string, reviewedAnalysis: unknown, trainerNotes?: string | null): string {
+  const comment = trainerNotes?.trim() ? ` ${trainerNotes.trim()}` : '';
   if (status === 'rejected') {
     // The comment doubles as the retake hint ("Foto unscharf …").
     return `Das Foto konnte leider nicht verwendet werden.${comment} Versuch es mit einem klareren Bild. 🙈`;

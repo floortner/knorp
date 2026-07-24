@@ -4,7 +4,7 @@ Step-by-step to take the beta live on AWS (ROADMAP §E). Domain **`knorp.org`** 
 hosted zone in this account). Most provisioning is one `terraform apply`; the Console is only for account
 setup + a couple of confirmations. Budget target ~€50/mo all-in.
 
-Endpoints when done: `https://app.knorp.org` · `https://review.knorp.org` · `https://api.knorp.org`.
+Endpoints when done: `https://app.knorp.org` · `https://trainer.knorp.org` · `https://api.knorp.org`.
 
 ---
 
@@ -77,7 +77,7 @@ aws sesv2 create-email-identity --region eu-central-1 --email-identity florian.o
 cd infra && ./set-github-vars.sh
 ```
 Sets all 8 variables the deploy workflow reads (`AWS_DEPLOY_ROLE_ARN`, `ARTIFACTS_BUCKET`, `INSTANCE_ID`,
-`APP_BUCKET`, `REVIEWER_BUCKET`, `APP_CF_ID`, `REVIEWER_CF_ID`, `API_BASE`). **Re-run after any apply that
+`APP_BUCKET`, `TRAINER_BUCKET`, `APP_CF_ID`, `TRAINER_CF_ID`, `API_BASE`). **Re-run after any apply that
 changes an output** — especially an instance replacement (`INSTANCE_ID` goes stale otherwise).
 
 ## Phase 6 — First deploy (~10 min)
@@ -92,11 +92,29 @@ Let's Encrypt cert, migrates, seeds, starts the API; the `web` job uploads both 
 curl https://api.knorp.org/api/v1/health     # {"status":"ok","version":...,"commit":...}
 ```
 - `https://app.knorp.org` → enter `florian.ortner@gmail.com` → login code arrives (SES) → log in → run a lesson.
-- `https://review.knorp.org` → log in with the same email (seeded admin reviewer) → queue loads.
+- `https://trainer.knorp.org` → log in with the same email (seeded admin trainer) → queue loads.
 
 ## Phase 8 — Off-platform backups (recommended)
 Follow the boxed steps in `deploy/README.md` (`aws ssm start-session --target <instance_id>`, install
 `age`+`rclone`, drop the key/config, enable the timer). Run a restore drill periodically.
+
+## One-time: reviewer → trainer domain cutover (2026-07-24)
+
+The portal domain moved `review.knorp.org` → `trainer.knorp.org` (no redirect — tell the staff users).
+Order matters:
+
+1. Merge the rename PR (the deploy workflow now reads the `TRAINER_BUCKET`/`TRAINER_CF_ID` GitHub
+   variables — already migrated; a re-run of the OLD workflow would fail on the deleted `REVIEWER_*` vars).
+2. `cd infra && terraform apply` — pure renames are wired via `moved.tf` (nothing destroyed; the S3 bucket
+   keeps its physical `-web-review-` name). The real changes: ACM cert reissued with the
+   `trainer.knorp.org` SAN (DNS-validated automatically), CloudFront alias + Route 53 A record switch
+   (`review.knorp.org` stops resolving), and SSM gains `TRAINER_ORIGIN` for backend CORS.
+3. Trigger the deploy workflow — ships the renamed backend (incl. the `reviewer`→`trainer` table
+   migration; during its seconds-long pre-traffic window only `/staff/*` errors, family routes are
+   unaffected) and publishes the portal build.
+4. Verify: `curl -s -o /dev/null -w '%{http_code}' https://trainer.knorp.org` → 200, staff log in there.
+5. Cleanup (later release): drop the deprecated `REVIEWER_ORIGIN` env fallback in
+   `backend/src/config/env.ts` + `main.ts` once the apply has written `TRAINER_ORIGIN` everywhere.
 
 ---
 - **Break-glass into the box:** `aws ssm start-session --target $(cd infra && terraform output -raw instance_id)` (no SSH).

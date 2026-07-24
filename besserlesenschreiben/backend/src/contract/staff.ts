@@ -1,21 +1,21 @@
 import { z } from 'zod';
 
 /**
- * Wire schemas for the STAFF realm (ARCHITECTURE §1a, SPEC §6). These publish the OpenAPI the reviewer
+ * Wire schemas for the STAFF realm (ARCHITECTURE §1a, SPEC §6). These publish the OpenAPI the trainer
  * portal types from. The queue payload is PSEUDONYMISED: image + LLM draft + skill tags + a coarse band
  * only — never a student name, parent email, chat, or billing.
  */
 
 export const staffMeSchema = z.object({
-  reviewerId: z.string(),
+  trainerId: z.string(),
   name: z.string(),
-  role: z.enum(['reviewer', 'admin']),
-  // The reviewer's OWN staff identity (profile page) — staff-realm data, never a family email.
+  role: z.enum(['trainer', 'admin']),
+  // The trainer's OWN staff identity (profile page) — staff-realm data, never a family email.
   email: z.string(),
   createdAt: z.string(),
 });
 
-// Structured homework vision output (SPEC §10). The LLM produces a DRAFT of this; the reviewer's verdict
+// Structured homework vision output (SPEC §10). The LLM produces a DRAFT of this; the trainer's verdict
 // is an authoritative copy of the same shape.
 // Length/count bounds (security review P2-4): the draft is derived from an uploaded photo (adversarial
 // OCR surface) and its focus tags are written straight into the scheduler on approval — bound every field
@@ -51,13 +51,13 @@ export const queueItemSchema = z.object({
   // The LLM DRAFT to validate against (never applied on its own).
   llmAnalysis: homeworkAnalysisSchema,
   createdAt: z.string(),
-  // ANOTHER reviewer holds a live claim lease (in Prüfung) — shown locked/non-actionable in the queue.
-  // false for the caller's own claim, so a reviewer can always re-open their own item.
+  // ANOTHER trainer holds a live claim lease (in Prüfung) — shown locked/non-actionable in the queue.
+  // false for the caller's own claim, so a trainer can always re-open their own item.
   claimed: z.boolean(),
-  // Historical items (status=done): the reviewer's verdict + when. null while still open.
+  // Historical items (status=done): the trainer's verdict + when. null while still open.
   decision: z.string().nullable(),
   reviewedAt: z.string().nullable(),
-  // Historical items: the authoritative verdict + the reviewer's student-visible comment (read-only
+  // Historical items: the authoritative verdict + the trainer's student-visible comment (read-only
   // detail view). Both null while open or when the item was rejected (reject applies nothing).
   reviewedAnalysis: homeworkAnalysisSchema.nullable(),
   notes: z.string().nullable(),

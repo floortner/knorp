@@ -4,7 +4,7 @@ import { loginAsFamily, loginAsStaff } from '../helpers/auth';
 /**
  * The professional-in-the-loop journey ACROSS BOTH REALMS (ARCHITECTURE §11) — the seam no unit test
  * covers: family uploads homework in the Chat tab → the stub LLM drafts an analysis (pending_review) →
- * a staff reviewer approves it in the reviewer portal → the family chat shows the "geprüft" verdict.
+ * a staff trainer approves it in the trainer portal → the family chat shows the "geprüft" verdict.
  *
  * chromium-only: the flow spans two apps in one test and per-project accounts would double the queue;
  * one browser is enough to guard the seam. A per-spec family account avoids racing family.spec.ts.
@@ -18,7 +18,7 @@ test.describe(() => {
     'base64',
   );
 
-  test('homework: chat upload → reviewer approves → verdict lands in the family chat', async ({ page, context }) => {
+  test('homework: chat upload → trainer approves → verdict lands in the family chat', async ({ page, context }) => {
     // ── Family: log in, ensure a profile, open the chat, upload a homework photo ──
     await loginAsFamily(page, 'e2e-homework-parent@example.test');
     await page.waitForURL(/\/(onboarding$|app\/lernen$)/);

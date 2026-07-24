@@ -25,7 +25,7 @@ export class StorageService {
   private readonly localRoot: string;
   private readonly useS3: boolean;
   // Filesystem-store image serving (dev / no-S3): sign short-lived capability tokens for the
-  // homework-image endpoint, and know our own public base to build the URL the reviewer's <img> loads.
+  // homework-image endpoint, and know our own public base to build the URL the trainer's <img> loads.
   private readonly imageSecret: string;
   private readonly publicApiBase: string;
   private s3ClientPromise: Promise<S3Client> | null = null;
@@ -186,7 +186,7 @@ export class StorageService {
   }
 
   /**
-   * A short-lived, read-only URL for one stored object (a homework photo) — what the reviewer queue hands
+   * A short-lived, read-only URL for one stored object (a homework photo) — what the trainer queue hands
    * to staff (SPEC §6/§10). On S3 this is a **presigned GET** scoped to that single object key (never a
    * bucket credential, never another student's prefix — security §2). `key` is the full stored key
    * (`users/{account}/{profile}/homework/…`), taken from `homework_upload.image_key`, never client input.
@@ -195,7 +195,7 @@ export class StorageService {
     // `stable`: align the signing date/expiry to a fixed `ttlSeconds` grid so repeated calls return an
     // IDENTICAL URL within the window — the browser can then cache the image instead of re-downloading it
     // every render (the family chat re-fetches history often). Effective TTL is up to 2× the window; fine
-    // for a caller's own image, so the reviewer queue leaves it off (short, per-request URLs).
+    // for a caller's own image, so the trainer queue leaves it off (short, per-request URLs).
     const windowMs = ttlSeconds * 1000;
     const nowMs = Date.now();
     const startMs = (opts?.stable ? Math.floor(nowMs / windowMs) * windowMs : nowMs) - 60_000;
@@ -210,7 +210,7 @@ export class StorageService {
       });
     }
     // Filesystem store (no S3): serve the bytes over HTTP from our own signed endpoint. The token is a
-    // short-lived capability (presigned-URL equivalent) so a cross-origin <img> on the reviewer needs no
+    // short-lived capability (presigned-URL equivalent) so a cross-origin <img> on the trainer needs no
     // cookie; the bytes come from readBinary(key) on the local store. See StorageController.
     const exp = expMs;
     const payload = Buffer.from(JSON.stringify({ k: key, e: exp })).toString('base64url');

@@ -1766,7 +1766,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "reviewerId": {
+                    "trainerId": {
                       "type": "string"
                     },
                     "name": {
@@ -1775,7 +1775,7 @@
                     "role": {
                       "type": "string",
                       "enum": [
-                        "reviewer",
+                        "trainer",
                         "admin"
                       ]
                     },
@@ -1787,7 +1787,7 @@
                     }
                   },
                   "required": [
-                    "reviewerId",
+                    "trainerId",
                     "name",
                     "role",
                     "email",
@@ -1849,7 +1849,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "reviewerId": {
+                    "trainerId": {
                       "type": "string"
                     },
                     "name": {
@@ -1858,7 +1858,7 @@
                     "role": {
                       "type": "string",
                       "enum": [
-                        "reviewer",
+                        "trainer",
                         "admin"
                       ]
                     },
@@ -1870,7 +1870,7 @@
                     }
                   },
                   "required": [
-                    "reviewerId",
+                    "trainerId",
                     "name",
                     "role",
                     "email",
@@ -1917,7 +1917,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "reviewerId": {
+                    "trainerId": {
                       "type": "string"
                     },
                     "name": {
@@ -1926,7 +1926,7 @@
                     "role": {
                       "type": "string",
                       "enum": [
-                        "reviewer",
+                        "trainer",
                         "admin"
                       ]
                     },
@@ -1938,7 +1938,7 @@
                     }
                   },
                   "required": [
-                    "reviewerId",
+                    "trainerId",
                     "name",
                     "role",
                     "email",

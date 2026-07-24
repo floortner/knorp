@@ -1,4 +1,4 @@
-# Two CloudFront distributions (family PWA + reviewer portal), each fronting its private S3 bucket via a
+# Two CloudFront distributions (family PWA + trainer portal), each fronting its private S3 bucket via a
 # shared Origin Access Control. PriceClass_100 = US/EU edges only (cheapest; covers the audience).
 resource "aws_cloudfront_origin_access_control" "web" {
   name                              = "${local.name}-web-oac"
@@ -139,21 +139,21 @@ resource "aws_cloudfront_distribution" "app" {
   }
 }
 
-resource "aws_cloudfront_distribution" "reviewer" {
+resource "aws_cloudfront_distribution" "trainer" {
   enabled             = true
   default_root_object = "index.html"
-  aliases             = [local.reviewer_fqdn]
+  aliases             = [local.trainer_fqdn]
   price_class         = "PriceClass_100"
-  comment             = "besserlesenschreiben reviewer portal"
+  comment             = "besserlesenschreiben trainer portal"
 
   origin {
-    origin_id                = "reviewer-s3"
-    domain_name              = aws_s3_bucket.reviewer.bucket_regional_domain_name
+    origin_id                = "trainer-s3"
+    domain_name              = aws_s3_bucket.trainer.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.web.id
   }
 
   default_cache_behavior {
-    target_origin_id           = "reviewer-s3"
+    target_origin_id           = "trainer-s3"
     viewer_protocol_policy     = "redirect-to-https"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
@@ -164,7 +164,7 @@ resource "aws_cloudfront_distribution" "reviewer" {
 
   ordered_cache_behavior {
     path_pattern               = "/index.html"
-    target_origin_id           = "reviewer-s3"
+    target_origin_id           = "trainer-s3"
     viewer_protocol_policy     = "redirect-to-https"
     allowed_methods            = ["GET", "HEAD"]
     cached_methods             = ["GET", "HEAD"]

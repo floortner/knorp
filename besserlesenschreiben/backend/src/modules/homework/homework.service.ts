@@ -36,7 +36,7 @@ export const VISION_SYSTEM = [
  * Homework upload + vision draft (family side, ARCHITECTURE §11 / SPEC §10). The photo is transcoded to
  * WebP (EXIF stripped) and stored under the caller's prefix; an async Claude-vision pass produces the
  * `llm_analysis` **draft** and moves the upload to `pending_review` for the staff queue. **Nothing mutates
- * the learning profile here** — only a reviewer's authoritative verdict does (the staff module). Free.
+ * the learning profile here** — only a trainer's authoritative verdict does (the staff module). Free.
  * The family only ever sees the authoritative result once reviewed, never the draft. We never log image
  * bytes or analysis content (§6).
  */

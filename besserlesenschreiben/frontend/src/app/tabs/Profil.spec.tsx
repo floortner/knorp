@@ -57,7 +57,7 @@ describe('Profil', () => {
     renderProfil();
     expect(await screen.findByText('Mia')).toBeInTheDocument();
     expect(screen.getByText(/aktiv seit/)).toBeInTheDocument();
-    // diagnostics stay out of the student app (reviewer portal owns them); Chat is a bottom tab already
+    // diagnostics stay out of the student app (trainer portal owns them); Chat is a bottom tab already
     expect(screen.queryByText('vowel_length')).not.toBeInTheDocument();
     expect(screen.queryByText(/Trainerin kontaktieren/)).not.toBeInTheDocument();
   });

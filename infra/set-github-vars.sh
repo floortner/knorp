@@ -15,9 +15,9 @@ AWS_DEPLOY_ROLE_ARN:github_deploy_role_arn
 ARTIFACTS_BUCKET:artifacts_bucket
 INSTANCE_ID:instance_id
 APP_BUCKET:app_bucket
-REVIEWER_BUCKET:reviewer_bucket
+TRAINER_BUCKET:trainer_bucket
 APP_CF_ID:app_cloudfront_id
-REVIEWER_CF_ID:reviewer_cloudfront_id
+TRAINER_CF_ID:trainer_cloudfront_id
 API_BASE:api_url
 "
 

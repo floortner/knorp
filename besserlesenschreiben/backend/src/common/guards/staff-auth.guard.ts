@@ -10,15 +10,15 @@ import type { Env } from '../../config/env';
 
 interface StaffTokenPayload {
   sub: string;
-  role?: 'reviewer' | 'admin';
+  role?: 'trainer' | 'admin';
 }
 
 /**
  * Guards the staff realm (ARCHITECTURE §1a). Applied at the staff controller CLASS level so every route is
  * default-deny; the staff auth endpoints opt out with `@StaffPublic()`. (The controller is also `@Public()`
  * so the GLOBAL family `JwtAuthGuard` is skipped first.) Verifies the staff JWT with `STAFF_JWT_SECRET` and
- * `aud:'staff'` — a family token never validates here. The reviewer id is read ONLY from the token `sub`.
- * A revoked reviewer's token stops working: we re-check `status` each call.
+ * `aud:'staff'` — a family token never validates here. The trainer id is read ONLY from the token `sub`.
+ * A revoked trainer's token stops working: we re-check `status` each call.
  */
 @Injectable()
 export class StaffAuthGuard implements CanActivate {
@@ -39,7 +39,7 @@ export class StaffAuthGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest<{
       headers: Record<string, string | undefined>;
       cookies?: Record<string, string | undefined>;
-      reviewer?: { id: string; role: 'reviewer' | 'admin' };
+      trainer?: { id: string; role: 'trainer' | 'admin' };
     }>();
 
     const auth = req.headers['authorization'];
@@ -60,16 +60,16 @@ export class StaffAuthGuard implements CanActivate {
       throw new ApiException(401, 'UNAUTHENTICATED', 'Ungültiges Token.');
     }
 
-    // A token alone isn't enough — the reviewer must still be active (admin can revoke).
-    const reviewer = await this.prisma.reviewer.findUnique({
+    // A token alone isn't enough — the trainer must still be active (admin can revoke).
+    const trainer = await this.prisma.trainer.findUnique({
       where: { id: payload.sub },
       select: { id: true, role: true, status: true },
     });
-    if (!reviewer || reviewer.status !== 'active') {
+    if (!trainer || trainer.status !== 'active') {
       throw new ApiException(401, 'UNAUTHENTICATED', 'Kein gültiger Zugang.');
     }
 
-    req.reviewer = { id: reviewer.id, role: reviewer.role === 'admin' ? 'admin' : 'reviewer' };
+    req.trainer = { id: trainer.id, role: trainer.role === 'admin' ? 'admin' : 'trainer' };
     return true;
   }
 }

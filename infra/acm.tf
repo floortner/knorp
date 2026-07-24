@@ -2,7 +2,7 @@
 resource "aws_acm_certificate" "web" {
   provider                  = aws.us_east_1
   domain_name               = local.app_fqdn
-  subject_alternative_names = [local.reviewer_fqdn]
+  subject_alternative_names = [local.trainer_fqdn]
   validation_method         = "DNS"
 
   lifecycle {

@@ -13,7 +13,7 @@ locals {
     NODE_ENV               = "production"
     PORT                   = "3000"
     WEB_ORIGIN             = "https://${local.app_fqdn}"
-    REVIEWER_ORIGIN        = "https://${local.reviewer_fqdn}"
+    TRAINER_ORIGIN         = "https://${local.trainer_fqdn}"
     PUBLIC_API_URL         = "https://${local.api_fqdn}/api/v1"
     API_FQDN               = local.api_fqdn
     LETSENCRYPT_EMAIL      = var.owner_email

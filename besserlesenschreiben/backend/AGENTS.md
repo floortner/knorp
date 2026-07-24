@@ -30,7 +30,7 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
    creates a `pending` account and emails nothing until a **staff admin** approves it (still `200`, no enumeration).
 5. **Two disjoint auth realms (ARCHITECTURE §1a).** `/staff/*` requires a staff cookie (`aud:'staff'`,
    `StaffAuthGuard`, signed with `STAFF_JWT_SECRET` ≠ `JWT_SECRET`); a family JWT never validates there and vice
-   versa. The reviewer queue is **pseudonymised** (image + LLM draft + skill tags + grade band only). Staff
+   versa. The trainer queue is **pseudonymised** (image + LLM draft + skill tags + grade band only). Staff
    user-administration (approve/deactivate/delete real emails) is **admin-role-only**, separate from the queue.
 6. **Never log** student answers, homework/OCR content, emails, login codes, JWTs, presigned URLs, or bodies.
    Log identifiers + outcomes only (ARCHITECTURE §6).
@@ -54,8 +54,8 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
   (`zodOutputFormat` + `messages.parse`) so the digest/homework JSON stays typed end-to-end.
 - Session generation: **the database decides *what* to drill (deterministic, free); the LLM only generates new
   content + conversation** (SPEC §8). Most sessions must make zero LLM calls.
-- Homework analysis must **not** mutate the learning profile before a **staff reviewer** approves. Vision writes
-  `homework_upload.llm_analysis` (a draft); only the reviewer's authoritative `reviewed_analysis` mutates
+- Homework analysis must **not** mutate the learning profile before a **staff trainer** approves. Vision writes
+  `homework_upload.llm_analysis` (a draft); only the trainer's authoritative `reviewed_analysis` mutates
   `attempt`/`review_state` and feeds the next lecture (SPEC §10, ARCHITECTURE §11). No parent-confirm step.
 
 ## Commands (create these as you scaffold)

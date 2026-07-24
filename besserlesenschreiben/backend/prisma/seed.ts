@@ -14,7 +14,7 @@ const adapter = new PrismaPg(process.env.DATABASE_URL as string);
 const prisma = new PrismaClient({ adapter });
 
 async function main(): Promise<void> {
-  // Admin bootstrap (ARCHITECTURE §1b): there is no staff self-signup, so the first admin reviewer must
+  // Admin bootstrap (ARCHITECTURE §1b): there is no staff self-signup, so the first admin trainer must
   // be provisioned here. STAFF_ADMIN_EMAILS (comma-separated) are upserted as active admins, giving the
   // owner an account that can approve/deactivate/delete families. Idempotent; never downgrades an admin.
   const adminEmails = (process.env.STAFF_ADMIN_EMAILS ?? "")
@@ -22,7 +22,7 @@ async function main(): Promise<void> {
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
   for (const email of adminEmails) {
-    await prisma.reviewer.upsert({
+    await prisma.trainer.upsert({
       where: { email },
       update: { role: "admin", status: "active" },
       create: { email, name: email.split("@")[0], role: "admin", status: "active" },
@@ -31,7 +31,7 @@ async function main(): Promise<void> {
   if (adminEmails.length) console.log(`staff admins ensured: ${adminEmails.length}`);
 
   // ── Local dev convenience accounts (NEVER in production) ─────────────────────────────────────────
-  // Seeded ACTIVE so you can log straight into the family app / reviewer portal without the
+  // Seeded ACTIVE so you can log straight into the family app / trainer portal without the
   // pending→staff-approval flow. Login stays passwordless — request a code, read it from the console.
   // Double-gated: an EXPLICIT SEED_DEV_ACCOUNTS=true opt-in AND NODE_ENV != production. NODE_ENV alone
   // isn't enough — its default is 'development', so a prod seed job that forgets NODE_ENV=production plus
@@ -52,15 +52,15 @@ async function main(): Promise<void> {
         console.log(`  ↳ student profile created: Testschüler`);
       }
     }
-    // Seeded as ADMIN so the whole reviewer portal (review queue + user admin) is testable.
-    const devReviewer = (process.env.DEV_REVIEWER_EMAIL ?? "").trim().toLowerCase();
-    if (devReviewer) {
-      await prisma.reviewer.upsert({
-        where: { email: devReviewer },
+    // Seeded as ADMIN so the whole trainer portal (review queue + user admin) is testable.
+    const devTrainer = (process.env.DEV_TRAINER_EMAIL ?? "").trim().toLowerCase();
+    if (devTrainer) {
+      await prisma.trainer.upsert({
+        where: { email: devTrainer },
         update: { role: "admin", status: "active" },
-        create: { email: devReviewer, name: devReviewer.split("@")[0], role: "admin", status: "active" },
+        create: { email: devTrainer, name: devTrainer.split("@")[0], role: "admin", status: "active" },
       });
-      console.log(`dev reviewer ensured (active admin): ${devReviewer}`);
+      console.log(`dev trainer ensured (active admin): ${devTrainer}`);
     }
   }
 }

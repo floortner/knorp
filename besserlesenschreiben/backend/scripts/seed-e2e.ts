@@ -8,7 +8,7 @@
  *     login codes) — the two projects (chromium/webkit) run fullyParallel against the same backend, so
  *     a shared account would race on profile state + the last-code-wins capture. Per-project accounts
  *     isolate them. Keep this list in sync with the `projects` in e2e/playwright.config.ts.
- *   - a generic e2e-parent (helper default) and an ACTIVE reviewer (staff realm; admin-provisioned).
+ *   - a generic e2e-parent (helper default) and an ACTIVE trainer (staff realm; admin-provisioned).
  *
  * Each family account's student profiles (and their cascade) are wiped each run so the
  * login → onboarding → first-lesson journey starts from a deterministic zero-profile state.
@@ -26,7 +26,7 @@ export const E2E_PARENT_EMAILS = [
   'e2e-parent-webkit@example.test',
   'e2e-homework-parent@example.test', // cross-realm homework-loop spec (chromium-only)
 ];
-export const E2E_REVIEWER_EMAIL = 'e2e-reviewer@example.test';
+export const E2E_TRAINER_EMAIL = 'e2e-trainer@example.test';
 
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
@@ -45,13 +45,13 @@ async function main(): Promise<void> {
       await prisma.profile.deleteMany({ where: { accountId: account.id } });
     }
 
-    await prisma.reviewer.upsert({
-      where: { email: E2E_REVIEWER_EMAIL },
-      update: { status: 'active', role: 'reviewer', name: 'E2E Reviewer' },
-      create: { email: E2E_REVIEWER_EMAIL, status: 'active', role: 'reviewer', name: 'E2E Reviewer' },
+    await prisma.trainer.upsert({
+      where: { email: E2E_TRAINER_EMAIL },
+      update: { status: 'active', role: 'trainer', name: 'E2E Trainer' },
+      create: { email: E2E_TRAINER_EMAIL, status: 'active', role: 'trainer', name: 'E2E Trainer' },
     });
 
-    console.log(`[seed-e2e] ready: ${E2E_PARENT_EMAILS.length} parent accounts, ${E2E_REVIEWER_EMAIL} (reviewer)`);
+    console.log(`[seed-e2e] ready: ${E2E_PARENT_EMAILS.length} parent accounts, ${E2E_TRAINER_EMAIL} (trainer)`);
   } finally {
     await prisma.$disconnect();
   }

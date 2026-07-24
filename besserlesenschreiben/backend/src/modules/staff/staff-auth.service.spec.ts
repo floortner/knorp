@@ -13,12 +13,12 @@ vi.mock('argon2', () => ({
 }));
 
 function setup(opts: {
-  reviewer?: { id: string; email: string; name: string; role: string; status: string; createdAt?: Date } | null;
+  trainer?: { id: string; email: string; name: string; role: string; status: string; createdAt?: Date } | null;
   code?: { id: string; codeHash: string; expiresAt: Date; attempts: number } | null;
 } = {}) {
   const email = { sendLoginCode: vi.fn(async () => undefined) } as unknown as EmailService;
   const prisma = {
-    reviewer: { findUnique: vi.fn(async () => opts.reviewer ?? null) },
+    trainer: { findUnique: vi.fn(async () => opts.trainer ?? null) },
     staffLoginCode: {
       deleteMany: vi.fn(async () => ({ count: 0 })),
       create: vi.fn(async () => ({ id: 'code-1' })),
@@ -44,15 +44,15 @@ describe('StaffAuthService.requestCode (no self-signup, no enumeration)', () => 
   beforeEach(() => vi.clearAllMocks());
 
   it('issues no code for an unknown email but still returns ok', async () => {
-    const { svc, prisma, email } = setup({ reviewer: null });
+    const { svc, prisma, email } = setup({ trainer: null });
     await expect(svc.requestCode('stranger@x.test')).resolves.toEqual({ ok: true });
     expect(prisma.staffLoginCode.create).not.toHaveBeenCalled();
     expect(email.sendLoginCode).not.toHaveBeenCalled();
   });
 
-  it('issues + emails a code for an active reviewer', async () => {
+  it('issues + emails a code for an active trainer', async () => {
     const { svc, prisma, email } = setup({
-      reviewer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'reviewer', status: 'active' },
+      trainer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'trainer', status: 'active' },
     });
     await expect(svc.requestCode('dana@team.test')).resolves.toEqual({ ok: true });
     expect(prisma.staffLoginCode.create).toHaveBeenCalledOnce();
@@ -61,7 +61,7 @@ describe('StaffAuthService.requestCode (no self-signup, no enumeration)', () => 
 
   it('does not re-send while a recent code is still within the throttle window', async () => {
     const { svc, prisma, email } = setup({
-      reviewer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'reviewer', status: 'active' },
+      trainer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'trainer', status: 'active' },
       // a code created just now → findFirst returns it → throttle blocks a new send
       code: { id: 'code-0', codeHash: 'x', expiresAt: new Date(Date.now() + 60_000), attempts: 0 },
     });
@@ -76,10 +76,10 @@ describe('StaffAuthService.verify', () => {
 
   const validCode = { id: 'code-1', codeHash: '123456', expiresAt: new Date(Date.now() + 60_000), attempts: 0 };
 
-  it('issues a staff token + me for a valid code owned by an active reviewer', async () => {
+  it('issues a staff token + me for a valid code owned by an active trainer', async () => {
     const { svc } = setup({
       code: validCode,
-      reviewer: {
+      trainer: {
         id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'admin', status: 'active',
         createdAt: new Date('2026-01-01T00:00:00Z'),
       },
@@ -87,14 +87,14 @@ describe('StaffAuthService.verify', () => {
     await expect(svc.verify('dana@team.test', '123456')).resolves.toEqual({
       token: 'staff-token',
       // me now carries the caller's OWN staff identity (profile page): email + createdAt.
-      me: { reviewerId: 'rev-1', name: 'Dana', role: 'admin', email: 'dana@team.test', createdAt: '2026-01-01T00:00:00.000Z' },
+      me: { trainerId: 'rev-1', name: 'Dana', role: 'admin', email: 'dana@team.test', createdAt: '2026-01-01T00:00:00.000Z' },
     });
   });
 
-  it('401s a valid code whose reviewer was revoked', async () => {
+  it('401s a valid code whose trainer was revoked', async () => {
     const { svc } = setup({
       code: validCode,
-      reviewer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'reviewer', status: 'revoked' },
+      trainer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'trainer', status: 'revoked' },
     });
     expect(await statusOf(svc.verify('dana@team.test', '123456'))).toBe(401);
   });
@@ -102,7 +102,7 @@ describe('StaffAuthService.verify', () => {
   it('401s a wrong code', async () => {
     const { svc } = setup({
       code: validCode,
-      reviewer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'reviewer', status: 'active' },
+      trainer: { id: 'rev-1', email: 'dana@team.test', name: 'Dana', role: 'trainer', status: 'active' },
     });
     expect(await statusOf(svc.verify('dana@team.test', '999999'))).toBe(401);
   });

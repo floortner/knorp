@@ -46,8 +46,8 @@ item_bank (global, shared) ──referenced by── attempt.item_id
 # along with the Vokaltraining content set — see ROADMAP.md §F for the content-set redesign in progress.
 
 # STAFF realm (disjoint identity — ARCHITECTURE §1a):
-reviewer (internal staff) ───< homework_review        # authoritative homework verdicts
-reviewer ──claims/actions──▶ homework_upload          # shared queue, soft-locked while claimed
+trainer (internal staff) ───< homework_review        # authoritative homework verdicts
+trainer ──claims/actions──▶ homework_upload          # shared queue, soft-locked while claimed
 ```
 
 ---
@@ -172,7 +172,7 @@ review_state(
   unique(profile_id, skill_tag)
 )
 
--- HOMEWORK uploads + analysis (human gate = STAFF reviewer, not parent — §10, ARCHITECTURE §11)
+-- HOMEWORK uploads + analysis (human gate = STAFF trainer, not parent — §10, ARCHITECTURE §11)
 homework_upload(
   id                uuid pk,
   profile_id        uuid fk -> profile,
@@ -181,21 +181,21 @@ homework_upload(
                     -- pending_analysis | pending_review | reviewed | rejected
   llm_analysis      jsonb,                     -- DRAFT vision output (§9) — NEVER applied on its own
   reviewed_analysis jsonb,                     -- AUTHORITATIVE; only this mutates the learning profile
-  reviewer_id       uuid fk -> reviewer,       -- who actioned it (null until reviewed)
+  trainer_id       uuid fk -> trainer,       -- who actioned it (null until reviewed)
   review_decision   text,                      -- 'approved' | 'corrected' | 'rejected'
   reviewed_at       timestamptz,
   applied_at        timestamptz,               -- when reviewed_analysis was written to attempt/review_state
-  claimed_by        uuid fk -> reviewer,       -- soft lock so two reviewers don't grab the same item
+  claimed_by        uuid fk -> trainer,       -- soft lock so two trainers don't grab the same item
   claimed_until     timestamptz,               -- claim lease expiry (auto-released)
   created_at        timestamptz default now()
 )
 
 -- STAFF realm: internal literacy professionals (ARCHITECTURE §1a). DISJOINT from account/profile.
-reviewer(
+trainer(
   id              uuid pk,
   email           text unique not null,        -- staff login (never a family email)
   name            text not null,
-  role            text default 'reviewer',     -- 'reviewer' | 'admin'
+  role            text default 'trainer',     -- 'trainer' | 'admin'
   status          text default 'active',       -- 'active' | 'revoked'
   created_at      timestamptz default now()
 )
@@ -211,16 +211,16 @@ staff_login_code(
   created_at  timestamptz default now()
 )
 
--- HOMEWORK review audit (append-only): retains LLM draft + reviewer verdict to measure vision quality (§10)
+-- HOMEWORK review audit (append-only): retains LLM draft + trainer verdict to measure vision quality (§10)
 homework_review(
   id                uuid pk,
   upload_id         uuid fk -> homework_upload,
-  reviewer_id       uuid fk -> reviewer,
+  trainer_id       uuid fk -> trainer,
   decision          text not null,             -- 'approved' | 'corrected' | 'rejected'
-  llm_analysis      jsonb not null,            -- snapshot of the draft shown to the reviewer
+  llm_analysis      jsonb not null,            -- snapshot of the draft shown to the trainer
   reviewed_analysis jsonb,                     -- the verdict (null when rejected)
-  agreed_with_llm   boolean not null,          -- false ⇒ the reviewer changed something (LLM-quality signal)
-  notes             text,                      -- optional reviewer note (QA only; never student-identifying)
+  agreed_with_llm   boolean not null,          -- false ⇒ the trainer changed something (LLM-quality signal)
+  notes             text,                      -- optional trainer note (QA only; never student-identifying)
   created_at        timestamptz default now()
 )
 
@@ -342,7 +342,7 @@ GET  /homework/{id}        -> {status, reviewedAnalysis?}    # family sees the A
                                                              # and only once status='reviewed' (never the raw LLM draft)
 ```
 - The former `POST /homework/{id}/confirm` parent-confirm step is **removed**. The human gate is now the
-  **staff reviewer** (ARCHITECTURE §11). The upload happens from the family app's **Chat tab** (the photo
+  **staff trainer** (ARCHITECTURE §11). The upload happens from the family app's **Chat tab** (the photo
   shows as a chat message); the verdict is echoed back as a chat status bubble. No family action to take;
   the student is never blocked.
 
@@ -351,7 +351,7 @@ GET  /homework/{id}        -> {status, reviewedAnalysis?}    # family sees the A
 POST /staff/auth/request-code  {email}               -> 200 (always; no staff-enumeration)
 POST /staff/auth/verify        {email, code}         -> sets httpOnly staff cookie
 POST /staff/auth/logout                              -> clears staff cookie
-GET  /staff/me                                       -> {reviewerId, name, role, email, createdAt}
+GET  /staff/me                                       -> {trainerId, name, role, email, createdAt}
                                                         # the caller's OWN staff identity (profile page)
 PATCH /staff/me                 {name}               -> same shape   # rename self; email/role stay admin-provisioned
 GET  /staff/queue           ?status=&limit=&cursor=  -> {items:[{uploadId, profileHandle, gradeBand,
@@ -361,7 +361,7 @@ GET  /staff/queue           ?status=&limit=&cursor=  -> {items:[{uploadId, profi
                                                         # PSEUDONYMISED: no name/email/chat/billing (ARCHITECTURE §1a)
                                                         # status: open (default: ALL undecided, oldest-first;
                                                         #   claimed=true marks a live lease held by ANOTHER
-                                                        #   reviewer — shown locked, own claims stay false)
+                                                        #   trainer — shown locked, own claims stay false)
                                                         #   | done (reviewed/rejected history; carries the
                                                         #   verdict reviewedAnalysis+notes for the read-only
                                                         #   detail) | all. decision/reviewedAt/reviewedAnalysis/
@@ -373,16 +373,16 @@ POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
                                  reviewedAnalysis?, notes?}
                                                      -> {status}   # authoritative; applies on approved|corrected
 ```
-- `imageUrl` is a short-lived presigned URL scoped to that one upload — the reviewer never gets a
+- `imageUrl` is a short-lived presigned URL scoped to that one upload — the trainer never gets a
   bucket credential or any other student's prefix.
-- `claim` leases the item (`claimed_until`) so two reviewers don't grade it twice; the lease auto-expires.
+- `claim` leases the item (`claimed_until`) so two trainers don't grade it twice; the lease auto-expires.
 - On `approved`/`corrected` the backend writes derived `attempt` rows + adjusts `review_state` from
   `reviewed_analysis`, sets `status='reviewed'`, and records a `homework_review` row (with `agreed_with_llm`).
   On `rejected` nothing mutates; the image is left to the §7 retention sweep.
 
 ### Staff — user administration (STAFF realm, **admin role only**; ARCHITECTURE §1b)
 Distinct from the pseudonymised review queue: these handle real account identity, so they are gated by
-`role='admin'` (not plain reviewers) and **do** return the family email. This is the owner's approval/control
+`role='admin'` (not plain trainers) and **do** return the family email. This is the owner's approval/control
 surface.
 ```
 GET    /staff/users          ?status=&limit=&cursor=&q=  -> {items:[{accountId, email, status, createdAt,
@@ -398,7 +398,7 @@ DELETE /staff/users/{id}                               -> 204   # erasure: DB ca
 - `approve` flips `pending → active` and triggers the welcome/login email (the first code release).
 - `deactivate` is reversible (a later `approve` reactivates); `DELETE` is permanent erasure (minors' data — also
   removes the account's blobs).
-- All routes here require the staff cookie **and** `role='admin'`; a plain reviewer gets `403`.
+- All routes here require the staff cookie **and** `role='admin'`; a plain trainer gets `403`.
 
 > The staff lexeme foundation curation routes (`/staff/lexemes/*`) were dropped 2026-07-13 along with the
 > `lexeme` table and the Vokaltraining content set (ROADMAP.md §F). Re-add a curation surface once the new
@@ -595,21 +595,21 @@ allUnitsComplete}`.
    ```
 3. Store the JSON as `llm_analysis` (a **DRAFT — never applied on its own**), `status='pending_review'`, and
    enqueue it on the shared staff review queue.
-4. **Human-in-the-loop = STAFF REVIEWER (mandatory, authoritative).** Student handwriting OCR is unreliable, so a
-   vetted internal literacy professional validates it in the **reviewer portal** (`/staff/*`, §6): they see the
+4. **Human-in-the-loop = STAFF TRAINER (mandatory, authoritative).** Student handwriting OCR is unreliable, so a
+   vetted internal literacy professional validates it in the **trainer portal** (`/staff/*`, §6): they see the
    image and the LLM draft **side by side** and `approve` | `correct` | `reject`. This **replaces** the old
    parent-confirm. Only on `approve`/`correct` do we write `reviewed_analysis`, derive `attempt` rows / adjust
    `review_state`, and let the next LLM session (§8) target the validated focus. A `homework_review` row retains
-   the draft + verdict + `agreed_with_llm` so we can **compare reviewer vs LLM** and track vision quality.
+   the draft + verdict + `agreed_with_llm` so we can **compare trainer vs LLM** and track vision quality.
 5. **Async, never blocking:** the student plays on; review latency lands in the *next* generated lecture. The
    family only ever sees the authoritative `reviewed_analysis` (once `status='reviewed'`), never the draft.
 
-**Pseudonymisation (hard rule):** the reviewer queue exposes image + draft + skill tags + grade band only — no
+**Pseudonymisation (hard rule):** the trainer queue exposes image + draft + skill tags + grade band only — no
 student name, parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived presigned URL.
 
 **Data-protection (minors):** parent-consented at upload (copy states a trained professional reviews the
 photo), short retention on raw images regardless of review state, EU data residency where the provider offers
-it, every reviewer action audit-logged (ids + outcome, never content — ARCHITECTURE §6). Bake in now.
+it, every trainer action audit-logged (ids + outcome, never content — ARCHITECTURE §6). Bake in now.
 
 ---
 
@@ -622,9 +622,9 @@ DATABASE_URL=                    # Prisma connection string (Postgres)
 JWT_SECRET=                      # family realm (aud:"family")
 STAFF_JWT_SECRET=                # staff realm (aud:"staff") — DISTINCT from JWT_SECRET (boot-enforced)
 WEB_ORIGIN=                      # family SPA origin(s), CORS allowlist — REQUIRED in production
-REVIEWER_ORIGIN=                 # staff portal origin, CORS allowlist — separate from WEB_ORIGIN
+TRAINER_ORIGIN=                  # staff portal origin, CORS allowlist — separate from WEB_ORIGIN
 PUBLIC_API_URL=                  # public base URL of this API (capability URLs for the local image store)
-STAFF_ADMIN_EMAILS=              # comma-separated admin bootstrap (seeded as active admin reviewers)
+STAFF_ADMIN_EMAILS=              # comma-separated admin bootstrap (seeded as active admin trainers)
 HOMEWORK_REVIEW_CLAIM_TTL=       # queue soft-lock lease, e.g. 900 (seconds)
 ANTHROPIC_API_KEY=
 ANTHROPIC_MODEL=                 # default claude-sonnet-4-6 (../ARCHITECTURE.md §8)
@@ -634,7 +634,7 @@ LLM_SESSIONS_PER_DAY= CHAT_MESSAGES_PER_DAY=   # per-profile daily caps on ★ o
 AWS_S3_BUCKET= AWS_REGION=       # object storage; auth via the IAM instance role, not keys in env
 STORAGE_LOCAL_DIR=               # dev-only local filesystem store; unused when AWS_S3_BUCKET is set
 EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev) | resend (prod) | capture (tests only)
-SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_REVIEWER_EMAIL=   # dev-only seeded logins (never in production)
+SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_TRAINER_EMAIL=   # dev-only seeded logins (never in production)
 ```
 
 ## 12. Acceptance checks
@@ -646,9 +646,9 @@ SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_REVIEWER_EMAIL=   # dev-only seeded log
   is never persisted to `item_bank` and never reaches a student.
 - ★ ops are free but capped per profile per day (`LLM_SESSIONS_PER_DAY`, `CHAT_MESSAGES_PER_DAY`); over cap
   returns a friendly `429 RATE_LIMITED`, and no model call or row write happens.
-- Homework analysis cannot mutate `review_state` before a **staff reviewer** verdict (`llm_analysis` is a
+- Homework analysis cannot mutate `review_state` before a **staff trainer** verdict (`llm_analysis` is a
   draft; only `reviewed_analysis` applies). The former parent-confirm path no longer exists.
 - A staff (`aud:"staff"`) cookie is rejected on every family route, and a family JWT is rejected on every
   `/staff/*` route — the two realms never cross.
 - The `/staff/queue` payload contains no student name, parent email, chat text, or billing field.
-- A claimed upload returns `409` to a second reviewer until the lease expires.
+- A claimed upload returns `409` to a second trainer until the lease expires.

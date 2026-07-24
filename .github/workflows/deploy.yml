@@ -5,7 +5,7 @@
 # Requires these repo *variables* (Settings → Secrets and variables → Actions → Variables), from the
 # `terraform output`s in infra/:
 #   AWS_DEPLOY_ROLE_ARN  ARTIFACTS_BUCKET  INSTANCE_ID
-#   APP_BUCKET  REVIEWER_BUCKET  APP_CF_ID  REVIEWER_CF_ID
+#   APP_BUCKET  TRAINER_BUCKET  APP_CF_ID  TRAINER_CF_ID
 #   API_BASE   (e.g. https://api.knorp.org/api/v1)
 # Optional: SSM_PREFIX (defaults to /blsb/beta).
 name: Deploy (beta)
@@ -96,10 +96,10 @@ jobs:
             bucket_var: APP_BUCKET
             cf_var: APP_CF_ID
             pwa: "true"
-          - name: reviewer
-            dir: besserlesenschreiben/reviewer
-            bucket_var: REVIEWER_BUCKET
-            cf_var: REVIEWER_CF_ID
+          - name: trainer
+            dir: besserlesenschreiben/trainer
+            bucket_var: TRAINER_BUCKET
+            cf_var: TRAINER_CF_ID
             pwa: ""
     steps:
       - uses: actions/checkout@v4

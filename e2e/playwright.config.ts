@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { BACKEND_URL, FRONTEND_PORT, FRONTEND_URL, REVIEWER_PORT, REVIEWER_URL, backendEnv, frontendEnv, reviewerEnv } from './test-env';
+import { BACKEND_URL, FRONTEND_PORT, FRONTEND_URL, TRAINER_PORT, TRAINER_URL, backendEnv, frontendEnv, trainerEnv } from './test-env';
 
 // Mobile-first app (~390px). Cover Chromium + WebKit (WebKit ≈ iOS Safari).
 const viewport = { width: 390, height: 844 };
@@ -43,10 +43,10 @@ export default defineConfig({
       timeout: 120_000,
     },
     {
-      command: `npm run dev -- --port ${REVIEWER_PORT} --strictPort`,
-      cwd: '../besserlesenschreiben/reviewer',
-      url: REVIEWER_URL,
-      env: reviewerEnv,
+      command: `npm run dev -- --port ${TRAINER_PORT} --strictPort`,
+      cwd: '../besserlesenschreiben/trainer',
+      url: TRAINER_URL,
+      env: trainerEnv,
       reuseExistingServer: false,
       timeout: 120_000,
     },

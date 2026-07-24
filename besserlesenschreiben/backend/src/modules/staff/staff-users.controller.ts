@@ -10,8 +10,8 @@ import { StaffProgressService } from './staff-progress.service';
 
 /**
  * Staff USER ADMINISTRATION routes (SPEC §6, ARCHITECTURE §1b). `@Public()` skips the GLOBAL family
- * `JwtAuthGuard` (a family JWT is never valid here); then `StaffAuthGuard` authenticates the reviewer and
- * `StaffAdminGuard` requires `role='admin'` — a plain reviewer gets 403. Identity-bearing (real email),
+ * `JwtAuthGuard` (a family JWT is never valid here); then `StaffAuthGuard` authenticates the trainer and
+ * `StaffAdminGuard` requires `role='admin'` — a plain trainer gets 403. Identity-bearing (real email),
  * kept separate from the pseudonymised review queue (security rules 8/10).
  */
 @Public()
