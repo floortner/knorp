@@ -1,11 +1,10 @@
 import { cn } from '@/lib/cn';
 import { decisionTone } from '@/lib/decision';
+import { deDate as de } from '@/lib/dates';
 import type { ProfileProgress } from '@/lib/contract';
 
 /** The identity-agnostic progress payload (shared by the account + queue variants). */
 type ProgressData = Pick<ProfileProgress, 'summary' | 'skills' | 'activity'>;
-
-const de = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('de-AT') : '—');
 
 /** Renders one learner's progress: summary, per-skill mastery, and recent activity + homework history. */
 export function ProgressPanel({ data }: { data: ProgressData }) {

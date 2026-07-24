@@ -66,31 +66,32 @@ async function statusOf(p: Promise<unknown>): Promise<number | 'ok'> {
   }
 }
 
-describe('ReviewService.queue (pseudonymisation)', () => {
+describe('ReviewService.queue (known-trainer identity)', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('exposes an opaque handle + coarse band, never a student name', async () => {
+  it('exposes the student name + coarse band (known-trainer model §H1.3), never an email', async () => {
     const { svc } = setup({
       findMany: [
-        { id: 'up-1', profileId: 'prof-1234', imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { unlockedUnit: 3 } },
+        { id: 'up-1', profileId: 'prof-1234', imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { name: 'Mia', unlockedUnit: 3 } },
       ],
     });
     const { items, nextCursor, total } = await svc.queue('rev-1', 50);
     expect(items).toHaveLength(1);
     expect(total).toBe(1);
-    expect(items[0].profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
-    expect(items[0].profileHandle).not.toContain('prof-1234');
+    expect(items[0].name).toBe('Mia');
+    expect(items[0].profileId).toBe('prof-1234'); // links the row to /students/:profileId
     expect(items[0].gradeBand).toBe('Einheit 3');
     expect(items[0].skillTags).toEqual(['vowel_length', 'dehnung_h']);
     expect(items[0].imageUrl).toBe('https://example.test/sas');
-    expect(JSON.stringify(items[0])).not.toMatch(/name|email/i);
+    // Data minimisation still holds on the trainer surface: no (parent) email anywhere.
+    expect(JSON.stringify(items[0])).not.toMatch(/email/i);
     expect(nextCursor).toBeNull();
     expect(items[0].decision).toBeNull(); // open item has no verdict yet
     expect(items[0].claimed).toBe(false); // unclaimed → pickable
   });
 
   it('flags rows live-claimed by ANOTHER trainer, but never my own claim', async () => {
-    const base = { imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { unlockedUnit: 1 } };
+    const base = { imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { name: 'Mia', unlockedUnit: 1 } };
     const { svc } = setup({
       findMany: [
         { ...base, id: 'up-1', profileId: 'p1', claimedBy: 'rev-2', claimedUntil: new Date(Date.now() + 60_000) },
@@ -102,7 +103,7 @@ describe('ReviewService.queue (pseudonymisation)', () => {
     expect(items.map((i) => i.claimed)).toEqual([true, false, false]); // other's live | mine | expired lease
   });
 
-  it('history (done) surfaces the verdict + reviewedAt, still pseudonymised', async () => {
+  it('history (done) surfaces the verdict + reviewedAt with the student name', async () => {
     const { svc } = setup({
       findMany: [
         {
@@ -115,7 +116,7 @@ describe('ReviewService.queue (pseudonymisation)', () => {
           llmAnalysis: analysis,
           reviewedAnalysis: analysis,
           reviews: [{ notes: 'Gut gemacht!' }],
-          profile: { unlockedUnit: 2 },
+          profile: { name: 'Mia', unlockedUnit: 2 },
         },
       ],
     });
@@ -124,8 +125,8 @@ describe('ReviewService.queue (pseudonymisation)', () => {
     expect(items[0].reviewedAt).toBe('2026-06-28T11:00:00.000Z');
     expect(items[0].reviewedAnalysis).toEqual(analysis); // verdict for the read-only detail view
     expect(items[0].notes).toBe('Gut gemacht!');
-    expect(items[0].profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
-    expect(JSON.stringify(items[0])).not.toMatch(/prof-9|name|email/i);
+    expect(items[0].name).toBe('Mia');
+    expect(JSON.stringify(items[0])).not.toMatch(/email/i);
   });
 });
 

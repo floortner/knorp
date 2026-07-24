@@ -11,7 +11,12 @@ import type {
   QueueProgress,
   ReviewSubmitBody,
   ReviewSubmitResponse,
+  SessionSource,
   StaffMe,
+  StudentDetail,
+  StudentPage,
+  StudentSessionDetail,
+  StudentSessionPage,
   UserProgress,
 } from './contract';
 
@@ -40,7 +45,7 @@ export const staffAuthApi = {
 };
 
 export const reviewApi = {
-  /** Review items, pseudonymised + cursor-paged (ARCHITECTURE §1a). `status`: open (default) | done | all. */
+  /** Review items with student names, cursor-paged (known-trainer §H1.3). `status`: open (default) | done | all. */
   queue: (params: { limit?: number; cursor?: string; status?: QueueFilter } = {}) => {
     const q = new URLSearchParams();
     if (params.limit !== undefined) q.set('limit', String(params.limit));
@@ -68,14 +73,50 @@ export const reviewApi = {
       body,
     }),
 
-  /** Pseudonymised learner progress for a queued upload (admin only) — review context, never a name. */
+  /** Learner progress for a queued upload — grading context, all trainers (known-trainer §H1.3). */
   progress: (uploadId: string) =>
     apiFetch<QueueProgress>(`/staff/queue/${encodeURIComponent(uploadId)}/progress`),
 };
 
 /**
+ * Learner directory + per-student activity (ROADMAP §H1.3 + §H3.1) — all trainers. Read-only views
+ * over the existing session/attempt telemetry, with the student's real name (known-trainer model).
+ */
+export const studentsApi = {
+  list: (params: { limit?: number; cursor?: string } = {}) => {
+    const q = new URLSearchParams();
+    if (params.limit !== undefined) q.set('limit', String(params.limit));
+    if (params.cursor) q.set('cursor', params.cursor);
+    const qs = q.toString();
+    return apiFetch<StudentPage>(`/staff/students${qs ? `?${qs}` : ''}`);
+  },
+
+  /** The learner-detail header — same progress payload ProgressPanel renders, plus identity. */
+  detail: (profileId: string) =>
+    apiFetch<StudentDetail>(`/staff/students/${encodeURIComponent(profileId)}`),
+
+  /** Session history, newest-first; optional source filter (bank | llm | homework). */
+  sessions: (profileId: string, params: { limit?: number; cursor?: string; source?: SessionSource } = {}) => {
+    const q = new URLSearchParams();
+    if (params.limit !== undefined) q.set('limit', String(params.limit));
+    if (params.cursor) q.set('cursor', params.cursor);
+    if (params.source) q.set('source', params.source);
+    const qs = q.toString();
+    return apiFetch<StudentSessionPage>(
+      `/staff/students/${encodeURIComponent(profileId)}/sessions${qs ? `?${qs}` : ''}`,
+    );
+  },
+
+  /** Question-by-question drill-down for one session. */
+  session: (profileId: string, sessionId: string) =>
+    apiFetch<StudentSessionDetail>(
+      `/staff/students/${encodeURIComponent(profileId)}/sessions/${encodeURIComponent(sessionId)}`,
+    ),
+};
+
+/**
  * User administration (backend SPEC §6) — ADMIN role only, identity-bearing (real family email + status).
- * The owner's approval/control surface, kept separate from the pseudonymised review queue. A plain trainer
+ * The owner's approval/control surface, kept separate from the all-trainer surfaces. A plain trainer
  * gets 403 on every call here.
  */
 export const usersApi = {

@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../services/storage/storage.service';
 import { FsrsService } from '../../services/fsrs/fsrs.service';
@@ -41,7 +40,8 @@ function normalizeSkillTags(tags: readonly string[]): string[] {
 
 interface QueueItem {
   uploadId: string;
-  profileHandle: string;
+  profileId: string;
+  name: string;
   gradeBand: string;
   skillTags: string[];
   imageUrl: string;
@@ -83,8 +83,9 @@ const MAX_LIMIT = 50;
 
 /**
  * Homework review queue + authoritative apply (ARCHITECTURE §11, SPEC §10). The trainer's verdict is
- * authoritative: only `reviewed_analysis` ever mutates the learning profile. The queue is PSEUDONYMISED
- * (no student name/email/chat/billing). Trainer id comes ONLY from the staff JWT, never the request.
+ * authoritative: only `reviewed_analysis` ever mutates the learning profile. Queue rows carry the
+ * student's name (known-trainer model, rule-10 revision §H1.3) but never a parent email, chat text, or
+ * billing. Trainer id comes ONLY from the staff JWT, never the request.
  */
 @Injectable()
 export class ReviewService {
@@ -100,16 +101,11 @@ export class ReviewService {
     this.claimTtlMs = config.get('HOMEWORK_REVIEW_CLAIM_TTL', { infer: true }) * 1000;
   }
 
-  /** Stable opaque pseudonym for a profile — never reveals the student's name (ARCHITECTURE §1a). */
-  static handle(profileId: string): string {
-    return `L-${createHash('sha256').update(profileId).digest('hex').slice(0, 6)}`;
-  }
-
   /**
    * List review items. `open` = every undecided item, oldest-first — the live queue, with live-claimed
    * rows flagged `claimed` (in Prüfung by someone else). `done` = already-actioned (reviewed/rejected),
    * newest-first — the history, carrying the verdict (`reviewedAnalysis`/`notes`) for the read-only
-   * detail view. `all` = everything. Every row stays PSEUDONYMISED. Cursor-paged, with a total.
+   * detail view. `all` = everything. Cursor-paged, with a total.
    */
   async queue(
     trainerId: string,
@@ -127,7 +123,7 @@ export class ReviewService {
         take: take + 1, // one extra to know if there's a next page
         ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
         include: {
-          profile: { select: { unlockedUnit: true } },
+          profile: { select: { name: true, unlockedUnit: true } },
           // Latest review's student-visible comment — surfaced on historical rows only.
           reviews: { orderBy: { createdAt: 'desc' }, take: 1, select: { notes: true } },
         },
@@ -152,7 +148,8 @@ export class ReviewService {
         const reviewed = homeworkAnalysisSchema.safeParse(row.reviewedAnalysis);
         return {
           uploadId: row.id,
-          profileHandle: ReviewService.handle(row.profileId),
+          profileId: row.profileId,
+          name: row.profile.name,
           gradeBand: `Einheit ${row.profile.unlockedUnit}`,
           skillTags: analysis.suggestedFocus,
           imageUrl: await this.storage.signedHomeworkReadUrl(row.imageKey, this.claimTtlMs / 1000),

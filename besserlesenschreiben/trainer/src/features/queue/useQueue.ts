@@ -6,7 +6,7 @@ export type { QueueFilter };
 const PAGE_SIZE = 50;
 
 /**
- * The review pipeline as an infinite, cursor-paged list ("Mehr laden"). Pseudonymised rows.
+ * The review pipeline as an infinite, cursor-paged list ("Mehr laden"). Rows carry the student name (known-trainer §H1.3).
  * Keyed under ['staff-queue', 'list', …] — distinct from the PLAIN page the review screen caches at
  * ['staff-queue', 'open'] (different data shape); the shared 'staff-queue' prefix still invalidates both.
  */
@@ -34,7 +34,7 @@ export function useOpenRequestCount() {
   });
 }
 
-/** Pseudonymised learner progress for a queued upload (admin only). Lazy — `enabled` from the panel state. */
+/** Learner progress for a queued upload (all trainers — known-trainer §H1.3). Lazy — `enabled` from the panel state. */
 export function useQueueProgress(uploadId: string, enabled: boolean) {
   return useQuery({
     queryKey: ['staff-queue-progress', uploadId],

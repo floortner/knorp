@@ -29,16 +29,23 @@ function make() {
 }
 
 describe('StaffProgressService', () => {
-  it('forUpload is PSEUDONYMISED: an opaque handle, never a name (rule 10)', async () => {
+  it('forUpload carries the student name (known-trainer model, rule-10 revision §H1.3) — never an email', async () => {
     const { svc } = make();
     const res = await svc.forUpload('up-1');
-    expect(res.profileHandle).toMatch(/^L-[0-9a-f]{6}$/);
-    // The student's real name must never leak through the queue surface.
-    expect(JSON.stringify(res)).not.toMatch(/Mia/);
-    expect('name' in res).toBe(false);
+    expect(res).toMatchObject({ profileId: 'prof-1', name: 'Mia' });
+    expect('profileHandle' in res).toBe(false); // the L-xxxxxx pseudonym is retired
+    // Data minimisation still holds: no parent email (or any email) on trainer surfaces.
+    expect(JSON.stringify(res)).not.toMatch(/email/i);
     expect(res.summary.unit).toBe(3);
     expect(res.summary.league.tier).toBe('bronze');
     expect(res.activity.totalAttempts).toBe(42);
+  });
+
+  it('forStudent returns the same identity-bearing shape for the learner detail', async () => {
+    const { svc } = make();
+    const res = await svc.forStudent('prof-1');
+    expect(res).toMatchObject({ profileId: 'prof-1', name: 'Mia' });
+    expect(res.summary.streakDays).toBe(4);
   });
 
   it('forAccount is identity-bearing: includes each student name (Nutzer oversight)', async () => {

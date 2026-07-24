@@ -2,6 +2,12 @@
 
 **Date:** 2026-07-14 · **Scope:** backend (`-api`), family frontend (`-web`), reviewer portal (`-review`), and the AWS `infra/` + `deploy/` layer. **Context:** solo developer, going beta on AWS (single EC2 + nginx + self-hosted Postgres + S3/CloudFront), handling children's data (GDPR-sensitive).
 
+> **Addendum 2026-07-25:** the "pseudonymised staff queue" praised below was deliberately revised by the
+> known-trainer model (ROADMAP §H1.3): trainer surfaces now show student names + learning data (the 2–3
+> trainers know each student personally); parent email/billing/chat stay off trainer surfaces and account
+> identity stays admin-only. This is a sanctioned product decision, not drift. The report below is
+> otherwise historical (2026-07-14) and unedited.
+
 ## Verdict
 
 This is a **disciplined, well-built codebase** and the beta topology is sound. The hard things are done correctly: two-realm auth separation with distinct signing keys enforced at boot, per-request account-status revocation, `user_id`/`profile_id` sourced only from the JWT, durable PIN lockout, argon2 hashing, enumeration-resistant signup, S3 keys always scoped to the caller's prefix, a pseudonymised staff queue, EXIF-stripping upload transcode, the homework draft-vs-authoritative gate, honest error envelopes, and clean logging. IAM is genuinely least-privilege, there's no SSH (SSM only), no static AWS keys (GitHub OIDC scoped to repo+ref), IMDSv2 required, and secrets never enter Terraform state.

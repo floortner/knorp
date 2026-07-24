@@ -4,15 +4,16 @@ import { ApiException } from '../../common/exceptions/api-exception';
 import { daysAgo, startOfAppWeek } from '../../common/dates';
 import { leagueFor } from '../progress/gamification';
 import { skillBreakdown } from '../progress/progress.stats';
-import { ReviewService } from './review.service';
 
 const ATTEMPT_WINDOW_DAYS = 30; // window for the per-skill accuracy rollup
 const HOMEWORK_HISTORY = 10; // most-recent uploads shown
 
 /**
- * Learner progress for the STAFF realm (ADMIN only; controllers gate it). Reuses the family progress
- * math (skillBreakdown / leagueFor) but looks a profile up directly — staff aren't scoped by account
- * ownership. Serves two shapes: identity-bearing per account (Nutzer) and pseudonymised per upload (queue).
+ * Learner progress for the STAFF realm. Reuses the family progress math (skillBreakdown / leagueFor)
+ * but looks a profile up directly — staff aren't scoped by account ownership. Serves three shapes:
+ * per account (Nutzer oversight, ADMIN only), per student (learner directory detail, all trainers),
+ * and per upload (review context, all trainers) — the latter two identical, with the student's real
+ * name (known-trainer model, rule-10 revision §H1.3).
  */
 @Injectable()
 export class StaffProgressService {
@@ -92,14 +93,19 @@ export class StaffProgressService {
     return { profiles: withProgress };
   }
 
-  /** Pseudonymised: the upload's learner by opaque handle only — never a name (review context). */
+  /** Learner-detail header: one student's progress with identity (directory, all trainers). */
+  async forStudent(profileId: string) {
+    const { profile, progress } = await this.forProfile(profileId);
+    return { profileId: profile.id, name: profile.name, ...progress };
+  }
+
+  /** Review context: the upload's learner — same shape as the learner detail (all trainers). */
   async forUpload(uploadId: string) {
     const upload = await this.prisma.homeworkUpload.findUnique({
       where: { id: uploadId },
       select: { profileId: true },
     });
     if (!upload) throw new ApiException(404, 'NOT_FOUND', 'Upload nicht gefunden.');
-    const { profile, progress } = await this.forProfile(upload.profileId);
-    return { profileHandle: ReviewService.handle(profile.id), ...progress };
+    return this.forStudent(upload.profileId);
   }
 }

@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { deDate } from '@/lib/dates';
 import { decisionLabel, decisionTone } from '@/lib/decision';
 import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { AnalysisEditor } from './AnalysisEditor';
@@ -36,14 +37,14 @@ export function HistoryScreen() {
       </Link>
 
       <div className="mb-3 flex flex-wrap items-baseline gap-x-3">
-        <h1 className="text-lg font-semibold text-ink">{item.profileHandle}</h1>
+        <h1 className="text-lg font-semibold text-ink">{item.name}</h1>
         <span className="text-sm text-ink-soft">{item.gradeBand}</span>
         <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', decisionTone(item.decision))}>
           {decisionLabel(item.decision)}
         </span>
         {item.reviewedAt && (
           <time className="text-xs text-ink-soft" dateTime={item.reviewedAt}>
-            geprüft am {new Date(item.reviewedAt).toLocaleDateString('de-AT')}
+            geprüft am {deDate(item.reviewedAt)}
           </time>
         )}
       </div>
