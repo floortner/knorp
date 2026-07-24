@@ -9,7 +9,7 @@ import type { PrismaService } from '../../prisma/prisma.service';
 interface ReqShape {
   headers: Record<string, string | undefined>;
   cookies?: Record<string, string | undefined>;
-  reviewer?: { id: string; role: 'reviewer' | 'admin' };
+  trainer?: { id: string; role: 'trainer' | 'admin' };
 }
 
 function ctxFor(req: ReqShape): ExecutionContext {
@@ -21,8 +21,8 @@ function ctxFor(req: ReqShape): ExecutionContext {
 }
 
 function makeGuard(opts: {
-  verify?: (token: string) => Promise<{ sub: string; role?: 'reviewer' | 'admin' }>;
-  reviewer?: { id: string; role: string; status: string } | null;
+  verify?: (token: string) => Promise<{ sub: string; role?: 'trainer' | 'admin' }>;
+  trainer?: { id: string; role: string; status: string } | null;
   isStaffPublic?: boolean;
 }) {
   const jwt = {
@@ -33,7 +33,7 @@ function makeGuard(opts: {
   } as unknown as JwtService;
   const config = { get: () => 'staff-secret' } as unknown as ConstructorParameters<typeof StaffAuthGuard>[1];
   const prisma = {
-    reviewer: { findUnique: vi.fn(async () => opts.reviewer ?? null) },
+    trainer: { findUnique: vi.fn(async () => opts.trainer ?? null) },
   } as unknown as PrismaService;
   const reflector = { getAllAndOverride: () => opts.isStaffPublic ?? false } as unknown as Reflector;
   return new StaffAuthGuard(jwt, config, prisma, reflector);
@@ -60,20 +60,20 @@ describe('StaffAuthGuard', () => {
     await expect(guard.canActivate(ctxFor(req))).rejects.toBeInstanceOf(ApiException);
   });
 
-  it('accepts a valid staff token for an active reviewer and sets reviewer from sub only', async () => {
+  it('accepts a valid staff token for an active trainer and sets trainer from sub only', async () => {
     const guard = makeGuard({
       verify: async () => ({ sub: 'rev-1', role: 'admin' }),
-      reviewer: { id: 'rev-1', role: 'admin', status: 'active' },
+      trainer: { id: 'rev-1', role: 'admin', status: 'active' },
     });
     const req: ReqShape = { headers: {}, cookies: { staff_session: 'good' } };
     await expect(guard.canActivate(ctxFor(req))).resolves.toBe(true);
-    expect(req.reviewer).toEqual({ id: 'rev-1', role: 'admin' });
+    expect(req.trainer).toEqual({ id: 'rev-1', role: 'admin' });
   });
 
-  it('rejects a token whose reviewer has been revoked', async () => {
+  it('rejects a token whose trainer has been revoked', async () => {
     const guard = makeGuard({
-      verify: async () => ({ sub: 'rev-1', role: 'reviewer' }),
-      reviewer: { id: 'rev-1', role: 'reviewer', status: 'revoked' },
+      verify: async () => ({ sub: 'rev-1', role: 'trainer' }),
+      trainer: { id: 'rev-1', role: 'trainer', status: 'revoked' },
     });
     const req: ReqShape = { headers: { authorization: 'Bearer good' } };
     await expect(guard.canActivate(ctxFor(req))).rejects.toBeInstanceOf(ApiException);

@@ -99,7 +99,7 @@ describe('ChatService', () => {
     expect(messages[0]).toEqual({ me: true, text: 'Hi', ts: '2026-06-30T08:00:00.000Z' });
     // photo bubble: a read URL, no text
     expect(messages[1]).toEqual({ me: true, text: '', ts: '2026-06-30T09:00:00.000Z', imageUrl: 'https://example.test/hw.webp' });
-    // status line shares the photo's timestamp (stays adjacent): topic + reviewer comment; the raw
+    // status line shares the photo's timestamp (stays adjacent): topic + trainer comment; the raw
     // suggestedFocus machine keys are NOT leaked at the student — the CTA rides on homeworkStatus instead.
     expect(messages[2].ts).toBe('2026-06-30T09:00:00.000Z');
     expect(messages[2].me).toBe(false);

@@ -14,34 +14,34 @@ besserlesenschreiben/
 │   ├── AGENTS.md        ← Claude Code: read this FIRST when working in backend/
 │   ├── SPEC.md          ← backend data model, endpoints, algorithms
 │   ├── item_bank.seed.json   ← seeded exercise content (~360 items, 7 units)
-│   ├── lexeme.seed.json + lexeme.overrides.json ← the curated word foundation (2,127 words ⊕ reviewer change-set)
+│   ├── lexeme.seed.json + lexeme.overrides.json ← the curated word foundation (2,127 words ⊕ trainer change-set)
 │   ├── prisma/seed.ts   ← idempotent seed loader (prisma db seed)
 ├── frontend/            ← the family SPA / PWA  (TypeScript · React · Vite · Tailwind)
 │   ├── AGENTS.md        ← Claude Code: read this FIRST when working in frontend/
 │   └── SPEC.md          ← screens, the 14 Vokaltraining exercise renderers, telemetry
-└── reviewer/            ← internal STAFF portal for homework review  (React · Vite · Tailwind)
-    ├── AGENTS.md        ← Claude Code: read this FIRST when working in reviewer/
+└── trainer/            ← internal STAFF portal for homework review  (React · Vite · Tailwind)
+    ├── AGENTS.md        ← Claude Code: read this FIRST when working in trainer/
     └── README.md        ← what it is, layout, the review flow
 ```
 
-The **family app** (`frontend/`) and the **reviewer portal** (`reviewer/`) are **two disjoint auth realms**
-(ARCHITECTURE §1a): a credential in one is never valid in the other. The reviewer portal is internal-only
+The **family app** (`frontend/`) and the **trainer portal** (`trainer/`) are **two disjoint auth realms**
+(ARCHITECTURE §1a): a credential in one is never valid in the other. The trainer portal is internal-only
 (~3 staff), desktop/tablet, and never shipped to families.
 
 ## How to start with Claude Code
 
 This is **three projects in one directory**. Open Claude Code at this root to build across them, or `cd` into
 a subfolder to build one at a time. Either way, the agent should read, in order:
-**`<subproject>/AGENTS.md` → `ARCHITECTURE.md` → `<subproject>/SPEC.md` (or `README.md` for `reviewer/`).**
+**`<subproject>/AGENTS.md` → `ARCHITECTURE.md` → `<subproject>/SPEC.md` (or `README.md` for `trainer/`).**
 
 Suggested order of work (shipped milestones and the forward plan live in the repo-root
 [`../ROADMAP.md`](../ROADMAP.md) — the single source of truth):
 1. **Backend first** — auth + profiles (the security boundary everything depends on), then the
    item bank (load `item_bank.seed.json`), sessions + attempts, progress, digest, chat, homework, then the
-   **staff realm** (reviewer auth, review queue, authoritative apply — Phase 2.5). No billing — the app is free.
+   **staff realm** (trainer auth, review queue, authoritative apply — Phase 2.5). No billing — the app is free.
 2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, then the 14 renderers +
    telemetry (the bulk), then progress/voice/accessibility, chat, and the parent area (homework upload).
-3. **Reviewer portal** — staff login, the review queue + two-pane review screen, and the ADMIN surfaces
+3. **Trainer portal** — staff login, the review queue + two-pane review screen, and the ADMIN surfaces
    (account approval, learner progress, "Wortschatz" lexeme curation). Types are generated from the backend
    `/staff/*` OpenAPI and drift-gated in CI.
 
@@ -52,7 +52,7 @@ feature needs before the frontend/portal feature that calls them.
 
 - **The API is the boundary.** The frontends hold no business logic; the backend serves no HTML. The
   OpenAPI-generated types keep them in lockstep — never hand-edit the contract on one side only.
-- **Two disjoint auth realms.** The family app and the staff reviewer portal authenticate separately
+- **Two disjoint auth realms.** The family app and the staff trainer portal authenticate separately
   (different cookie/`aud`, different signing key); a credential in one is never valid in the other.
 - **Security boundary.** `user_id`/`profile_id` come only from the auth token; object-storage access is via
   presigned URLs scoped to the caller's prefix; login codes are hashed + rate-limited. Staff see only a **pseudonymised** review queue — no student name, parent email, chat, or billing.
@@ -68,5 +68,5 @@ Parameter Store, SES. Deployment itself is a future milestone — see ARCHITECTU
 
 ## If you split this into separate repos later
 
-The three subprojects split into `-api` / `-web` / `-review`. `ARCHITECTURE.md` is shared — copy it into each
+The three subprojects split into `-api` / `-web` / `-trainer`. `ARCHITECTURE.md` is shared — copy it into each
 repo (or a shared submodule) and fix the `../ARCHITECTURE.md` relative links in the SPECs and AGENTS files.

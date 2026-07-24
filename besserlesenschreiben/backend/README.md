@@ -110,7 +110,7 @@ counts and a rough € cost per call.
 - ✨ „Neue Übungen für dich" generates a real lecture — intro card, then solvable exercises.
 - The 6th ✨ session of the day returns the friendly cap message (`LLM_SESSIONS_PER_DAY=5`).
 - Chat answers as Angelika (capped at `CHAT_MESSAGES_PER_DAY=60`).
-- A homework photo upload produces a draft in the reviewer queue within ~a minute.
+- A homework photo upload produces a draft in the trainer queue within ~a minute.
 
 **3. Production:** set `ANTHROPIC_API_KEY` **and** `LLM_RESIDENCY_ACK=true` via SSM Parameter Store — the app
 refuses to boot with a key but no residency acknowledgement (ARCHITECTURE §8). Watch the `llm.usage`

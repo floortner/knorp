@@ -1,5 +1,5 @@
 import { type Page, expect, request } from '@playwright/test';
-import { API_BASE, REVIEWER_URL } from '../test-env';
+import { API_BASE, TRAINER_URL } from '../test-env';
 
 export const E2E_PARENT_EMAIL = 'e2e-parent@example.test';
 
@@ -35,11 +35,11 @@ export async function loginAsFamily(page: Page, email = E2E_PARENT_EMAIL): Promi
   await page.getByRole('button', { name: 'Anmelden' }).click();
 }
 
-export const E2E_REVIEWER_EMAIL = 'e2e-reviewer@example.test';
+export const E2E_TRAINER_EMAIL = 'e2e-trainer@example.test';
 
-/** Drive the staff (reviewer portal) passwordless login end to end. Leaves the browser on /queue. */
-export async function loginAsStaff(page: Page, email = E2E_REVIEWER_EMAIL): Promise<void> {
-  await page.goto(`${REVIEWER_URL}/login`);
+/** Drive the staff (trainer portal) passwordless login end to end. Leaves the browser on /queue. */
+export async function loginAsStaff(page: Page, email = E2E_TRAINER_EMAIL): Promise<void> {
+  await page.goto(`${TRAINER_URL}/login`);
   await page.getByLabel('Dienstliche E-Mail').fill(email);
   await page.getByRole('button', { name: 'Code anfordern' }).click();
   await expect(page).toHaveURL(/\/login\/code$/);

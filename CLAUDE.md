@@ -8,13 +8,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `besserlesenschreiben/backend/` — NestJS API (`-api` repo)
 - `besserlesenschreiben/frontend/` — Vite/React SPA/PWA, the family app (`-web` repo)
-- `besserlesenschreiben/reviewer/` — Vite/React internal **staff portal** for professional homework review (`-review` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner progress. (The "Wortschatz" lexeme-curation tab was dropped 2026-07-13 with the Vokaltraining content set — ROADMAP.md §F.)
+- `besserlesenschreiben/trainer/` — Vite/React internal **staff portal** for professional homework review (`-trainer` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner progress. (The "Wortschatz" lexeme-curation tab was dropped 2026-07-13 with the Vokaltraining content set — ROADMAP.md §F.)
 
-Two disjoint **auth realms** (ARCHITECTURE §1a): the **family** realm (parents + students, `-web`) and the **staff** realm (internal reviewers, `-review`). A credential in one is never valid in the other — different cookie/`aud`, different guard (`JwtAuthGuard` vs `StaffAuthGuard`).
+Two disjoint **auth realms** (ARCHITECTURE §1a): the **family** realm (parents + students, `-web`) and the **staff** realm (internal trainers, `-trainer`). A credential in one is never valid in the other — different cookie/`aud`, different guard (`JwtAuthGuard` vs `StaffAuthGuard`).
 
 The seed script lives in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent; bootstraps staff admins from `STAFF_ADMIN_EMAILS`, and — with `SEED_DEV_ACCOUNTS=true` — dev login accounts). Content seeding (the item bank + lexeme base ⊕ overrides, `npm run gen:items`) was dropped 2026-07-13 along with the Vokaltraining content set — see ROADMAP.md §F for the content-set redesign in progress. `item_bank.seed.json` is the curated source of truth for exercise content once it exists — there is no regeneration script (never rebuild it wholesale).
 
-Currently one **monorepo** for fast cross-cutting iteration; the subprojects are independently buildable/deployable and split into the `-api`/`-web`/`-review` repos before launch (ARCHITECTURE §1).
+Currently one **monorepo** for fast cross-cutting iteration; the subprojects are independently buildable/deployable and split into the `-api`/`-web`/`-trainer` repos before launch (ARCHITECTURE §1).
 
 ## Read order before touching any code
 
@@ -26,8 +26,8 @@ Currently one **monorepo** for fast cross-cutting iteration; the subprojects are
 
 ### Run locally (dev)
 ```bash
-besserlesenschreiben/dev.sh all      # backend (:3000) + family (:5173) + reviewer (:5174), Ctrl-C stops all
-besserlesenschreiben/dev.sh          # backend + family only  ·  api / web / review = one subproject at a time
+besserlesenschreiben/dev.sh all      # backend (:3000) + family (:5173) + trainer (:5174), Ctrl-C stops all
+besserlesenschreiben/dev.sh          # backend + family only  ·  api / web / trainer = one subproject at a time
 ```
 Copies missing `.env` files from `.env.example` and installs deps on first run. It does **not** set up
 Postgres — do the one-time DB setup in `besserlesenschreiben/backend/README.md` first.
@@ -59,7 +59,7 @@ npm test -- src/path/to/spec.ts # run a single test file
 npm run gen:api                 # regenerate api.ts types from backend OpenAPI (openapi-typescript)
 ```
 
-### Reviewer (`besserlesenschreiben/reviewer/`)
+### Trainer (`besserlesenschreiben/trainer/`)
 Same commands as the frontend (`npm install` · `npm run dev` on **:5174** · `build` · `test` · `gen:api`), typed from the backend's `/staff/*` OpenAPI. Internal staff portal — desktop/tablet, no PWA.
 
 ### End-to-end (`e2e/`, repo root — its own npm project)
@@ -69,9 +69,9 @@ cd e2e && npm install && npx playwright install --with-deps chromium webkit   # 
 npm test                          # boots backend :3100 + family :5273, seeds, runs the Playwright suite
 npm run test:ui                   # interactive debug
 ```
-Real user journeys over family frontend + backend, deterministic and offline: `ANTHROPIC_API_KEY=''` → `StubLlmProvider`, `EMAIL_PROVIDER=capture` (login codes read back via a gated test route), local-disk storage, and the anchor journey uses a **bank session** (zero LLM calls). Dedicated ports so a run never collides with `dev.sh`. `global-setup.ts` runs `migrate deploy` + `npm run seed` (item bank) + `npm run seed:e2e` (an active family account + a reviewer). **Run locally only — the Playwright suite is intentionally not part of CI**; the fast backend/frontend/reviewer jobs (contract-drift gates, golden snapshots, unit specs) are the CI safety net, so this is a thin real-journey layer you run yourself before pushing.
+Real user journeys over family frontend + backend, deterministic and offline: `ANTHROPIC_API_KEY=''` → `StubLlmProvider`, `EMAIL_PROVIDER=capture` (login codes read back via a gated test route), local-disk storage, and the anchor journey uses a **bank session** (zero LLM calls). Dedicated ports so a run never collides with `dev.sh`. `global-setup.ts` runs `migrate deploy` + `npm run seed` (item bank) + `npm run seed:e2e` (an active family account + a trainer). **Run locally only — the Playwright suite is intentionally not part of CI**; the fast backend/frontend/trainer jobs (contract-drift gates, golden snapshots, unit specs) are the CI safety net, so this is a thin real-journey layer you run yourself before pushing.
 
-**CI (`.github/workflows/ci.yml`):** per-project jobs run `lint · typecheck · test · build` plus the **contract-drift gates** — `npm run openapi:export` then `git diff --exit-code openapi.json` (backend), and `npm run gen:api` then `git diff --exit-code api.gen.ts` (frontend/reviewer). Regenerate and commit these whenever a Zod contract changes or CI fails red.
+**CI (`.github/workflows/ci.yml`):** per-project jobs run `lint · typecheck · test · build` plus the **contract-drift gates** — `npm run openapi:export` then `git diff --exit-code openapi.json` (backend), and `npm run gen:api` then `git diff --exit-code api.gen.ts` (frontend/trainer). Regenerate and commit these whenever a Zod contract changes or CI fails red.
 
 Other root dirs: `website/` — static marketing page; `assets/` — the master mascot/art source library +
 `manifest.json` catalog (SVG masters versioned, large PNG renders gitignored; the app serves the SVG subset
@@ -120,7 +120,7 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 The database decides *what* to drill — informed by telemetry **and the staff-validated homework focus**; the LLM only generates *new content and conversation*.
 
 ### Homework review (professional-in-the-loop)
-Homework photos are uploaded by the family but validated by an **internal staff reviewer**, not the parent (ARCHITECTURE §11, backend SPEC §10). Vision produces a **draft** (`homework_upload.llm_analysis`) that is **never applied on its own**; a reviewer approves/corrects/rejects in the staff portal, and only the **authoritative** `reviewed_analysis` mutates `attempt`/`review_state` and feeds the next lecture. Review is **async** (the student is never blocked) and the queue is **pseudonymised** (image + draft + skill tags + grade band only). The old `POST /homework/{id}/confirm` parent step is **removed**.
+Homework photos are uploaded by the family but validated by an **internal staff trainer**, not the parent (ARCHITECTURE §11, backend SPEC §10). Vision produces a **draft** (`homework_upload.llm_analysis`) that is **never applied on its own**; a trainer approves/corrects/rejects in the staff portal, and only the **authoritative** `reviewed_analysis` mutates `attempt`/`review_state` and feeds the next lecture. Review is **async** (the student is never blocked) and the queue is **pseudonymised** (image + draft + skill tags + grade band only). The old `POST /homework/{id}/confirm` parent step is **removed**.
 
 ### Build status & roadmap
 The single source of truth for what's shipped and what's next is the repo-root **`ROADMAP.md`**. In short:
@@ -142,9 +142,9 @@ account. TTS is deferred (Web-Speech fallback for now; target Amazon Polly).
 5. **Signup is silent pending-on-first-code.** A first `/auth/request-code` for an unknown email creates a `pending` account and **emails nothing** (still `200`, no enumeration); a staff admin approves before any code is sent. The family UI says "we'll email you soon," never advancing to code entry.
 6. **Never log** student answers, homework/OCR content, email addresses, login codes, JWTs, presigned URLs, or request/response bodies. Log identifiers + outcomes only.
 7. **One error envelope** for every non-2xx response: `{error:{code,message,requestId,details[]}}`. The global exception filter handles this — never leak Prisma/provider errors.
-8. **Staff user-administration is admin-role-only and sees identity.** Approve/deactivate/delete (`/staff/users/*`) handle real emails and are gated by `role='admin'` — kept separate from the pseudonymised reviewer queue (rule 10). Account deletion erases DB rows **and** the account's blobs.
+8. **Staff user-administration is admin-role-only and sees identity.** Approve/deactivate/delete (`/staff/users/*`) handle real emails and are gated by `role='admin'` — kept separate from the pseudonymised trainer queue (rule 10). Account deletion erases DB rows **and** the account's blobs.
 9. **The two auth realms never cross.** `/staff/*` requires a staff cookie (`aud:"staff"`, `StaffAuthGuard`); a family JWT is rejected there and a staff cookie is rejected on every family route. Realms use **distinct signing keys** (`STAFF_JWT_SECRET` ≠ `JWT_SECRET`).
-10. **The reviewer queue is pseudonymised.** `/staff/*` exposes only the homework image (per-upload presigned URL), the LLM draft, skill tags, and a grade band — never a student name, parent email, chat text, or billing. Homework's `llm_analysis` is a draft and **must not** mutate the learning profile before a reviewer verdict; only `reviewed_analysis` applies.
+10. **The trainer queue is pseudonymised.** `/staff/*` exposes only the homework image (per-upload presigned URL), the LLM draft, skill tags, and a grade band — never a student name, parent email, chat text, or billing. Homework's `llm_analysis` is a draft and **must not** mutate the learning profile before a trainer verdict; only `reviewed_analysis` applies.
 
 ## Key conventions
 

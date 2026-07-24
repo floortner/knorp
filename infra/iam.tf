@@ -144,14 +144,14 @@ data "aws_iam_policy_document" "deploy" {
     actions   = ["s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetObject"]
     resources = [
       aws_s3_bucket.app.arn, "${aws_s3_bucket.app.arn}/*",
-      aws_s3_bucket.reviewer.arn, "${aws_s3_bucket.reviewer.arn}/*",
+      aws_s3_bucket.trainer.arn, "${aws_s3_bucket.trainer.arn}/*",
     ]
   }
   # Bust the CDN cache after a web deploy.
   statement {
     sid       = "Invalidate"
     actions   = ["cloudfront:CreateInvalidation"]
-    resources = [aws_cloudfront_distribution.app.arn, aws_cloudfront_distribution.reviewer.arn]
+    resources = [aws_cloudfront_distribution.app.arn, aws_cloudfront_distribution.trainer.arn]
   }
   # Trigger the on-box release + read back its result. SendCommand scoped to this one instance
   # (+ the managed shell-script document).

@@ -41,7 +41,7 @@ spine — see `SPEC.md` §4. Telemetry plumbing was built before the renderers �
   set); the ✨ **generated-lecture entry** on `/lernen` + the lesson **intro card** (§2) and the **homework
   "Foto & verbessern"** flow (§9). The app is **free** — no billing/supporter UI anywhere (ARCHITECTURE §9).
   **Homework upload lives in the student Chat tab** (`tabs/Chat.tsx`): the photo is sent as a chat message and
-  the reviewer's verdict is echoed back in-chat. The professional-in-the-loop model
+  the trainer's verdict is echoed back in-chat. The professional-in-the-loop model
   is unchanged (the photo still goes to the pseudonymised staff queue; the LLM never auto-applies it).
 
 ## Brand quick-reference

@@ -9,7 +9,7 @@ import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
 import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
 
 /**
- * Staff realm (ARCHITECTURE §1a / SPEC §12 Phase 2.5): reviewer auth + the homework review queue and
+ * Staff realm (ARCHITECTURE §1a / SPEC §12 Phase 2.5): trainer auth + the homework review queue and
  * authoritative apply, plus admin-only user administration (ARCHITECTURE §1b). PrismaService, JwtService,
  * EmailService, StorageService and FsrsService are all provided by global modules, so this module only
  * wires its own controllers/services/guards.

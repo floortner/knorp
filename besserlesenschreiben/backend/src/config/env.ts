@@ -17,13 +17,16 @@ export const envSchema = z.object({
   // main.ts refuses to boot with a wide-open credentialed CORS (ARCHITECTURE §4). Empty → permissive
   // (dev/test only).
   WEB_ORIGIN: z.string().default(''),
-  // Staff portal origin for CORS (credentials on). Empty → permissive (dev/test only).
+  // Trainer-Portal origin for CORS (credentials on). Empty → permissive (dev/test only).
+  TRAINER_ORIGIN: z.string().default(''),
+  // DEPRECATED alias for TRAINER_ORIGIN (pre-rename SSM/env may still set it); remove once the
+  // infra apply that writes TRAINER_ORIGIN has run everywhere.
   REVIEWER_ORIGIN: z.string().default(''),
   // Public base URL of this API incl. the /api/v1 prefix. Used to build capability URLs the browser loads
   // directly — e.g. serving homework images from the filesystem store (no S3). Empty →
   // http://localhost:${PORT}/api/v1 (dev default).
   PUBLIC_API_URL: z.string().default(''),
-  // Admin bootstrap (ARCHITECTURE §1b): comma-separated emails upserted as active admin reviewers by the
+  // Admin bootstrap (ARCHITECTURE §1b): comma-separated emails upserted as active admin trainers by the
   // seed (no staff self-signup). Empty in dev; set to the owner's email so someone can approve families.
   STAFF_ADMIN_EMAILS: z.string().default(''),
   // Homework review queue soft-lock lease, seconds (SPEC §6). Default 15 min.
@@ -34,12 +37,12 @@ export const envSchema = z.object({
   // Required when EMAIL_PROVIDER is not 'console'.
   EMAIL_FROM: z.string().default(''),
   // Local dev convenience accounts (seed.ts). Seeded ACTIVE so you can log straight into the family app /
-  // reviewer portal without the pending→staff-approval flow. Login stays passwordless — request a code,
+  // trainer portal without the pending→staff-approval flow. Login stays passwordless — request a code,
   // read it from the backend console. Requires BOTH an explicit SEED_DEV_ACCOUNTS=true opt-in AND
   // NODE_ENV != production, so a stray DEV_* var (e.g. a copied .env) can never seed a backdoor account.
   SEED_DEV_ACCOUNTS: z.string().default(''),
   DEV_FAMILY_EMAIL: z.string().default(''),
-  DEV_REVIEWER_EMAIL: z.string().default(''),
+  DEV_TRAINER_EMAIL: z.string().default(''),
   // later milestones (optional for now)
   ANTHROPIC_API_KEY: z.string().default(''),
   // Default generation/chat model. Sonnet 4.6 = the best speed/intelligence balance for structured tasks
@@ -47,7 +50,7 @@ export const envSchema = z.object({
   // on current models; steer via the prompt + output effort instead.)
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
   // Homework vision uses a stronger model — student handwriting OCR is accuracy-critical and the draft is
-  // the reviewer's starting point.
+  // the trainer's starting point.
   ANTHROPIC_VISION_MODEL: z.string().default('claude-opus-4-8'),
   // EU data-residency / DPA acknowledgement for Anthropic-direct. Required in production before any LLM
   // call goes out (ARCHITECTURE §8): the app refuses to start with a key set but this unacknowledged.

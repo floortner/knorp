@@ -46,7 +46,7 @@ resource "aws_s3_bucket_cors_configuration" "blob" {
   bucket = aws_s3_bucket.blob.id
   cors_rule {
     allowed_methods = ["GET", "PUT"]
-    allowed_origins = ["https://${local.app_fqdn}", "https://${local.reviewer_fqdn}"]
+    allowed_origins = ["https://${local.app_fqdn}", "https://${local.trainer_fqdn}"]
     allowed_headers = ["*"]
     max_age_seconds = 3000
   }
@@ -57,8 +57,8 @@ resource "aws_s3_bucket" "app" {
   bucket = local.app_bucket
 }
 
-resource "aws_s3_bucket" "reviewer" {
-  bucket = local.reviewer_bucket
+resource "aws_s3_bucket" "trainer" {
+  bucket = local.trainer_bucket
 }
 
 resource "aws_s3_bucket_public_access_block" "app" {
@@ -69,8 +69,8 @@ resource "aws_s3_bucket_public_access_block" "app" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_public_access_block" "reviewer" {
-  bucket                  = aws_s3_bucket.reviewer.id
+resource "aws_s3_bucket_public_access_block" "trainer" {
+  bucket                  = aws_s3_bucket.trainer.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -94,10 +94,10 @@ data "aws_iam_policy_document" "app_bucket" {
   }
 }
 
-data "aws_iam_policy_document" "reviewer_bucket" {
+data "aws_iam_policy_document" "trainer_bucket" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.reviewer.arn}/*"]
+    resources = ["${aws_s3_bucket.trainer.arn}/*"]
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
@@ -105,7 +105,7 @@ data "aws_iam_policy_document" "reviewer_bucket" {
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.reviewer.arn]
+      values   = [aws_cloudfront_distribution.trainer.arn]
     }
   }
 }
@@ -115,9 +115,9 @@ resource "aws_s3_bucket_policy" "app" {
   policy = data.aws_iam_policy_document.app_bucket.json
 }
 
-resource "aws_s3_bucket_policy" "reviewer" {
-  bucket = aws_s3_bucket.reviewer.id
-  policy = data.aws_iam_policy_document.reviewer_bucket.json
+resource "aws_s3_bucket_policy" "trainer" {
+  bucket = aws_s3_bucket.trainer.id
+  policy = data.aws_iam_policy_document.trainer_bucket.json
 }
 
 # ---- Release artifacts (backend source tarballs the deploy job uploads) ----

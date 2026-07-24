@@ -46,12 +46,14 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new AllExceptionsFilter());
   // CORS (ARCHITECTURE §4): production allows ONLY the configured origins — credentialed CORS must never
   // reflect arbitrary origins. Dev/test stay permissive so localhost ports work without ceremony.
-  const allowedOrigins = [process.env.WEB_ORIGIN, process.env.REVIEWER_ORIGIN]
+  // REVIEWER_ORIGIN is the deprecated pre-rename alias of TRAINER_ORIGIN — drop it once the infra
+  // apply that writes TRAINER_ORIGIN has run everywhere.
+  const allowedOrigins = [process.env.WEB_ORIGIN, process.env.TRAINER_ORIGIN, process.env.REVIEWER_ORIGIN]
     .flatMap((v) => (v ?? '').split(','))
     .map((s) => s.trim())
     .filter(Boolean);
   if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
-    throw new Error('CORS allowlist is empty: set WEB_ORIGIN (and REVIEWER_ORIGIN) in production (ARCHITECTURE §4).');
+    throw new Error('CORS allowlist is empty: set WEB_ORIGIN (and TRAINER_ORIGIN) in production (ARCHITECTURE §4).');
   }
   // @fastify/cors defaults Access-Control-Allow-Methods to GET,HEAD,POST only (unlike the Express `cors`
   // package), which silently blocks every cross-origin PATCH/PUT/DELETE preflight — enumerate them.

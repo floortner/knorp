@@ -8,9 +8,9 @@ output "app_url" {
   value       = "https://${local.app_fqdn}"
 }
 
-output "reviewer_url" {
-  description = "Reviewer portal URL."
-  value       = "https://${local.reviewer_fqdn}"
+output "trainer_url" {
+  description = "Trainer portal URL."
+  value       = "https://${local.trainer_fqdn}"
 }
 
 output "instance_id" {
@@ -38,9 +38,9 @@ output "app_bucket" {
   value       = aws_s3_bucket.app.bucket
 }
 
-output "reviewer_bucket" {
-  description = "S3 bucket for the reviewer web build."
-  value       = aws_s3_bucket.reviewer.bucket
+output "trainer_bucket" {
+  description = "S3 bucket for the trainer web build."
+  value       = aws_s3_bucket.trainer.bucket
 }
 
 output "app_cloudfront_id" {
@@ -48,9 +48,9 @@ output "app_cloudfront_id" {
   value       = aws_cloudfront_distribution.app.id
 }
 
-output "reviewer_cloudfront_id" {
-  description = "CloudFront distribution id (reviewer) — for cache invalidation."
-  value       = aws_cloudfront_distribution.reviewer.id
+output "trainer_cloudfront_id" {
+  description = "CloudFront distribution id (trainer) — for cache invalidation."
+  value       = aws_cloudfront_distribution.trainer.id
 }
 
 output "github_deploy_role_arn" {

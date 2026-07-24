@@ -89,7 +89,7 @@ describe('ReviewService.queue (pseudonymisation)', () => {
     expect(items[0].claimed).toBe(false); // unclaimed → pickable
   });
 
-  it('flags rows live-claimed by ANOTHER reviewer, but never my own claim', async () => {
+  it('flags rows live-claimed by ANOTHER trainer, but never my own claim', async () => {
     const base = { imageKey: 'k', createdAt: new Date('2026-06-29T10:00:00Z'), llmAnalysis: analysis, profile: { unlockedUnit: 1 } };
     const { svc } = setup({
       findMany: [
@@ -132,7 +132,7 @@ describe('ReviewService.queue (pseudonymisation)', () => {
 describe('ReviewService.claim', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('409s when another reviewer holds a live lease', async () => {
+  it('409s when another trainer holds a live lease', async () => {
     const { svc } = setup({ updateManyCount: 0, uploadRow: { id: 'up-1' } });
     expect(await statusOf(svc.claim('rev-1', 'up-1'))).toBe(409);
   });
@@ -173,7 +173,7 @@ describe('ReviewService.submit', () => {
     expect(calls.reviewStateUpsert).toHaveBeenCalledTimes(analysis.suggestedFocus.length);
   });
 
-  it('409s when a different reviewer holds a live lease', async () => {
+  it('409s when a different trainer holds a live lease', async () => {
     const { svc } = setup({
       uploadRow: { ...claimedByMe, claimedBy: 'rev-2' },
     });

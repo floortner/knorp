@@ -1,7 +1,7 @@
 # ROADMAP.md
 
 **Single source of truth** for build milestones (what's shipped) and the forward plan (what's next) across
-*besserlesenschreiben* — backend (`-api`), frontend (`-web`), reviewer (`-review`) — and the top-level
+*besserlesenschreiben* — backend (`-api`), frontend (`-web`), trainer (`-trainer`) — and the top-level
 `e2e/` suite.
 
 This file replaces the former per-spec milestone sections (`backend/SPEC.md §12`, `frontend/SPEC.md §11`)
@@ -12,13 +12,13 @@ and the old `saved-plan.md`. **When a milestone ships, tick it here** — not in
 
 Everything through **Phase 2.5 + the Post-2.5 work** below is **DONE** and CI-green. The whole forward plan's
 hardening (A), cleanup (B), most engagement work (C1, D1–D4, D7), and the **E — beta on AWS** milestone
-have shipped: backend + family frontend + reviewer portal are live on real HTTPS domains (`infra/` Terraform
+have shipped: backend + family frontend + trainer portal are live on real HTTPS domains (`infra/` Terraform
 + `deploy/` on-box scripts + `.github/workflows/deploy.yml`), inside the €50/mo all-in budget.
 
 - **In progress (external):** **F — content-set redesign** (§F): a linguist is authoring the new word
   lists, training types, and sequence. Engineering picks each piece up as it lands (F steps 2–6, via the
   §C2 playbook). Don't start F implementation unprompted — the pedagogy is the linguist's.
-- **Next (engineering):** **H — staff-authored lectures + student tracking** (§H): turn the reviewer
+- **Next (engineering):** **H — staff-authored lectures + student tracking** (§H): turn the trainer
   portal into the teaching console — trainers compose individual lectures, assign them to specific
   students (known-trainer model: real names), and **review thoroughly what each student did** (sessions
   started/duration, every question & answer, retries, timing). **H1 (rails) + H3 (tracking) are
@@ -83,7 +83,7 @@ stubs).
 6. ✅ **Chat** (free ★).
 7. ✅ **Homework upload + vision draft (family side).** `POST /homework` → storage (EXIF strip, WebP) → Claude
    vision → `llm_analysis` draft, `status='pending_review'`, enqueued for the staff review queue. **Nothing
-   mutates the profile** until a reviewer approves.
+   mutates the profile** until a trainer approves.
 8. ✅ **LLM session generation** — folds a reviewed upload's `reviewed_analysis.suggestedFocus` into the next
    on-the-fly lecture; generated exercises validated for solvability, stamped with a grade-band difficulty.
 
@@ -92,40 +92,40 @@ stubs).
    pending-on-first-code (no email until approved); family `JwtAuthGuard` requires `status='active'`
    (immediate deactivate/delete).
 10. ✅ **Staff user administration (admin role only).** `GET /staff/users`, approve / deactivate / delete
-    (erases DB + blobs) — distinct from the pseudonymised reviewer queue; reviewer-portal admin screens.
+    (erases DB + blobs) — distinct from the pseudonymised trainer queue; trainer-portal admin screens.
 
 ~~Billing (entitlements, credits, webhook, pay-it-forward)~~ — **removed from the roadmap** (schema kept
 dormant; ARCHITECTURE §9).
 
-**Phase 2.5 — professional review + staff portal:** the entire staff realm and the `-review` portal;
+**Phase 2.5 — professional review + staff portal:** the entire staff realm and the `-trainer` portal;
 reviewed homework now shapes lectures.
-11. ✅ **Staff realm foundation.** `reviewer` + `homework_review` tables; `StaffAuthGuard` (`aud:"staff"`,
+11. ✅ **Staff realm foundation.** `trainer` + `homework_review` tables; `StaffAuthGuard` (`aud:"staff"`,
     disjoint `STAFF_JWT_SECRET`, rejected on family routes and vice-versa); staff login (email code, own
-    httpOnly cookie) + `GET /staff/me`; ~3 reviewers admin-seeded (no self-signup).
+    httpOnly cookie) + `GET /staff/me`; ~3 trainers admin-seeded (no self-signup).
 12. ✅ **Review queue + authoritative apply.** `GET /staff/queue` (pseudonymised, cursor-paged, per-upload
     short-lived presigned `imageUrl`); claim/lease (`409` if held); `POST /staff/reviews/{id}` writes
     `reviewed_analysis`, derives `attempt` rows + adjusts `review_state`, sets `status='reviewed'`, records
-    the LLM-vs-reviewer diff (`agreed_with_llm`).
+    the LLM-vs-trainer diff (`agreed_with_llm`).
 13. ✅ **Lecture wiring + family status.** `reviewed_analysis.suggestedFocus` folds into the next lecture;
     `-web` surfaces `pending_review → reviewed` + the read-only authoritative result (no confirm UI).
-14. ✅ **Reviewer portal** (`besserlesenschreiben/reviewer`) — thin client over `/staff/*`, desktop/tablet
+14. ✅ **Trainer portal** (`besserlesenschreiben/trainer`) — thin client over `/staff/*`, desktop/tablet
     landscape: shell + staff auth; pseudonymised queue screen + claim; two-pane review screen
     (approve / correct / reject) → `POST /staff/reviews/{id}`.
 
 **Post-2.5:**
 - ~~**Lexeme foundation**~~ — **DROPPED 2026-07-13** (`chore/drop-vokaltraining-content`), along with the
   entire Vokaltraining content set: the `lexeme` table, `lexeme.seed.json`/`lexeme.overrides.json`,
-  `data-foundation/`, `npm run gen:items`, and the reviewer's Wortschatz curation tab are all removed. The
+  `data-foundation/`, `npm run gen:items`, and the trainer's Wortschatz curation tab are all removed. The
   word-list schema, training types, sequence, and lecture-generation approach are being redesigned from
   scratch — see **§F** below.
-- ✅ **Reviewer portal expansion** — brand-aligned chrome, nav count badges, queue history (`Offen/Erledigt/
+- ✅ **Trainer portal expansion** — brand-aligned chrome, nav count badges, queue history (`Offen/Erledigt/
   Alle`), admin-only learner-progress views (identity-bearing per account; pseudonymised per upload).
-- ✅ **Reviewer workflow batch (2026-07-14, #79)** — queue: cursor "Mehr laden" paging, waiting-since cue,
+- ✅ **Trainer workflow batch (2026-07-14, #79)** — queue: cursor "Mehr laden" paging, waiting-since cue,
   `claimed`/"in Prüfung" locks (open now lists ALL undecided items), read-only history detail
   (`/history/:uploadId`). Review flow: submit→next-item, unsaved-changes guard, claim-conflict read-only
   lockout, reject confirmation, homework-image lightbox (zoom/pan/rotate). Own **Profil** tab (`/profile`
   → `PATCH /staff/me` rename; `GET /staff/me` gains `email`+`createdAt`). Admin email search
-  (`GET /staff/users?q=`). Content rule: reviewer copy is emoji-free, lucide icons used consistently
+  (`GET /staff/users?q=`). Content rule: trainer copy is emoji-free, lucide icons used consistently
   (AGENTS.md). Audit trail still deferred to the OTel build-out (§E).
 - ✅ **Homework-in-chat** — upload moved into the family Chat tab; durable photo + status bubbles served by
   chat history; verdict echoed in-chat.
@@ -180,8 +180,8 @@ progression with per-unit Merksatz intro cards, and a ~360-item seed bank — wa
 the whole content set (§F). The `Exercise` contract now holds a single stand-in `placeholder` type; training
 types, sequence, and word lists are being redesigned from scratch.
 
-> The **staff reviewer portal** is a **separate subproject** (`besserlesenschreiben/reviewer`, future
-> `-review` repo), out of scope for `-web`: don't build review/queue screens there. The only homework surface
+> The **staff trainer portal** is a **separate subproject** (`besserlesenschreiben/trainer`, future
+> `-trainer` repo), out of scope for `-web`: don't build review/queue screens there. The only homework surface
 > in `-web` is the upload + status tracking in the Chat tab.
 
 ---
@@ -192,7 +192,7 @@ types, sequence, and word lists are being redesigned from scratch.
 
 1. ~~No request-level rate limiting.~~ **DONE** — `@fastify/rate-limit` in `main.ts`: 10 req/min for
    `/auth/*`, 300/min elsewhere, loopback exempt for e2e (PR #49 + allowList fix).
-2. ~~E2E coverage misses the upload → reviewer verdict → chat-status seam.~~ **DONE** —
+2. ~~E2E coverage misses the upload → trainer verdict → chat-status seam.~~ **DONE** —
    `homework-loop.spec.ts` cross-realm Playwright journey (PR #50).
 
 > The remaining pre-prod hardening — observability, off-platform backups, staff-MFA decision — is
@@ -206,12 +206,12 @@ types, sequence, and word lists are being redesigned from scratch.
    env, wrong for the AWS design (Polly authenticates via IAM role; billing re-adds by migration if ever needed).
 3. ~~Expired login-code rows accumulate (`login_code`, `staff_login_code`).~~ **DONE** (PR #49) — cleanup
    exists; scheduling it folds into E5.
-4. ~~Reviewer claim isn't released on leaving the review screen (lease expires after 15 min).~~ **DONE** (PR #49).
+4. ~~Trainer claim isn't released on leaving the review screen (lease expires after 15 min).~~ **DONE** (PR #49).
 
 ### C. Extensibility
 
 1. ~~Age property (`ageBand` on lexeme).~~ **DONE, then DROPPED 2026-07-13** — shipped end-to-end
-   (`ageBand ∈ {"6-7","8-9",null}`, `gradeBand()` → `wordPoolFor`/`pickForSkill` word-pool selection, reviewer
+   (`ageBand ∈ {"6-7","8-9",null}`, `gradeBand()` → `wordPoolFor`/`pickForSkill` word-pool selection, trainer
    Wortschatz filter/column/editor) but removed along with the whole `lexeme` foundation (§F). The
    profile-side counterpart (grade or birth year — `unlockedUnit` is a weak age proxy) is still an open,
    independent idea for whenever profile-level age targeting is wanted again.
@@ -231,7 +231,7 @@ types, sequence, and word lists are being redesigned from scratch.
      a new renderer) → `derive.ts` `promptAndExpected()` (telemetry case — stay total over the union) →
      `fixtures/session.example.json` (one golden example per type so the "covers all types" gate stays green)
      → `ExerciseView.spec.tsx` (snapshot + interaction test). `npm run gen:api`.
-   - **Reviewer:** none — exercise types don't surface in the staff portal.
+   - **Trainer:** none — exercise types don't surface in the staff portal.
 
 ### D. Frontend engagement & retention
 
@@ -260,8 +260,8 @@ patterns**. Ranked by impact-per-effort.
 
 ### E. First feedback round (beta) on AWS — DONE
 
-**Goal:** get backend + family frontend + reviewer portal running in AWS on real HTTPS domains so **~10
-families and 1–2 reviewers** can give a first round of feedback. A beta soft-launch, not full prod
+**Goal:** get backend + family frontend + trainer portal running in AWS on real HTTPS domains so **~10
+families and 1–2 trainers** can give a first round of feedback. A beta soft-launch, not full prod
 hardening — but with a minimum data-safety floor, because it handles minors' data.
 
 **Budget: €50/mo total, AWS + Anthropic combined** (≈ $54 total — *not* a separate Anthropic figure).
@@ -298,7 +298,7 @@ Provisioned as **Terraform in `infra/`** (reproducible, reviewable, doubles as t
 3. ✅ **GitHub Actions deploy** (`.github/workflows/deploy.yml`, manual `workflow_dispatch` button only —
    merging never auto-deploys) — `api` job: `aws ssm send-command` → on-box `deploy/release.sh` (`npm ci` →
    build → `prisma migrate deploy` pre-traffic → `npm run seed` → refresh env from SSM → `systemctl
-   restart`); `web` job: build family + reviewer with prod `VITE_API_BASE` (+ `VITE_PWA=true` for `-web`) →
+   restart`); `web` job: build family + trainer with prod `VITE_API_BASE` (+ `VITE_PWA=true` for `-web`) →
    `s3 sync` → CloudFront invalidation. Contract drift gates stay green before any deploy.
 4. ✅ **Prod config** (`infra/ssm.tf`) — `WEB_ORIGIN`/`REVIEWER_ORIGIN`/`PUBLIC_API_URL`,
    `STAFF_ADMIN_EMAILS`, `EMAIL_PROVIDER=ses` (IAM-role auth, no key), `AWS_S3_BUCKET` +
@@ -331,7 +331,7 @@ review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline).
 > **Re-creation reference (read this first).** The complete, working Vokaltraining implementation — the
 > `Lexeme` model, all 14 exercise types with their solvability rules, the 7-unit catalogue, the full
 > `LLM_SYSTEM`/`FEW_SHOT` lecture prompt with word-pool grounding, `LexemeService`, `gen-items-from-lexemes.ts`,
-> the Wortschatz reviewer tab, and the `lexeme.seed.json`/`data-foundation` corpus — is preserved intact at
+> the Wortschatz trainer tab, and the `lexeme.seed.json`/`data-foundation` corpus — is preserved intact at
 > **commit `0d4948b`** (the parent of the drop commit). Re-creation is **fill-in-the-slots against a working
 > reference, not invention from a blank page**: `git show 0d4948b:<path>` any old file. The drop deliberately
 > left the plumbing wired to a single `placeholder` type so each piece plugs back into a known seam.
@@ -366,7 +366,7 @@ review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline).
 6. **Lecture-generation prompt** (`sessions.service.ts` `LLM_SYSTEM`/`FEW_SHOT`) — rewrite the per-type
    solvability rules + few-shot examples for the new training types; re-add word-pool grounding
    (`wordPoolFor`/`LexemeService`) and the `gradeBand` `maxHk`/`ageBand` calibration if the new schema wants it.
-7. **Reviewer curation surface** — decide whether the new word-list schema needs a staff curation tab (the old
+7. **Trainer curation surface** — decide whether the new word-list schema needs a staff curation tab (the old
    Wortschatz tab + `/staff/lexemes` routes are at `0d4948b` as a reference). The lecture **authoring**
    surface is a separate, decided milestone — see **§H** (this step is only about word-list curation).
 
@@ -399,7 +399,7 @@ Full-surface review in `SECURITY_REVIEW.md`; tracking issue **#81**.
   provision a write-only backup token + `HEALTHCHECK_URL`; re-verify the dormant P2-4 taxonomy filter once
   `SKILL_TAGS` is populated in §F. (All in #81.)
 
-### H. Staff-authored lectures — the reviewer portal as teaching console
+### H. Staff-authored lectures — the trainer portal as teaching console
 
 **Goal:** a trainer composes an individual lecture — teaching intro (Merksatz) + an ordered set of
 exercises — and **assigns it to specific students**, who see it in the family app ("Übung von deiner
@@ -419,7 +419,7 @@ adds the trainer-facing read model and screens, not new telemetry.
 **Product reality (2026-07-15, supersedes the pseudonymisation rationale):** the trainers (2–3 in the
 beginning) **know each student personally** and speak with the parents in person. The staff portal is a
 known-trainer tool, not an anonymous review desk — trainers work with **real student names**. The old
-pseudonymised-queue rule (ARCHITECTURE §1a / security rule 10) was designed for anonymous reviewers
+pseudonymised-queue rule (ARCHITECTURE §1a / security rule 10) was designed for anonymous trainers
 and no longer matches the product; **H1 revises it**: staff surfaces show the student's name + progress;
 parent email/account administration stays admin-only. (The `L-xxxxxx` handle can remain internally as
 a stable id, but it stops being a display requirement.)
@@ -434,14 +434,14 @@ a stable id, but it stops being a display requirement.)
 - Trainers see student names + learning data; **parent email + account lifecycle stay admin-only**.
 
 **H1 — the rails (type-agnostic; buildable NOW against `placeholder`):**
-1. **Schema:** `lecture` (id, created_by → reviewer, title, intro, item_ids uuid[], skill_tags,
+1. **Schema:** `lecture` (id, created_by → trainer, title, intro, item_ids uuid[], skill_tags,
    status `draft|published`, timestamps) + `assignment` (lecture_id, profile_id, assigned_by,
    assigned_at, session_id nullable, completed_at nullable). `item_bank.generated_by` gains `'staff'`;
    `session.source` gains `'assigned'`.
 2. **Staff routes** (backend SPEC §6): lecture CRUD (create validates every exercise via
    `solvableExerciseSchema`), publish, assign to N profiles, list assignments with status
    (`open | started | completed`) and per-item results after completion.
-3. **Learner directory:** a student list for **all reviewers** — student name, grade band, skill
+3. **Learner directory:** a student list for **all trainers** — student name, grade band, skill
    breakdown, recent activity — the picker for assignment and the context for authoring. This is the
    rule-10 revision point: replace the `profileHandle` display with the student's name across staff
    surfaces (queue included), and re-true ARCHITECTURE §1a/§11 + CLAUDE.md security rule 10 in the
@@ -481,7 +481,7 @@ a stable id, but it stops being a display requirement.)
 
 **Docs to true when H lands:** ARCHITECTURE §1a + §11 (known-trainer model replaces the pseudonymised
 queue; teaching-console extension + the new invariants), CLAUDE.md security rule 10, backend SPEC
-§3/§6/§8 (tables, staff routes, `source='assigned'`), frontend SPEC §2 (assignment card), reviewer
+§3/§6/§8 (tables, staff routes, `source='assigned'`), frontend SPEC §2 (assignment card), trainer
 AGENTS.md (new screens + updated golden rules), and this file.
 
 ---

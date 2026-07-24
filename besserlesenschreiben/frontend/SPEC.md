@@ -146,7 +146,7 @@ GET  /me                       POST /profiles            PATCH /profiles/{id}/se
 GET  /units                    POST /sessions            POST /attempts        POST /sessions/{id}/complete
 GET  /progress/{id}            GET  /digest/{id}
 GET  /chat/{id}                POST /chat/{id}            # history messages may carry imageUrl (homework bubbles)
-POST /homework                 GET  /homework/{id}        # no /confirm — staff reviewer is the human gate (§9)
+POST /homework                 GET  /homework/{id}        # no /confirm — staff trainer is the human gate (§9)
 POST /profiles/{id}/reset      POST /profiles/{id}/reset-chat                  # destructive — §8
 ```
 
@@ -182,9 +182,9 @@ holding the family session can trigger them:
 
 ## 9. Homework "Foto & verbessern" flow (in the Chat tab)
 
-The human gate is a **trained professional (staff reviewer)**, not the parent — see `../ARCHITECTURE.md` §11
+The human gate is a **trained professional (staff trainer)**, not the parent — see `../ARCHITECTURE.md` §11
 and `../backend/SPEC.md` §10. This `-web` app **uploads and tracks status only**; it never shows the raw LLM
-draft and has **no confirm/edit UI** (the reviewer portal `-review` owns that, and is not part of this repo).
+draft and has **no confirm/edit UI** (the trainer portal `-trainer` owns that, and is not part of this repo).
 
 1. The 📷 button next to the chat input opens the camera/picker → `POST /homework` (multipart). The photo
    appears as a chat message (the backend serves it back as a durable bubble in `/chat` history). Consent
@@ -195,7 +195,7 @@ draft and has **no confirm/edit UI** (the reviewer portal `-review` owns that, a
    `reviewedAnalysis`) — read-only, no accept/reject.
 4. The validated focus shapes the **next** generated lecture; surface that session in `/lernen` when it
    appears. There is no family confirm step and the student is never blocked while a photo is in review.
-- Student handwriting OCR is unreliable → the mandatory human gate is the **staff reviewer**, whose verdict
+- Student handwriting OCR is unreliable → the mandatory human gate is the **staff trainer**, whose verdict
   is authoritative (the former parent-confirm step is removed). The upload is **not** PIN-gated — it lives in
   the student-facing chat by product decision; the professional-in-the-loop pipeline is unchanged.
 

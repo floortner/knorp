@@ -25,14 +25,14 @@ npm run test:ui                   # debug interactively
 ```
 
 Override the DB with `DATABASE_URL=... npm test`. `global-setup.ts` runs `prisma migrate deploy`,
-`npm run seed` (item bank), and `npm run seed:e2e` (an active family account + a reviewer) before tests.
+`npm run seed` (item bank), and `npm run seed:e2e` (an active family account + a trainer) before tests.
 
 ## CI
 This suite is **local-only** — it is intentionally **not** run in CI. `.github/workflows/ci.yml` runs the
-fast backend/frontend/reviewer unit + golden + contract jobs; run the Playwright suite yourself
+fast backend/frontend/trainer unit + golden + contract jobs; run the Playwright suite yourself
 (`cd e2e && npm test`) before pushing anything that touches a real user journey.
 
 ## Adding specs
 - Login helper: `helpers/auth.ts` (`loginAsFamily`).
-- Follow-ons (harness already supports them): the homework-upload chat flow; reviewer smoke
+- Follow-ons (harness already supports them): the homework-upload chat flow; trainer smoke
   (staff realm on :5274 — add a third `webServer`); LLM chat/lesson against the stub.

@@ -17,7 +17,7 @@ export class StubLlmProvider implements LlmProvider {
 
   async extractRaw(req: ProviderExtractRequest): Promise<unknown> {
     // Homework vision is the one extract the stub CAN safely fake: the draft is never applied without a
-    // human reviewer verdict (the product's own gate), so a canned draft just lets the upload → queue →
+    // human trainer verdict (the product's own gate), so a canned draft just lets the upload → queue →
     // review loop run offline (dev + e2e). Lecture generation stays a loud 503 — fabricated exercises
     // would reach a student directly.
     if (req.schemaName === 'homework_analysis') {

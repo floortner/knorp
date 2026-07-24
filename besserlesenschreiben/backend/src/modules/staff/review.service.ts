@@ -71,7 +71,7 @@ function queueQuery(
       return { where: {}, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] };
     default:
       // open: ALL undecided items, oldest-first (FIFO). Live-claimed rows are included and flagged
-      // `claimed` (in Prüfung) so other reviewers see work in progress instead of items vanishing.
+      // `claimed` (in Prüfung) so other trainers see work in progress instead of items vanishing.
       return {
         where: { status: 'pending_review' },
         orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
@@ -82,9 +82,9 @@ function queueQuery(
 const MAX_LIMIT = 50;
 
 /**
- * Homework review queue + authoritative apply (ARCHITECTURE §11, SPEC §10). The reviewer's verdict is
+ * Homework review queue + authoritative apply (ARCHITECTURE §11, SPEC §10). The trainer's verdict is
  * authoritative: only `reviewed_analysis` ever mutates the learning profile. The queue is PSEUDONYMISED
- * (no student name/email/chat/billing). Reviewer id comes ONLY from the staff JWT, never the request.
+ * (no student name/email/chat/billing). Trainer id comes ONLY from the staff JWT, never the request.
  */
 @Injectable()
 export class ReviewService {
@@ -112,7 +112,7 @@ export class ReviewService {
    * detail view. `all` = everything. Every row stays PSEUDONYMISED. Cursor-paged, with a total.
    */
   async queue(
-    reviewerId: string,
+    trainerId: string,
     limit: number,
     cursor?: string,
     filter: QueueFilter = 'open',
@@ -158,8 +158,8 @@ export class ReviewService {
           imageUrl: await this.storage.signedHomeworkReadUrl(row.imageKey, this.claimTtlMs / 1000),
           llmAnalysis: analysis,
           createdAt: row.createdAt.toISOString(),
-          // In Prüfung by ANOTHER reviewer (live lease). Own claims stay actionable (re-openable).
-          claimed: row.claimedBy != null && row.claimedBy !== reviewerId &&
+          // In Prüfung by ANOTHER trainer (live lease). Own claims stay actionable (re-openable).
+          claimed: row.claimedBy != null && row.claimedBy !== trainerId &&
             row.claimedUntil != null && row.claimedUntil > now,
           decision: row.reviewDecision ?? null,
           reviewedAt: row.reviewedAt ? row.reviewedAt.toISOString() : null,
@@ -173,17 +173,17 @@ export class ReviewService {
     return { items, nextCursor, total };
   }
 
-  /** Soft-lock an item so two reviewers don't grade it twice. 409 if another holds a live lease. */
-  async claim(reviewerId: string, uploadId: string): Promise<{ uploadId: string; claimedUntil: string }> {
+  /** Soft-lock an item so two trainers don't grade it twice. 409 if another holds a live lease. */
+  async claim(trainerId: string, uploadId: string): Promise<{ uploadId: string; claimedUntil: string }> {
     const now = new Date();
     const claimedUntil = new Date(now.getTime() + this.claimTtlMs);
     const res = await this.prisma.homeworkUpload.updateMany({
       where: {
         id: uploadId,
         status: 'pending_review',
-        OR: [{ claimedBy: null }, { claimedBy: reviewerId }, { claimedUntil: { lt: now } }],
+        OR: [{ claimedBy: null }, { claimedBy: trainerId }, { claimedUntil: { lt: now } }],
       },
-      data: { claimedBy: reviewerId, claimedUntil },
+      data: { claimedBy: trainerId, claimedUntil },
     });
     if (res.count === 0) {
       // Either it doesn't exist / isn't pending, or someone else holds a live lease.
@@ -194,26 +194,26 @@ export class ReviewService {
       if (!exists) throw new ApiException(404, 'NOT_FOUND', 'Hausübung nicht gefunden.');
       throw new ApiException(409, 'CONFLICT', 'Wird bereits von einer anderen Fachkraft geprüft.');
     }
-    this.logger.log({ event: 'review.claimed', reviewerId, uploadId }, 'claimed');
+    this.logger.log({ event: 'review.claimed', trainerId, uploadId }, 'claimed');
     return { uploadId, claimedUntil: claimedUntil.toISOString() };
   }
 
   /** Submit the authoritative verdict. approve/correct apply it; reject mutates nothing. */
   /**
    * Release the caller's own claim (leaving the review screen without a verdict). Only clears the lease
-   * if THIS reviewer holds it and the item is still pending — releasing after a submit or a takeover is a
+   * if THIS trainer holds it and the item is still pending — releasing after a submit or a takeover is a
    * harmless no-op. Idempotent.
    */
-  async release(reviewerId: string, uploadId: string): Promise<{ ok: true }> {
+  async release(trainerId: string, uploadId: string): Promise<{ ok: true }> {
     await this.prisma.homeworkUpload.updateMany({
-      where: { id: uploadId, claimedBy: reviewerId, status: 'pending_review' },
+      where: { id: uploadId, claimedBy: trainerId, status: 'pending_review' },
       data: { claimedBy: null, claimedUntil: null },
     });
     return { ok: true };
   }
 
   async submit(
-    reviewerId: string,
+    trainerId: string,
     uploadId: string,
     dto: ReviewSubmitInput,
   ): Promise<{ status: 'reviewed' | 'rejected' }> {
@@ -224,7 +224,7 @@ export class ReviewService {
     }
     // Only the claimant may submit while a lease is live; once it expires, anyone may take over.
     const leaseLive = upload.claimedUntil !== null && upload.claimedUntil > new Date();
-    if (leaseLive && upload.claimedBy && upload.claimedBy !== reviewerId) {
+    if (leaseLive && upload.claimedBy && upload.claimedBy !== trainerId) {
       throw new ApiException(409, 'CONFLICT', 'Wird bereits von einer anderen Fachkraft geprüft.');
     }
 
@@ -243,7 +243,7 @@ export class ReviewService {
           where: { id: uploadId, status: 'pending_review' },
           data: {
             status: 'rejected',
-            reviewerId,
+            trainerId,
             reviewDecision: 'rejected',
             reviewedAt: now,
             claimedBy: null,
@@ -256,7 +256,7 @@ export class ReviewService {
         await tx.homeworkReview.create({
           data: {
             uploadId,
-            reviewerId,
+            trainerId,
             decision: 'rejected',
             llmAnalysis: draft.data as unknown as Prisma.InputJsonValue,
             agreedWithLlm: false,
@@ -264,7 +264,7 @@ export class ReviewService {
           },
         });
       });
-      this.logger.log({ event: 'homework.reviewed', reviewerId, uploadId, decision: 'rejected' }, 'rejected');
+      this.logger.log({ event: 'homework.reviewed', trainerId, uploadId, decision: 'rejected' }, 'rejected');
       return { status: 'rejected' };
     }
 
@@ -280,7 +280,7 @@ export class ReviewService {
         data: {
           status: 'reviewed',
           reviewedAnalysis: reviewed as unknown as Prisma.InputJsonValue,
-          reviewerId,
+          trainerId,
           reviewDecision: dto.decision,
           reviewedAt: now,
           appliedAt: now,
@@ -294,7 +294,7 @@ export class ReviewService {
       await tx.homeworkReview.create({
         data: {
           uploadId,
-          reviewerId,
+          trainerId,
           decision: dto.decision,
           llmAnalysis: draft.data as unknown as Prisma.InputJsonValue,
           reviewedAnalysis: reviewed as unknown as Prisma.InputJsonValue,
@@ -343,7 +343,7 @@ export class ReviewService {
     });
 
     this.logger.log(
-      { event: 'homework.reviewed', reviewerId, uploadId, decision: dto.decision, agreedWithLlm },
+      { event: 'homework.reviewed', trainerId, uploadId, decision: dto.decision, agreedWithLlm },
       'reviewed',
     );
     return { status: 'reviewed' };
