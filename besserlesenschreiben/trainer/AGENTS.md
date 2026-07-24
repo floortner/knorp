@@ -5,11 +5,12 @@ Instructions for AI coding agents (Claude Code) working in this folder. Read thi
 conflict, `../ARCHITECTURE.md` wins.
 
 ## What this is
-The **internal staff portal** for **professional homework review**. A vetted literacy professional opens a
-pending homework photo with its **LLM draft analysis**, validates/corrects it, and approves/rejects. Their
-verdict is **authoritative** and feeds the student's next lecture (ARCHITECTURE §11). It is a **pure HTTP
-client** over the backend `staff/` routes — it holds **no business logic** (queue ordering, who may review,
-the authoritative-apply step all live in the backend).
+The **internal staff portal** — professional homework review plus the trainer's **learner directory and
+student activity tracking** (ROADMAP §H: the portal is becoming the teaching console). A vetted literacy
+professional reviews homework drafts (their verdict is **authoritative** and feeds the student's next
+lecture, ARCHITECTURE §11) and tracks each student's sessions question-by-question to shape the next
+material. It is a **pure HTTP client** over the backend `staff/` routes — it holds **no business logic**
+(queue ordering, who may review, the authoritative-apply step, activity rollups all live in the backend).
 
 This app is **internal-only**: ~3 hand-provisioned staff, never shipped to families, `noindex`.
 
@@ -18,9 +19,10 @@ This app is **internal-only**: ~3 hand-provisioned staff, never shipped to famil
    (`credentials:'include'`); there is **no token in JS**. Never import or reuse anything from the `-web`
    family app's auth. A family JWT must never work here and vice-versa (the backend enforces it; don't
    undermine it client-side).
-2. **Minimise what you show (pseudonymisation).** The queue and review screens may show only: the homework
-   **image**, the **LLM draft**, **skill tags**, and a **grade band**. **Never** render or request a student's
-   name, the parent email, chat, billing, or any direct identifier — the backend won't send them; don't add a
+2. **Minimise what you show (known-trainer model, revised 2026-07-25 — ROADMAP §H1.3).** Trainer surfaces
+   show the student's **name and learning data** (the trainers know each student personally; the old
+   `L-xxxxxx` pseudonym is retired). **Never** render or request a parent email, chat text, billing, or
+   account lifecycle outside the admin-only **Nutzer** surface — the backend won't send them; don't add a
    call that asks for them.
 
 ## Stack (matches `-web`; see ARCHITECTURE §2)
@@ -51,7 +53,7 @@ job. Comfortable tap targets for tablet are welcome.
    `401/SESSION_EXPIRED` clears auth and redirects to `/login` once.
 
 ## Conventions
-- TanStack Query for ALL server state; key prefixes: `['staff-me']`, `['staff-queue', …]`, `['staff-users', …]` (mutations invalidate by prefix).
+- TanStack Query for ALL server state; key prefixes: `['staff-me']`, `['staff-queue', …]`, `['staff-users', …]`, `['staff-students', …]` / `['staff-student…', …]` (mutations invalidate by prefix).
 - Auth state is derived from a `/staff/me` probe (survives refresh); see `features/auth/`.
 - Brand accent is teal (shared), but the surface is neutral slate/white — see `src/index.css` `@theme`.
 - German UI copy (the staff are German/Austrian).
@@ -70,12 +72,15 @@ job. Comfortable tap targets for tablet are welcome.
   zoom/rotate) · read-only history detail (`/history/:uploadId`) for decided items · own profile page
   (**Profil** nav tab → `/profile`: rename self, see login email/role/access date; audit trail deferred
   to the OTel build-out).
+- **Schüler** (all trainers, §H1.3/§H3): learner directory (`/students`) → per-student detail with the
+  progress header + day-grouped activity timeline (filter by source) → question-by-question session
+  drill-down (`/students/:profileId/sessions/:sessionId`).
 - ADMIN surface: **Nutzer** (approve/deactivate/delete + per-student learner progress + email search). The **Wortschatz**
   lexeme-curation tab was dropped 2026-07-13 along with the `lexeme` table and the Vokaltraining content set
   (ROADMAP.md §F) — re-add a curation surface if the new word-list schema needs one.
-Identity note: the ADMIN user administration shows real emails by design; the review queue never does.
+Identity note: the ADMIN user administration shows real parent emails by design; trainer surfaces never do.
 
 ## Definition of done for a feature
-Renders from backend JSON; shows no student-identifying data; claim/verdict flow maps backend status codes to
-the right UI (incl. `409`); types still match the generated contract (`gen:api` drift-clean); desktop/tablet layout
-holds at typical tablet widths.
+Renders from backend JSON; shows no account-identifying data (parent email/billing) outside Nutzer;
+claim/verdict flow maps backend status codes to the right UI (incl. `409`); types still match the generated
+contract (`gen:api` drift-clean); desktop/tablet layout holds at typical tablet widths.

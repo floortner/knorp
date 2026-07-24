@@ -532,6 +532,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/staff/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffStudentsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/students/{profileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffStudentsController_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/students/{profileId}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffStudentsController_sessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/students/{profileId}/sessions/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffStudentsController_session"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1343,7 +1407,8 @@ export interface operations {
                     "application/json": {
                         items: {
                             uploadId: string;
-                            profileHandle: string;
+                            profileId: string;
+                            name: string;
                             gradeBand: string;
                             skillTags: string[];
                             imageUrl: string;
@@ -1427,7 +1492,8 @@ export interface operations {
                                 reviewedAt: string | null;
                             }[];
                         };
-                        profileHandle: string;
+                        profileId: string;
+                        name: string;
                     };
                 };
             };
@@ -1663,6 +1729,176 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    StaffStudentsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            profileId: string;
+                            name: string;
+                            unit: number;
+                            streakDays: number;
+                            lastActive: string | null;
+                            sessions7d: number;
+                            sessions30d: number;
+                            totalAttempts: number;
+                            weakestSkills: {
+                                skill: string;
+                                attempts: number;
+                                correctPct: number;
+                                due: boolean;
+                            }[];
+                        }[];
+                        nextCursor: string | null;
+                        total: number;
+                    };
+                };
+            };
+        };
+    };
+    StaffStudentsController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        summary: {
+                            unit: number;
+                            streakDays: number;
+                            stars: number;
+                            lastActive: string | null;
+                            league: {
+                                /** @enum {string} */
+                                tier: "bronze" | "silber" | "gold";
+                                starsWeek: number;
+                                starsToNext: number;
+                            };
+                        };
+                        skills: {
+                            skill: string;
+                            attempts: number;
+                            correctPct: number;
+                            due: boolean;
+                        }[];
+                        activity: {
+                            totalAttempts: number;
+                            sessions7d: number;
+                            sessions30d: number;
+                            homework: {
+                                uploadId: string;
+                                createdAt: string;
+                                status: string;
+                                decision: string | null;
+                                reviewedAt: string | null;
+                            }[];
+                        };
+                        profileId: string;
+                        name: string;
+                    };
+                };
+            };
+        };
+    };
+    StaffStudentsController_sessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            sessionId: string;
+                            /** @enum {string} */
+                            source: "bank" | "llm" | "homework";
+                            startedAt: string;
+                            completedAt: string | null;
+                            abandoned: boolean;
+                            itemsTotal: number;
+                            itemsAnswered: number;
+                            attemptCount: number;
+                            correctPct: number | null;
+                            activeMs: number;
+                        }[];
+                        nextCursor: string | null;
+                        total: number;
+                    };
+                };
+            };
+        };
+    };
+    StaffStudentsController_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        sessionId: string;
+                        /** @enum {string} */
+                        source: "bank" | "llm" | "homework";
+                        startedAt: string;
+                        completedAt: string | null;
+                        abandoned: boolean;
+                        itemsTotal: number;
+                        itemsAnswered: number;
+                        attemptCount: number;
+                        correctPct: number | null;
+                        activeMs: number;
+                        name: string;
+                        attempts: {
+                            attemptId: string;
+                            itemId: string | null;
+                            exerciseType: string;
+                            prompt: string;
+                            expected: string;
+                            given: string;
+                            isCorrect: boolean;
+                            timeMs: number;
+                            attemptNo: number;
+                            skillTags: string[];
+                            createdAt: string;
+                        }[];
+                    };
+                };
             };
         };
     };

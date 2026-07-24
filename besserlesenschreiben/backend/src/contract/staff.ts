@@ -2,8 +2,10 @@ import { z } from 'zod';
 
 /**
  * Wire schemas for the STAFF realm (ARCHITECTURE §1a, SPEC §6). These publish the OpenAPI the trainer
- * portal types from. The queue payload is PSEUDONYMISED: image + LLM draft + skill tags + a coarse band
- * only — never a student name, parent email, chat, or billing.
+ * portal types from. Known-trainer model (ROADMAP §H1.3): staff surfaces carry the student's real NAME
+ * and learning data — the 2–3 trainers know each student personally. Data minimisation still applies:
+ * never a parent email, chat text, or billing on any trainer surface; account identity/lifecycle stays
+ * on the admin-only /staff/users routes.
  */
 
 export const staffMeSchema = z.object({
@@ -41,8 +43,9 @@ export const homeworkAnalysisSchema = z.object({
 
 export const queueItemSchema = z.object({
   uploadId: z.string(),
-  // Opaque, stable pseudonym for the student profile — never a real name.
-  profileHandle: z.string(),
+  // The student, by real name (known-trainer model, rule-10 revision §H1.3) + id for /students links.
+  profileId: z.string(),
+  name: z.string(),
   // Coarse progress band (current unit), never an age/DOB.
   gradeBand: z.string(),
   skillTags: z.array(z.string()),
@@ -79,7 +82,7 @@ export const reviewSubmitResponseSchema = z.object({
 });
 
 // ── User administration (STAFF realm, ADMIN role only; SPEC §6, ARCHITECTURE §1b) ───────────────
-// Distinct from the pseudonymised review queue: these expose the real family email and account
+// Distinct from the all-trainer surfaces: these additionally expose the real family email and account
 // lifecycle. The owner's approval/control surface — admin-gated, identity-bearing.
 export const accountStatusEnum = z.enum(['pending', 'active', 'deactivated']);
 
@@ -98,9 +101,10 @@ export const adminUserPageSchema = z.object({
   total: z.number().int(), // count of accounts matching the status filter — drives the nav badge
 });
 
-// ── Learner progress (STAFF realm, ADMIN role only) ───────────────────────────────────────────────
-// The same progress payload is served two ways: identity-bearing per account (Nutzer oversight) and
-// PSEUDONYMISED per homework upload (review context) — the latter carries only the opaque handle.
+// ── Learner progress (STAFF realm) ────────────────────────────────────────────────────────────────
+// The same progress payload is served three ways: per account (Nutzer oversight, ADMIN only), per
+// student (learner directory detail, all trainers), and per homework upload (review context, all
+// trainers) — the latter two are identical shapes (studentDetailSchema).
 export const skillMasterySchema = z.object({
   skill: z.string(),
   attempts: z.number().int(),
@@ -144,12 +148,87 @@ export const userProgressSchema = z.object({
   profiles: z.array(profileProgressSchema.extend({ profileId: z.string(), name: z.string() })),
 });
 
-// Pseudonymised (review queue): the upload's learner by opaque handle only — never a name.
-export const queueProgressSchema = profileProgressSchema.extend({ profileHandle: z.string() });
-
 export const adminUserStatusSchema = z.object({
   accountId: z.string(),
   status: accountStatusEnum,
+});
+
+// ── Learner directory + activity (STAFF realm, ALL trainers; ROADMAP §H1.3 + §H3.1) ──────────────
+// The trainer's read model over the existing session/attempt telemetry — no new tables. Names are
+// shown (known-trainer model); parent email/chat/billing never appear here.
+
+// 'assigned' joins this enum when the §H1 lecture/assignment rails land.
+export const sessionSourceEnum = z.enum(['bank', 'llm', 'homework']);
+
+export const studentListItemSchema = z.object({
+  profileId: z.string(),
+  name: z.string(),
+  unit: z.number().int(), // Einheit — coarse band (profile.unlockedUnit)
+  streakDays: z.number().int(),
+  lastActive: z.string().nullable(),
+  sessions7d: z.number().int(), // completed sessions, rolling windows
+  sessions30d: z.number().int(),
+  totalAttempts: z.number().int(),
+  weakestSkills: z.array(skillMasterySchema), // ≤3, weakest-first, 30d window (full list on detail)
+});
+
+export const studentPageSchema = z.object({
+  items: z.array(studentListItemSchema),
+  nextCursor: z.string().nullable(),
+  total: z.number().int(),
+});
+
+// Learner detail header — the exact progress payload ProgressPanel renders, plus identity.
+export const studentDetailSchema = profileProgressSchema.extend({
+  profileId: z.string(),
+  name: z.string(),
+});
+
+// Review context for an upload (all trainers) — same shape as the learner detail.
+export const queueProgressSchema = studentDetailSchema;
+
+export const studentSessionSchema = z.object({
+  sessionId: z.string(),
+  source: sessionSourceEnum,
+  startedAt: z.string(), // session.createdAt — there is no separate started_at column
+  completedAt: z.string().nullable(),
+  // completedAt null = never finished — EXCEPT homework sessions, which are terminal by design
+  // (created already-decided with itemIds [] and no completedAt; review.service).
+  abandoned: z.boolean(),
+  itemsTotal: z.number().int(), // itemIds.length (0 for homework)
+  itemsAnswered: z.number().int(), // distinct itemIds attempted; homework: attempt-row count
+  attemptCount: z.number().int(), // all attempt rows incl. retries
+  // Attempt-level (correct attempts / all attempts), rounded — same semantics as skillMastery's
+  // correctPct so the number means one thing everywhere. null when no attempts yet.
+  correctPct: z.number().int().nullable(),
+  activeMs: z.number().int(), // Σ attempt.timeMs — engagement time; survives abandonment/tab-parking
+});
+
+export const studentSessionPageSchema = z.object({
+  items: z.array(studentSessionSchema),
+  nextCursor: z.string().nullable(),
+  total: z.number().int(),
+});
+
+export const studentAttemptSchema = z.object({
+  attemptId: z.string(),
+  itemId: z.string().nullable(),
+  exerciseType: z.string(),
+  prompt: z.string(),
+  expected: z.string(),
+  given: z.string(),
+  isCorrect: z.boolean(),
+  timeMs: z.number().int(),
+  attemptNo: z.number().int(),
+  skillTags: z.array(z.string()),
+  createdAt: z.string(),
+});
+
+// Question-by-question drill-down: the session summary + the student name (so the screen is
+// self-contained, no separate progress rollup) + attempts in answer order (createdAt asc, id asc).
+export const studentSessionDetailSchema = studentSessionSchema.extend({
+  name: z.string(),
+  attempts: z.array(studentAttemptSchema),
 });
 
 // Lexeme foundation curation was dropped along with the Vokaltraining content set — the word-list

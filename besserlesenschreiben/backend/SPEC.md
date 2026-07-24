@@ -354,11 +354,12 @@ POST /staff/auth/logout                              -> clears staff cookie
 GET  /staff/me                                       -> {trainerId, name, role, email, createdAt}
                                                         # the caller's OWN staff identity (profile page)
 PATCH /staff/me                 {name}               -> same shape   # rename self; email/role stay admin-provisioned
-GET  /staff/queue           ?status=&limit=&cursor=  -> {items:[{uploadId, profileHandle, gradeBand,
+GET  /staff/queue           ?status=&limit=&cursor=  -> {items:[{uploadId, profileId, name, gradeBand,
                                                           skillTags, imageUrl, llmAnalysis, createdAt,
                                                           claimed, decision, reviewedAt,
                                                           reviewedAnalysis, notes}], nextCursor, total}
-                                                        # PSEUDONYMISED: no name/email/chat/billing (ARCHITECTURE §1a)
+                                                        # student NAME included (known-trainer model §H1.3);
+                                                        #   never a parent email/chat/billing (ARCHITECTURE §1a)
                                                         # status: open (default: ALL undecided, oldest-first;
                                                         #   claimed=true marks a live lease held by ANOTHER
                                                         #   trainer — shown locked, own claims stay false)
@@ -366,8 +367,8 @@ GET  /staff/queue           ?status=&limit=&cursor=  -> {items:[{uploadId, profi
                                                         #   verdict reviewedAnalysis+notes for the read-only
                                                         #   detail) | all. decision/reviewedAt/reviewedAnalysis/
                                                         #   notes are null while open.
-GET  /staff/queue/{uploadId}/progress                -> pseudonymised learner progress (ADMIN only):
-                                                        {profileHandle, summary, skills, activity} — never a name
+GET  /staff/queue/{uploadId}/progress                -> learner progress for the upload (all trainers):
+                                                        {profileId, name, summary, skills, activity}
 POST /staff/queue/{uploadId}/claim                   -> {uploadId, claimedUntil}   # soft-lock; 409 if held by another
 POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
                                  reviewedAnalysis?, notes?}
@@ -380,10 +381,34 @@ POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
   `reviewed_analysis`, sets `status='reviewed'`, and records a `homework_review` row (with `agreed_with_llm`).
   On `rejected` nothing mutates; the image is left to the §7 retention sweep.
 
+### Staff — learner directory + activity (STAFF realm, all trainers; ROADMAP §H1.3 + §H3.1)
+The trainer's read model over the existing `session`/`attempt` telemetry — no new tables. Students appear
+by real name (known-trainer model); parent email/chat/billing never appear on these routes.
+```
+GET /staff/students                 ?limit=&cursor=  -> {items:[{profileId, name, unit, streakDays,
+                                                         lastActive, sessions7d, sessions30d,
+                                                         totalAttempts, weakestSkills[≤3]}],
+                                                        nextCursor, total}   # name-ordered
+GET /staff/students/{profileId}                      -> {profileId, name, summary, skills, activity}
+                                                        # the learner-detail header (= ProgressPanel payload)
+GET /staff/students/{profileId}/sessions ?limit=&cursor=&source=
+                                                     -> {items:[{sessionId, source: bank|llm|homework,
+                                                         startedAt, completedAt, abandoned, itemsTotal,
+                                                         itemsAnswered, attemptCount, correctPct,
+                                                         activeMs}], nextCursor, total}  # newest-first
+                                                        # abandoned = completedAt null, EXCEPT homework
+                                                        #   sessions (terminal by design). 'assigned'
+                                                        #   joins source with the §H1 rails.
+GET /staff/students/{profileId}/sessions/{sessionId} -> the session summary + attempts[] in answer order:
+                                                        {attemptId, itemId, exerciseType, prompt, expected,
+                                                         given, isCorrect, timeMs, attemptNo, skillTags,
+                                                         createdAt}
+```
+
 ### Staff — user administration (STAFF realm, **admin role only**; ARCHITECTURE §1b)
-Distinct from the pseudonymised review queue: these handle real account identity, so they are gated by
-`role='admin'` (not plain trainers) and **do** return the family email. This is the owner's approval/control
-surface.
+Distinct from the all-trainer surfaces: these additionally handle real ACCOUNT identity, so they are gated
+by `role='admin'` (not plain trainers) and **do** return the family email. This is the owner's
+approval/control surface.
 ```
 GET    /staff/users          ?status=&limit=&cursor=&q=  -> {items:[{accountId, email, status, createdAt,
                                                             profileCount, lastActive}], nextCursor, total}
@@ -604,8 +629,9 @@ allUnitsComplete}`.
 5. **Async, never blocking:** the student plays on; review latency lands in the *next* generated lecture. The
    family only ever sees the authoritative `reviewed_analysis` (once `status='reviewed'`), never the draft.
 
-**Pseudonymisation (hard rule):** the trainer queue exposes image + draft + skill tags + grade band only — no
-student name, parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived presigned URL.
+**Known-trainer data minimisation (hard rule, revised 2026-07-25 §H1.3):** the trainer queue exposes the
+student's name + image + draft + skill tags + grade band — never a parent email, chat, or billing
+(ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived presigned URL.
 
 **Data-protection (minors):** parent-consented at upload (copy states a trained professional reviews the
 photo), short retention on raw images regardless of review state, EU data residency where the provider offers

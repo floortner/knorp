@@ -15,7 +15,7 @@ type BodyOf<Op> = Op extends { requestBody?: infer B } ? JsonOf<B> : never;
 /** The logged-in trainer (GET /staff/me). */
 export type StaffMe = ResponseOf<operations['StaffController_me']>;
 
-/** A pending_review queue page — PSEUDONYMISED (ARCHITECTURE §1a). */
+/** A review queue page — student names included (known-trainer model, rule-10 revision §H1.3). */
 export type QueuePage = ResponseOf<operations['StaffController_queue']>;
 export type QueueItem = QueuePage['items'][number];
 
@@ -29,13 +29,23 @@ export type ReviewSubmitBody = BodyOf<operations['StaffController_submit']>;
 export type ReviewSubmitResponse = ResponseOf<operations['StaffController_submit']>;
 export type ReviewDecision = NonNullable<ReviewSubmitBody['decision']>;
 
-/** User administration (admin role only; backend SPEC §6) — identity-bearing, NOT pseudonymised. */
+/** User administration (admin role only; backend SPEC §6) — additionally account-identity-bearing. */
 export type AdminUserPage = ResponseOf<operations['StaffUsersController_list']>;
 export type AdminUser = AdminUserPage['items'][number];
 export type AccountStatus = AdminUser['status'];
 
-/** Learner progress (admin role only). Identity-bearing per account; pseudonymised per upload. */
+/** Learner progress. Per account (admin only); per upload / per student (all trainers, with name). */
 export type UserProgress = ResponseOf<operations['StaffUsersController_accountProgress']>;
 export type QueueProgress = ResponseOf<operations['StaffController_queueProgress']>;
 export type ProfileProgress = UserProgress['profiles'][number];
+
+/** Learner directory + per-student activity (all trainers; ROADMAP §H1.3 + §H3.1). */
+export type StudentPage = ResponseOf<operations['StaffStudentsController_list']>;
+export type StudentListItem = StudentPage['items'][number];
+export type StudentDetail = ResponseOf<operations['StaffStudentsController_detail']>;
+export type StudentSessionPage = ResponseOf<operations['StaffStudentsController_sessions']>;
+export type StudentSession = StudentSessionPage['items'][number];
+export type SessionSource = StudentSession['source'];
+export type StudentSessionDetail = ResponseOf<operations['StaffStudentsController_session']>;
+export type StudentAttempt = StudentSessionDetail['attempts'][number];
 

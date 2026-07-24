@@ -420,9 +420,9 @@ adds the trainer-facing read model and screens, not new telemetry.
 beginning) **know each student personally** and speak with the parents in person. The staff portal is a
 known-trainer tool, not an anonymous review desk — trainers work with **real student names**. The old
 pseudonymised-queue rule (ARCHITECTURE §1a / security rule 10) was designed for anonymous trainers
-and no longer matches the product; **H1 revises it**: staff surfaces show the student's name + progress;
-parent email/account administration stays admin-only. (The `L-xxxxxx` handle can remain internally as
-a stable id, but it stops being a display requirement.)
+and no longer matched the product; **revised 2026-07-25 (H1.3)**: staff surfaces show the student's name +
+progress; parent email/account administration stays admin-only. (The `L-xxxxxx` handle was deleted —
+`profileId` is the stable id.)
 
 **Invariants (extend §11's):**
 - **Staff-authored exercises pass the same solvability gate as LLM output** (`solvableExerciseSchema`
@@ -441,11 +441,13 @@ a stable id, but it stops being a display requirement.)
 2. **Staff routes** (backend SPEC §6): lecture CRUD (create validates every exercise via
    `solvableExerciseSchema`), publish, assign to N profiles, list assignments with status
    (`open | started | completed`) and per-item results after completion.
-3. **Learner directory:** a student list for **all trainers** — student name, grade band, skill
-   breakdown, recent activity — the picker for assignment and the context for authoring. This is the
-   rule-10 revision point: replace the `profileHandle` display with the student's name across staff
-   surfaces (queue included), and re-true ARCHITECTURE §1a/§11 + CLAUDE.md security rule 10 in the
-   same PR.
+3. ✅ **Learner directory (DONE 2026-07-25, with H3.1/H3.2):** a student list for **all trainers** —
+   student name, grade band, skill breakdown, recent activity (`GET /staff/students`, portal
+   "Schüler" tab) — the picker for assignment and the context for authoring. The rule-10 revision
+   shipped with it: `profileHandle` replaced by the student's name across staff surfaces (queue
+   included; the `L-xxxxxx` handle is deleted), `queue/{id}/progress` opened to all trainers, and
+   ARCHITECTURE §1a/§11 + CLAUDE.md rule 10 + backend SPEC §6/§10 + trainer AGENTS.md re-trued in
+   the same PR.
 4. **Family surface:** `/lernen` shows an assignment card when one is open;
    `POST /sessions {source:'assigned', assignmentId}` serves the lecture's items (intro = the lecture's
    Merksatz); the normal attempts/complete loop marks the assignment completed.
@@ -461,15 +463,16 @@ a stable id, but it stops being a display requirement.)
 - The §C2 playbook gains a step: every new exercise type ships with its authoring-form section.
 
 **H3 — student activity tracking (the trainer's review loop):**
-1. **Staff read model** (backend SPEC §6): per-student session history —
-   `GET /staff/students/{profileId}/sessions` (each: source `bank|llm|assigned|homework`, lecture
-   title when assigned, startedAt, completedAt/duration, abandoned flag, items answered/total,
+1. ✅ **Staff read model (DONE 2026-07-25)** (backend SPEC §6): per-student session history —
+   `GET /staff/students/{profileId}/sessions` (each: source `bank|llm|homework` — `assigned` joins
+   with the H1 rails — startedAt, completedAt, `activeMs`, abandoned flag, items answered/total,
    correct %) — and per-session drill-down with the full attempt detail (prompt, expected, given,
    correct, `time_ms`, `attempt_no` retries, in order). All of this reads the existing
    `session`/`attempt` tables — no new telemetry.
-2. **Portal screens:** a student activity timeline on the learner detail (filter by source/date),
-   session drill-down as a question-by-question review; per-assignment outcome directly on the
-   lecture's assignment list. Informs the next authored lecture and the in-person parent conversation.
+2. ✅ **Portal screens (DONE 2026-07-25** — except the per-assignment outcome list, which waits for
+   the H1 rails**):** the student activity timeline on the learner detail (filter by source, grouped
+   by day), session drill-down as a question-by-question review. Informs the next authored lecture
+   and the in-person parent conversation.
 3. **Digest extension:** `digest.md` gains a "Zugewiesene Übungen" section (recent assigned lectures:
    title, focus skills, outcome) so LLM-generated lectures build on the trainer's material instead of
    ignoring it.

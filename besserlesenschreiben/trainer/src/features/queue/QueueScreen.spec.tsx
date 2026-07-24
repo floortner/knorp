@@ -11,7 +11,8 @@ vi.mock('@/lib/endpoints', () => ({ reviewApi: { queue: vi.fn() } }));
 
 const item: QueueItem = {
   uploadId: 'u1',
-  profileHandle: 'Lerner-4821',
+  profileId: 'p1',
+  name: 'Mia Muster',
   gradeBand: '1. Klasse',
   skillTags: ['vowel_length'],
   imageUrl: 'https://example.test/u1.webp',
@@ -38,10 +39,10 @@ function renderQueue() {
 beforeEach(() => vi.clearAllMocks());
 
 describe('QueueScreen', () => {
-  it('lists pending items by pseudonymous handle, never a name', async () => {
+  it('lists pending items by student name (known-trainer model §H1.3)', async () => {
     vi.mocked(reviewApi.queue).mockResolvedValue({ items: [item], nextCursor: null, total: 1 });
     renderQueue();
-    expect(await screen.findByText(/Lerner-4821/)).toBeInTheDocument();
+    expect(await screen.findByText(/Mia Muster/)).toBeInTheDocument();
     expect(screen.getByText(/Anlaute/)).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/review/u1');
   });
@@ -87,7 +88,7 @@ describe('QueueScreen', () => {
     const user = userEvent.setup();
     renderQueue();
     await user.click(await screen.findByRole('button', { name: 'Mehr laden' }));
-    expect(await screen.findAllByText(/Lerner-4821/)).toHaveLength(2);
+    expect(await screen.findAllByText(/Mia Muster/)).toHaveLength(2);
     expect(vi.mocked(reviewApi.queue)).toHaveBeenLastCalledWith(
       expect.objectContaining({ cursor: 'u1', status: 'open' }),
     );

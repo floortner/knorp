@@ -14,7 +14,6 @@ import {
   staffMeSchema,
 } from '../../contract/staff';
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
-import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
 import { CurrentTrainer, type AuthTrainer } from '../../common/decorators/current-trainer.decorator';
 import { STAFF_COOKIE, clearStaffCookie, staffCookieOptions } from '../../common/staff-cookie';
 import type { Env } from '../../config/env';
@@ -103,9 +102,11 @@ export class StaffController {
     return this.review.queue(trainer.id, Number.isFinite(n) ? n : 50, cursor, filter);
   }
 
-  /** Pseudonymised learner progress for a queued upload (ADMIN only) — review context, never a name. */
+  /**
+   * Learner progress for a queued upload — grading context for ALL trainers (known-trainer model,
+   * rule-10 revision §H1.3; formerly admin-only + pseudonymised).
+   */
   @Get('queue/:uploadId/progress')
-  @UseGuards(StaffAdminGuard)
   @ApiZodResponse(queueProgressSchema)
   queueProgress(@Param('uploadId') uploadId: string) {
     return this.progress.forUpload(uploadId);

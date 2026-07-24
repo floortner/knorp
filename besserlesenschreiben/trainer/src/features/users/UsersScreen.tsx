@@ -6,6 +6,7 @@ import { FilterChips } from '@/components/ui/filter-chips';
 import { Input } from '@/components/ui/input';
 import { ProgressPanel } from '@/features/progress/ProgressPanel';
 import { cn } from '@/lib/cn';
+import { deDate } from '@/lib/dates';
 import type { AccountStatus, AdminUser } from '@/lib/contract';
 import { useUsers, useUserActions, useUserProgress } from './useUsers';
 
@@ -29,7 +30,7 @@ const STATUS_LABEL: Record<AccountStatus, string> = {
 
 /**
  * User administration (admin only; backend SPEC §6, ARCHITECTURE §1b). Shows real family emails + account
- * lifecycle — the owner's approval/control surface, deliberately separate from the pseudonymised queue.
+ * lifecycle — the owner's approval/control surface, deliberately separate from the all-trainer surfaces (known-trainer §H1.3).
  * Backend enforces `role='admin'` (403 otherwise); this screen also hides itself from plain trainers.
  */
 export function UsersScreen() {
@@ -107,9 +108,8 @@ function UserRow({ user }: { user: AdminUser }) {
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-ink">{user.email}</p>
           <p className="text-sm text-ink-soft">
-            {user.profileCount} Schüler · seit{' '}
-            {new Date(user.createdAt).toLocaleDateString('de-AT')}
-            {user.lastActive && ` · zuletzt aktiv ${new Date(user.lastActive).toLocaleDateString('de-AT')}`}
+            {user.profileCount} Schüler · seit {deDate(user.createdAt)}
+            {user.lastActive && ` · zuletzt aktiv ${deDate(user.lastActive)}`}
           </p>
         </div>
 

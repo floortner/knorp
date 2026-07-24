@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ClipboardCheck, Lock } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { deDate } from '@/lib/dates';
 import { decisionLabel, decisionTone } from '@/lib/decision';
 import { FilterChips } from '@/components/ui/filter-chips';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ function waitingSince(iso: string): string {
 }
 
 /**
- * Review list. Each row is PSEUDONYMISED (handle + grade band + skill tags only — ARCHITECTURE §1a).
+ * Review list. Each row shows the student name + grade band + skill tags (known-trainer §H1.3).
  * Offen = the actionable work queue (rows open the review screen; live-claimed rows show locked).
  * Erledigt/Alle = history; decided rows open the read-only detail. Cursor-paged via "Mehr laden".
  */
@@ -90,7 +91,7 @@ function QueueRow({ item }: { item: QueueItem }) {
       />
       <div className="min-w-0 flex-1">
         <p className="font-medium text-ink">
-          {item.profileHandle} · <span className="text-ink-soft">{item.gradeBand}</span>
+          {item.name} · <span className="text-ink-soft">{item.gradeBand}</span>
         </p>
         <p className="truncate text-sm text-ink-soft">
           {item.llmAnalysis.topic} · {item.skillTags.join(', ') || 'keine Tags'}
@@ -107,7 +108,7 @@ function QueueRow({ item }: { item: QueueItem }) {
         </span>
       )}
       <time className="hidden shrink-0 text-xs text-ink-soft sm:block" dateTime={item.reviewedAt ?? item.createdAt}>
-        {open ? waitingSince(item.createdAt) : new Date(item.reviewedAt ?? item.createdAt).toLocaleDateString('de-AT')}
+        {open ? waitingSince(item.createdAt) : deDate(item.reviewedAt ?? item.createdAt)}
       </time>
       {!item.claimed && <ArrowRight className="size-4 shrink-0 text-ink-soft" aria-hidden />}
     </>

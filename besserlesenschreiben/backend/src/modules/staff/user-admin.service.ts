@@ -15,7 +15,7 @@ type AccountStatus = z.infer<typeof accountStatusEnum>;
 
 /**
  * Staff USER ADMINISTRATION (ARCHITECTURE §1b, SPEC §6) — the owner's approval/control surface, gated to
- * `role='admin'` by `StaffAdminGuard`. Unlike the pseudonymised review queue, these handle real account
+ * `role='admin'` by `StaffAdminGuard`. Unlike the all-trainer surfaces, these handle real account
  * identity (the family email + lifecycle). Approve releases the first login code by email; deactivate is
  * reversible; delete is permanent erasure (DB cascade + the account's blob prefix).
  */

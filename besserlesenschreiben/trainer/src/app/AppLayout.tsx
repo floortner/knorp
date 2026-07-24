@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { ClipboardCheck, UserRound, Users } from 'lucide-react';
+import { ClipboardCheck, GraduationCap, UserRound, Users } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { useOpenRequestCount } from '@/features/queue/useQueue';
 import { usePendingUserCount } from '@/features/users/useUsers';
@@ -40,6 +40,10 @@ export function AppLayout() {
               <NavLink to="/queue" className={navClass}>
                 <ClipboardCheck className="size-4" aria-hidden /> Chats
                 <NavBadge count={openRequests} />
+              </NavLink>
+              {/* Learner directory — ALL trainers (known-trainer §H1.3). Informational: no badge. */}
+              <NavLink to="/students" className={navClass}>
+                <GraduationCap className="size-4" aria-hidden /> Schüler
               </NavLink>
               {/* User administration is admin-only (backend SPEC §6); hidden from plain trainers. */}
               {isAdmin && (

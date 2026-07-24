@@ -47,17 +47,18 @@ and the JWTs carry a different `aud`/role so a guard can never confuse them.
 | Realm | Who | Surface | Auth | Sees |
 |---|---|---|---|---|
 | **Family** | parent (account) + their students (profiles) | `-web` SPA/PWA | email login code → 30-day httpOnly family cookie | only their own account's data |
-| **Staff** | internal literacy professionals ("trainers") + admins | `-trainer` portal | own staff login → httpOnly **staff** cookie (`aud:"staff"`); MFA before prod | a **pseudonymised** review queue across all families — homework image + LLM draft only |
+| **Staff** | internal literacy professionals ("trainers") + admins | `-trainer` portal | own staff login → httpOnly **staff** cookie (`aud:"staff"`); MFA before prod | all students **by name** + their learning data (known-trainer model, §H1.3) — never parent email/chat/billing |
 
 - **Trainers are a small internal staff pool (~3 in v1), not tied to one family.** Accounts are
   **hand-provisioned by an admin** (no self-signup); they pull homework from a shared queue and are
   employees/contractors under a staff DPA, not a family's own teacher. There is **no per-family professional**
   in v1, and the pool is small enough that the queue is about preventing double-review, not load-balancing.
-- **Minimisation at the realm boundary (hard rule):** a trainer never sees a student's name, the parent email,
-  free-text chat, billing, or any direct identifier. The queue exposes a **pseudonymous profile handle**
-  (opaque id), coarse grade/age band, relevant skill tags, the homework **image**, and the **LLM draft
-  analysis** — nothing more. This keeps staff access to minors' data scoped to exactly what the review task
-  needs (§8).
+- **Minimisation at the realm boundary (hard rule, revised 2026-07-25 — ROADMAP §H1.3):** trainers work
+  under the **known-trainer model** — they know each student personally and see the student's **name**,
+  grade band, skill tags, session/attempt activity, the homework **image**, and the **LLM draft analysis**
+  (the old `L-xxxxxx` pseudonym is retired). What a trainer **never** sees: the parent email, free-text
+  chat, billing, or account lifecycle — those stay on the admin-only surface. This keeps staff access to
+  minors' data scoped to what the teaching task needs (§8).
 - The trainer's verdict is **authoritative** and **replaces the parent-confirm step** for homework
   (§10). Review is **asynchronous**: it never blocks a student mid-lesson; it shapes the *next* generated
   lecture.
@@ -83,10 +84,11 @@ Because deactivate/delete must take effect **immediately** (not whenever a 30-da
 `JwtAuthGuard` does a per-request account lookup and requires `status==='active'` — the same posture the staff
 guard already uses for trainer `status`. (Cost: one indexed read per request; worth it for control.)
 
-**Two faces of the staff realm.** Homework **review** stays strictly **pseudonymised** (§1a). But **user
-administration** (approve / deactivate / delete) inherently handles real identity (an email), so it is a
-separate, **admin-role-only** surface — never mixed into the trainer queue. Trainers see pseudonymised
-homework; admins see accounts. Same `Trainer.role` (`trainer | admin`) gates the difference.
+**Two faces of the staff realm.** Trainer surfaces (queue, review, learner directory + activity) show
+students by name with their learning data (§1a, known-trainer model). **User administration**
+(approve / deactivate / delete) additionally handles the **account** identity (the parent email), so it is
+a separate, **admin-role-only** surface — never mixed into the trainer surfaces. Trainers see students;
+admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the difference.
 
 ---
 
@@ -227,8 +229,9 @@ src/
     endpoints.ts          # typed wrappers: staffAuthApi, reviewApi, usersApi
   features/
     auth/                 # StaffAuthProvider, /staff/me probe, RequireStaff guard, login + code screens
-    queue/                # review list (Offen | Erledigt | Alle) — pseudonymised rows
+    queue/                # review list (Offen | Erledigt | Alle) — rows by student name (§H1.3)
     review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
+    students/             # learner directory + activity timeline + session drill-down (§H1.3/§H3)
     users/                # ADMIN: account approval / deactivate / delete + per-student progress
                           # (the "Wortschatz" lexeme-curation tab was dropped with the content set, §F)
     progress/             # shared learner-progress panel (summary · skills · activity)
@@ -500,8 +503,8 @@ restore from the off-platform dumps) rather than the loss of every family's data
   call** — see the data-flow options below.
 - **Staff access to minors' data (trainers).** Homework review (§11) means internal staff see a student's
   homework photo — the strongest minors'-data exposure in the system. Gate it hard: (a) trainers are a small,
-  **vetted, DPA-bound** staff pool with named accounts and MFA, never anonymous; (b) the queue is
-  **pseudonymised** — image + LLM draft + skill tags + grade band only, no name/email/chat/billing (§1a); (c)
+  **vetted, DPA-bound** staff pool with named accounts and MFA, never anonymous; (b) trainer surfaces are
+  **minimised** — student name + learning data + image + LLM draft, never parent email/chat/billing (§1a); (c)
   every trainer action (claim, approve, correct, reject) is **audit-logged** with the staff id and upload id
   (identifiers + outcome, never image/answer content — §6); (d) consent copy at upload states that a homework
   photo is reviewed by a trained professional to tailor lessons; (e) raw images expire on the §7 lifecycle
@@ -613,8 +616,8 @@ the family chat shows the verdict as a status bubble (informational, non-blockin
 - **The LLM draft and the trainer's correction are both retained** as an append-only review record, with an
   `agreed_with_llm` flag — this is how we measure and improve vision quality over time ("compare against the
   LLM response"). It is product/QA data, governed like learning telemetry (§6), never operational logging.
-- **The trainer sees pseudonymised data only** (§1a): image + draft + skill tags + grade band, never the
-  student's name, parent email, chat, or billing.
+- **The trainer sees the student's name + learning data, minimised** (§1a, known-trainer model): image +
+  draft + skill tags + grade band + activity, never the parent email, chat, or billing.
 - **Async, never blocking:** review latency lands in the *next* lecture, not the current lesson. A pending or
   rejected upload simply means the next lecture isn't yet homework-informed.
 - **Rejected** uploads (unreadable, not homework, or contains unexpected personal data) mutate nothing and are
