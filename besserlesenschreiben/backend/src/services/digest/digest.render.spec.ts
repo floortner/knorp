@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import {
   buildDigestData,
   renderDigest,
+  type AssignedRow,
   type DigestAttempt,
   type DigestProfile,
   type DueRow,
@@ -40,22 +41,28 @@ const DUE: DueRow[] = [
   { skill: 'lexical_decision', examples: ['Maus'] },
 ];
 
+// §H3.3: recent staff-assigned lectures — one completed with a score, one still open.
+const ASSIGNED: AssignedRow[] = [
+  { title: 'Silben klatschen', skillTags: ['vowel_length'], completed: true, correctPct: 67 },
+  { title: 'Dehnungs-h entdecken', skillTags: ['vowel_length', 'word_raster'], completed: false, correctPct: null },
+];
+
 describe('digest', () => {
   it('matches the golden digest.md', () => {
-    const data = buildDigestData(PROFILE, ATTEMPTS, DUE, NOW, 14);
+    const data = buildDigestData(PROFILE, ATTEMPTS, DUE, ASSIGNED, NOW, 14);
     const golden = readFileSync(join(__dirname, 'digest.golden.md'), 'utf-8');
     expect(renderDigest(data)).toBe(golden);
   });
 
   it('aggregates skills weakest-first with correct rate, avg time and trend', () => {
-    const { skills } = buildDigestData(PROFILE, ATTEMPTS, DUE, NOW, 14);
+    const { skills } = buildDigestData(PROFILE, ATTEMPTS, DUE, ASSIGNED, NOW, 14);
     expect(skills.map((s) => s.skill)).toEqual(['vowel_length', 'word_raster', 'lexical_decision']);
     expect(skills[0]).toMatchObject({ attempts: 3, correctPct: 33, avgMs: 9000, trend: 'up' });
     expect(skills[2]).toMatchObject({ correctPct: 100, trend: 'flat' });
   });
 
   it('groups repeated mistakes with a count, most frequent first', () => {
-    const { recentWrong } = buildDigestData(PROFILE, ATTEMPTS, DUE, NOW, 14);
+    const { recentWrong } = buildDigestData(PROFILE, ATTEMPTS, DUE, ASSIGNED, NOW, 14);
     expect(recentWrong).toEqual([
       { prompt: 'Liebe', expected: 'Liebe', given: 'Leibe', count: 2 },
       { prompt: 'Sommer', expected: '2', given: '3', count: 1 },
@@ -63,14 +70,15 @@ describe('digest', () => {
   });
 
   it('renders friendly empty states with no data', () => {
-    const md = renderDigest(buildDigestData(PROFILE, [], [], NOW, 14));
+    const md = renderDigest(buildDigestData(PROFILE, [], [], [], NOW, 14));
     expect(md).toContain('Noch keine Versuche in diesem Zeitraum.');
     expect(md).toContain('- Keine Fehler in diesem Zeitraum. 🎉');
     expect(md).toContain('- Nichts fällig.');
+    expect(md).toContain('- Keine zugewiesenen Übungen.');
   });
 
   it('reflects dyslexic-font preference in the header and preferences', () => {
-    const md = renderDigest(buildDigestData({ ...PROFILE, dyslexicFont: true, fontScale: 1.2, soundOn: false }, [], [], NOW, 14));
+    const md = renderDigest(buildDigestData({ ...PROFILE, dyslexicFont: true, fontScale: 1.2, soundOn: false }, [], [], [], NOW, 14));
     expect(md).toContain('Schrift: Legasthenie-Schrift ×1.2');
     expect(md).toContain('Ton: aus');
   });

@@ -4,6 +4,7 @@ import { errorMessage, isApiError } from '@/lib/api';
 import { useActiveProfile, useMe } from '@/features/profile/useMe';
 import { useUnits } from '@/features/units/useUnits';
 import { useProgress } from '@/features/progress/useProgress';
+import { useAssignments } from '@/features/assignments/useAssignments';
 import { useCreateSession } from '@/features/sessions/useCreateSession';
 import { UnitCard } from '@/features/units/UnitCard';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { WeekStrip } from '@/app/components/WeekStrip';
 import { ErrorRetry } from '@/app/components/ErrorRetry';
 import { buddyStateSrc, type BuddyState } from '@/lib/constants';
 import { useBuddyState } from './useBuddyState';
-import type { Progress } from '@/lib/types';
+import type { AssignmentListItem, Progress } from '@/lib/types';
 
 export function Lernen() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export function Lernen() {
   const profile = useActiveProfile();
   const units = useUnits(profile?.id);
   const progress = useProgress(profile?.id);
+  const assignments = useAssignments(profile?.id);
   const createSession = useCreateSession();
   const buddyState = useBuddyState(profile?.unlockedUnit, progress.data);
   const [lectureNote, setLectureNote] = useState<string | null>(null);
@@ -63,9 +65,18 @@ export function Lernen() {
     );
   };
 
+  // A staff-assigned lecture: created via source:'assigned' + assignmentId, played as a normal lesson.
+  const startAssignment = (assignmentId: string) => {
+    createSession.mutate({ profileId: profile.id, source: 'assigned', assignmentId }, { onSuccess: toLesson });
+  };
+
   const startingUnit = createSession.isPending ? createSession.variables?.unit : undefined;
-  // Pending without a unit → the lecture card (or its bank fallback) is what's loading.
-  const lectureBusy = createSession.isPending && createSession.variables?.unit === undefined;
+  const startingAssignment = createSession.isPending ? createSession.variables?.assignmentId : undefined;
+  // Pending without a unit AND without an assignment → the ✨ card (or its bank fallback) is loading.
+  const lectureBusy =
+    createSession.isPending &&
+    createSession.variables?.unit === undefined &&
+    createSession.variables?.assignmentId === undefined;
 
   const todayIdx = (new Date().getDay() + 6) % 7;
   const weeklyActivity = progress.data?.weeklyActivity;
@@ -87,6 +98,18 @@ export function Lernen() {
       )}
 
       <BuddyCard buddy={profile.buddy} state={buddyState} />
+
+      {/* Staff-assigned lectures — an OFFER from the student's own trainer, never a push (§H1).
+          Independent of units/progress loading so it works even with an empty item bank. */}
+      {assignments.data?.map((a) => (
+        <AssignmentCard
+          key={a.assignmentId}
+          assignment={a}
+          busy={startingAssignment === a.assignmentId}
+          disabled={createSession.isPending}
+          onStart={startAssignment}
+        />
+      ))}
 
       <button
         type="button"
@@ -135,6 +158,47 @@ export function Lernen() {
 
 function CenterNote({ children }: { children: React.ReactNode }) {
   return <p className="py-16 text-center font-medium text-ink-soft">{children}</p>;
+}
+
+/**
+ * One open staff assignment (ROADMAP §H1) — personal, from the student's own trainer (known-trainer
+ * model), orange-accented to read as special next to the teal ✨ card. Started ones offer a restart.
+ */
+function AssignmentCard({
+  assignment,
+  busy,
+  disabled,
+  onStart,
+}: {
+  assignment: AssignmentListItem;
+  busy: boolean;
+  disabled: boolean;
+  onStart: (assignmentId: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onStart(assignment.assignmentId)}
+      disabled={disabled}
+      className="flex w-full items-center gap-3 rounded-card bg-white p-4 text-left shadow-sm ring-1 ring-orange/40 transition active:scale-[0.99] disabled:opacity-70"
+    >
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange/15 text-2xl" aria-hidden>
+        💌
+      </span>
+      <div>
+        <p className="font-display font-bold text-ink">
+          {assignment.trainerName ? `Übung von ${assignment.trainerName}` : 'Übung von deiner Trainerin'}
+        </p>
+        <p className="text-sm text-ink-soft">
+          {busy
+            ? 'Deine Übung wird vorbereitet …'
+            : assignment.status === 'started'
+              ? `${assignment.lectureTitle} · Nochmal starten`
+              : assignment.lectureTitle}
+        </p>
+      </div>
+    </button>
+  );
 }
 
 function GoalCard({

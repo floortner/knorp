@@ -17,6 +17,7 @@ const FILTERS: { value: SourceFilter; label: string }[] = [
   { value: 'bank', label: 'Übungen' },
   { value: 'llm', label: 'KI-Übungen' },
   { value: 'homework', label: 'Hausübungen' },
+  { value: 'assigned', label: 'Zugewiesen' },
 ];
 
 const EMPTY: Record<SourceFilter, string> = {
@@ -24,6 +25,7 @@ const EMPTY: Record<SourceFilter, string> = {
   bank: 'Noch keine Übungssitzungen.',
   llm: 'Noch keine KI-Übungen.',
   homework: 'Noch keine Hausübungen.',
+  assigned: 'Noch keine zugewiesenen Übungen.',
 };
 
 /** The middle line of a session row: what happened, in calm factual terms. */

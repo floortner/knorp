@@ -12,6 +12,8 @@ export function useCompleteSession() {
       void qc.invalidateQueries({ queryKey: ['me'] });
       void qc.invalidateQueries({ queryKey: ['progress'] });
       void qc.invalidateQueries({ queryKey: ['units'] });
+      // A completed assigned lecture must drop off the /lernen card (ROADMAP §H1).
+      void qc.invalidateQueries({ queryKey: ['assignments'] });
     },
   });
 }

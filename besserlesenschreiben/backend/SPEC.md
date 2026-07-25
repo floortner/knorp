@@ -233,6 +233,35 @@ chat_message(
   created_at   timestamptz default now()
 )
 
+-- LECTURE (staff-authored teaching unit, ROADMAP §H1) — Merksatz + ordered exercises. The exercises
+-- are ordinary item_bank rows (generated_by='staff', unit 0) referenced by id; every save gates them
+-- through solvableExerciseSchema. Drafts editable; published lectures immutable (unpublish only while
+-- unassigned).
+lecture(
+  id           uuid pk,
+  created_by   uuid fk -> trainer,
+  title        text not null,
+  intro        text not null,            -- the Merksatz shown as the lesson's teaching card
+  item_ids     uuid[] not null,          -- ordered
+  skill_tags   text[] not null,          -- union of the items' tags, computed on save
+  status       text default 'draft',     -- draft | published
+  created_at   timestamptz, updated_at timestamptz
+)
+
+-- ASSIGNMENT (lecture × student, ROADMAP §H1) — an OFFER on /lernen, never a push. Status is derived:
+-- open (no session) | started (session, not completed) | completed.
+assignment(
+  id           uuid pk,
+  lecture_id   uuid fk -> lecture,
+  profile_id   uuid fk -> profile (cascade),
+  assigned_by  uuid fk -> trainer,
+  assigned_at  timestamptz default now(),
+  session_id   uuid fk -> session null,  -- latest play-through; restart overwrites; SetNull on session
+                                         --   delete (profile reset) — completed_at stays as the record
+  completed_at timestamptz null,         -- set by POST /sessions/{id}/complete on the linked session
+  unique (lecture_id, profile_id)        -- idempotent assign (skipDuplicates)
+)
+
 -- BILLING (entitlement / credits_ledger / processed_webhook): DEFERRED — tables DROPPED (§7, ARCHITECTURE §9).
 -- The app is free; re-add these by migration only if metering is ever introduced.
 ```
@@ -304,8 +333,16 @@ PATCH /profiles/{id}/settings {soundOn?,dyslexicFont?,fontScale?,goal?,buddy?} -
 ```
 GET  /units                                          -> [{unit, title, subtitle, focus,
                             exerciseTypes, itemCount, status, theme:{iconBg, iconColor}}]
-POST /sessions              {profileId, unit?, source?} -> 201 {sessionId, profileId, unit,
-                            generatedAt, items:[Exercise]}                     # ★ if source='llm'
+POST /sessions              {profileId, unit?, source?, assignmentId?}
+                                                     -> 201 {sessionId, profileId, unit?,
+                            generatedAt, intro?, items:[Exercise]}             # ★ if source='llm'
+                            # source: bank (default) | llm (★) | assigned (staff lecture §H1 —
+                            #   requires assignmentId; serves the lecture's items + Merksatz intro;
+                            #   no unit; restart re-links the assignment to the fresh session)
+GET  /assignments           ?profileId=              -> [{assignmentId, lectureTitle, trainerName,
+                            intro, skillTags, status: open|started}]
+                            # open staff assignments for the /lernen card — an OFFER, never a push;
+                            #   completed ones are not listed (§H1)
 POST /attempts             {sessionId, itemId?, exerciseType, prompt,
                             expected, given, isCorrect, timeMs, attemptNo, skillTags}
                                                      -> 200 {ok:true}   # idempotent → 200, not 201
@@ -403,6 +440,33 @@ GET /staff/students/{profileId}/sessions/{sessionId} -> the session summary + at
                                                         {attemptId, itemId, exerciseType, prompt, expected,
                                                          given, isCorrect, timeMs, attemptNo, skillTags,
                                                          createdAt}
+```
+
+### Staff — lecture authoring + assignment (STAFF realm, all trainers; ROADMAP §H1)
+The teaching console's write model. Every authored exercise is gated through `solvableExerciseSchema`
+on save (422 with `items.N.field` detail paths) — a student can never receive an unanswerable item,
+regardless of author. Items persist as `item_bank` rows (`generated_by='staff'`, unit 0) and are
+deliberately excluded from bank-session rotation.
+```
+GET    /staff/lectures        ?limit=&cursor=  -> {items:[{lectureId, title, status, skillTags,
+                                                  itemCount, authorName, assignmentCounts:{open,
+                                                  started, completed}, createdAt, updatedAt}],
+                                                  nextCursor, total}
+POST   /staff/lectures        {title, intro, items:[{type,prompt,options,answer,praise,skillTags}]}
+                                               -> 201 lecture detail (incl. wire-shape items)
+GET    /staff/lectures/{id}                    -> lecture detail
+PATCH  /staff/lectures/{id}                    -> detail   # draft-only (else 409 LECTURE_PUBLISHED);
+                                                  # item rows are deleted + recreated
+DELETE /staff/lectures/{id}                    -> {ok}     # draft-only; removes the item rows too
+POST   /staff/lectures/{id}/publish            -> detail
+POST   /staff/lectures/{id}/unpublish          -> detail   # only with zero assignments (409 otherwise)
+POST   /staff/lectures/{id}/assignments  {profileIds[]} -> {assigned, skipped}  # idempotent per student
+GET    /staff/lectures/{id}/assignments        -> {items:[{assignmentId, profileId, name, status,
+                                                  assignedAt, sessionId, completedAt, correctPct,
+                                                  itemsAnswered, itemsTotal, activeMs}]}
+                                               # per-item results via the /staff/students session
+                                               #   drill-down (sessionId links there)
+DELETE /staff/lectures/{id}/assignments/{aid}  -> {ok}     # withdraw; completed → 409
 ```
 
 ### Staff — user administration (STAFF realm, **admin role only**; ARCHITECTURE §1b)

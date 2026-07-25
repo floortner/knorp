@@ -52,7 +52,7 @@ export class StaffStudentsController {
   ) {
     const n = limit ? Number.parseInt(limit, 10) : 50;
     // Loose parse like the queue's status filter: unknown values fall back to "all sources".
-    const src = source === 'bank' || source === 'llm' || source === 'homework' ? source : undefined;
+    const src = source === 'bank' || source === 'llm' || source === 'homework' || source === 'assigned' ? source : undefined;
     return this.activity.sessions(profileId, { limit: Number.isFinite(n) ? n : 50, cursor, source: src });
   }
 

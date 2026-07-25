@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ZodDto } from '../../common/zod-dto';
-import { homeworkAnalysisSchema } from '../../contract/staff';
+import { homeworkAnalysisSchema, lectureUpsertSchema } from '../../contract/staff';
 
 export class StaffRequestCodeDto extends ZodDto(
   z.object({ email: z.email() }),
@@ -32,3 +32,10 @@ export const reviewSubmitSchema = z
 
 export class ReviewSubmitDto extends ZodDto(reviewSubmitSchema) {}
 export type ReviewSubmitInput = z.infer<typeof reviewSubmitSchema>;
+
+// ── Lecture authoring + assignment (ROADMAP §H1) ─────────────────────────────
+export class LectureUpsertDto extends ZodDto(lectureUpsertSchema) {}
+export type LectureUpsertInput = z.infer<typeof lectureUpsertSchema>;
+
+export const assignSchema = z.object({ profileIds: z.array(z.string().uuid()).min(1).max(100) });
+export class AssignDto extends ZodDto(assignSchema) {}

@@ -15,5 +15,9 @@
 - vowel_length: Liebe, Wiese
 - lexical_decision: Maus
 
+## Zugewiesene Übungen
+- "Silben klatschen" (vowel_length) — erledigt, 67% richtig
+- "Dehnungs-h entdecken" (vowel_length, word_raster) — offen
+
 ## Präferenzen
 - Ton: an · Buddy: nepo · Schrift: Standard ×1.0

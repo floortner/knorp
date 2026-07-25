@@ -44,6 +44,18 @@ describe('contract ↔ golden fixtures', () => {
     expect(new Set(types)).toEqual(new Set(EXERCISE_TYPES));
   });
 
+  it('the ASSIGNED session fixture parses, is solvable, and carries the Merksatz intro (§H1)', () => {
+    const fixture = load('session-assigned.example.json');
+    expect(typeof fixture.intro).toBe('string');
+    expect(fixture.unit).toBeUndefined(); // assigned sessions have no unit
+    for (const item of fixture.items as unknown[]) {
+      const parsed = solvableExerciseSchema.safeParse(item);
+      if (!parsed.success) {
+        throw new Error(`exercise ${(item as { id?: string }).id}: ${parsed.error.message}`);
+      }
+    }
+  });
+
   it('every unit in units.example.json parses against unitSchema', () => {
     const units = load('units.example.json').units as unknown[];
     for (const unit of units) {

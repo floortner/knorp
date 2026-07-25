@@ -6,7 +6,13 @@ import type {
   AccountStatus,
   AdminUser,
   AdminUserPage,
+  AssignBody,
+  AssignResult,
   ClaimResponse,
+  LectureAssignmentList,
+  LectureDetail,
+  LecturePage,
+  LectureUpsertBody,
   QueuePage,
   QueueProgress,
   ReviewSubmitBody,
@@ -111,6 +117,54 @@ export const studentsApi = {
   session: (profileId: string, sessionId: string) =>
     apiFetch<StudentSessionDetail>(
       `/staff/students/${encodeURIComponent(profileId)}/sessions/${encodeURIComponent(sessionId)}`,
+    ),
+};
+
+/**
+ * Staff-authored lectures + assignments (ROADMAP §H1) — all trainers. Authoring is solvability-gated
+ * server-side (422 with per-item field paths); assignment is idempotent per (lecture, student).
+ */
+export const lecturesApi = {
+  list: (params: { limit?: number; cursor?: string } = {}) => {
+    const q = new URLSearchParams();
+    if (params.limit !== undefined) q.set('limit', String(params.limit));
+    if (params.cursor) q.set('cursor', params.cursor);
+    const qs = q.toString();
+    return apiFetch<LecturePage>(`/staff/lectures${qs ? `?${qs}` : ''}`);
+  },
+
+  create: (body: LectureUpsertBody) =>
+    apiFetch<LectureDetail>('/staff/lectures', { method: 'POST', body }),
+
+  detail: (lectureId: string) =>
+    apiFetch<LectureDetail>(`/staff/lectures/${encodeURIComponent(lectureId)}`),
+
+  /** Draft-only; published lectures are immutable (409 LECTURE_PUBLISHED). */
+  update: (lectureId: string, body: LectureUpsertBody) =>
+    apiFetch<LectureDetail>(`/staff/lectures/${encodeURIComponent(lectureId)}`, { method: 'PATCH', body }),
+
+  /** Draft-only delete (removes the lecture's authored items too). */
+  remove: (lectureId: string) =>
+    apiFetch<{ ok: true }>(`/staff/lectures/${encodeURIComponent(lectureId)}`, { method: 'DELETE' }),
+
+  publish: (lectureId: string) =>
+    apiFetch<LectureDetail>(`/staff/lectures/${encodeURIComponent(lectureId)}/publish`, { method: 'POST', body: {} }),
+
+  /** Only while nothing is assigned (409 LECTURE_ASSIGNED otherwise). */
+  unpublish: (lectureId: string) =>
+    apiFetch<LectureDetail>(`/staff/lectures/${encodeURIComponent(lectureId)}/unpublish`, { method: 'POST', body: {} }),
+
+  assign: (lectureId: string, body: AssignBody) =>
+    apiFetch<AssignResult>(`/staff/lectures/${encodeURIComponent(lectureId)}/assignments`, { method: 'POST', body }),
+
+  assignments: (lectureId: string) =>
+    apiFetch<LectureAssignmentList>(`/staff/lectures/${encodeURIComponent(lectureId)}/assignments`),
+
+  /** Withdraw an uncompleted assignment (completed ones are the immutable record → 409). */
+  withdraw: (lectureId: string, assignmentId: string) =>
+    apiFetch<{ ok: true }>(
+      `/staff/lectures/${encodeURIComponent(lectureId)}/assignments/${encodeURIComponent(assignmentId)}`,
+      { method: 'DELETE' },
     ),
 };
 

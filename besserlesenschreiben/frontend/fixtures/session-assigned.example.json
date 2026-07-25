@@ -1,0 +1,20 @@
+{
+  "_comment": "Golden example of a staff-ASSIGNED session payload (ROADMAP §H1): no unit, and an `intro` — the trainer's Merksatz rendered as the teaching card before the first exercise (same mechanism as ★ lectures). Drift-gated by backend/src/contract/contract.spec.ts.",
+  "sessionId": "ses_example_0002",
+  "profileId": "prof_example_0001",
+  "generatedAt": "2026-07-25T12:00:00.000Z",
+  "intro": "Merke: Das stumme h macht den Selbstlaut davor lang — wie in fahren.",
+  "items": [
+    {
+      "id": "ex_staff_001",
+      "type": "placeholder",
+      "prompt": "Welches Wort hat ein Dehnungs-h?",
+      "options": ["fahren", "fallen", "fangen"],
+      "answer": "fahren",
+      "praise": "Genau!",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": ["placeholder"]
+    }
+  ]
+}

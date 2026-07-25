@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { ClipboardCheck, GraduationCap, UserRound, Users } from 'lucide-react';
+import { BookOpen, ClipboardCheck, GraduationCap, UserRound, Users } from 'lucide-react';
 import { useStaffAuth } from '@/features/auth/auth-context';
 import { useOpenRequestCount } from '@/features/queue/useQueue';
 import { usePendingUserCount } from '@/features/users/useUsers';
@@ -40,6 +40,10 @@ export function AppLayout() {
               <NavLink to="/queue" className={navClass}>
                 <ClipboardCheck className="size-4" aria-hidden /> Chats
                 <NavBadge count={openRequests} />
+              </NavLink>
+              {/* Teaching console (§H1): lecture authoring + assignment — ALL trainers. */}
+              <NavLink to="/lectures" className={navClass}>
+                <BookOpen className="size-4" aria-hidden /> Lektionen
               </NavLink>
               {/* Learner directory — ALL trainers (known-trainer §H1.3). Informational: no badge. */}
               <NavLink to="/students" className={navClass}>

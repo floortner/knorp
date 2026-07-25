@@ -30,6 +30,7 @@ vi.mock('@/lib/endpoints', () => ({
     me: () => Promise.resolve(me),
     units: () => Promise.resolve(units),
     progress: () => Promise.resolve(progress),
+    assignments: vi.fn(() => Promise.resolve([])),
     createSession: vi.fn(),
   },
 }));
@@ -71,7 +72,27 @@ describe('Lernen home', () => {
     renderHome();
 
     await user.click(await screen.findByRole('button', { name: /Neue Übungen für dich/i }));
-    expect(coreApi.createSession).toHaveBeenCalledWith('prof-1', undefined, 'llm');
+    expect(coreApi.createSession).toHaveBeenCalledWith('prof-1', { unit: undefined, source: 'llm', assignmentId: undefined });
+  });
+
+  it('shows the personal trainer-assignment card and starts it as source:assigned (§H1)', async () => {
+    const { userEvent } = await import('@testing-library/user-event').then((m) => ({ userEvent: m.default }));
+    vi.mocked(coreApi.assignments).mockResolvedValueOnce([
+      { assignmentId: 'as-1', lectureTitle: 'Dehnungs-h entdecken', trainerName: 'Angelika', intro: 'Merke!', skillTags: ['placeholder'], status: 'open' },
+    ] as never);
+    vi.mocked(coreApi.createSession).mockResolvedValue({ sessionId: 's3', items: [] } as never);
+    const user = userEvent.setup();
+    renderHome();
+
+    // Personal, from the student's own trainer (known-trainer model), with the lecture title as subtitle.
+    const card = await screen.findByRole('button', { name: /Übung von Angelika/i });
+    expect(screen.getByText('Dehnungs-h entdecken')).toBeInTheDocument();
+    await user.click(card);
+    expect(coreApi.createSession).toHaveBeenCalledWith('prof-1', {
+      unit: undefined,
+      source: 'assigned',
+      assignmentId: 'as-1',
+    });
   });
 
   it('falls back to a bank session with a friendly note when the LLM is unavailable (503)', async () => {
@@ -87,6 +108,6 @@ describe('Lernen home', () => {
     expect(await screen.findByText(/Zauber-Übungen machen gerade Pause/i)).toBeInTheDocument();
     // second call is the bank fallback (no source)
     expect(coreApi.createSession).toHaveBeenCalledTimes(2);
-    expect(vi.mocked(coreApi.createSession).mock.calls[1]).toEqual(['prof-1', undefined, undefined]);
+    expect(vi.mocked(coreApi.createSession).mock.calls[1]).toEqual(['prof-1', { unit: undefined, source: undefined, assignmentId: undefined }]);
   });
 });

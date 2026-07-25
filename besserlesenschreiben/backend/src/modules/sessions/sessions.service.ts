@@ -268,6 +268,53 @@ export class SessionsService {
   }
 
   /**
+   * POST /sessions {source:'assigned'} — play a staff-assigned lecture (ROADMAP §H1). The lecture's
+   * items are ordinary item_bank rows (generated_by='staff'); the session is an ordinary session with
+   * source 'assigned', so attempts/FSRS/digest all ride the existing machinery. A restart before
+   * completion creates a fresh session and re-links the assignment to it (latest play-through counts).
+   */
+  async createAssigned(accountId: string, dto: CreateSessionInput) {
+    const profile = await assertProfileOwned(this.prisma, accountId, dto.profileId);
+    // Selector-scoped like every family read: a foreign or unknown assignment is a plain 404.
+    const assignment = await this.prisma.assignment.findFirst({
+      where: { id: dto.assignmentId, profileId: profile.id },
+      include: { lecture: true },
+    });
+    if (!assignment) throw new ApiException(404, 'NOT_FOUND', 'Zuweisung nicht gefunden.');
+    if (assignment.completedAt) {
+      throw new ApiException(409, 'ALREADY_COMPLETED', 'Diese Übung ist schon erledigt.');
+    }
+
+    const rows = await this.prisma.itemBank.findMany({ where: { id: { in: assignment.lecture.itemIds } } });
+    const byId = new Map(rows.map((i) => [i.id, i]));
+    const ordered = assignment.lecture.itemIds.flatMap((id) => byId.get(id) ?? []);
+    if (ordered.length === 0) {
+      throw new ApiException(404, 'NO_ITEMS', 'Für diese Übung gibt es keine Aufgaben.');
+    }
+
+    const session = await this.prisma.$transaction(async (tx) => {
+      const s = await tx.session.create({
+        data: { profileId: profile.id, itemIds: ordered.map((i) => i.id), source: 'assigned' },
+      });
+      await tx.assignment.update({ where: { id: assignment.id }, data: { sessionId: s.id } });
+      return s;
+    });
+
+    this.logger.log(
+      { event: 'session.created', sessionId: session.id, source: 'assigned', assignmentId: assignment.id, items: ordered.length },
+      'assigned session started',
+    );
+
+    return {
+      sessionId: session.id,
+      profileId: profile.id,
+      generatedAt: session.createdAt,
+      intro: assignment.lecture.intro, // the trainer's Merksatz — same teaching card as ★ lectures
+      items: ordered.map(toExercise),
+    };
+  }
+
+  /**
    * POST /sessions/:id/complete — award stars, advance the streak, return the league standing.
    * Idempotent: a second call returns the already-recorded standing without double-awarding.
    */
@@ -310,6 +357,8 @@ export class SessionsService {
     await this.prisma.$transaction([
       this.prisma.session.update({ where: { id: sessionId }, data: { completedAt: now, starsAward: stars } }),
       this.prisma.profile.update({ where: { id: profile.id }, data: profileUpdate }),
+      // Completing the linked session is what completes a staff assignment (§H1) — no-op otherwise.
+      this.prisma.assignment.updateMany({ where: { sessionId }, data: { completedAt: now } }),
     ]);
 
     if (shouldUnlock) {

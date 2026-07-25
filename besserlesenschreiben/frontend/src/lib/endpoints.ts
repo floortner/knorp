@@ -1,5 +1,6 @@
 import { apiFetch, uploadFile } from './api';
 import type {
+  AssignmentListItem,
   ChatHistory,
   ChatReply,
   CreateProfileBody,
@@ -67,12 +68,27 @@ export const coreApi = {
   units: (profileId: string) =>
     apiFetch<Unit[]>(`/units?profileId=${encodeURIComponent(profileId)}`),
 
-  /** `source:'llm'` requests a generated lecture (teaching intro + fresh exercises); default is bank. */
-  createSession: (profileId: string, unit?: number, source?: 'bank' | 'llm') =>
+  /**
+   * `source:'llm'` requests a generated lecture (teaching intro + fresh exercises); `'assigned'` plays
+   * a staff-assigned lecture (requires `assignmentId`); default is a bank session.
+   */
+  createSession: (
+    profileId: string,
+    opts: { unit?: number; source?: 'bank' | 'llm' | 'assigned'; assignmentId?: string } = {},
+  ) =>
     apiFetch<SessionResponse>('/sessions', {
       method: 'POST',
-      body: { profileId, ...(unit !== undefined ? { unit } : {}), ...(source ? { source } : {}) },
+      body: {
+        profileId,
+        ...(opts.unit !== undefined ? { unit: opts.unit } : {}),
+        ...(opts.source ? { source: opts.source } : {}),
+        ...(opts.assignmentId ? { assignmentId: opts.assignmentId } : {}),
+      },
     }),
+
+  /** Open staff-assigned lectures for the /lernen card — an offer, never a push (ROADMAP §H1). */
+  assignments: (profileId: string) =>
+    apiFetch<AssignmentListItem[]>(`/assignments?profileId=${encodeURIComponent(profileId)}`),
 
   completeSession: (sessionId: string) =>
     apiFetch<SessionComplete>(`/sessions/${encodeURIComponent(sessionId)}/complete`, {
