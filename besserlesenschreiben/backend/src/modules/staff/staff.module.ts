@@ -2,11 +2,13 @@ import { Module } from '@nestjs/common';
 import { StaffController } from './staff.controller';
 import { StaffUsersController } from './staff-users.controller';
 import { StaffStudentsController } from './staff-students.controller';
+import { StaffLecturesController } from './staff-lectures.controller';
 import { StaffAuthService } from './staff-auth.service';
 import { ReviewService } from './review.service';
 import { UserAdminService } from './user-admin.service';
 import { StaffProgressService } from './staff-progress.service';
 import { StudentActivityService } from './student-activity.service';
+import { LecturesService } from './lectures.service';
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
 import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
 
@@ -18,13 +20,14 @@ import { StaffAdminGuard } from '../../common/guards/staff-admin.guard';
  * own controllers/services/guards.
  */
 @Module({
-  controllers: [StaffController, StaffUsersController, StaffStudentsController],
+  controllers: [StaffController, StaffUsersController, StaffStudentsController, StaffLecturesController],
   providers: [
     StaffAuthService,
     ReviewService,
     UserAdminService,
     StaffProgressService,
     StudentActivityService,
+    LecturesService,
     StaffAuthGuard,
     StaffAdminGuard,
   ],

@@ -69,6 +69,7 @@ model Profile {
   reviewStates ReviewState[]
   homework     HomeworkUpload[]
   chatMessages ChatMessage[]
+  assignments  Assignment[]
 
   @@index([accountId])
   @@map("profile")
@@ -85,6 +86,8 @@ model ItemBank {
   syllableAudio Json?    @map("syllable_audio")
   skillTags     String[] @map("skill_tags")
   difficulty    Int      @default(1)
+  // 'seed' | 'llm' | 'staff' — staff rows are lecture-authored (§H1), live at unit 0, and are
+  // deliberately excluded from bank rotation (createBank's generated pool filters 'llm' only).
   generatedBy   String   @default("seed") @map("generated_by")
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
@@ -104,16 +107,63 @@ model Session {
   profileId   String    @map("profile_id") @db.Uuid
   unit        Int?
   itemIds     String[]  @map("item_ids") @db.Uuid
-  source      String // 'bank' | 'llm' | 'homework'
+  source      String // 'bank' | 'llm' | 'homework' | 'assigned'
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   starsAward  Int?      @map("stars_award")
 
-  profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  attempts Attempt[]
+  profile    Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  attempts   Attempt[]
+  assignment Assignment?
 
   @@index([profileId])
   @@map("session")
+}
+
+// ── LECTURE (staff-authored teaching unit, ROADMAP §H1) ──────────────────────
+// A trainer-composed Merksatz + ordered exercises. Items live as item_bank rows
+// (generated_by='staff', unit 0) referenced by id — reusable and attempt-joinable like any item.
+// Drafts are editable; published lectures are immutable (unpublish only with zero assignments).
+model Lecture {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdBy String   @map("created_by") @db.Uuid
+  title     String
+  intro     String // the Merksatz shown as the lesson's teaching intro card
+  itemIds   String[] @map("item_ids") @db.Uuid // ordered
+  skillTags String[] @map("skill_tags") // union of the items' tags, computed on save
+  status    String   @default("draft") // draft | published
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  author      Trainer      @relation("LectureAuthor", fields: [createdBy], references: [id])
+  assignments Assignment[]
+
+  @@index([status])
+  @@map("lecture")
+}
+
+// ── ASSIGNMENT (lecture × student, ROADMAP §H1) ──────────────────────────────
+// An OFFER on /lernen, never a push (§H invariants). Status is derived, not stored:
+// open (no session) → started (session, not completed) → completed.
+model Assignment {
+  id          String    @id @default(uuid()) @db.Uuid
+  lectureId   String    @map("lecture_id") @db.Uuid
+  profileId   String    @map("profile_id") @db.Uuid
+  assignedBy  String    @map("assigned_by") @db.Uuid
+  assignedAt  DateTime  @default(now()) @map("assigned_at") @db.Timestamptz(6)
+  // Latest play-through; a restart overwrites. SetNull because profile reset hard-deletes sessions —
+  // the assignment then reads as open again (completed ones keep completedAt as the historical record).
+  sessionId   String?   @unique @map("session_id") @db.Uuid
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+
+  lecture  Lecture  @relation(fields: [lectureId], references: [id]) // withdraw/delete rules live in the service
+  profile  Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  assigner Trainer  @relation("AssignmentAssigner", fields: [assignedBy], references: [id])
+  session  Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@unique([lectureId, profileId]) // idempotent assign (createMany skipDuplicates)
+  @@index([profileId, completedAt]) // the family "open assignments" read
+  @@map("assignment")
 }
 
 // ── ATTEMPT (THE telemetry table — one row per answered item) ────────────────
@@ -208,6 +258,8 @@ model Trainer {
   actioned HomeworkUpload[] @relation("TrainerActioned")
   claimed  HomeworkUpload[] @relation("TrainerClaimed")
   reviews  HomeworkReview[]
+  lectures Lecture[]        @relation("LectureAuthor")
+  assigned Assignment[]     @relation("AssignmentAssigner")
 
   @@map("trainer")
 }

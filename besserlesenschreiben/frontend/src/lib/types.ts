@@ -41,3 +41,6 @@ export type HomeworkUploadResponse = ResponseOf<operations['HomeworkController_u
 export type HomeworkResult = ResponseOf<operations['HomeworkController_result']>;
 export type HomeworkStatus = HomeworkResult['status'];
 export type HomeworkAnalysis = NonNullable<HomeworkResult['reviewedAnalysis']>;
+
+/** Open staff-assigned lectures for the /lernen card (ROADMAP §H1). */
+export type AssignmentListItem = ResponseOf<operations['AssignmentsController_list']>[number];

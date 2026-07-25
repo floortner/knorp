@@ -49,3 +49,17 @@ export type SessionSource = StudentSession['source'];
 export type StudentSessionDetail = ResponseOf<operations['StaffStudentsController_session']>;
 export type StudentAttempt = StudentSessionDetail['attempts'][number];
 
+
+/** Staff-authored lectures + assignments (all trainers; ROADMAP §H1). */
+export type LecturePage = ResponseOf<operations['StaffLecturesController_list']>;
+export type LectureListItem = LecturePage['items'][number];
+export type LectureStatus = LectureListItem['status'];
+export type LectureDetail = ResponseOf<operations['StaffLecturesController_detail']>;
+export type LectureItem = LectureDetail['items'][number];
+export type LectureUpsertBody = BodyOf<operations['StaffLecturesController_create']>;
+export type LectureItemInput = LectureUpsertBody['items'][number];
+export type AssignBody = BodyOf<operations['StaffLecturesController_assign']>;
+export type AssignResult = ResponseOf<operations['StaffLecturesController_assign']>;
+export type LectureAssignmentList = ResponseOf<operations['StaffLecturesController_assignments']>;
+export type LectureAssignment = LectureAssignmentList['items'][number];
+export type AssignmentStatus = LectureAssignment['status'];

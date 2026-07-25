@@ -3,10 +3,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { assertProfileOwned } from '../../common/ownership';
 import { daysAgo } from '../../common/dates';
 import { StorageService } from '../storage/storage.service';
-import { buildDigestData, renderDigest, type DueRow } from './digest.render';
+import { buildDigestData, renderDigest, type AssignedRow, type DueRow } from './digest.render';
 
 const WINDOW_DAYS = 14;
 const DUE_EXAMPLE_ITEMS = 3;
+const MAX_ASSIGNED = 5; // most recent staff assignments surfaced to the LLM (§H3.3)
 
 /**
  * Digest generation (SPEC §6/§8). Regenerates the compact `digest.md` from the attempt table on
@@ -40,6 +41,7 @@ export class DigestService {
     const due: DueRow[] = await Promise.all(
       dueStates.map(async (s) => ({ skill: s.skillTag, examples: await this.examplesFor(s.skillTag) })),
     );
+    const assigned = await this.assignedRows(profileId, now);
 
     const data = buildDigestData(
       {
@@ -52,6 +54,7 @@ export class DigestService {
       },
       attempts,
       due,
+      assigned,
       now,
       WINDOW_DAYS,
     );
@@ -65,6 +68,42 @@ export class DigestService {
       this.logger.warn({ event: 'digest.cache_write_failed', err: (err as Error).message }, 'digest cache write failed');
     }
     return { markdown };
+  }
+
+  /**
+   * Recent staff-assigned lectures (§H3.3) so generated lectures build on the trainer's material.
+   * Title + tags + outcome only — no names, no dates (the digest goes to the LLM, P2-5).
+   */
+  private async assignedRows(profileId: string, now: Date): Promise<AssignedRow[]> {
+    const rows = await this.prisma.assignment.findMany({
+      where: { profileId, assignedAt: { gte: daysAgo(now, WINDOW_DAYS) } },
+      orderBy: [{ assignedAt: 'desc' }, { id: 'desc' }],
+      take: MAX_ASSIGNED,
+      include: { lecture: { select: { title: true, skillTags: true } } },
+    });
+    const sessionIds = rows.flatMap((r) => (r.completedAt && r.sessionId ? [r.sessionId] : []));
+    const attempts = sessionIds.length
+      ? await this.prisma.attempt.findMany({
+          where: { sessionId: { in: sessionIds } },
+          select: { sessionId: true, isCorrect: true },
+        })
+      : [];
+    const bySession = new Map<string, { n: number; correct: number }>();
+    for (const a of attempts) {
+      const s = bySession.get(a.sessionId) ?? { n: 0, correct: 0 };
+      s.n += 1;
+      if (a.isCorrect) s.correct += 1;
+      bySession.set(a.sessionId, s);
+    }
+    return rows.map((r) => {
+      const s = r.completedAt && r.sessionId ? bySession.get(r.sessionId) : undefined;
+      return {
+        title: r.lecture.title,
+        skillTags: r.lecture.skillTags,
+        completed: r.completedAt !== null,
+        correctPct: s && s.n > 0 ? Math.round((s.correct / s.n) * 100) : null,
+      };
+    });
   }
 
   /** A few example words from the item bank that drill a skill, for the "Fällig" section. */

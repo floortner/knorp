@@ -25,8 +25,12 @@ export const E2E_PARENT_EMAILS = [
   'e2e-parent-chromium@example.test',
   'e2e-parent-webkit@example.test',
   'e2e-homework-parent@example.test', // cross-realm homework-loop spec (chromium-only)
+  'e2e-assignment-parent@example.test', // cross-realm assignment-loop spec (chromium-only, §H1)
 ];
 export const E2E_TRAINER_EMAIL = 'e2e-trainer@example.test';
+// Per-spec trainer for the assignment-loop journey: the two cross-realm specs run fullyParallel and
+// would otherwise race on one email's last-captured login code (same isolation as per-project parents).
+export const E2E_ASSIGNMENT_TRAINER_EMAIL = 'e2e-assignment-trainer@example.test';
 
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
@@ -50,6 +54,20 @@ async function main(): Promise<void> {
       update: { status: 'active', role: 'trainer', name: 'E2E Trainer' },
       create: { email: E2E_TRAINER_EMAIL, status: 'active', role: 'trainer', name: 'E2E Trainer' },
     });
+    const trainer = await prisma.trainer.upsert({
+      where: { email: E2E_ASSIGNMENT_TRAINER_EMAIL },
+      update: { status: 'active', role: 'trainer', name: 'Angelika' },
+      create: { email: E2E_ASSIGNMENT_TRAINER_EMAIL, status: 'active', role: 'trainer', name: 'Angelika' },
+    });
+
+    // Wipe the e2e trainer's authored lectures (+ their unit-0 staff items and assignments) so the
+    // assignment-loop journey re-authors from a deterministic zero-lecture state.
+    const lectures = await prisma.lecture.findMany({ where: { createdBy: trainer.id }, select: { id: true, itemIds: true } });
+    if (lectures.length > 0) {
+      await prisma.assignment.deleteMany({ where: { lectureId: { in: lectures.map((l) => l.id) } } });
+      await prisma.itemBank.deleteMany({ where: { id: { in: lectures.flatMap((l) => l.itemIds) } } });
+      await prisma.lecture.deleteMany({ where: { id: { in: lectures.map((l) => l.id) } } });
+    }
 
     console.log(`[seed-e2e] ready: ${E2E_PARENT_EMAILS.length} parent accounts, ${E2E_TRAINER_EMAIL} (trainer)`);
   } finally {

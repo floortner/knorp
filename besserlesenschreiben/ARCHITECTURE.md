@@ -232,6 +232,7 @@ src/
     queue/                # review list (Offen | Erledigt | Alle) — rows by student name (§H1.3)
     review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
     students/             # learner directory + activity timeline + session drill-down (§H1.3/§H3)
+    lectures/             # teaching console: lecture authoring, publish, assign + outcome table (§H1)
     users/                # ADMIN: account approval / deactivate / delete + per-student progress
                           # (the "Wortschatz" lexeme-curation tab was dropped with the content set, §F)
     progress/             # shared learner-progress panel (summary · skills · activity)
@@ -591,6 +592,14 @@ Student handwriting OCR is unreliable and the stakes (shaping a struggling stude
 homework photo's LLM analysis is **never** applied on its own. A vetted **internal literacy professional**
 (staff trainer, §1a) validates it first. The trainer's verdict is **authoritative** and **replaces** the
 former parent-confirm step. The flow is **asynchronous** — the student is never blocked.
+
+**Teaching-console extension (ROADMAP §H, shipped 2026-07-25):** the portal is no longer review-only.
+Trainers also **author lectures** (Merksatz + solvability-gated exercises, stored as `item_bank` rows
+with `generated_by='staff'`) and **assign** them to specific students; the assignment appears on
+`/lernen` as a personal offer ("Übung von {Trainer}", never a push), plays as an ordinary session
+(`source='assigned'` — attempts feed FSRS/digest like any other), and the outcome lands back in the
+trainer's assignment table and the per-question drill-down. The digest's "Zugewiesene Übungen" section
+closes the loop so LLM-generated lectures build on the trainer's material (backend SPEC §3/§6/§8).
 
 ```
 family uploads photo (Chat tab) ─▶  backend: strip EXIF, →WebP, store under user prefix

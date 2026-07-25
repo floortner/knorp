@@ -25,7 +25,9 @@ export class SessionsController {
   create(@CurrentAccount() account: AuthAccount, @Body() dto: CreateSessionDto) {
     return dto.source === 'llm'
       ? this.sessions.createLlm(account.id, dto)
-      : this.sessions.createBank(account.id, dto);
+      : dto.source === 'assigned'
+        ? this.sessions.createAssigned(account.id, dto)
+        : this.sessions.createBank(account.id, dto);
   }
 
   // Idempotent: completing an already-completed session returns the same award → 200, not 201.

@@ -4,4 +4,5 @@ export const SOURCE_LABEL: Record<string, string> = {
   bank: 'Übung',
   llm: 'KI-Übung',
   homework: 'Hausübung',
+  assigned: 'Zugewiesene Übung',
 };

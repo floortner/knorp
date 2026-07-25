@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { exerciseSchema } from './exercise';
+import { skillTagSchema } from './skills';
 
 /**
  * Wire schemas for the STAFF realm (ARCHITECTURE §1a, SPEC §6). These publish the OpenAPI the trainer
@@ -157,8 +159,7 @@ export const adminUserStatusSchema = z.object({
 // The trainer's read model over the existing session/attempt telemetry — no new tables. Names are
 // shown (known-trainer model); parent email/chat/billing never appear here.
 
-// 'assigned' joins this enum when the §H1 lecture/assignment rails land.
-export const sessionSourceEnum = z.enum(['bank', 'llm', 'homework']);
+export const sessionSourceEnum = z.enum(['bank', 'llm', 'homework', 'assigned']);
 
 export const studentListItemSchema = z.object({
   profileId: z.string(),
@@ -229,6 +230,83 @@ export const studentAttemptSchema = z.object({
 export const studentSessionDetailSchema = studentSessionSchema.extend({
   name: z.string(),
   attempts: z.array(studentAttemptSchema),
+});
+
+// ── Staff-authored lectures + assignments (STAFF realm, ALL trainers; ROADMAP §H1) ───────────────
+// A lecture = Merksatz intro + ordered exercises, authored by a trainer, assigned to students as an
+// OFFER on /lernen (never a push). Items are persisted as item_bank rows (generated_by='staff').
+export const lectureStatusEnum = z.enum(['draft', 'published']);
+export const assignmentStatusEnum = z.enum(['open', 'started', 'completed']);
+
+// Authoring input: the placeholder wire shape minus backend-owned media fields (id/audioUrl/…).
+// The service composes the full exercise and gates it through solvableExerciseSchema, so an
+// unanswerable item can never be persisted regardless of author (§H invariant). Grows per type in H2.
+export const lectureItemInputSchema = z.object({
+  type: z.literal('placeholder'),
+  prompt: z.string().min(1).max(2000),
+  options: z.array(z.string().min(1).max(200)).min(2).max(8),
+  answer: z.string().min(1).max(200),
+  praise: z.string().min(1).max(200),
+  // Strict taxonomy enum (contract/skills.ts) — the portal offers a select, and an out-of-taxonomy
+  // tag fails here with a crisp path instead of deep inside the solvability gate.
+  skillTags: z.array(skillTagSchema).min(1).max(10),
+});
+
+export const lectureUpsertSchema = z.object({
+  title: z.string().min(1).max(200),
+  intro: z.string().min(1).max(300), // same bound as the LLM lecture's generated intro
+  items: z.array(lectureItemInputSchema).min(1).max(12),
+});
+
+export const lectureListItemSchema = z.object({
+  lectureId: z.string(),
+  title: z.string(),
+  status: lectureStatusEnum,
+  skillTags: z.array(z.string()), // union of the items' tags, computed on save
+  itemCount: z.number().int(),
+  authorName: z.string(),
+  assignmentCounts: z.object({
+    open: z.number().int(),
+    started: z.number().int(),
+    completed: z.number().int(),
+  }),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const lecturePageSchema = z.object({
+  items: z.array(lectureListItemSchema),
+  nextCursor: z.string().nullable(),
+  total: z.number().int(),
+});
+
+// Detail carries the full wire-shape items (same Exercise union the family app renders).
+export const lectureDetailSchema = lectureListItemSchema.extend({
+  intro: z.string(),
+  items: z.array(exerciseSchema),
+});
+
+export const assignResultSchema = z.object({
+  assigned: z.number().int(),
+  skipped: z.number().int(), // already assigned (idempotent re-assign)
+});
+
+export const lectureAssignmentSchema = z.object({
+  assignmentId: z.string(),
+  profileId: z.string(),
+  name: z.string(),
+  status: assignmentStatusEnum, // derived: open (no session) | started | completed
+  assignedAt: z.string(),
+  sessionId: z.string().nullable(), // links to the /students session drill-down for per-item results
+  completedAt: z.string().nullable(),
+  correctPct: z.number().int().nullable(),
+  itemsAnswered: z.number().int(),
+  itemsTotal: z.number().int(),
+  activeMs: z.number().int(),
+});
+
+export const lectureAssignmentListSchema = z.object({
+  items: z.array(lectureAssignmentSchema),
 });
 
 // Lexeme foundation curation was dropped along with the Vokaltraining content set — the word-list

@@ -68,14 +68,30 @@ export const unitsSchema = z.array(unitSchema);
 export const sessionResponseSchema = z.object({
   sessionId: z.string(),
   profileId: z.string(),
-  unit: z.number().int(),
+  // Bank sessions only; LLM (unit 0 pool) and assigned sessions have none. The family app never
+  // reads it from the response.
+  unit: z.number().int().optional(),
   generatedAt: z.string(),
-  // Short teaching text ("Merke: …") shown as a card before the first exercise. Only LLM-generated
-  // lectures carry one; bank sessions omit it. Must live in this schema or the ZodResponseInterceptor
-  // strips it from the wire.
+  // Short teaching text ("Merke: …") shown as a card before the first exercise. LLM-generated and
+  // staff-assigned lectures carry one; bank sessions omit it. Must live in this schema or the
+  // ZodResponseInterceptor strips it from the wire.
   intro: z.string().optional(),
   items: z.array(exerciseSchema),
 });
+
+// ── Assignments (staff-authored lectures offered to the student, ROADMAP §H1) ───────────────────
+// The /lernen card's data: open (never started) or started (restartable) assignments, newest first.
+// `trainerName` personalises the card ("Übung von Angelika") — known-trainer model, the student
+// knows exactly who this is. Completed assignments are not listed.
+export const assignmentListItemSchema = z.object({
+  assignmentId: z.string(),
+  lectureTitle: z.string(),
+  trainerName: z.string(),
+  intro: z.string(),
+  skillTags: z.array(z.string()),
+  status: z.enum(['open', 'started']),
+});
+export const assignmentsSchema = z.array(assignmentListItemSchema);
 
 export const leagueSchema = z.object({
   tier: z.enum(['bronze', 'silber', 'gold']),

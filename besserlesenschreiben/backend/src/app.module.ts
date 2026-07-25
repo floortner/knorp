@@ -21,6 +21,7 @@ import { DigestModule } from './modules/digest/digest.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { HomeworkModule } from './modules/homework/homework.module';
 import { StaffModule } from './modules/staff/staff.module';
+import { AssignmentsModule } from './modules/assignments/assignments.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -60,6 +61,7 @@ import { HealthController } from './modules/health/health.controller';
     ChatModule,
     HomeworkModule,
     StaffModule,
+    AssignmentsModule,
   ],
   controllers: [HealthController],
   providers: [

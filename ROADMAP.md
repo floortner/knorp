@@ -434,13 +434,16 @@ progress; parent email/account administration stays admin-only. (The `L-xxxxxx` 
 - Trainers see student names + learning data; **parent email + account lifecycle stay admin-only**.
 
 **H1 — the rails (type-agnostic; buildable NOW against `placeholder`):**
-1. **Schema:** `lecture` (id, created_by → trainer, title, intro, item_ids uuid[], skill_tags,
-   status `draft|published`, timestamps) + `assignment` (lecture_id, profile_id, assigned_by,
-   assigned_at, session_id nullable, completed_at nullable). `item_bank.generated_by` gains `'staff'`;
-   `session.source` gains `'assigned'`.
-2. **Staff routes** (backend SPEC §6): lecture CRUD (create validates every exercise via
-   `solvableExerciseSchema`), publish, assign to N profiles, list assignments with status
-   (`open | started | completed`) and per-item results after completion.
+1. ✅ **Schema (DONE 2026-07-25):** `lecture` (id, created_by → trainer, title, intro, item_ids uuid[],
+   skill_tags, status `draft|published`, timestamps) + `assignment` (lecture_id, profile_id, assigned_by,
+   assigned_at, session_id nullable + SetNull, completed_at nullable; unique lecture×profile).
+   `item_bank.generated_by` gained `'staff'` (unit 0, excluded from bank rotation); `session.source`
+   gained `'assigned'`. Additive migration — single-release deploy.
+2. ✅ **Staff routes (DONE 2026-07-25)** (backend SPEC §6): lecture CRUD (every save validates each
+   exercise via `solvableExerciseSchema` — 422 with per-item paths), publish/unpublish (draft-editable,
+   published-immutable, unpublish only unassigned), assign to N profiles (idempotent, `{assigned,
+   skipped}`), withdraw uncompleted, list assignments with derived status (`open | started | completed`)
+   + outcome rollup; per-item results via the existing session drill-down. Portal "Lektionen" tab.
 3. ✅ **Learner directory (DONE 2026-07-25, with H3.1/H3.2):** a student list for **all trainers** —
    student name, grade band, skill breakdown, recent activity (`GET /staff/students`, portal
    "Schüler" tab) — the picker for assignment and the context for authoring. The rule-10 revision
@@ -448,11 +451,14 @@ progress; parent email/account administration stays admin-only. (The `L-xxxxxx` 
    included; the `L-xxxxxx` handle is deleted), `queue/{id}/progress` opened to all trainers, and
    ARCHITECTURE §1a/§11 + CLAUDE.md rule 10 + backend SPEC §6/§10 + trainer AGENTS.md re-trued in
    the same PR.
-4. **Family surface:** `/lernen` shows an assignment card when one is open;
+4. ✅ **Family surface (DONE 2026-07-25):** `/lernen` shows a personal "Übung von {Trainer}" card per
+   open assignment (real trainer name — known-trainer model; calm, no badges);
    `POST /sessions {source:'assigned', assignmentId}` serves the lecture's items (intro = the lecture's
-   Merksatz); the normal attempts/complete loop marks the assignment completed.
-5. Contract regen + golden fixtures + an e2e journey (trainer authors → assigns → student completes →
-   trainer sees the result).
+   Merksatz via the existing IntroCard); the normal attempts/complete loop marks the assignment
+   completed and the card disappears.
+5. ✅ **(DONE 2026-07-25)** Contract regen + golden fixtures (`session-assigned.example.json`) + the
+   e2e journey `assignment-loop.spec.ts` (trainer authors → assigns → student completes → trainer sees
+   the result incl. drill-down) — passing.
 
 **H2 — authoring UX (per training type; lands as the linguist's types land, F2/F3):**
 - Per-type exercise editor in the portal with inline solvability feedback (server-validated) and a
@@ -473,11 +479,12 @@ progress; parent email/account administration stays admin-only. (The `L-xxxxxx` 
    the H1 rails**):** the student activity timeline on the learner detail (filter by source, grouped
    by day), session drill-down as a question-by-question review. Informs the next authored lecture
    and the in-person parent conversation.
-3. **Digest extension:** `digest.md` gains a "Zugewiesene Übungen" section (recent assigned lectures:
-   title, focus skills, outcome) so LLM-generated lectures build on the trainer's material instead of
-   ignoring it.
-4. Abandoned/never-started assignments are visible (assignment without session / session without
-   `completed_at`) — signal for the parent conversation, never pressure at the student.
+3. ✅ **Digest extension (DONE 2026-07-25):** `digest.md` gained the "Zugewiesene Übungen" section
+   (recent assigned lectures: title, focus skills, outcome incl. correct %) so LLM-generated lectures
+   build on the trainer's material instead of ignoring it. Golden updated.
+4. ✅ **(DONE 2026-07-25)** Abandoned/never-started assignments are visible on the lecture's assignment
+   table (Offen | Begonnen, calm wording) and the activity timeline — signal for the parent
+   conversation, never pressure at the student.
 
 > **Sequencing note:** H3.1–H3.2 are type-agnostic and don't depend on lectures existing — they're
 > valuable for today's bank/★ sessions already. Build them **with H1** (same PR series), not after H2.
@@ -492,8 +499,9 @@ AGENTS.md (new screens + updated golden rules), and this file.
 ## Suggested order
 
 ~~B1+B2~~ ✓ → ~~D1~~ ✓ → ~~D4 + D7~~ ✓ → ~~D2 + D3~~ ✓ → ~~C1~~ ✓ → ~~E — first feedback round (beta) on
-AWS~~ ✓ → **H1 assignment rails + H3 student-activity tracking** now (both type-agnostic, unblocked)
-while the linguist works on **F** (word-list schema → skill taxonomy → training types → sequence →
-lecture prompt, landed piece by piece as delivered) → **H2 authoring UX** per type as F types arrive →
-then **D5 / D6** (badges, parent email) once the new content is live. **C2** (a concrete new exercise
-type) is how new training types land during §F — each now also ships its §H2 authoring form.
+AWS~~ ✓ → ~~H1 assignment rails + H3 student-activity tracking~~ ✓ (2026-07-25 — the teaching console
+is live: directory, activity, authoring, assignment, digest section) → **now:** the linguist works on
+**F** (word-list schema → skill taxonomy → training types → sequence → lecture prompt, landed piece by
+piece as delivered) → **H2 authoring UX** per type as F types arrive → then **D5 / D6** (badges, parent
+email) once the new content is live. **C2** (a concrete new exercise type) is how new training types
+land during §F — each now also ships its §H2 authoring form.

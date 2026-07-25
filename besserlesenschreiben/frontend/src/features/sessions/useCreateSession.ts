@@ -8,7 +8,16 @@ import { coreApi } from '@/lib/endpoints';
  */
 export function useCreateSession() {
   return useMutation({
-    mutationFn: ({ profileId, unit, source }: { profileId: string; unit?: number; source?: 'bank' | 'llm' }) =>
-      coreApi.createSession(profileId, unit, source),
+    mutationFn: ({
+      profileId,
+      unit,
+      source,
+      assignmentId,
+    }: {
+      profileId: string;
+      unit?: number;
+      source?: 'bank' | 'llm' | 'assigned';
+      assignmentId?: string;
+    }) => coreApi.createSession(profileId, { unit, source, assignmentId }),
   });
 }
