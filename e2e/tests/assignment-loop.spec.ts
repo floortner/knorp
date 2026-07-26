@@ -2,8 +2,9 @@ import { test, expect } from '@playwright/test';
 import { loginAsFamily, loginAsStaff } from '../helpers/auth';
 
 /**
- * The teaching-console journey ACROSS BOTH REALMS (ROADMAP §H1) — the seam no unit test covers:
- * a trainer authors + publishes a lecture and assigns it to a student → the student sees the personal
+ * The teaching-console journey ACROSS BOTH REALMS (ROADMAP §H1/§I3) — the seam no unit test covers:
+ * the content-library fixture lecture (imported by global-setup from e2e/fixtures/content/) appears
+ * in the trainer portal → the trainer assigns it to a student → the student sees the personal
  * "Übung von …" card on /lernen, plays the lecture (Merksatz intro → exercises) as a normal session →
  * completion marks the assignment → the trainer sees the outcome and the per-question drill-down.
  *
@@ -12,7 +13,7 @@ import { loginAsFamily, loginAsStaff } from '../helpers/auth';
 test.describe(() => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'cross-realm journey runs on chromium only');
 
-  test('assignment: trainer authors → assigns → student completes → trainer sees the result', async ({ page, context }) => {
+  test('assignment: imported lecture → trainer assigns → student completes → trainer sees the result', async ({ page, context }) => {
     // ── Family: log in, ensure a profile exists ──
     await loginAsFamily(page, 'e2e-assignment-parent@example.test');
     await page.waitForURL(/\/(onboarding$|app\/lernen$)/);
@@ -24,21 +25,15 @@ test.describe(() => {
     }
     await expect(page).toHaveURL(/\/app\/lernen$/);
 
-    // ── Staff: author, publish, assign (fresh lecture each run — seed-e2e wipes the trainer's lectures) ──
+    // ── Staff: the imported fixture lecture is in the library; assign it (fresh each run — the
+    //    profile wipe in seed-e2e cascades the previous run's assignment away) ──
     const staff = await context.newPage();
     await loginAsStaff(staff, 'e2e-assignment-trainer@example.test');
     await staff.getByRole('link', { name: 'Lektionen' }).click();
-    await staff.getByRole('button', { name: 'Neue Lektion' }).click();
+    await expect(staff.getByText(/kommen aus der Content-Bibliothek/)).toBeVisible();
+    await staff.getByRole('link', { name: /E2E-Übungslektion/ }).click();
 
-    await staff.getByLabel('Titel').fill('Dehnungs-h entdecken');
-    await staff.getByLabel(/Merksatz/).fill('Merke: Das stumme h macht den Selbstlaut davor lang.');
-    await staff.getByLabel('Frage').fill('Welches Wort hat ein Dehnungs-h?');
-    await staff.getByLabel(/Antwortmöglichkeiten/).fill('fahren\nfallen');
-    await staff.getByLabel('Richtige Antwort').fill('fahren');
-    await staff.getByRole('button', { name: 'Als Entwurf speichern' }).click();
-
-    await expect(staff.getByText('Entwurf')).toBeVisible();
-    await staff.getByRole('button', { name: 'Veröffentlichen' }).click();
+    await expect(staff.getByText(/aus der Content-Bibliothek/)).toBeVisible();
     await staff.getByRole('button', { name: 'Zuweisen' }).click();
     await staff.getByLabel(/Zoe/).check();
     await staff.getByRole('button', { name: /^Zuweisen \(1\)$/ }).click();
@@ -50,15 +45,16 @@ test.describe(() => {
     await page.goto('/app/lernen');
     const card = page.getByRole('button', { name: /Übung von Angelika/ });
     await expect(card).toBeVisible();
-    await expect(page.getByText('Dehnungs-h entdecken')).toBeVisible();
+    await expect(page.getByText('E2E-Übungslektion')).toBeVisible();
     await card.click();
 
     await expect(page).toHaveURL(/\/app\/lesson$/);
-    // The trainer's Merksatz renders as the teaching intro card before the first exercise.
-    await expect(page.getByText(/Das stumme h macht den Selbstlaut/)).toBeVisible();
+    // The lecture's Merksatz renders as the teaching intro card before the first exercise.
+    await expect(page.getByText(/Diese Lektion kommt aus der Content-Bibliothek/)).toBeVisible();
     await page.getByRole('button', { name: /Los geht/ }).click();
-    // Answer the single item correctly → session completes → assignment marked.
-    await page.getByTestId('choice-tile').filter({ hasText: 'fahren' }).click();
+    // Answer both items correctly → session completes → assignment marked.
+    await page.getByTestId('choice-tile').filter({ hasText: 'die richtige' }).click();
+    await page.getByTestId('choice-tile').filter({ hasText: /^zweite$/ }).click();
     await expect(page.getByText('Geschafft!')).toBeVisible();
 
     // The completed assignment drops off /lernen (an offer, once).
@@ -68,10 +64,10 @@ test.describe(() => {
     // ── Staff: the outcome lands in the assignment table + per-question drill-down ──
     await staff.reload();
     await expect(staff.getByText('Erledigt', { exact: true }).nth(1)).toBeVisible();
-    await expect(staff.getByText(/1\/1 Aufgaben · 100% richtig/)).toBeVisible();
+    await expect(staff.getByText(/2\/2 Aufgaben · 100% richtig/)).toBeVisible();
     await staff.getByRole('link', { name: /Details/ }).click();
     await expect(staff).toHaveURL(/\/students\/.+\/sessions\//);
-    await expect(staff.getByText('Welches Wort hat ein Dehnungs-h?')).toBeVisible();
-    await expect(staff.getByText('fahren', { exact: true })).toBeVisible();
+    await expect(staff.getByText('Welche Antwort ist die richtige?')).toBeVisible();
+    await expect(staff.getByText('Und hier?')).toBeVisible();
   });
 });

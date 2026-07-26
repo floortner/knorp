@@ -456,30 +456,31 @@ GET /staff/students/{profileId}/sessions/{sessionId} -> the session summary + at
                                                          createdAt}
 ```
 
-### Staff — lecture authoring + assignment (STAFF realm, all trainers; ROADMAP §H1)
-The teaching console's write model. Every authored exercise is gated through `solvableExerciseSchema`
-on save (422 with `items.N.field` detail paths) — a student can never receive an unanswerable item,
-regardless of author. Items persist as `item_bank` rows (`generated_by='staff'`, unit 0) and are
-deliberately excluded from bank-session rotation.
+### Staff — lecture browse + assignment (STAFF realm, all trainers; ROADMAP §H1/§I3)
+The teaching console's read + assign model. Lectures are authored as markdown in the repo's `content/`
+directory and imported versioned at deploy (§I2) — the former write routes (create/update/delete/
+publish/unpublish) were removed with §I3. Solvability is still guaranteed for every served item: the
+content pipeline gates each exercise through `solvableExerciseSchema` in CI and again at import.
+The wire never sees `superseded` rows; assignment counts and the per-student table span ALL versions
+of a lecture's slug (a version bump never resets history).
 ```
-GET    /staff/lectures        ?limit=&cursor=  -> {items:[{lectureId, title, status, skillTags,
-                                                  itemCount, authorName, assignmentCounts:{open,
+GET    /staff/lectures        ?limit=&cursor=  -> {items:[{lectureId, slug, version, title, status,
+                                                  skillTags, itemCount, assignmentCounts:{open,
                                                   started, completed}, createdAt, updatedAt}],
-                                                  nextCursor, total}
-POST   /staff/lectures        {title, intro, items:[{type,prompt,options,answer,praise,skillTags}]}
-                                               -> 201 lecture detail (incl. wire-shape items)
-GET    /staff/lectures/{id}                    -> lecture detail
-PATCH  /staff/lectures/{id}                    -> detail   # draft-only (else 409 LECTURE_PUBLISHED);
-                                                  # item rows are deleted + recreated
-DELETE /staff/lectures/{id}                    -> {ok}     # draft-only; removes the item rows too
-POST   /staff/lectures/{id}/publish            -> detail
-POST   /staff/lectures/{id}/unpublish          -> detail   # only with zero assignments (409 otherwise)
-POST   /staff/lectures/{id}/assignments  {profileIds[]} -> {assigned, skipped}  # idempotent per student
+                                                  nextCursor, total}   # current versions only
+GET    /staff/lectures/{id}                    -> lecture detail (incl. wire-shape items)
+                                                  # superseded version id → 404
+POST   /staff/lectures/{id}/assignments  {profileIds[]} -> {assigned, skipped}
+                                               # published-only (409 LECTURE_NOT_PUBLISHED — drafts
+                                               #   are visible but unassignable); idempotent per
+                                               #   student; cross-version dedupe: an OPEN assignment
+                                               #   on any version of the slug counts as skipped, a
+                                               #   completed older-version one does not block
 GET    /staff/lectures/{id}/assignments        -> {items:[{assignmentId, profileId, name, status,
                                                   assignedAt, sessionId, completedAt, correctPct,
                                                   itemsAnswered, itemsTotal, activeMs}]}
-                                               # per-item results via the /staff/students session
-                                               #   drill-down (sessionId links there)
+                                               # spans all versions of the slug; per-item results via
+                                               #   the /staff/students session drill-down (sessionId)
 DELETE /staff/lectures/{id}/assignments/{aid}  -> {ok}     # withdraw; completed → 409
 ```
 

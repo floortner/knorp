@@ -65,6 +65,8 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 - Contract: `npm run openapi:export` (regenerate `openapi.json`) → then `npm run gen:api` in `../frontend`; commit both.
 - DB: `npx prisma migrate dev` (local) / `npx prisma migrate deploy` (CI) · `npx prisma generate`
 - Seed: `npm run seed` (`prisma db seed` → `prisma/seed.ts`)
+- Content: `npm run content:validate` (lint the `content/` lecture library, German errors) ·
+  `npm run content:import` (versioned, idempotent import — deploy + local after `migrate dev`; ROADMAP §I)
 - Full local-dev setup (local Postgres, env, first run, calling the API): see [`./README.md`](./README.md).
 
 ## Build milestones

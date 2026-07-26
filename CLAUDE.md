@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `besserlesenschreiben/backend/` — NestJS API (`-api` repo)
 - `besserlesenschreiben/frontend/` — Vite/React SPA/PWA, the family app (`-web` repo)
-- `besserlesenschreiben/trainer/` — Vite/React internal **staff portal** for professional homework review (`-trainer` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner progress. (The "Wortschatz" lexeme-curation tab was dropped 2026-07-13 with the Vokaltraining content set — ROADMAP.md §F.)
+- `besserlesenschreiben/trainer/` — Vite/React internal **staff portal** for professional homework review (`-trainer` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner directory + activity, lecture browse/assign/outcomes (§H1/§I3 — lectures are authored in `content/`, not in the portal). (The "Wortschatz" lexeme-curation tab was dropped 2026-07-13 with the Vokaltraining content set — ROADMAP.md §F.)
 
 Two disjoint **auth realms** (ARCHITECTURE §1a): the **family** realm (parents + students, `-web`) and the **staff** realm (internal trainers, `-trainer`). A credential in one is never valid in the other — different cookie/`aud`, different guard (`JwtAuthGuard` vs `StaffAuthGuard`).
 

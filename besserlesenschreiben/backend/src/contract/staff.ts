@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { exerciseSchema } from './exercise';
-import { skillTagSchema } from './skills';
 
 /**
  * Wire schemas for the STAFF realm (ARCHITECTURE §1a, SPEC §6). These publish the OpenAPI the trainer
@@ -232,40 +231,24 @@ export const studentSessionDetailSchema = studentSessionSchema.extend({
   attempts: z.array(studentAttemptSchema),
 });
 
-// ── Staff-authored lectures + assignments (STAFF realm, ALL trainers; ROADMAP §H1) ───────────────
-// A lecture = Merksatz intro + ordered exercises, authored by a trainer, assigned to students as an
-// OFFER on /lernen (never a push). Items are persisted as item_bank rows (generated_by='staff').
+// ── Content-library lectures + assignments (STAFF realm, ALL trainers; ROADMAP §I/§H1) ──────────
+// A lecture = Merksatz intro + ordered exercises, authored as markdown in content/ and imported by
+// the deploy (§I2) — the portal browses, assigns (an OFFER on /lernen, never a push), and tracks
+// outcomes; it does not author. The wire never sees 'superseded' rows (list/detail filter them);
+// version is the content-library version pinned by assignments via the lecture id.
 export const lectureStatusEnum = z.enum(['draft', 'published']);
 export const assignmentStatusEnum = z.enum(['open', 'started', 'completed']);
 
-// Authoring input: the placeholder wire shape minus backend-owned media fields (id/audioUrl/…).
-// The service composes the full exercise and gates it through solvableExerciseSchema, so an
-// unanswerable item can never be persisted regardless of author (§H invariant). Grows per type in H2.
-export const lectureItemInputSchema = z.object({
-  type: z.literal('placeholder'),
-  prompt: z.string().min(1).max(2000),
-  options: z.array(z.string().min(1).max(200)).min(2).max(8),
-  answer: z.string().min(1).max(200),
-  praise: z.string().min(1).max(200),
-  // Strict taxonomy enum (contract/skills.ts) — the portal offers a select, and an out-of-taxonomy
-  // tag fails here with a crisp path instead of deep inside the solvability gate.
-  skillTags: z.array(skillTagSchema).min(1).max(10),
-});
-
-export const lectureUpsertSchema = z.object({
-  title: z.string().min(1).max(200),
-  intro: z.string().min(1).max(300), // same bound as the LLM lecture's generated intro
-  items: z.array(lectureItemInputSchema).min(1).max(12),
-});
-
 export const lectureListItemSchema = z.object({
   lectureId: z.string(),
+  slug: z.string(), // content-library natural key (filename in content/lectures/)
+  version: z.number().int(),
   title: z.string(),
-  status: lectureStatusEnum,
-  skillTags: z.array(z.string()), // union of the items' tags, computed on save
+  status: lectureStatusEnum, // draft = in the files but not yet freigegeben — never assignable
+  skillTags: z.array(z.string()), // union of the items' tags, computed on import
   itemCount: z.number().int(),
-  authorName: z.string(),
   assignmentCounts: z.object({
+    // Counted across ALL versions of the slug — a version bump must not reset the history.
     open: z.number().int(),
     started: z.number().int(),
     completed: z.number().int(),

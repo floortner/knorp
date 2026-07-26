@@ -605,7 +605,7 @@ export interface paths {
         };
         get: operations["StaffLecturesController_list"];
         put?: never;
-        post: operations["StaffLecturesController_create"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -622,38 +622,6 @@ export interface paths {
         get: operations["StaffLecturesController_detail"];
         put?: never;
         post?: never;
-        delete: operations["StaffLecturesController_remove"];
-        options?: never;
-        head?: never;
-        patch: operations["StaffLecturesController_update"];
-        trace?: never;
-    };
-    "/api/v1/staff/lectures/{lectureId}/publish": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["StaffLecturesController_publish"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/staff/lectures/{lectureId}/unpublish": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["StaffLecturesController_unpublish"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2033,12 +2001,13 @@ export interface operations {
                     "application/json": {
                         items: {
                             lectureId: string;
+                            slug: string;
+                            version: number;
                             title: string;
                             /** @enum {string} */
                             status: "draft" | "published";
                             skillTags: string[];
                             itemCount: number;
-                            authorName: string;
                             assignmentCounts: {
                                 open: number;
                                 started: number;
@@ -2049,69 +2018,6 @@ export interface operations {
                         }[];
                         nextCursor: string | null;
                         total: number;
-                    };
-                };
-            };
-        };
-    };
-    StaffLecturesController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    title: string;
-                    intro: string;
-                    items: {
-                        /** @enum {string} */
-                        type: "placeholder";
-                        prompt: string;
-                        options: string[];
-                        answer: string;
-                        praise: string;
-                        skillTags: "placeholder"[];
-                    }[];
-                };
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        lectureId: string;
-                        title: string;
-                        /** @enum {string} */
-                        status: "draft" | "published";
-                        skillTags: string[];
-                        itemCount: number;
-                        authorName: string;
-                        assignmentCounts: {
-                            open: number;
-                            started: number;
-                            completed: number;
-                        };
-                        createdAt: string;
-                        updatedAt: string;
-                        intro: string;
-                        items: {
-                            /** @enum {string} */
-                            type: "placeholder";
-                            prompt: string;
-                            options: string[];
-                            answer: string;
-                            id: string;
-                            audioUrl: string | null;
-                            syllableAudio?: string[] | null;
-                            skillTags: "placeholder"[];
-                            praise: string;
-                        }[];
                     };
                 };
             };
@@ -2133,191 +2039,13 @@ export interface operations {
                 content: {
                     "application/json": {
                         lectureId: string;
+                        slug: string;
+                        version: number;
                         title: string;
                         /** @enum {string} */
                         status: "draft" | "published";
                         skillTags: string[];
                         itemCount: number;
-                        authorName: string;
-                        assignmentCounts: {
-                            open: number;
-                            started: number;
-                            completed: number;
-                        };
-                        createdAt: string;
-                        updatedAt: string;
-                        intro: string;
-                        items: {
-                            /** @enum {string} */
-                            type: "placeholder";
-                            prompt: string;
-                            options: string[];
-                            answer: string;
-                            id: string;
-                            audioUrl: string | null;
-                            syllableAudio?: string[] | null;
-                            skillTags: "placeholder"[];
-                            praise: string;
-                        }[];
-                    };
-                };
-            };
-        };
-    };
-    StaffLecturesController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        ok: true;
-                    };
-                };
-            };
-        };
-    };
-    StaffLecturesController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    title: string;
-                    intro: string;
-                    items: {
-                        /** @enum {string} */
-                        type: "placeholder";
-                        prompt: string;
-                        options: string[];
-                        answer: string;
-                        praise: string;
-                        skillTags: "placeholder"[];
-                    }[];
-                };
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        lectureId: string;
-                        title: string;
-                        /** @enum {string} */
-                        status: "draft" | "published";
-                        skillTags: string[];
-                        itemCount: number;
-                        authorName: string;
-                        assignmentCounts: {
-                            open: number;
-                            started: number;
-                            completed: number;
-                        };
-                        createdAt: string;
-                        updatedAt: string;
-                        intro: string;
-                        items: {
-                            /** @enum {string} */
-                            type: "placeholder";
-                            prompt: string;
-                            options: string[];
-                            answer: string;
-                            id: string;
-                            audioUrl: string | null;
-                            syllableAudio?: string[] | null;
-                            skillTags: "placeholder"[];
-                            praise: string;
-                        }[];
-                    };
-                };
-            };
-        };
-    };
-    StaffLecturesController_publish: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        lectureId: string;
-                        title: string;
-                        /** @enum {string} */
-                        status: "draft" | "published";
-                        skillTags: string[];
-                        itemCount: number;
-                        authorName: string;
-                        assignmentCounts: {
-                            open: number;
-                            started: number;
-                            completed: number;
-                        };
-                        createdAt: string;
-                        updatedAt: string;
-                        intro: string;
-                        items: {
-                            /** @enum {string} */
-                            type: "placeholder";
-                            prompt: string;
-                            options: string[];
-                            answer: string;
-                            id: string;
-                            audioUrl: string | null;
-                            syllableAudio?: string[] | null;
-                            skillTags: "placeholder"[];
-                            praise: string;
-                        }[];
-                    };
-                };
-            };
-        };
-    };
-    StaffLecturesController_unpublish: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        lectureId: string;
-                        title: string;
-                        /** @enum {string} */
-                        status: "draft" | "published";
-                        skillTags: string[];
-                        itemCount: number;
-                        authorName: string;
                         assignmentCounts: {
                             open: number;
                             started: number;

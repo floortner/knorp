@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Pencil, Send } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { deDate } from '@/lib/dates';
 import { ApiError } from '@/lib/api';
@@ -27,16 +27,17 @@ const STATUS_TONE: Record<AssignmentStatus, string> = {
 };
 
 /**
- * One lecture: items read-only, publish/assign actions, and the per-student assignment table with
- * outcome rollups (§H1.2 + §H3.4 — abandoned/never-started visible, calmly, never as "overdue").
- * Completed rows link to the existing per-session drill-down for question-by-question results.
+ * One lecture from the content library (ROADMAP §H1/§I3): the Merksatz + items read-only (exactly
+ * what the student sees), the assign action, and the per-student assignment table with outcome
+ * rollups across all versions (§H3.4 — abandoned/never-started visible, calmly, never as
+ * "overdue"). Completed rows link to the per-session drill-down. Editing happens in the repo's
+ * content/ directory, not here; drafts (status: draft in the file) are visible but unassignable.
  */
 export function LectureDetailScreen() {
   const { lectureId = '' } = useParams();
-  const navigate = useNavigate();
   const lecture = useLecture(lectureId);
   const assignments = useLectureAssignments(lectureId);
-  const { publish, unpublish, remove, withdraw } = useLectureMutations(lectureId);
+  const { withdraw } = useLectureMutations(lectureId);
   const [assignOpen, setAssignOpen] = useState(false);
   const [filter, setFilter] = useState<AssignmentFilter>('all');
 
@@ -55,7 +56,6 @@ export function LectureDetailScreen() {
   const l = lecture.data;
   const isDraft = l.status === 'draft';
   const rows = (assignments.data?.items ?? []).filter((a) => filter === 'all' || a.status === filter);
-  const actionErr = [publish.error, unpublish.error, remove.error, withdraw.error].find((e) => e instanceof ApiError);
 
   return (
     <section>
@@ -75,48 +75,24 @@ export function LectureDetailScreen() {
         </span>
       </div>
       <p className="mb-4 text-sm text-ink-soft">
-        von {l.authorName} · {l.itemCount} {l.itemCount === 1 ? 'Aufgabe' : 'Aufgaben'} · zuletzt geändert{' '}
-        {deDate(l.updatedAt)}
+        Version {l.version} · aus der Content-Bibliothek · {l.itemCount}{' '}
+        {l.itemCount === 1 ? 'Aufgabe' : 'Aufgaben'} · zuletzt geändert {deDate(l.updatedAt)}
       </p>
 
-      <div className="mb-6 flex flex-wrap gap-3">
-        {isDraft ? (
-          <>
-            <Button onClick={() => publish.mutate(undefined)} disabled={publish.isPending}>
-              {publish.isPending ? 'Wird veröffentlicht …' : 'Veröffentlichen'}
-            </Button>
-            <Button variant="ghost" onClick={() => navigate(`/lectures/${encodeURIComponent(lectureId)}/edit`)}>
-              <Pencil className="size-4" aria-hidden /> Bearbeiten
-            </Button>
-            <Button
-              variant="danger"
-              disabled={remove.isPending}
-              onClick={() => {
-                if (window.confirm('Diesen Entwurf endgültig löschen?')) {
-                  remove.mutate(undefined, { onSuccess: () => navigate('/lectures', { replace: true }) });
-                }
-              }}
-            >
-              Löschen
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button onClick={() => setAssignOpen(true)}>
-              <Send className="size-4" aria-hidden /> Zuweisen
-            </Button>
-            {(assignments.data?.items.length ?? 0) === 0 && (
-              <Button variant="ghost" onClick={() => unpublish.mutate(undefined)} disabled={unpublish.isPending}>
-                Zurück zu Entwurf
-              </Button>
-            )}
-          </>
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <Button onClick={() => setAssignOpen(true)} disabled={isDraft}>
+          <Send className="size-4" aria-hidden /> Zuweisen
+        </Button>
+        {isDraft && (
+          <p className="text-sm text-ink-soft">
+            Entwurf — in der Datei auf <code>status: published</code> setzen, um zuweisen zu können.
+          </p>
         )}
       </div>
 
-      {actionErr instanceof ApiError && (
+      {withdraw.error instanceof ApiError && (
         <p role="alert" className="mb-4 text-sm text-danger">
-          {actionErr.message}
+          {withdraw.error.message}
         </p>
       )}
 

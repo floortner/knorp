@@ -1,10 +1,10 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { lecturesApi } from '@/lib/endpoints';
-import type { AssignBody, LectureUpsertBody } from '@/lib/contract';
+import type { AssignBody } from '@/lib/contract';
 
 const PAGE_SIZE = 50;
 
-/** All lectures, newest-updated first — the Lektionen list. */
+/** All current lectures from the content library, newest-updated first — the Lektionen list. */
 export function useLectures() {
   return useInfiniteQuery({
     queryKey: ['staff-lectures'],
@@ -30,7 +30,10 @@ export function useLectureAssignments(lectureId: string, enabled = true) {
   });
 }
 
-/** Create/update/publish/delete — every mutation invalidates the lecture prefix. */
+/**
+ * Assign/withdraw — the portal's only lecture writes since §I3 (authoring lives in the content
+ * library and arrives via the deploy import). Every mutation invalidates the lecture prefix.
+ */
 export function useLectureMutations(lectureId?: string) {
   const qc = useQueryClient();
   const invalidate = () => {
@@ -41,14 +44,6 @@ export function useLectureMutations(lectureId?: string) {
     }
   };
   return {
-    create: useMutation({ mutationFn: (body: LectureUpsertBody) => lecturesApi.create(body), onSuccess: invalidate }),
-    update: useMutation({
-      mutationFn: (body: LectureUpsertBody) => lecturesApi.update(lectureId!, body),
-      onSuccess: invalidate,
-    }),
-    publish: useMutation({ mutationFn: () => lecturesApi.publish(lectureId!), onSuccess: invalidate }),
-    unpublish: useMutation({ mutationFn: () => lecturesApi.unpublish(lectureId!), onSuccess: invalidate }),
-    remove: useMutation({ mutationFn: () => lecturesApi.remove(lectureId!), onSuccess: invalidate }),
     assign: useMutation({
       mutationFn: (body: AssignBody) => lecturesApi.assign(lectureId!, body),
       onSuccess: invalidate,

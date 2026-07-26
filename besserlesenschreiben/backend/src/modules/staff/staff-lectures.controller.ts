@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
-import { ApiZodBody, ApiZodCreatedResponse, ApiZodResponse } from '../../common/zod-openapi';
+import { ApiZodBody, ApiZodResponse } from '../../common/zod-openapi';
 import { okSchema } from '../../contract/models';
 import {
   assignResultSchema,
@@ -12,13 +12,14 @@ import {
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
 import { CurrentTrainer, type AuthTrainer } from '../../common/decorators/current-trainer.decorator';
 import { LecturesService } from './lectures.service';
-import { AssignDto, LectureUpsertDto } from './staff.dto';
+import { AssignDto } from './staff.dto';
 
 /**
- * Lecture authoring + assignment (ROADMAP §H1) — ALL trainers (known-trainer model): every trainer
- * can compose, publish, and assign lectures; `@Public()` skips the family JwtAuthGuard and the
- * class-level StaffAuthGuard keeps every route default-deny. Author/assigner identity comes ONLY
- * from the staff token.
+ * Lecture browse + assignment (ROADMAP §H1/§I3) — ALL trainers (known-trainer model). Lectures are
+ * authored in the content library (content/, §I) and imported by the deploy; the portal reads them
+ * and manages assignments — the write routes (create/update/delete/publish) were removed with §I3.
+ * `@Public()` skips the family JwtAuthGuard and the class-level StaffAuthGuard keeps every route
+ * default-deny. Assigner identity comes ONLY from the staff token.
  */
 @Public()
 @UseGuards(StaffAuthGuard)
@@ -34,45 +35,10 @@ export class StaffLecturesController {
     return this.lectures.list(Number.isFinite(n) ? n : 50, cursor);
   }
 
-  @Post()
-  @ApiZodBody(LectureUpsertDto.schema)
-  @ApiZodCreatedResponse(lectureDetailSchema)
-  create(@CurrentTrainer() trainer: AuthTrainer, @Body() dto: LectureUpsertDto) {
-    return this.lectures.create(trainer.id, dto);
-  }
-
   @Get(':lectureId')
   @ApiZodResponse(lectureDetailSchema)
   detail(@Param('lectureId') lectureId: string) {
     return this.lectures.detail(lectureId);
-  }
-
-  @Patch(':lectureId')
-  @ApiZodBody(LectureUpsertDto.schema)
-  @ApiZodResponse(lectureDetailSchema)
-  update(@Param('lectureId') lectureId: string, @Body() dto: LectureUpsertDto) {
-    return this.lectures.update(lectureId, dto);
-  }
-
-  @Delete(':lectureId')
-  @HttpCode(200)
-  @ApiZodResponse(okSchema)
-  remove(@Param('lectureId') lectureId: string) {
-    return this.lectures.remove(lectureId);
-  }
-
-  @Post(':lectureId/publish')
-  @HttpCode(200)
-  @ApiZodResponse(lectureDetailSchema)
-  publish(@Param('lectureId') lectureId: string) {
-    return this.lectures.publish(lectureId);
-  }
-
-  @Post(':lectureId/unpublish')
-  @HttpCode(200)
-  @ApiZodResponse(lectureDetailSchema)
-  unpublish(@Param('lectureId') lectureId: string) {
-    return this.lectures.unpublish(lectureId);
   }
 
   @Post(':lectureId/assignments')
