@@ -112,9 +112,15 @@ item_bank(
   skill_tags    text[] not null,        -- taxonomy in src/contract/skills.ts — currently a single
                                          -- 'placeholder' tag; the 14-tag taxonomy was dropped with §F
   difficulty    int default 1,
-  generated_by  text default 'seed',    -- seed | llm
+  generated_by  text default 'seed',    -- seed | llm | staff (legacy §H1) | content (§I2 import)
   created_at    timestamptz default now()
 )
+
+-- Content-library items (generated_by='content', unit 0) are CONTENT-ADDRESSED via seed_key
+-- `content:{slug}.{exId}:{hash12}` (ROADMAP §I2): an unchanged exercise keeps its row across lecture
+-- versions (stable telemetry lineage under the {slug}.{exId} natural key), a changed one gets a NEW
+-- row while the old row keeps serving pinned assignments. Like legacy 'staff' rows they are excluded
+-- from bank rotation (the bank's generated pool filters generated_by='llm' only).
 
 -- The LEXEME FOUNDATION table (curated word pool grounding exercise generation) was dropped 2026-07-13
 -- along with the whole Vokaltraining content set — see ROADMAP.md §F. A new word-list schema is being
@@ -233,19 +239,27 @@ chat_message(
   created_at   timestamptz default now()
 )
 
--- LECTURE (staff-authored teaching unit, ROADMAP §H1) — Merksatz + ordered exercises. The exercises
--- are ordinary item_bank rows (generated_by='staff', unit 0) referenced by id; every save gates them
--- through solvableExerciseSchema. Drafts editable; published lectures immutable (unpublish only while
--- unassigned).
+-- LECTURE (a teaching unit from the content library, ROADMAP §I) — Merksatz + ordered exercises,
+-- imported from content/lectures/<slug>.md by `npm run content:import` (§I2). Content lectures are
+-- VERSIONED rows: an edit creates a new row (version+1) and marks the old one 'superseded' (never
+-- mutated) — assignments pin their version via the lecture_id FK, so attempts always reference
+-- exactly what the student saw. status changes (draft→published) update in place, no version bump.
+-- Every imported exercise passes solvableExerciseSchema (validated in CI and again at import).
+-- Legacy portal-authored rows (§H1) have slug null + created_by set; superseded in the §I2 migration.
 lecture(
-  id           uuid pk,
-  created_by   uuid fk -> trainer,
-  title        text not null,
-  intro        text not null,            -- the Merksatz shown as the lesson's teaching card
-  item_ids     uuid[] not null,          -- ordered
-  skill_tags   text[] not null,          -- union of the items' tags, computed on save
-  status       text default 'draft',     -- draft | published
-  created_at   timestamptz, updated_at timestamptz
+  id            uuid pk,
+  slug          text null,               -- content-library natural key (filename); null = legacy row
+  version       int default 1,           -- unique (slug, version); legacy null slugs exempt
+  content_hash  text null,               -- canonical hash (src/content/hash.ts) — the import's no-op test
+  source_path   text null,               -- e.g. content/lectures/dehnungs-h.md
+  created_by    uuid fk -> trainer null, -- null = content-library import
+  title         text not null,
+  intro         text not null,           -- the Merksatz shown as the lesson's teaching card
+  item_ids      uuid[] not null,         -- ordered
+  skill_tags    text[] not null,         -- union of the items' tags, computed on import
+  status        text default 'draft',    -- draft | published | superseded
+  superseded_at timestamptz null,
+  created_at    timestamptz, updated_at timestamptz
 )
 
 -- ASSIGNMENT (lecture × student, ROADMAP §H1) — an OFFER on /lernen, never a push. Status is derived:

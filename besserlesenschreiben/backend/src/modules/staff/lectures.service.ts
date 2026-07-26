@@ -292,7 +292,7 @@ export class LecturesService {
       status: z.enum(['draft', 'published']).parse(l.status),
       skillTags: l.skillTags,
       itemCount: l.itemIds.length,
-      authorName: l.author.name,
+      authorName: l.author?.name ?? 'Content-Bibliothek', // null author = content-library import (§I2)
       assignmentCounts: counts ?? { open: 0, started: 0, completed: 0 },
       createdAt: l.createdAt.toISOString(),
       updatedAt: l.updatedAt.toISOString(),

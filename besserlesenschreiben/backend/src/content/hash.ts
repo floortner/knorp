@@ -21,6 +21,18 @@ export function sha256Hex(input: string): string {
   return createHash('sha256').update(input, 'utf8').digest('hex');
 }
 
+/**
+ * The content-addressed `item_bank.seed_key` for an imported exercise. Same content → same key →
+ * the import's upsert reuses the existing row (stable itemIds across lecture versions); changed
+ * content → new key → new row, while the old row keeps serving its pinned assignments forever.
+ */
+export function contentSeedKey(
+  slug: string,
+  ex: Parameters<typeof exerciseHash>[0] & { id: string },
+): string {
+  return `content:${slug}.${ex.id}:${exerciseHash(ex).slice(0, 12)}`;
+}
+
 /** Hash of one exercise's authored content. The `id` is identity, not content — excluded. */
 export function exerciseHash(ex: {
   type: string;

@@ -46,6 +46,7 @@ npx prisma migrate deploy       # CI/prod migrations (run as pre-traffic step)
 npx prisma generate             # regenerate Prisma client after schema changes
 npm run seed                    # bootstrap staff admins + (with SEED_DEV_ACCOUNTS=true) dev accounts
 npm run content:validate        # validate the content/ lecture library (German errors; runs in CI)
+npm run content:import          # versioned, idempotent import of content/ into the DB (deploy + local after migrate dev)
 ```
 Content seeding (`item_bank.seed.json`, the lexeme foundation, `gen:items`/`export:overrides`) was dropped
 2026-07-13 along with the Vokaltraining content set — see ROADMAP.md §F.

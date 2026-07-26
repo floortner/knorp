@@ -426,6 +426,10 @@ region; Frankfurt is the closest EU location). **Ireland (eu-west-1)** is the EU
 - **Migrations:** `prisma migrate deploy` runs as a **pre-traffic release step** (never at import). Forward-only,
   expand→migrate→contract so rollouts are zero-downtime and rollback-safe.
 - **Seed:** `npm run seed` (`prisma db seed` → `prisma/seed.ts`) is idempotent; run on first deploy and when the seed JSON changes.
+- **Content import:** `npm run content:import` (ROADMAP §I2) runs pre-traffic right after the seed —
+  versioned + idempotent import of the `content/` lecture library (the release tarball ships it).
+  Release order: `migrate deploy → seed → content:import → restart`. Fail-loud: invalid content aborts
+  the deploy (CI's `content` job is the first line of defense).
 
 ### Backups & off-platform disaster recovery
 The in-AWS cross-region backup above survives a *regional* incident, but **not** an account-level event — a
