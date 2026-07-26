@@ -72,10 +72,13 @@ job. Comfortable tap targets for tablet are welcome.
   zoom/rotate) · read-only history detail (`/history/:uploadId`) for decided items · own profile page
   (**Profil** nav tab → `/profile`: rename self, see login email/role/access date; audit trail deferred
   to the OTel build-out).
-- **Lektionen** (all trainers, §H1): the teaching console — author a lecture (Titel + Merksatz +
-  solvability-gated exercises), publish, assign to students (picker = the learner directory), and see
-  the per-student outcome table (Offen | Begonnen | Erledigt, results link into the session
-  drill-down). Keys: `['staff-lectures'…]` / `['staff-lecture', id]` / `['staff-lecture-assignments', id]`.
+- **Lektionen** (all trainers, §H1/§I3): the teaching console — browse the content library (lectures
+  are authored as markdown in repo-root `content/` by the linguists and imported at deploy; the portal
+  editor was removed 2026-07-26), assign to students (picker = the learner directory; drafts are
+  visible but unassignable), and see the per-student outcome table (Offen | Begonnen | Erledigt,
+  spanning all lecture versions; results link into the session drill-down). Rows show `Version {n}` +
+  Content-Bibliothek provenance. Keys: `['staff-lectures'…]` / `['staff-lecture', id]` /
+  `['staff-lecture-assignments', id]`.
 - **Schüler** (all trainers, §H1.3/§H3): learner directory (`/students`) → per-student detail with the
   progress header + day-grouped activity timeline (filter by source) → question-by-question session
   drill-down (`/students/:profileId/sessions/:sessionId`).

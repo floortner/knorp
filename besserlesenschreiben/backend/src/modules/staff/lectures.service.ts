@@ -2,24 +2,47 @@ import { Injectable, Logger } from '@nestjs/common';
 import { z } from 'zod';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
-import { solvableExerciseSchema } from '../../contract/exercise';
 import { toExercise } from '../sessions/exercise.mapper';
 import type { Prisma } from '../../generated/prisma/client';
 import { sessionRollup } from './student-activity.service';
-import type { LectureUpsertInput } from './staff.dto';
 
 const MAX_LIMIT = 50;
-// Staff-authored items live at the same out-of-catalogue unit as LLM items; the bank-session pool
-// filters generatedBy:'llm' explicitly, so these never leak into bank rotation.
-const STAFF_ITEM_UNIT = 0;
 
-type LectureRow = Prisma.LectureGetPayload<{ include: { author: { select: { name: true } } } }>;
+type LectureRow = Prisma.LectureGetPayload<{
+  select: {
+    id: true;
+    slug: true;
+    version: true;
+    title: true;
+    intro: true;
+    itemIds: true;
+    skillTags: true;
+    status: true;
+    createdAt: true;
+    updatedAt: true;
+  };
+}>;
+
+const LECTURE_SELECT = {
+  id: true,
+  slug: true,
+  version: true,
+  title: true,
+  intro: true,
+  itemIds: true,
+  skillTags: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 /**
- * Staff-authored lectures + assignments (ROADMAP §H1) — the teaching console's write model, for ALL
- * trainers (known-trainer model). A lecture's exercises are gated through `solvableExerciseSchema` on
- * every save, so a student can never receive an unanswerable item regardless of author (§H invariant).
- * Drafts are editable; published lectures are immutable (unpublish only while unassigned).
+ * Content-library lectures + assignments (ROADMAP §H1/§I3) — the teaching console's read + assign
+ * model, for ALL trainers (known-trainer model). Lectures are authored as markdown in content/ and
+ * imported versioned by the deploy (§I2); the wire never sees 'superseded' rows. Assignments pin the
+ * exact lecture-version row via the lecture_id FK — a linguist's edit never changes what an assigned
+ * student sees. Assignment counts and tables span ALL versions of a slug, so a version bump never
+ * resets the trainer's history.
  */
 @Injectable()
 export class LecturesService {
@@ -27,149 +50,48 @@ export class LecturesService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Compose the full wire exercise from an authoring input and gate it through the solvability schema. */
-  private validateItems(items: LectureUpsertInput['items']) {
-    for (const [i, item] of items.entries()) {
-      const candidate = { ...item, id: 'authoring', audioUrl: null };
-      const parsed = solvableExerciseSchema.safeParse(candidate);
-      if (!parsed.success) {
-        const first = parsed.error.issues[0];
-        throw new ApiException(422, 'UNSOLVABLE_ITEM', 'Aufgabe ist nicht eindeutig lösbar.', [
-          { field: `items.${i}.${first.path.join('.')}`, issue: first.message },
-        ]);
-      }
-    }
-  }
-
-  /** Cursor-paged lecture list, newest first, with per-status assignment counts. */
+  /** Cursor-paged lecture list (current versions only), newest first, with per-status assignment counts. */
   async list(limit: number, cursor?: string) {
     const take = Math.min(Math.max(limit, 1), MAX_LIMIT);
+    const where = { status: { not: 'superseded' } } as const;
     const [rows, total] = await Promise.all([
       this.prisma.lecture.findMany({
+        where,
         orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
         take: take + 1,
         ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-        include: { author: { select: { name: true } } },
+        select: LECTURE_SELECT,
       }),
-      this.prisma.lecture.count(),
+      this.prisma.lecture.count({ where }),
     ]);
     const page = rows.slice(0, take);
 
-    const assignments = await this.prisma.assignment.findMany({
-      where: { lectureId: { in: page.map((l) => l.id) } },
-      select: { lectureId: true, sessionId: true, completedAt: true },
-    });
-    const counts = new Map<string, { open: number; started: number; completed: number }>();
-    for (const a of assignments) {
-      const c = counts.get(a.lectureId) ?? { open: 0, started: 0, completed: 0 };
-      if (a.completedAt) c.completed += 1;
-      else if (a.sessionId) c.started += 1;
-      else c.open += 1;
-      counts.set(a.lectureId, c);
-    }
-
+    const counts = await this.assignmentCountsFor(page);
     return {
-      items: page.map((l) => this.toListItem(l, counts.get(l.id))),
+      items: page.map((l) => this.toListItem(l, counts.get(this.slugKey(l)))),
       nextCursor: rows.length > take ? page[page.length - 1].id : null,
       total,
     };
-  }
-
-  async create(trainerId: string, dto: LectureUpsertInput) {
-    this.validateItems(dto.items);
-    const lecture = await this.prisma.$transaction(async (tx) => {
-      const itemIds: string[] = [];
-      for (const item of dto.items) {
-        itemIds.push((await this.createItemRow(tx, item)).id);
-      }
-      return tx.lecture.create({
-        data: {
-          createdBy: trainerId,
-          title: dto.title,
-          intro: dto.intro,
-          itemIds,
-          skillTags: [...new Set(dto.items.flatMap((i) => i.skillTags))],
-        },
-        include: { author: { select: { name: true } } },
-      });
-    });
-    this.logger.log({ event: 'lecture.created', lectureId: lecture.id, items: dto.items.length }, 'lecture created');
-    return this.detail(lecture.id);
-  }
-
-  /** Draft-only edit: item rows are deleted and recreated (drafts have no attempts, so this is safe). */
-  async update(lectureId: string, dto: LectureUpsertInput) {
-    const existing = await this.byId(lectureId);
-    if (existing.status !== 'draft') {
-      throw new ApiException(409, 'LECTURE_PUBLISHED', 'Veröffentlichte Lektionen können nicht bearbeitet werden.');
-    }
-    this.validateItems(dto.items);
-    await this.prisma.$transaction(async (tx) => {
-      await tx.itemBank.deleteMany({ where: { id: { in: existing.itemIds } } });
-      const itemIds: string[] = [];
-      for (const item of dto.items) {
-        itemIds.push((await this.createItemRow(tx, item)).id);
-      }
-      await tx.lecture.update({
-        where: { id: lectureId },
-        data: {
-          title: dto.title,
-          intro: dto.intro,
-          itemIds,
-          skillTags: [...new Set(dto.items.flatMap((i) => i.skillTags))],
-        },
-      });
-    });
-    return this.detail(lectureId);
   }
 
   async detail(lectureId: string) {
     const lecture = await this.byId(lectureId);
     const rows = await this.prisma.itemBank.findMany({ where: { id: { in: lecture.itemIds } } });
     const byId = new Map(rows.map((i) => [i.id, i]));
-    const counts = await this.assignmentCounts(lectureId);
+    const counts = await this.assignmentCountsFor([lecture]);
     return {
-      ...this.toListItem(lecture, counts),
+      ...this.toListItem(lecture, counts.get(this.slugKey(lecture))),
       intro: lecture.intro,
       items: lecture.itemIds.flatMap((id) => (byId.has(id) ? [toExercise(byId.get(id)!)] : [])),
     };
   }
 
-  async publish(lectureId: string) {
-    const lecture = await this.byId(lectureId);
-    if (lecture.status !== 'published') {
-      await this.prisma.lecture.update({ where: { id: lectureId }, data: { status: 'published' } });
-      this.logger.log({ event: 'lecture.published', lectureId }, 'lecture published');
-    }
-    return this.detail(lectureId);
-  }
-
-  /** Back to draft — only while nothing is assigned (assigned lectures must stay stable). */
-  async unpublish(lectureId: string) {
-    await this.byId(lectureId);
-    const assigned = await this.prisma.assignment.count({ where: { lectureId } });
-    if (assigned > 0) {
-      throw new ApiException(409, 'LECTURE_ASSIGNED', 'Zugewiesene Lektionen können nicht zurückgezogen werden.');
-    }
-    await this.prisma.lecture.update({ where: { id: lectureId }, data: { status: 'draft' } });
-    return this.detail(lectureId);
-  }
-
-  /** Draft-only delete; removes the lecture's item rows too. */
-  async remove(lectureId: string): Promise<{ ok: true }> {
-    const lecture = await this.byId(lectureId);
-    if (lecture.status !== 'draft') {
-      throw new ApiException(409, 'LECTURE_PUBLISHED', 'Nur Entwürfe können gelöscht werden.');
-    }
-    await this.prisma.$transaction([
-      this.prisma.itemBank.deleteMany({ where: { id: { in: lecture.itemIds } } }),
-      this.prisma.lecture.delete({ where: { id: lectureId } }),
-    ]);
-    this.logger.log({ event: 'lecture.deleted', lectureId }, 'draft lecture deleted');
-    return { ok: true };
-  }
-
-  /** Assign to N students, idempotently: already-assigned profiles are skipped and counted. */
+  /**
+   * Assign to N students, idempotently. Cross-version dedupe: a profile with an UNCOMPLETED
+   * assignment on any version of the same slug is skipped (they already have this lecture waiting);
+   * a completed older-version assignment does not block — assigning the updated material again is a
+   * deliberate act.
+   */
   async assign(trainerId: string, lectureId: string, profileIds: string[]) {
     const lecture = await this.byId(lectureId);
     if (lecture.status !== 'published') {
@@ -179,9 +101,21 @@ export class LecturesService {
     if (known.length !== new Set(profileIds).size) {
       throw new ApiException(404, 'NOT_FOUND', 'Profil nicht gefunden.');
     }
+
+    const open = await this.prisma.assignment.findMany({
+      where: {
+        profileId: { in: profileIds },
+        completedAt: null,
+        lecture: this.sameLectureWhere(lecture),
+      },
+      select: { profileId: true },
+    });
+    const blocked = new Set(open.map((a) => a.profileId));
+    const eligible = profileIds.filter((id) => !blocked.has(id));
+
     const result = await this.prisma.assignment.createMany({
-      data: profileIds.map((profileId) => ({ lectureId, profileId, assignedBy: trainerId })),
-      skipDuplicates: true, // (lectureId, profileId) unique — re-assign is a counted no-op
+      data: eligible.map((profileId) => ({ lectureId, profileId, assignedBy: trainerId })),
+      skipDuplicates: true, // (lectureId, profileId) unique — same-version re-assign is a counted no-op
     });
     this.logger.log(
       { event: 'lecture.assigned', lectureId, assigned: result.count, skipped: profileIds.length - result.count },
@@ -190,11 +124,14 @@ export class LecturesService {
     return { assigned: result.count, skipped: profileIds.length - result.count };
   }
 
-  /** Per-student assignment status + outcome rollup (feeds §H3.4's abandoned/never-started view). */
+  /**
+   * Per-student assignment status + outcome rollup across ALL versions of the lecture's slug
+   * (feeds §H3.4's abandoned/never-started view; a version bump keeps the history visible).
+   */
   async assignments(lectureId: string) {
-    await this.byId(lectureId);
+    const lecture = await this.byId(lectureId);
     const rows = await this.prisma.assignment.findMany({
-      where: { lectureId },
+      where: { lecture: this.sameLectureWhere(lecture) },
       orderBy: [{ assignedAt: 'desc' }, { id: 'desc' }],
       include: {
         profile: { select: { name: true } },
@@ -235,7 +172,10 @@ export class LecturesService {
 
   /** Withdraw an uncompleted assignment (trainer mistake-recovery); completed ones are immutable. */
   async withdraw(lectureId: string, assignmentId: string): Promise<{ ok: true }> {
-    const assignment = await this.prisma.assignment.findFirst({ where: { id: assignmentId, lectureId } });
+    const lecture = await this.byId(lectureId);
+    const assignment = await this.prisma.assignment.findFirst({
+      where: { id: assignmentId, lecture: this.sameLectureWhere(lecture) },
+    });
     if (!assignment) throw new ApiException(404, 'NOT_FOUND', 'Zuweisung nicht gefunden.');
     if (assignment.completedAt) {
       throw new ApiException(409, 'ALREADY_COMPLETED', 'Erledigte Zuweisungen können nicht zurückgezogen werden.');
@@ -245,54 +185,58 @@ export class LecturesService {
     return { ok: true };
   }
 
+  /** Current (non-superseded) lecture by id — superseded versions are reachable only via their slug's successor. */
   private async byId(lectureId: string) {
-    const lecture = await this.prisma.lecture.findUnique({
-      where: { id: lectureId },
-      include: { author: { select: { name: true } } },
-    });
-    if (!lecture) throw new ApiException(404, 'NOT_FOUND', 'Lektion nicht gefunden.');
+    const lecture = await this.prisma.lecture.findUnique({ where: { id: lectureId }, select: LECTURE_SELECT });
+    if (!lecture || lecture.status === 'superseded') {
+      throw new ApiException(404, 'NOT_FOUND', 'Lektion nicht gefunden.');
+    }
     return lecture;
   }
 
-  private async assignmentCounts(lectureId: string) {
-    const rows = await this.prisma.assignment.findMany({
-      where: { lectureId },
-      select: { sessionId: true, completedAt: true },
-    });
-    const counts = { open: 0, started: 0, completed: 0 };
-    for (const a of rows) {
-      if (a.completedAt) counts.completed += 1;
-      else if (a.sessionId) counts.started += 1;
-      else counts.open += 1;
-    }
-    return counts;
+  /** All versions of the same lecture: by slug for content rows, by id for legacy (slug-null) rows. */
+  private sameLectureWhere(lecture: LectureRow): Prisma.LectureWhereInput {
+    return lecture.slug !== null ? { slug: lecture.slug } : { id: lecture.id };
   }
 
-  /** Persist one authored exercise exactly like the LLM path: payload minus backend-owned columns. */
-  private createItemRow(tx: Prisma.TransactionClient, item: LectureUpsertInput['items'][number]) {
-    const payload: Record<string, unknown> = { ...item };
-    for (const k of ['id', 'type', 'audioUrl', 'syllableAudio', 'skillTags']) delete payload[k];
-    return tx.itemBank.create({
-      data: {
-        unit: STAFF_ITEM_UNIT,
-        exerciseType: item.type,
-        payload: payload as Prisma.InputJsonValue,
-        skillTags: item.skillTags,
-        difficulty: 1,
-        audioUrl: null,
-        generatedBy: 'staff',
+  private slugKey(l: LectureRow): string {
+    return l.slug ?? l.id;
+  }
+
+  /** Assignment counts per slug (all versions), keyed like slugKey(). */
+  private async assignmentCountsFor(lectures: LectureRow[]) {
+    const slugs = [...new Set(lectures.flatMap((l) => (l.slug !== null ? [l.slug] : [])))];
+    const legacyIds = lectures.filter((l) => l.slug === null).map((l) => l.id);
+    const rows = await this.prisma.assignment.findMany({
+      where: {
+        OR: [
+          ...(slugs.length > 0 ? [{ lecture: { slug: { in: slugs } } }] : []),
+          ...(legacyIds.length > 0 ? [{ lectureId: { in: legacyIds } }] : []),
+        ],
       },
+      select: { lectureId: true, sessionId: true, completedAt: true, lecture: { select: { slug: true } } },
     });
+    const counts = new Map<string, { open: number; started: number; completed: number }>();
+    for (const a of rows) {
+      const key = a.lecture.slug ?? a.lectureId;
+      const c = counts.get(key) ?? { open: 0, started: 0, completed: 0 };
+      if (a.completedAt) c.completed += 1;
+      else if (a.sessionId) c.started += 1;
+      else c.open += 1;
+      counts.set(key, c);
+    }
+    return counts;
   }
 
   private toListItem(l: LectureRow, counts?: { open: number; started: number; completed: number }) {
     return {
       lectureId: l.id,
+      slug: l.slug ?? l.id, // legacy rows have no slug; their id is the stable stand-in
+      version: l.version,
       title: l.title,
       status: z.enum(['draft', 'published']).parse(l.status),
       skillTags: l.skillTags,
       itemCount: l.itemIds.length,
-      authorName: l.author?.name ?? 'Content-Bibliothek', // null author = content-library import (§I2)
       assignmentCounts: counts ?? { open: 0, started: 0, completed: 0 },
       createdAt: l.createdAt.toISOString(),
       updatedAt: l.updatedAt.toISOString(),

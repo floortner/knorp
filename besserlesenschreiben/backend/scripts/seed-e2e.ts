@@ -54,20 +54,21 @@ async function main(): Promise<void> {
       update: { status: 'active', role: 'trainer', name: 'E2E Trainer' },
       create: { email: E2E_TRAINER_EMAIL, status: 'active', role: 'trainer', name: 'E2E Trainer' },
     });
-    const trainer = await prisma.trainer.upsert({
+    await prisma.trainer.upsert({
       where: { email: E2E_ASSIGNMENT_TRAINER_EMAIL },
       update: { status: 'active', role: 'trainer', name: 'Angelika' },
       create: { email: E2E_ASSIGNMENT_TRAINER_EMAIL, status: 'active', role: 'trainer', name: 'Angelika' },
     });
+    // Lectures come from the content-library import in global-setup (§I2) — no authored-lecture wipe
+    // needed anymore: the profile wipe above cascades the previous run's assignments away, and the
+    // fixture lecture itself is re-imported idempotently.
 
-    // Wipe the e2e trainer's authored lectures (+ their unit-0 staff items and assignments) so the
-    // assignment-loop journey re-authors from a deterministic zero-lecture state.
-    const lectures = await prisma.lecture.findMany({ where: { createdBy: trainer.id }, select: { id: true, itemIds: true } });
-    if (lectures.length > 0) {
-      await prisma.assignment.deleteMany({ where: { lectureId: { in: lectures.map((l) => l.id) } } });
-      await prisma.itemBank.deleteMany({ where: { id: { in: lectures.flatMap((l) => l.itemIds) } } });
-      await prisma.lecture.deleteMany({ where: { id: { in: lectures.map((l) => l.id) } } });
-    }
+    // Sweep the e2e trainers' login codes: the 60s resend throttle is a durable DB row, but the
+    // capture provider is per-boot in-memory — a suite re-run within a minute would otherwise get
+    // "no captured code" (throttled re-send against a fresh, empty capture map).
+    await prisma.staffLoginCode.deleteMany({
+      where: { email: { in: [E2E_TRAINER_EMAIL, E2E_ASSIGNMENT_TRAINER_EMAIL] } },
+    });
 
     console.log(`[seed-e2e] ready: ${E2E_PARENT_EMAILS.length} parent accounts, ${E2E_TRAINER_EMAIL} (trainer)`);
   } finally {

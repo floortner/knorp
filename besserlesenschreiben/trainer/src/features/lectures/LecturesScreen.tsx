@@ -1,5 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { deDate } from '@/lib/dates';
 import { Button } from '@/components/ui/button';
@@ -8,22 +8,22 @@ import { useLectures } from './useLectures';
 import { STATUS_LABEL } from './labels';
 
 /**
- * The Lektionen list (ROADMAP §H1) — every trainer's authored lectures, newest-updated first,
- * with per-status assignment counts. The entry point of the teaching console.
+ * The Lektionen list (ROADMAP §H1/§I3) — the content library's current lecture versions, newest-
+ * updated first, with per-status assignment counts (spanning all versions of a lecture). Read +
+ * assign only: authoring happens in the repo's content/ directory and arrives via the deploy import.
  */
 export function LecturesScreen() {
-  const navigate = useNavigate();
   const { data, isPending, isError, error, hasNextPage, fetchNextPage, isFetchingNextPage } = useLectures();
   const lectures = data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
     <section>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-1 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-ink">Lektionen</h1>
-        <Button onClick={() => navigate('/lectures/new')}>
-          <Plus className="size-4" aria-hidden /> Neue Lektion
-        </Button>
       </div>
+      <p className="mb-4 text-sm text-ink-soft">
+        Lektionen kommen aus der Content-Bibliothek (GitHub) und werden beim Deploy aktualisiert.
+      </p>
 
       {isPending ? (
         <p className="py-16 text-center text-ink-soft">Lädt …</p>
@@ -34,7 +34,7 @@ export function LecturesScreen() {
       ) : lectures.length === 0 ? (
         <div className="grid place-items-center rounded-card border border-dashed border-line py-20 text-ink-soft">
           <BookOpen className="mb-2 size-7" aria-hidden />
-          <p>Noch keine Lektionen.</p>
+          <p>Noch keine Lektionen in der Content-Bibliothek.</p>
         </div>
       ) : (
         <>
@@ -78,7 +78,7 @@ function LectureRow({ lecture: l }: { lecture: LectureListItem }) {
           </span>
         </p>
         <p className="mt-0.5 text-sm text-ink-soft">
-          {l.itemCount} {l.itemCount === 1 ? 'Aufgabe' : 'Aufgaben'} · von {l.authorName}
+          {l.itemCount} {l.itemCount === 1 ? 'Aufgabe' : 'Aufgaben'} · Version {l.version}
           {c.open + c.started + c.completed > 0 &&
             ` · Offen ${c.open} · Begonnen ${c.started} · Erledigt ${c.completed}`}
         </p>

@@ -7,7 +7,7 @@ import { lecturesApi } from '@/lib/endpoints';
 import { LectureDetailScreen } from './LectureDetailScreen';
 
 vi.mock('@/lib/endpoints', () => ({
-  lecturesApi: { list: vi.fn(), create: vi.fn(), detail: vi.fn(), update: vi.fn(), remove: vi.fn(), publish: vi.fn(), unpublish: vi.fn(), assign: vi.fn(), assignments: vi.fn(), withdraw: vi.fn() },
+  lecturesApi: { list: vi.fn(), detail: vi.fn(), assign: vi.fn(), assignments: vi.fn(), withdraw: vi.fn() },
   studentsApi: { list: vi.fn(), detail: vi.fn(), sessions: vi.fn(), session: vi.fn() },
 }));
 
@@ -17,7 +17,8 @@ const detail: LectureDetail = {
   status: 'published',
   skillTags: ['placeholder'],
   itemCount: 1,
-  authorName: 'Angelika',
+  slug: 'dehnungs-h',
+  version: 2,
   assignmentCounts: { open: 1, started: 0, completed: 1 },
   createdAt: '2026-07-25T09:00:00.000Z',
   updatedAt: '2026-07-25T10:00:00.000Z',
@@ -85,6 +86,15 @@ describe('LectureDetailScreen', () => {
     expect(screen.getAllByText('Offen')).toHaveLength(2); // filter chip + status badge
     expect(screen.getByRole('button', { name: 'Zurückziehen' })).toBeInTheDocument();
     expect(screen.queryByText(/überfällig/i)).not.toBeInTheDocument();
+  });
+
+  it('shows version + content-library provenance and disables Zuweisen for drafts', async () => {
+    vi.mocked(lecturesApi.detail).mockResolvedValue({ ...detail, status: 'draft' });
+    vi.mocked(lecturesApi.assignments).mockResolvedValue({ items: [] });
+    renderDetail();
+    expect(await screen.findByText(/Version 2 · aus der Content-Bibliothek/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Zuweisen/ })).toBeDisabled();
+    expect(screen.getByText(/status: published/)).toBeInTheDocument(); // the how-to hint for the file
   });
 
   it('published lectures offer Zuweisen; the assign dialog opens with the student list', async () => {

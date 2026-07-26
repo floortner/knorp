@@ -21,12 +21,11 @@ have shipped: backend + family frontend + trainer portal are live on real HTTPS 
 - **In progress (external):** **F — content-set redesign** (§F): the linguists are authoring the new word
   lists, training types, and sequence — now landing as `content/` lecture files (§I). Engineering picks
   each piece up as it lands. Don't start F implementation unprompted — the pedagogy is the linguists'.
-- **Next (engineering):** **H — staff-authored lectures + student tracking** (§H): turn the trainer
-  portal into the teaching console — trainers compose individual lectures, assign them to specific
-  students (known-trainer model: real names), and **review thoroughly what each student did** (sessions
-  started/duration, every question & answer, retries, timing). **H1 (rails) + H3 (tracking) are
-  type-agnostic and buildable now** against the `placeholder` type; the per-type authoring UI (H2)
-  grows as the linguist's training types land.
+- **Done (engineering):** **H — lectures + student tracking** (§H): the trainer portal as teaching
+  console — trainers assign lectures to specific students (known-trainer model: real names) and
+  **review thoroughly what each student did** (sessions started/duration, every question & answer,
+  retries, timing). H1 rails + H3 tracking shipped 2026-07-25; the per-type authoring UI (H2) was
+  **cancelled** in favour of the §I content pipeline (shipped 2026-07-26).
 - **Then:** **D5 / D6** (badges, weekly parent email) — self-contained engagement work.
 - **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it. Each
   new type now also adds its §H2 authoring-form section (the playbook gains a step).
@@ -331,6 +330,12 @@ lecture-generation prompt — on top of the skeleton kept from the Vokaltraining
 review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline). Dropped 2026-07-13 (the
 `chore/drop-vokaltraining-content` commit); see **Post-2.5** above for exactly what was removed.
 
+> **Reframed 2026-07-26 (§I):** the linguists' lecture material now lands as **markdown files in
+> `content/`** (validated in CI, imported versioned at deploy) — not as portal-authored or seed-JSON
+> artifacts. F's remaining engineering steps are unchanged where they touch the contract (steps 2, 3, 6)
+> but steps 4/5/7 should be read through the §I lens: unit/bank content may also live in the content
+> library (open design question), and a staff curation surface is likely never needed.
+
 > **Re-creation reference (read this first).** The complete, working Vokaltraining implementation — the
 > `Lexeme` model, all 14 exercise types with their solvability rules, the 7-unit catalogue, the full
 > `LLM_SYSTEM`/`FEW_SHOT` lecture prompt with word-pool grounding, `LexemeService`, `gen-items-from-lexemes.ts`,
@@ -402,14 +407,15 @@ Full-surface review in `SECURITY_REVIEW.md`; tracking issue **#81**.
   provision a write-only backup token + `HEALTHCHECK_URL`; re-verify the dormant P2-4 taxonomy filter once
   `SKILL_TAGS` is populated in §F. (All in #81.)
 
-### H. Staff-authored lectures — the trainer portal as teaching console
+### H. Lectures + student tracking — the trainer portal as teaching console
 
-**Goal:** a trainer composes an individual lecture — teaching intro (Merksatz) + an ordered set of
-exercises — and **assigns it to specific students**, who see it in the family app ("Übung von deiner
-Trainerin"), complete it as a normal session, and the author sees the result. This extends
-ARCHITECTURE §11: the portal stops being review-only and becomes the teaching console. It reuses the
-existing machinery almost wholesale — the gap is one authoring surface, two tables, and one
-family-app card.
+**Goal (revised 2026-07-26, §I):** a trainer **assigns** an individual lecture — teaching intro
+(Merksatz) + an ordered set of exercises — **to specific students**, who see it in the family app
+("Übung von deiner Trainerin"), complete it as a normal session, and the trainer sees the result.
+Lectures are **authored by the linguists in the content library** (`content/`, §I) — the portal
+browses, assigns, and tracks; it never composes. (The original §H goal had trainers authoring in the
+portal; that shipped 2026-07-25 and was replaced by the §I content pipeline one day later — the
+H1 rails and H3 tracking below survive unchanged.)
 
 **Why tracking is core, not a nice-to-have:** the trainer must see *thoroughly* what the student did —
 which lectures/sessions were started when, how long completion took, every question with the given
@@ -442,11 +448,12 @@ progress; parent email/account administration stays admin-only. (The `L-xxxxxx` 
    assigned_at, session_id nullable + SetNull, completed_at nullable; unique lecture×profile).
    `item_bank.generated_by` gained `'staff'` (unit 0, excluded from bank rotation); `session.source`
    gained `'assigned'`. Additive migration — single-release deploy.
-2. ✅ **Staff routes (DONE 2026-07-25)** (backend SPEC §6): lecture CRUD (every save validates each
-   exercise via `solvableExerciseSchema` — 422 with per-item paths), publish/unpublish (draft-editable,
-   published-immutable, unpublish only unassigned), assign to N profiles (idempotent, `{assigned,
-   skipped}`), withdraw uncompleted, list assignments with derived status (`open | started | completed`)
-   + outcome rollup; per-item results via the existing session drill-down. Portal "Lektionen" tab.
+2. ✅ **Staff routes (DONE 2026-07-25; write half removed 2026-07-26, §I3)** (backend SPEC §6):
+   originally lecture CRUD + publish/unpublish — replaced by the content-library import; what remains
+   is list/detail (superseded-filtered, with slug + version), assign to N profiles (idempotent,
+   `{assigned, skipped}`, cross-version dedupe), withdraw uncompleted, list assignments with derived
+   status (`open | started | completed`) + outcome rollup across versions; per-item results via the
+   existing session drill-down. Portal "Lektionen" tab.
 3. ✅ **Learner directory (DONE 2026-07-25, with H3.1/H3.2):** a student list for **all trainers** —
    student name, grade band, skill breakdown, recent activity (`GET /staff/students`, portal
    "Schüler" tab) — the picker for assignment and the context for authoring. The rule-10 revision
@@ -463,13 +470,11 @@ progress; parent email/account administration stays admin-only. (The `L-xxxxxx` 
    e2e journey `assignment-loop.spec.ts` (trainer authors → assigns → student completes → trainer sees
    the result incl. drill-down) — passing.
 
-**H2 — authoring UX (per training type; lands as the linguist's types land, F2/F3):**
-- Per-type exercise editor in the portal with inline solvability feedback (server-validated) and a
-  simple preview. Reuse-vs-duplicate of the family renderers for preview is the open technical
-  decision (portal and app are separate builds; start with a schematic preview, share components only
-  if it hurts).
-- Compose from existing `item_bank` items (filter by skill tag/difficulty) *or* author new ones.
-- The §C2 playbook gains a step: every new exercise type ships with its authoring-form section.
+**H2 — authoring UX — ~~per-type portal editor~~ CANCELLED 2026-07-26 (§I):** lecture authoring moved
+to the markdown content library (`content/`, §I) — linguists author via GitHub PRs with CI validation;
+the portal's editor and the lecture write routes were removed in §I3. A new exercise type now ships a
+**frontmatter-schema extension** (`backend/src/content/lecture-file.schema.ts`) instead of an
+authoring form; the §C2 playbook note about per-type authoring-form sections is void.
 
 **H3 — student activity tracking (the trainer's review loop):**
 1. ✅ **Staff read model (DONE 2026-07-25)** (backend SPEC §6): per-student session history —
@@ -537,12 +542,13 @@ removal — never delete, never mutate old rows; item rows content-addressed via
 `content:{slug}.{exId}:{hash12}`) · deploy tarball gains `content/`, `release.sh` runs the import
 pre-traffic after the seed · e2e fixture content dir imported in `global-setup`.
 
-**I3 — route + portal reduction:** staff lecture write routes (`POST/PATCH/DELETE`, publish/unpublish)
-removed; list/detail/assign/withdraw stay (list filters `superseded`, gains `slug`/`version`, counts
-assignments across versions; assign gains cross-version dedupe + latest-version guard) · contract regen
-(both `api.gen.ts`) · portal editor deleted, provenance copy („aus der Content-Bibliothek", version
-badge) · e2e `assignment-loop` rewritten against imported fixture content · §H/§F/ARCHITECTURE/SPEC
-docs re-trued.
+**I3 — route + portal reduction (✅ DONE 2026-07-26):** staff lecture write routes (`POST/PATCH/
+DELETE`, publish/unpublish) removed; list/detail/assign/withdraw stay (list filters `superseded`,
+gains `slug`/`version`, counts assignments across versions; assign gains cross-version dedupe —
+an open assignment on any version of the slug skips, a completed older-version one doesn't block) ·
+contract regen (both `api.gen.ts`) · portal editor deleted, provenance copy („aus der Content-
+Bibliothek", version badge, drafts unassignable) · e2e `assignment-loop` rewritten against imported
+fixture content · §H/§F/ARCHITECTURE/SPEC docs re-trued.
 
 **Docs to true as I lands:** ARCHITECTURE §1a (linguists author in-repo, outside both auth realms —
 the deploy pipeline is their "write API"), §3 (`content/` in the layout), §7 (release steps), §11
@@ -555,8 +561,10 @@ wording); CLAUDE.md; this file (§H2 strike-through, §F reframe).
 
 ~~B1+B2~~ ✓ → ~~D1~~ ✓ → ~~D4 + D7~~ ✓ → ~~D2 + D3~~ ✓ → ~~C1~~ ✓ → ~~E — first feedback round (beta) on
 AWS~~ ✓ → ~~H1 assignment rails + H3 student-activity tracking~~ ✓ (2026-07-25 — the teaching console
-is live: directory, activity, authoring, assignment, digest section) → **now:** the linguist works on
-**F** (word-list schema → skill taxonomy → training types → sequence → lecture prompt, landed piece by
-piece as delivered) → **H2 authoring UX** per type as F types arrive → then **D5 / D6** (badges, parent
-email) once the new content is live. **C2** (a concrete new exercise type) is how new training types
-land during §F — each now also ships its §H2 authoring form.
+is live: directory, activity, assignment, digest section) → ~~I — content pipeline~~ ✓ (2026-07-26 —
+lectures as markdown in `content/`, CI-validated, versioned deploy import; H2 portal authoring
+cancelled) → **now:** the linguists write lectures in `content/` and work on **F** (word-list schema →
+skill taxonomy → training types → sequence → lecture prompt, landed piece by piece as delivered) →
+then **D5 / D6** (badges, parent email) once the new content is live. **C2** (a concrete new exercise
+type) is how new training types land during §F — each now also extends the content-file frontmatter
+schema (§I) instead of shipping an authoring form.

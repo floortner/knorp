@@ -62,6 +62,11 @@ and the JWTs carry a different `aud`/role so a guard can never confuse them.
 - The trainer's verdict is **authoritative** and **replaces the parent-confirm step** for homework
   (§10). Review is **asynchronous**: it never blocks a student mid-lesson; it shapes the *next* generated
   lecture.
+- **A third authoring population exists OUTSIDE both auth realms (2026-07-26, ROADMAP §I): the
+  linguists.** They author all lecture content as markdown files in the repo's `content/` directory via
+  GitHub (web editor / PRs) — the **deploy pipeline is their "write API"** (CI validation → merge →
+  versioned import, §7). They hold no app credential in either realm and never see student data; the
+  trainer portal consumes their lectures read-only (browse + assign + outcomes — it does not author).
 
 ### 1b. Family access = approval, not payment
 
@@ -232,7 +237,8 @@ src/
     queue/                # review list (Offen | Erledigt | Alle) — rows by student name (§H1.3)
     review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
     students/             # learner directory + activity timeline + session drill-down (§H1.3/§H3)
-    lectures/             # teaching console: lecture authoring, publish, assign + outcome table (§H1)
+    lectures/             # teaching console: content-library browse + assign + outcome table (§H1/§I3;
+                          #   authoring moved to repo-root content/ — the editor was removed)
     users/                # ADMIN: account approval / deactivate / delete + per-student progress
                           # (the "Wortschatz" lexeme-curation tab was dropped with the content set, §F)
     progress/             # shared learner-progress panel (summary · skills · activity)
@@ -597,13 +603,16 @@ homework photo's LLM analysis is **never** applied on its own. A vetted **intern
 (staff trainer, §1a) validates it first. The trainer's verdict is **authoritative** and **replaces** the
 former parent-confirm step. The flow is **asynchronous** — the student is never blocked.
 
-**Teaching-console extension (ROADMAP §H, shipped 2026-07-25):** the portal is no longer review-only.
-Trainers also **author lectures** (Merksatz + solvability-gated exercises, stored as `item_bank` rows
-with `generated_by='staff'`) and **assign** them to specific students; the assignment appears on
-`/lernen` as a personal offer ("Übung von {Trainer}", never a push), plays as an ordinary session
-(`source='assigned'` — attempts feed FSRS/digest like any other), and the outcome lands back in the
-trainer's assignment table and the per-question drill-down. The digest's "Zugewiesene Übungen" section
-closes the loop so LLM-generated lectures build on the trainer's material (backend SPEC §3/§6/§8).
+**Teaching-console extension (ROADMAP §H shipped 2026-07-25; authoring moved 2026-07-26, §I):** the
+portal is no longer review-only — and it does not author either. Lectures (Merksatz + solvability-
+gated exercises) are written by the **linguists** as markdown in the repo's `content/` directory and
+imported versioned at deploy (§I2, `item_bank` rows with `generated_by='content'`). Trainers **browse**
+the library and **assign** lectures to specific students; the assignment pins the lecture version it
+was created against and appears on `/lernen` as a personal offer ("Übung von {Trainer}", never a
+push), plays as an ordinary session (`source='assigned'` — attempts feed FSRS/digest like any other),
+and the outcome lands back in the trainer's assignment table (spanning all versions of a lecture) and
+the per-question drill-down. The digest's "Zugewiesene Übungen" section closes the loop so
+LLM-generated lectures build on the assigned material (backend SPEC §3/§6/§8).
 
 ```
 family uploads photo (Chat tab) ─▶  backend: strip EXIF, →WebP, store under user prefix

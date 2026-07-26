@@ -30,8 +30,9 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (student
 /onboarding       welcome (buddy intro) → choose buddy (8 Lernbuddies, Nepo default) → choose weekly goal
 /app
   ├ /lernen       home: greeting, unit cards (title/subtitle/status), ✨ generated-lecture card,
-  │               "Übung von {Trainer}" assignment cards (staff lectures, §H1 — an offer, never a
-  │               push; personal via the known-trainer name), reward strip, START
+  │               "Übung von {Trainer}" assignment cards (content-library lectures assigned by a
+  │               trainer, §H1/§I — an offer, never a push; personal via the known-trainer name),
+  │               reward strip, START
   │   └ /lesson   exercise runner (one renderer per contract type — §3), feedback, confetti on complete; sessions
   │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!") —
   │               bank sessions carry the unit's Merksatz, generated lectures their own intro

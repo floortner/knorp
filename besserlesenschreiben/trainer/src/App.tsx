@@ -11,7 +11,6 @@ import { ProfileScreen } from '@/features/profile/ProfileScreen';
 import { UsersScreen } from '@/features/users/UsersScreen';
 import { StudentsScreen } from '@/features/students/StudentsScreen';
 import { LecturesScreen } from '@/features/lectures/LecturesScreen';
-import { LectureEditorScreen } from '@/features/lectures/LectureEditorScreen';
 import { LectureDetailScreen } from '@/features/lectures/LectureDetailScreen';
 import { StudentDetailScreen } from '@/features/students/StudentDetailScreen';
 import { SessionDetailScreen } from '@/features/students/SessionDetailScreen';
@@ -35,9 +34,7 @@ export function App() {
           <Route path="/review/:uploadId" element={<ReviewScreen />} />
           <Route path="/history/:uploadId" element={<HistoryScreen />} />
           <Route path="/lectures" element={<LecturesScreen />} />
-          <Route path="/lectures/new" element={<LectureEditorScreen />} />
           <Route path="/lectures/:lectureId" element={<LectureDetailScreen />} />
-          <Route path="/lectures/:lectureId/edit" element={<LectureEditorScreen />} />
           <Route path="/students" element={<StudentsScreen />} />
           <Route path="/students/:profileId" element={<StudentDetailScreen />} />
           <Route path="/students/:profileId/sessions/:sessionId" element={<SessionDetailScreen />} />

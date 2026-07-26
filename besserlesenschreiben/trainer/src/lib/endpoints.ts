@@ -12,7 +12,6 @@ import type {
   LectureAssignmentList,
   LectureDetail,
   LecturePage,
-  LectureUpsertBody,
   QueuePage,
   QueueProgress,
   ReviewSubmitBody,
@@ -121,8 +120,9 @@ export const studentsApi = {
 };
 
 /**
- * Staff-authored lectures + assignments (ROADMAP §H1) — all trainers. Authoring is solvability-gated
- * server-side (422 with per-item field paths); assignment is idempotent per (lecture, student).
+ * Content-library lectures + assignments (ROADMAP §H1/§I3) — all trainers. Lectures are authored as
+ * markdown in the repo's content/ directory and land here via the deploy import; the portal reads
+ * them and manages assignments (idempotent per (lecture, student), deduped across lecture versions).
  */
 export const lecturesApi = {
   list: (params: { limit?: number; cursor?: string } = {}) => {
@@ -133,26 +133,8 @@ export const lecturesApi = {
     return apiFetch<LecturePage>(`/staff/lectures${qs ? `?${qs}` : ''}`);
   },
 
-  create: (body: LectureUpsertBody) =>
-    apiFetch<LectureDetail>('/staff/lectures', { method: 'POST', body }),
-
   detail: (lectureId: string) =>
     apiFetch<LectureDetail>(`/staff/lectures/${encodeURIComponent(lectureId)}`),
-
-  /** Draft-only; published lectures are immutable (409 LECTURE_PUBLISHED). */
-  update: (lectureId: string, body: LectureUpsertBody) =>
-    apiFetch<LectureDetail>(`/staff/lectures/${encodeURIComponent(lectureId)}`, { method: 'PATCH', body }),
-
-  /** Draft-only delete (removes the lecture's authored items too). */
-  remove: (lectureId: string) =>
-    apiFetch<{ ok: true }>(`/staff/lectures/${encodeURIComponent(lectureId)}`, { method: 'DELETE' }),
-
-  publish: (lectureId: string) =>
-    apiFetch<LectureDetail>(`/staff/lectures/${encodeURIComponent(lectureId)}/publish`, { method: 'POST', body: {} }),
-
-  /** Only while nothing is assigned (409 LECTURE_ASSIGNED otherwise). */
-  unpublish: (lectureId: string) =>
-    apiFetch<LectureDetail>(`/staff/lectures/${encodeURIComponent(lectureId)}/unpublish`, { method: 'POST', body: {} }),
 
   assign: (lectureId: string, body: AssignBody) =>
     apiFetch<AssignResult>(`/staff/lectures/${encodeURIComponent(lectureId)}/assignments`, { method: 'POST', body }),

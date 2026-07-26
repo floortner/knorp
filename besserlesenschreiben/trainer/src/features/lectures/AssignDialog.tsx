@@ -30,7 +30,7 @@ export function AssignDialog({ lectureId, onClose }: { lectureId: string; onClos
       {
         onSuccess: (r) => {
           setResult(
-            `${r.assigned} zugewiesen${r.skipped > 0 ? `, ${r.skipped} übersprungen (bereits zugewiesen)` : ''}.`,
+            `${r.assigned} zugewiesen${r.skipped > 0 ? `, ${r.skipped} übersprungen (bereits zugewiesen — auch eine offene ältere Version zählt)` : ''}.`,
           );
           setSelected(new Set());
         },
