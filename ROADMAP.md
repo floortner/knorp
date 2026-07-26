@@ -15,9 +15,12 @@ hardening (A), cleanup (B), most engagement work (C1, D1–D4, D7), and the **E 
 have shipped: backend + family frontend + trainer portal are live on real HTTPS domains (`infra/` Terraform
 + `deploy/` on-box scripts + `.github/workflows/deploy.yml`), inside the €50/mo all-in budget.
 
-- **In progress (external):** **F — content-set redesign** (§F): a linguist is authoring the new word
-  lists, training types, and sequence. Engineering picks each piece up as it lands (F steps 2–6, via the
-  §C2 playbook). Don't start F implementation unprompted — the pedagogy is the linguist's.
+- **Direction change 2026-07-26 — see §I:** lecture content moves to **markdown files in `content/`**
+  authored by the **group of linguists** via GitHub PRs (single source of truth, versioned deploy-time
+  import, pin-at-assign). **§H2 (portal authoring UI) is cancelled**; the portal keeps assign + track.
+- **In progress (external):** **F — content-set redesign** (§F): the linguists are authoring the new word
+  lists, training types, and sequence — now landing as `content/` lecture files (§I). Engineering picks
+  each piece up as it lands. Don't start F implementation unprompted — the pedagogy is the linguists'.
 - **Next (engineering):** **H — staff-authored lectures + student tracking** (§H): turn the trainer
   portal into the teaching console — trainers compose individual lectures, assign them to specific
   students (known-trainer model: real names), and **review thoroughly what each student did** (sessions
@@ -493,6 +496,57 @@ progress; parent email/account administration stays admin-only. (The `L-xxxxxx` 
 queue; teaching-console extension + the new invariants), CLAUDE.md security rule 10, backend SPEC
 §3/§6/§8 (tables, staff routes, `source='assigned'`), frontend SPEC §2 (assignment card), trainer
 AGENTS.md (new screens + updated golden rules), and this file.
+
+### I. Content pipeline — lectures as markdown files in the repo (decided 2026-07-26)
+
+**Goal:** lecture content is authored by the **group of linguists** as markdown files in the repo-root
+`content/` directory — the **single source of truth** for all lectures. Collaboration happens on GitHub
+(web editor / PRs) with CI as the linguists' feedback loop; a versioned deploy-time import brings the
+files into the DB. The trainer portal stops authoring and becomes **browse + assign + track outcomes**.
+
+**Decisions (settled 2026-07-26):**
+- **Format:** markdown + YAML frontmatter, one file per lecture (`content/lectures/<slug>.md`). English
+  keys mirroring the wire contract; German authoring guide (`content/README.md`) + German validation
+  errors. Structured exercises live in the frontmatter; the body is reserved for future richer prose.
+  `status: draft | published` (default `published` — merged to main = live at next deploy; drafts are
+  browsable in the portal, never assignable).
+- **Scope:** files are the ONE source. **§H2 (per-type portal editor) is cancelled** — a new exercise
+  type now ships a frontmatter-schema extension instead of an authoring form. §H1's assignment rails and
+  §H3 tracking stay as the portal's job.
+- **Versioning: pin at assign-time.** Git versions the authoring; the import versions the content: a
+  changed lecture gets a NEW `lecture` row (version+1, old row `superseded`, never mutated) and changed
+  exercises get NEW content-addressed `item_bank` rows (`seed_key = content:{slug}.{exId}:{hash12}`),
+  so attempts always reference exactly what the student saw. Assignments pin via the existing
+  `lecture_id` FK; new assignments get the latest version. Slugs and exercise ids are the durable
+  telemetry anchors — never renamed.
+- **Skill-tag guard:** `content/skills.lock.json` is a committed copy of `SKILL_TAGS`; CI fails on any
+  taxonomy drift, making renames/removals (which orphan attempt history) a deliberate two-file change.
+
+**I1 — format + validator + CI (✅ DONE 2026-07-26):** `content/` (German README, `_vorlage.md`,
+draft example, `skills.lock.json`) · `backend/src/content/` (frontmatter Zod schema reusing
+`solvableExerciseSchema` — the §H solvability invariant survives the authoring move — parser with
+German path-addressed errors, canonical content hashing with `status` excluded, loader, skills-lock
+diff) + specs · `npm run content:validate` (GitHub `::error` annotations in Actions) · CI `content` job.
+Linguists can write real lectures from here on.
+
+**I2 — schema + versioned import + deploy wiring:** migration (lecture `slug`/`version`/`content_hash`/
+`source_path`/`superseded_at`, `created_by` nullable, `@@unique([slug, version])`; legacy portal-authored
+rows → `superseded`) · `npm run content:import` (validate-all-first, then per-lecture transaction:
+create v1 / no-op / status-only update / version bump / retire-on-file-removal — never delete, never
+mutate old rows) · deploy tarball gains `content/`, `release.sh` runs the import pre-traffic after the
+seed · e2e fixture content dir imported in `global-setup`.
+
+**I3 — route + portal reduction:** staff lecture write routes (`POST/PATCH/DELETE`, publish/unpublish)
+removed; list/detail/assign/withdraw stay (list filters `superseded`, gains `slug`/`version`, counts
+assignments across versions; assign gains cross-version dedupe + latest-version guard) · contract regen
+(both `api.gen.ts`) · portal editor deleted, provenance copy („aus der Content-Bibliothek", version
+badge) · e2e `assignment-loop` rewritten against imported fixture content · §H/§F/ARCHITECTURE/SPEC
+docs re-trued.
+
+**Docs to true as I lands:** ARCHITECTURE §1a (linguists author in-repo, outside both auth realms —
+the deploy pipeline is their "write API"), §3 (`content/` in the layout), §7 (release steps), §11
+(trainers assign, don't author); backend SPEC §3/§6/§8; trainer AGENTS.md; frontend SPEC §2 (card
+wording); CLAUDE.md; this file (§H2 strike-through, §F reframe).
 
 ---
 

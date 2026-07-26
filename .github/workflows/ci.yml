@@ -78,6 +78,26 @@ jobs:
       - name: api.gen.ts is up to date
         run: git diff --exit-code src/lib/api.gen.ts
 
+  # The linguists' feedback loop (ROADMAP §I): every lecture file in content/ is validated against
+  # the exercise contract (German errors, emitted as inline PR annotations), and the skill-tag lock
+  # keeps taxonomy renames/removals a deliberate two-file change. Runs on every PR — content-only
+  # PRs from the linguists rely on exactly this job.
+  content:
+    name: content (validate lecture files + skill-tag lock)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: besserlesenschreiben/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: besserlesenschreiben/backend/package-lock.json
+      - run: npm ci
+      - run: npm run content:validate
+
   # NOTE: the end-to-end Playwright suite (e2e/) is intentionally NOT run in CI — run it LOCALLY only
   # (`cd e2e && npm test`). The fast backend/frontend/trainer jobs above (unit + golden + contract
   # gates) are the CI safety net.
