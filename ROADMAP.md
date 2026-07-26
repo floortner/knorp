@@ -529,12 +529,13 @@ German path-addressed errors, canonical content hashing with `status` excluded, 
 diff) + specs · `npm run content:validate` (GitHub `::error` annotations in Actions) · CI `content` job.
 Linguists can write real lectures from here on.
 
-**I2 — schema + versioned import + deploy wiring:** migration (lecture `slug`/`version`/`content_hash`/
-`source_path`/`superseded_at`, `created_by` nullable, `@@unique([slug, version])`; legacy portal-authored
-rows → `superseded`) · `npm run content:import` (validate-all-first, then per-lecture transaction:
-create v1 / no-op / status-only update / version bump / retire-on-file-removal — never delete, never
-mutate old rows) · deploy tarball gains `content/`, `release.sh` runs the import pre-traffic after the
-seed · e2e fixture content dir imported in `global-setup`.
+**I2 — schema + versioned import + deploy wiring (✅ DONE 2026-07-26):** migration (lecture `slug`/
+`version`/`content_hash`/`source_path`/`superseded_at`, `created_by` nullable, `@@unique([slug,
+version])`; legacy portal-authored rows → `superseded`) · `npm run content:import` (validate-all-first,
+then per-lecture transaction: create v1 / no-op / status-only update / version bump / retire-on-file-
+removal — never delete, never mutate old rows; item rows content-addressed via seed_key
+`content:{slug}.{exId}:{hash12}`) · deploy tarball gains `content/`, `release.sh` runs the import
+pre-traffic after the seed · e2e fixture content dir imported in `global-setup`.
 
 **I3 — route + portal reduction:** staff lecture write routes (`POST/PATCH/DELETE`, publish/unpublish)
 removed; list/detail/assign/withdraw stay (list filters `superseded`, gains `slug`/`version`, counts

@@ -86,7 +86,10 @@ model ItemBank {
   syllableAudio Json?    @map("syllable_audio")
   skillTags     String[] @map("skill_tags")
   difficulty    Int      @default(1)
-  // 'seed' | 'llm' | 'staff' — staff rows are lecture-authored (§H1), live at unit 0, and are
+  // 'seed' | 'llm' | 'staff' | 'content' — staff rows are legacy lecture-authored (§H1); content rows
+  // come from the content-library import (§I2, seed_key `content:{slug}.{exId}:{hash12}` — content-
+  // addressed, so an unchanged exercise keeps its row across lecture versions and a changed one gets a
+  // new row while the old row keeps serving pinned assignments). Both live at unit 0 and are
   // deliberately excluded from bank rotation (createBank's generated pool filters 'llm' only).
   generatedBy   String   @default("seed") @map("generated_by")
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -120,24 +123,34 @@ model Session {
   @@map("session")
 }
 
-// ── LECTURE (staff-authored teaching unit, ROADMAP §H1) ──────────────────────
-// A trainer-composed Merksatz + ordered exercises. Items live as item_bank rows
-// (generated_by='staff', unit 0) referenced by id — reusable and attempt-joinable like any item.
-// Drafts are editable; published lectures are immutable (unpublish only with zero assignments).
+// ── LECTURE (a teaching unit from the content library, ROADMAP §I) ───────────
+// A Merksatz + ordered exercises, imported from content/lectures/<slug>.md (§I2). Items live as
+// item_bank rows (generated_by='content', unit 0) referenced by id — attempt-joinable like any item.
+// Content lectures are VERSIONED: an edit creates a new row (version+1) and marks the old one
+// status='superseded' (never mutated) — assignments pin their version via the lecture_id FK, so
+// attempts always reference exactly what the student saw. Legacy portal-authored rows (§H1) have
+// slug=null + created_by set; they were superseded wholesale in the §I2 migration.
 model Lecture {
-  id        String   @id @default(uuid()) @db.Uuid
-  createdBy String   @map("created_by") @db.Uuid
-  title     String
-  intro     String // the Merksatz shown as the lesson's teaching intro card
-  itemIds   String[] @map("item_ids") @db.Uuid // ordered
-  skillTags String[] @map("skill_tags") // union of the items' tags, computed on save
-  status    String   @default("draft") // draft | published
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id           String    @id @default(uuid()) @db.Uuid
+  slug         String? // content-library natural key (filename); null = legacy portal-authored row
+  version      Int       @default(1)
+  contentHash  String?   @map("content_hash") // canonical hash (src/content/hash.ts) — the import's same-or-new test
+  sourcePath   String?   @map("source_path") // e.g. content/lectures/dehnungs-h.md
+  createdBy    String?   @map("created_by") @db.Uuid // null = content-library import
+  title        String
+  intro        String // the Merksatz shown as the lesson's teaching intro card
+  itemIds      String[]  @map("item_ids") @db.Uuid // ordered
+  skillTags    String[]  @map("skill_tags") // union of the items' tags, computed on import
+  status       String    @default("draft") // draft | published | superseded
+  supersededAt DateTime? @map("superseded_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  author      Trainer      @relation("LectureAuthor", fields: [createdBy], references: [id])
+  author      Trainer?     @relation("LectureAuthor", fields: [createdBy], references: [id])
   assignments Assignment[]
 
+  @@unique([slug, version]) // legacy rows (slug null) are exempt — Postgres treats NULLs as distinct
+  @@index([slug, status])
   @@index([status])
   @@map("lecture")
 }

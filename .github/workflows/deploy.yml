@@ -40,7 +40,7 @@ jobs:
         run: |
           SHA="${GITHUB_SHA::12}"
           echo "SHA=$SHA" >> "$GITHUB_ENV"
-          tar czf "release.tar.gz" besserlesenschreiben/backend deploy
+          tar czf "release.tar.gz" besserlesenschreiben/backend deploy content
           aws s3 cp "release.tar.gz" "s3://${{ vars.ARTIFACTS_BUCKET }}/releases/$SHA.tar.gz"
 
       - name: Run on-box release via SSM

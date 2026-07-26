@@ -57,6 +57,10 @@ export DATABASE_URL
 export STAFF_ADMIN_EMAILS="${STAFF_ADMIN_EMAILS:-}"
 sudo --preserve-env=DATABASE_URL -u blsb bash -c "cd '$BE' && npx prisma migrate deploy"
 sudo --preserve-env=DATABASE_URL,STAFF_ADMIN_EMAILS -u blsb bash -c "cd '$BE' && NODE_ENV=production npx prisma db seed"
+# Content-library import (ROADMAP §I2): versioned, idempotent, pre-traffic. Fail-loud — an invalid
+# content/ dir aborts the deploy (CI should have caught it long before this point).
+export CONTENT_DIR="$RELEASE_DIR/content"
+sudo --preserve-env=DATABASE_URL,CONTENT_DIR -u blsb bash -c "cd '$BE' && npm run content:import"
 
 # 4. Flip the current symlink the systemd unit points at.
 ln -sfn "$RELEASE_DIR" /opt/blsb/current

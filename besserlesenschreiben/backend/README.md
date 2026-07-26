@@ -37,7 +37,8 @@ createdb -O blsb blsb_dev
 cp .env.example .env          # dev defaults already match the role/db created above
 npm ci                        # install deps
 npx prisma migrate dev        # create tables from prisma/schema.prisma
-npm run seed                  # load item_bank.seed.json (idempotent)
+npm run seed                  # staff admins + dev accounts (idempotent)
+npm run content:import        # import the content/ lecture library (idempotent, ROADMAP §I2)
 ```
 
 ## Run
@@ -132,4 +133,5 @@ log lines (token counts per call) for daily cost.
 dropdb blsb_dev && createdb -O blsb blsb_dev   # wipe and recreate the empty database
 ```
 
-Then re-run `npx prisma migrate dev` + `npm run seed` to rebuild the schema and content.
+Then re-run `npx prisma migrate dev` + `npm run seed` + `npm run content:import` to rebuild the
+schema, accounts, and lecture library.
