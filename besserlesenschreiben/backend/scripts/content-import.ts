@@ -84,6 +84,18 @@ async function execute(prisma: PrismaClient, action: ImportAction): Promise<stri
       return `${action.kind === 'create' ? 'created' : 'bumped'} ${lecture.slug} v${version}`;
     }
     case 'update-meta': {
+      // A published→draft flip un-publishes silently otherwise: the old portal blocked this
+      // (409 LECTURE_ASSIGNED) while anyone was assigned. The file-driven pipeline can't reject a
+      // deploy over an editorial choice, but it must not swallow it either — assigned students keep
+      // playing (createAssigned doesn't gate on status), yet the lecture drops out of `assign`-
+      // eligibility with no other signal. Loud log, same precedent as RETIRED below.
+      let assignedWarning = '';
+      if (action.status === 'draft') {
+        const assignedCount = await prisma.assignment.count({ where: { lectureId: action.id } });
+        if (assignedCount > 0) {
+          assignedWarning = ` — WARNING: ${assignedCount} assignment(s) exist; new assignments are now blocked (409 LECTURE_NOT_PUBLISHED), already-assigned students keep playing`;
+        }
+      }
       await prisma.lecture.update({
         where: { id: action.id },
         data: {
@@ -91,7 +103,7 @@ async function execute(prisma: PrismaClient, action: ImportAction): Promise<stri
           ...(action.sourcePath !== undefined ? { sourcePath: action.sourcePath } : {}),
         },
       });
-      return `updated meta ${action.lecture.slug}${action.status ? ` (status → ${action.status})` : ''}`;
+      return `updated meta ${action.lecture.slug}${action.status ? ` (status → ${action.status})` : ''}${assignedWarning}`;
     }
     case 'retire': {
       await prisma.lecture.update({
