@@ -67,6 +67,8 @@ and the JWTs carry a different `aud`/role so a guard can never confuse them.
   GitHub (web editor / PRs) — the **deploy pipeline is their "write API"** (CI validation → merge →
   versioned import, §7). They hold no app credential in either realm and never see student data; the
   trainer portal consumes their lectures read-only (browse + assign + outcomes — it does not author).
+  Their **read channel** is the planned anonymized content-stats report exported into the repo
+  (§12, ROADMAP §J4) — content-indexed aggregates only, never per-student data.
 
 ### 1b. Family access = approval, not payment
 
@@ -656,3 +658,52 @@ not a concern, correctness and auditability are. The portal targets **desktop/la
 room to see the homework photo and the LLM draft side by side) — it is **not** optimised for phones. Build the
 review screen as a two-pane **landscape** layout (image | draft) with comfortable tap targets for tablet; a
 narrow-phone layout is explicitly out of scope (the family `-web` app is the mobile-first one, not this).
+
+---
+
+## 12. The improvement cycle — telemetry → adaptation → content quality
+
+The product's core claim is adaptivity, so the feedback loops are the architecture's spine. Four loops
+are **built** (all flowing telemetry *forward* into what one student gets next); a fifth — the
+**content-quality loop** — is planned (ROADMAP §J) and closes the cycle back to the content authors.
+
+**Built (student-indexed):**
+
+1. **Answer → memory model.** Every answered exercise emits exactly one `attempt` row (`time_ms`,
+   `attempt_no`, `item_id`, `skill_tags`; SPEC §4). Each attempt immediately updates `review_state`
+   per `(profile, skill_tag)` via FSRS — wrong = Again, correct-after-retry = Hard, first-try = Good.
+   FSRS is scheduled **per skill, not per word** — the skill-tag taxonomy is the durable spine.
+2. **Weak/due → bank session.** Deterministic selection (backend SPEC §8A): a skill is *weak* below
+   70 % first-try correct or above 15 s average over the last 14 days; due skills come from FSRS.
+   Items are ranked by priority-skill overlap. Zero LLM calls; LLM-generated items matching the
+   priority skills join the pool, so one student's generated content benefits all.
+3. **Focus + digest → generated lecture (★).** The LLM path (SPEC §8B) assembles weak ∪ due ∪
+   trainer-reviewed homework focus, renders `digest.md` (per-skill 14-day table with correct %, avg
+   time, trend; recent wrong answers; FSRS-due; recent assigned-lecture outcomes) into the prompt,
+   and every generated exercise passes `solvableExerciseSchema` before persisting. The database
+   decides *what* to drill; the LLM only writes content.
+4. **Human loops.** Homework: the trainer's authoritative verdict schedules its focus skills as
+   failed FSRS reviews (§11). Teaching console: trainers review per-student activity down to each
+   question's answer/retries/timing (§H3) and assign the next content-library lecture; assignment
+   outcomes feed back into the digest.
+
+**Planned — the content-quality loop (ROADMAP §J):** everything above is **student-indexed**; no
+read model aggregates by *content*. §I deliberately created the durable content anchors — lecture
+`slug`, exercise lineage `{slug}.{exId}` (stable across versions via content-addressed `item_bank`
+rows) — precisely so telemetry can answer *"which lecture/exercise underperforms across students,
+and did v2 beat v1?"*. §J builds one shared content-analytics read model (per item lineage /
+exercise type / slug / version: attempts, first-try correct %, avg time, retry + abandon rates, with
+a **minimum-N floor** baked in) and two consumers: a trainer-portal „Content-Qualität" screen, and
+an **anonymized stats report exported into the repo** for the linguists — who sit outside both auth
+realms (§1a) and must only ever see content-indexed aggregates, never a name, profileId, or
+per-student row.
+
+**Scaling invariants (hold these as types/lectures/telemetry grow):**
+- **Two durable keys, nothing else.** Skill tags (`contract/skills.ts`, guarded by
+  `content/skills.lock.json`) link telemetry to *pedagogy*; `{slug}.{exId}` links it to *content*.
+  Everything downstream keys on one of these two opaque strings — renaming either orphans history.
+- **The digest is size-capped** (ROADMAP §J1): top-N weakest skills, capped due-list and attempt
+  fetch — the LLM prompt must not grow with the taxonomy or a student's history.
+- **Every read surface is either student-indexed or content-indexed, never both.** The per-student
+  surfaces stay inside the staff/family realms; the content-indexed §J aggregates are the only
+  telemetry that may leave them (into the repo report), and only above the minimum-N floor.
