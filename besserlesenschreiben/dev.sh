@@ -12,6 +12,10 @@
 #          ./dev.sh web       # family frontend only (:5173)
 #          ./dev.sh trainer    # staff trainer portal only (:5174)
 #          ./dev.sh all       # backend + family frontend + trainer portal
+#          ./dev.sh kill      # kill anything still listening on :3000/:5173/:5174 (a hung process
+#                              #   from a previous run that didn't exit cleanly, e.g. after a crash
+#                              #   or a closed terminal) — run this after an EADDRINUSE error, then
+#                              #   start dev.sh again
 #
 set -euo pipefail
 
@@ -44,9 +48,34 @@ pids=()
 # both macOS and Linux.
 kill_tree() {
   local pid="$1" child
-  for child in $(pgrep -P "$pid" 2>/dev/null); do kill_tree "$child"; done
+  for child in $(pgrep -P "$pid" 2>/dev/null || true); do kill_tree "$child"; done
   kill "$pid" 2>/dev/null || true
 }
+
+# Kill whatever is listening on a dev port, tree-and-all — for a hung process left over from a
+# previous run (crashed terminal, killed shell, etc.) that dev.sh's own cleanup trap never got to
+# run for. `lsof -ti` lists just the PID(s) bound to the port; works on macOS and Linux.
+kill_port() {
+  local port="$1" label="$2" pid found=0
+  for pid in $(lsof -ti "tcp:$port" 2>/dev/null || true); do
+    echo "[$label] killing pid $pid on :$port"
+    kill_tree "$pid"
+    found=1
+  done
+  # An if/fi (not `test && echo`) so the function's own exit status is 0 either way — this runs as a
+  # bare top-level statement, and set -e treats a false `&&` left-hand side as the function's failure.
+  if [ "$found" -eq 0 ]; then
+    echo "[$label] nothing listening on :$port"
+  fi
+}
+
+if [ "$TARGET" = "kill" ]; then
+  kill_port 3000 api
+  kill_port 5173 web
+  kill_port 5174 trainer
+  exit 0
+fi
+
 cleanup() {
   trap - INT TERM EXIT
   local pid
@@ -73,7 +102,7 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "trainer" ]; then
 fi
 
 if [ ${#pids[@]} -eq 0 ]; then
-  echo "Unknown target '$TARGET' (expected: both | all | api | web | trainer)" >&2
+  echo "Unknown target '$TARGET' (expected: both | all | api | web | trainer | kill)" >&2
   exit 1
 fi
 
