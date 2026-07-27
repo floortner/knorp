@@ -34,6 +34,9 @@ have shipped: backend + family frontend + trainer portal are live on real HTTPS 
   provenance, givenFirst) rides its natural triggers.
 - **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it. Each
   new type now extends the content-file frontmatter schema (§I) — the §H2 authoring form is cancelled.
+- **Option (parked):** **H4 — paper delivery channel** (§H4, designed 2026-07-27): assign a lecture as
+  a printed worksheet (browser-print PDF from the portal) instead of into the app; tracked, manually
+  completed. Build when a trainer actually needs it; §F's type design should note print-capability.
 - **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9; schema kept
   dormant) · TTS pipeline (Web-Speech fallback on the client for now; target Amazon Polly) · full-prod
   hardening (multi-instance/ALB, managed RDS + DR, OTel collector, staff MFA — see §E "Deferred to full
@@ -506,6 +509,31 @@ authoring form; the §C2 playbook note about per-type authoring-form sections is
 4. ✅ **(DONE 2026-07-25)** Abandoned/never-started assignments are visible on the lecture's assignment
    table (Offen | Begonnen, calm wording) and the activity timeline — signal for the parent
    conversation, never pressure at the student.
+
+**H4 — paper delivery channel: assign a lecture as a printed worksheet — OPTION, parked 2026-07-27
+(designed, not built):** some students should get a lecture **on paper** instead of in the app. The
+design is settled and deliberately cheap; pick it up as-is when the need is real:
+- **Tracked channel, not a print button:** `assignment.delivery_channel` (`app` default | `print`,
+  string column, additive migration). A paper assignment shows in the portal's Zuweisungen table
+  (Papier tag) but **never surfaces in the family app**: the family `GET /assignments` read filters
+  to `app`, and `createAssigned` scopes its selector the same way (a paper assignment is a plain 404
+  there — unplayable even with a guessed id).
+- **No session, no telemetry → manual completion:** paper rows go `open → completed` (never
+  `started`; the derived-status logic needs no change) via a new all-trainer route
+  `POST /staff/lectures/{id}/assignments/{id}/complete`, valid only for the print channel (app
+  assignments complete exclusively through their session). Assign body gains an optional
+  `channel` (default `app`); cross-version dedupe stays channel-agnostic. Withdraw unchanged.
+- **PDF is client-side** — a print-styled portal route (`/lectures/:lectureId/print`, outside the
+  AppLayout chrome) + `window.print()` → browser "Save as PDF". Worksheet (title, Name/Datum line,
+  Merksatz, numbered exercises with checkbox options) + optional Lösungsblatt on a `break-before-page`.
+  No backend PDF dependency, no binary endpoint — the contract pipeline and `api.ts` stay JSON-only
+  and the €50/mo box is untouched. AssignDialog gets an "In der App / Auf Papier" choice with a
+  "Jetzt drucken" follow-up.
+- **§F coupling:** only `placeholder` exists today, which prints fine. When §F introduces real
+  exercise types, audio-dependent ones can't go on paper — the new content schema should carry a
+  printable notion and the print view/assign flow must respect it. **Check this box in the §F design.**
+- Out of scope when built: server-rendered/archived PDFs, per-student pre-filled sheets, paper
+  outcomes beyond done/not-done (the homework-photo review loop is the paper feedback channel).
 
 > **Sequencing note:** H3.1–H3.2 are type-agnostic and don't depend on lectures existing — they're
 > valuable for today's bank/★ sessions already. Build them **with H1** (same PR series), not after H2.
