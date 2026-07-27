@@ -30,7 +30,8 @@ have shipped: backend + family frontend + trainer portal are live on real HTTPS 
 - **Planned:** **J — content feedback loop** (§J, 2026-07-27): content-indexed analytics over the §I
   anchors (which lectures/exercises underperform, v-compare) → trainer portal screen + anonymized
   repo report for the linguists. J1 (digest hardening) lands with §F's taxonomy; J2–J4 once real
-  content produces telemetry.
+  content produces telemetry; J5 (telemetry v2: robust time_ms, audio replays, generation
+  provenance, givenFirst) rides its natural triggers.
 - **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it. Each
   new type now extends the content-file frontmatter schema (§I) — the §H2 authoring form is cancelled.
 - **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9; schema kept
@@ -237,6 +238,12 @@ types, sequence, and word lists are being redesigned from scratch.
      a new renderer) → `derive.ts` `promptAndExpected()` (telemetry case — stay total over the union) →
      `fixtures/session.example.json` (one golden example per type so the "covers all types" gate stays green)
      → `ExerciseView.spec.tsx` (snapshot + interaction test). `npm run gen:api`.
+   - **Telemetry (per-type decision, made when the type ships):** define the type's `given` serialization
+     deliberately — a flat string is perfect for choice types (it carries which distractor was picked) but
+     loses structure for reorder/grid/typed-input types; the `derive.ts` case is where the convention lives.
+     For **typed-input** types additionally decide whether to capture the pre-correction answer
+     (`givenFirst` — „schrieb ‚Fahrad', korrigierte zu ‚Fahrrad'" is pedagogically valuable and the same
+     privacy class as `given`; raw keystrokes stay off-limits on principle, §J5).
    - **Trainer:** none — exercise types don't surface in the staff portal.
 
 ### D. Frontend engagement & retention
@@ -612,6 +619,27 @@ counts, percentages, average times per lecture/exercise/type — with the J2 min
 student name, profileId, or any per-student row. Linguists are outside the staff DPA; this report
 must stay safe to read by anyone with repo access.
 
+**J5 — telemetry v2 (small additive capture improvements; each lands with its natural trigger):**
+1. **Robust `time_ms` (build anytime — a correctness fix, not a feature):** the timer runs from item
+   mount to answer, so a backgrounded tab or a dinner break inflates it unboundedly — and the
+   weak-skill heuristic (>15 s avg) and the digest's „Ø Zeit" read it as "slow at this skill". Pause
+   the timer via the Page Visibility API in the frontend, and winsorize (cap ~60 s) in every
+   aggregation (`session-select.ts weakSkills`, digest, J2).
+2. **`audio_plays` on `attempt` (lands with the audio/TTS work):** "played the audio 4× before
+   answering" is a stronger reading-difficulty signal than time for this audience. Trivial additive
+   column + one counter in the exercise scaffolding.
+3. **Generation provenance on `item_bank` (lands with §F6):** stamp `generatedBy:'llm'` rows with
+   model id + prompt version (additive columns) — enables "items from prompt v3 outperform v2",
+   the one loop J2 can't close without the data being stamped at write time.
+4. **Roll up `agreed_with_llm` (lands with J2):** stored per homework review since §H, never
+   aggregated — one J2 query measuring vision-analysis quality over time.
+5. **Per-type `given` serialization + `givenFirst` for typed input:** a §C2 playbook step (see the
+   telemetry bullet there), decided per type as §F types land.
+- **Explicitly NOT captured (privacy stance, load-bearing):** keystrokes, cursor/touch traces,
+  device fingerprints, session recordings. The restraint is what keeps the J4 report and the whole
+  minors-data story clean. Abandonment needs no new capture — the drop-off item is derivable from
+  the last answered position vs. `session.item_ids` order (a J2 computation).
+
 > The LLM **generation** side of the cycle scales separately: at ~20 types the single static
 > `LLM_SYSTEM` prompt becomes per-type few-shot selection — that work stays in **§F step 6**, not
 > here. §J is about measuring content, §F6 about generating it.
@@ -630,4 +658,5 @@ then **D5 / D6** (badges, parent email) once the new content is live. **C2** (a 
 type) is how new training types land during §F — each now also extends the content-file frontmatter
 schema (§I) instead of shipping an authoring form. **J** rides alongside: **J1** (digest hardening)
 lands with §F's taxonomy; **J2–J4** (content analytics → portal screen + linguist repo report) once
-the first real content cohort has produced telemetry worth aggregating.
+the first real content cohort has produced telemetry worth aggregating; **J5** (telemetry v2)
+piecemeal — the robust-`time_ms` fix anytime, the rest with their trigger milestones.

@@ -707,3 +707,8 @@ per-student row.
 - **Every read surface is either student-indexed or content-indexed, never both.** The per-student
   surfaces stay inside the staff/family realms; the content-indexed §J aggregates are the only
   telemetry that may leave them (into the repo report), and only above the minimum-N floor.
+- **Timing data must be read as robust, not raw** (ROADMAP §J5): `time_ms` runs from item mount to
+  answer, so backgrounded tabs inflate it — the frontend pauses the timer on visibility loss and
+  every aggregation (weak-skill heuristic, digest, §J analytics) winsorizes. Capture stays minimal
+  on principle: answer content and coarse interaction counts (audio replays, retries), never
+  keystrokes, traces, or fingerprints — the restraint is what keeps the §J4 repo report safe.
