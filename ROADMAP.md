@@ -27,8 +27,13 @@ have shipped: backend + family frontend + trainer portal are live on real HTTPS 
   retries, timing). H1 rails + H3 tracking shipped 2026-07-25; the per-type authoring UI (H2) was
   **cancelled** in favour of the §I content pipeline (shipped 2026-07-26).
 - **Then:** **D5 / D6** (badges, weekly parent email) — self-contained engagement work.
+- **Planned:** **J — content feedback loop** (§J, 2026-07-27): content-indexed analytics over the §I
+  anchors (which lectures/exercises underperform, v-compare) → trainer portal screen + anonymized
+  repo report for the linguists. J1 (digest hardening) lands with §F's taxonomy; J2–J4 once real
+  content produces telemetry; J5 (telemetry v2: robust time_ms, audio replays, generation
+  provenance, givenFirst) rides its natural triggers.
 - **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it. Each
-  new type now also adds its §H2 authoring-form section (the playbook gains a step).
+  new type now extends the content-file frontmatter schema (§I) — the §H2 authoring form is cancelled.
 - **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9; schema kept
   dormant) · TTS pipeline (Web-Speech fallback on the client for now; target Amazon Polly) · full-prod
   hardening (multi-instance/ALB, managed RDS + DR, OTel collector, staff MFA — see §E "Deferred to full
@@ -233,6 +238,12 @@ types, sequence, and word lists are being redesigned from scratch.
      a new renderer) → `derive.ts` `promptAndExpected()` (telemetry case — stay total over the union) →
      `fixtures/session.example.json` (one golden example per type so the "covers all types" gate stays green)
      → `ExerciseView.spec.tsx` (snapshot + interaction test). `npm run gen:api`.
+   - **Telemetry (per-type decision, made when the type ships):** define the type's `given` serialization
+     deliberately — a flat string is perfect for choice types (it carries which distractor was picked) but
+     loses structure for reorder/grid/typed-input types; the `derive.ts` case is where the convention lives.
+     For **typed-input** types additionally decide whether to capture the pre-correction answer
+     (`givenFirst` — „schrieb ‚Fahrad', korrigierte zu ‚Fahrrad'" is pedagogically valuable and the same
+     privacy class as `given`; raw keystrokes stay off-limits on principle, §J5).
    - **Trainer:** none — exercise types don't surface in the staff portal.
 
 ### D. Frontend engagement & retention
@@ -374,6 +385,8 @@ review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline).
 6. **Lecture-generation prompt** (`sessions.service.ts` `LLM_SYSTEM`/`FEW_SHOT`) — rewrite the per-type
    solvability rules + few-shot examples for the new training types; re-add word-pool grounding
    (`wordPoolFor`/`LexemeService`) and the `gradeBand` `maxHk`/`ageBand` calibration if the new schema wants it.
+   At the full type count (~20) this stops being one static prompt: select the per-type rules + few-shots
+   for the session's focus types at generation time instead of shipping all of them on every call.
 7. **Trainer curation surface** — decide whether the new word-list schema needs a staff curation tab (the old
    Wortschatz tab + `/staff/lexemes` routes are at `0d4948b` as a reference). The lecture **authoring**
    surface is a separate, decided milestone — see **§H** (this step is only about word-list curation).
@@ -555,6 +568,82 @@ the deploy pipeline is their "write API"), §3 (`content/` in the layout), §7 (
 (trainers assign, don't author); backend SPEC §3/§6/§8; trainer AGENTS.md; frontend SPEC §2 (card
 wording); CLAUDE.md; this file (§H2 strike-through, §F reframe).
 
+> §I's durable anchors (slug, `{slug}.{exId}` lineage, content-addressed item rows) are the substrate
+> **§J** consumes for content-effectiveness analytics — "no curation surface needed" (F7) does not mean
+> "no content analytics ever."
+
+### J. Content feedback loop — telemetry → content quality (planned 2026-07-27)
+
+**Goal:** close the missing half of the improvement cycle. Today all four feedback loops flow
+telemetry *forward* into what one student gets next (attempt→FSRS, weak/due→bank selection,
+focus+digest→generated lecture, homework verdict→FSRS — see ARCHITECTURE §12), and every read model
+is **student-indexed**. Nothing aggregates by **content**: nobody can answer "which of the lectures
+underperforms," "is this exercise badly worded (90 % wrong, 30 s average)," or "did v2 beat v1" —
+even though §I built exactly the durable anchors for it. §J adds the content-indexed half and the
+channel back to the authors.
+
+**Why now-ish:** at the target scale (≈20 exercise types × ≈200 lectures × generated lectures ×
+detailed telemetry), content improvement cannot run on trainer anecdotes. The linguists' only
+feedback today is CI validation — whether a file is well-formed, never how it performs.
+
+**Channel decision (settled 2026-07-27): one shared analytics read model, two consumers.**
+Trainers get a portal screen (they're in the staff realm anyway); the linguists get an **anonymized
+aggregate report exported into the repo** — they stay outside both auth realms (not under the staff
+DPA), and the repo is already their interface: the deploy pipeline is their write API, the §J4
+report becomes their read API.
+
+**J1 — digest hardening (build when §F's taxonomy lands; independent of J2–J4):** the digest is the
+main prompt-size risk under a real taxonomy — its attempt fetch is uncapped (14-day window, no
+`take`, unlike the session paths' 200-row cap) and the per-skill table + FSRS-due list are unbounded
+(one row per skill seen/due). Cap the fetch, top-N the skill table (weakest-first, ~12) and the due
+list; keep the existing caps (wrong-answers 8, assigned lectures 5). Files:
+`src/services/digest/digest.service.ts`, `digest.render.ts` + golden digest test update.
+
+**J2 — content-analytics read model (gated on: real §F content + real telemetry to aggregate):**
+aggregates over `attempt` joined to `item_bank`/`lecture` — per **item lineage** (`{slug}.{exId}`
+across versions, derived from the `content:` seed_key prefix), per **exercise type**, per **lecture
+slug**, and **per version** (v-compare): attempts, first-try correct %, avg `time_ms`, retry rate,
+abandon rate. Minimum-N floor baked into the read model (suppress aggregates with too few
+students/attempts), so every consumer inherits it. Read-side only — plain Prisma
+groupBy/SQL is fine at beta scale; no schema change expected.
+
+**J3 — portal „Content-Qualität" screen (all trainers):** worst-performing lectures/items ranked,
+per-lecture drill-down with per-exercise stats, v(n) vs v(n−1) comparison — the trainer-facing
+consumer of J2. Also the 200-lecture browse scale item: search/filter by skill tag in the Lektionen
+list. German copy, lucide icons only, no emoji.
+
+**J4 — repo report for the linguists:** `npm run content:stats` renders the J2 aggregates into a
+generated report in the repo (proposed `content/stats.md`; committed via PR or published as a CI
+artifact — decide at build time). **Privacy rule (hard): content-indexed aggregates only** —
+counts, percentages, average times per lecture/exercise/type — with the J2 minimum-N floor; never a
+student name, profileId, or any per-student row. Linguists are outside the staff DPA; this report
+must stay safe to read by anyone with repo access.
+
+**J5 — telemetry v2 (small additive capture improvements; each lands with its natural trigger):**
+1. **Robust `time_ms` (build anytime — a correctness fix, not a feature):** the timer runs from item
+   mount to answer, so a backgrounded tab or a dinner break inflates it unboundedly — and the
+   weak-skill heuristic (>15 s avg) and the digest's „Ø Zeit" read it as "slow at this skill". Pause
+   the timer via the Page Visibility API in the frontend, and winsorize (cap ~60 s) in every
+   aggregation (`session-select.ts weakSkills`, digest, J2).
+2. **`audio_plays` on `attempt` (lands with the audio/TTS work):** "played the audio 4× before
+   answering" is a stronger reading-difficulty signal than time for this audience. Trivial additive
+   column + one counter in the exercise scaffolding.
+3. **Generation provenance on `item_bank` (lands with §F6):** stamp `generatedBy:'llm'` rows with
+   model id + prompt version (additive columns) — enables "items from prompt v3 outperform v2",
+   the one loop J2 can't close without the data being stamped at write time.
+4. **Roll up `agreed_with_llm` (lands with J2):** stored per homework review since §H, never
+   aggregated — one J2 query measuring vision-analysis quality over time.
+5. **Per-type `given` serialization + `givenFirst` for typed input:** a §C2 playbook step (see the
+   telemetry bullet there), decided per type as §F types land.
+- **Explicitly NOT captured (privacy stance, load-bearing):** keystrokes, cursor/touch traces,
+  device fingerprints, session recordings. The restraint is what keeps the J4 report and the whole
+  minors-data story clean. Abandonment needs no new capture — the drop-off item is derivable from
+  the last answered position vs. `session.item_ids` order (a J2 computation).
+
+> The LLM **generation** side of the cycle scales separately: at ~20 types the single static
+> `LLM_SYSTEM` prompt becomes per-type few-shot selection — that work stays in **§F step 6**, not
+> here. §J is about measuring content, §F6 about generating it.
+
 ---
 
 ## Suggested order
@@ -567,4 +656,7 @@ cancelled) → **now:** the linguists write lectures in `content/` and work on *
 skill taxonomy → training types → sequence → lecture prompt, landed piece by piece as delivered) →
 then **D5 / D6** (badges, parent email) once the new content is live. **C2** (a concrete new exercise
 type) is how new training types land during §F — each now also extends the content-file frontmatter
-schema (§I) instead of shipping an authoring form.
+schema (§I) instead of shipping an authoring form. **J** rides alongside: **J1** (digest hardening)
+lands with §F's taxonomy; **J2–J4** (content analytics → portal screen + linguist repo report) once
+the first real content cohort has produced telemetry worth aggregating; **J5** (telemetry v2)
+piecemeal — the robust-`time_ms` fix anytime, the rest with their trigger milestones.
