@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 8 — Extra-Rechtschreibkugeln &amp; Schreibsilben · BLS-Lernapp</title>
+</head>
+<body style="margin:0;background:#f5f7f6;">
+<div style="max-width:720px;margin:0 auto;padding-bottom:20px;">
+<a href="BLS-Lernapp.html" style="display:inline-block;margin:16px 0 0 16px;font-size:12px;color:#2F4B43;font-weight:700;text-decoration:none;">← Zurück zur Übersicht</a>
+<div style="font-family:'Lato',sans-serif;background:#f5f7f6;color:#1a1a2e;border-radius:12px;padding:16px;">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">Vollständiger Kapitel-8-Plan mit allen Aufgaben und dem Cliffhanger zu längeren Wörtern in Kapitel 9.</h2>
+<style>
+.k8 *{box-sizing:border-box;margin:0;padding:0;}
+.k8 .header{background:#2F4B43;color:white;padding:18px 22px;border-radius:14px;text-align:center;margin-bottom:16px;}
+.k8 .header p{font-size:12px;opacity:.7;margin-bottom:4px;}
+.k8 .header h1{font-size:20px;font-weight:900;}
+.k8 .header sub{font-size:12px;opacity:.7;display:block;margin-top:6px;line-height:1.5;}
+.k8 .phase{background:#2F4B43;color:white;border-radius:8px;padding:6px 12px;margin:22px 0 10px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;}
+.k8 .phase.e{background:#6EBCAE;}
+.k8 .phase.f{background:#BB3B85;}
+.k8 .phase.kurz{background:#E5915C;}
+.k8 .phase.lang{background:#4A83C4;}
+.k8 .phase.gold{background:#F5CD4A;color:#5a4a00;}
+.k8 .anlass{background:#fff8f3;border:2px solid #E5915C;border-radius:12px;padding:14px 16px;font-size:13px;color:#8a5230;line-height:1.6;margin-bottom:8px;}
+.k8 .anlass strong{color:#c0562a;}
+.k8 .block{background:white;border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px;}
+.k8 .prinzip{border-left:5px solid #F5CD4A;}
+.k8 .prinzip .tag{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#c89000;margin-bottom:4px;}
+.k8 .prinzip .big{font-size:15px;font-weight:900;color:#2F4B43;line-height:1.4;margin-bottom:6px;}
+.k8 .prinzip .text{font-size:13px;color:#555;line-height:1.6;}
+.k8 .prinzip .text strong{color:#c0562a;}
+.k8 .dialog{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.k8 .dialog:last-child{margin-bottom:0;}
+.k8 .avatar{font-size:24px;flex-shrink:0;width:32px;text-align:center;}
+.k8 .bubble{border-radius:14px;padding:10px 13px;font-size:13px;color:#444;line-height:1.55;flex:1;}
+.k8 .bubble.nepo{background:#fff3e0;}
+.k8 .bubble.doc{background:#eef7ee;}
+.k8 .bubble .who{font-weight:900;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
+.k8 .bubble.nepo .who{color:#d07a2a;}
+.k8 .bubble.doc .who{color:#4a8a4a;}
+.k8 .regel{background:#eef7ee;border-radius:10px;padding:10px 12px;font-size:11.5px;color:#4a6a5a;line-height:1.6;margin-top:10px;}
+.k8 .aufgabe{background:white;border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.05);border-left:4px solid #6EBCAE;}
+.k8 .aufgabe.fset{border-left-color:#BB3B85;}
+.k8 .aufgabe .an{font-size:10.5px;font-weight:900;color:white;background:#6EBCAE;display:inline-block;padding:2px 10px;border-radius:10px;margin-bottom:6px;}
+.k8 .aufgabe .an.f{background:#BB3B85;}
+.k8 .aufgabe .status{font-size:9.5px;font-weight:900;padding:1px 7px;border-radius:8px;margin-left:6px;}
+.k8 .status.built{background:#e3f5ea;color:#2a9e5e;}
+.k8 .status.todo{background:#fde8e8;color:#c0392b;}
+.k8 .aufgabe .at{font-size:13px;font-weight:700;color:#2F4B43;margin-bottom:4px;}
+.k8 .aufgabe .ad{font-size:12px;color:#555;line-height:1.5;}
+.k8 .taufe{background:#fffbe8;border:2px solid #F5CD4A;border-radius:12px;padding:12px 14px;font-size:12.5px;color:#6a5620;line-height:1.6;margin:10px 0;}
+.k8 .taufe .tag{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#c89000;margin-bottom:4px;}
+.k8 .hand{background:#eef7f5;border-radius:10px;padding:9px 12px;font-size:12px;color:#2a6a5e;margin:8px 0;line-height:1.55;}
+.k8 .kugelrow{background:#fafbfc;border-radius:10px;padding:14px;margin:12px 0;text-align:center;}
+.k8 .kugelrow .cap{font-size:11px;color:#999;font-weight:900;text-transform:uppercase;margin-bottom:10px;}
+.k8 .kette{display:inline-flex;gap:5px;align-items:center;margin:0 12px;}
+.k8 .kk{width:38px;height:38px;border-radius:50%;background:#eef4f2;border:2px solid #d5e3de;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;}
+.k8 .kk.kern{width:44px;border-radius:22px;background:#F5CD4A;color:#5a4a00;border:none;}
+.k8 .kk.stern{border:none;background:none;font-size:26px;color:#E5915C;width:auto;}
+.k8 .klbl{font-size:11.5px;font-weight:900;margin-top:6px;}
+.k8 .ahabox{background:#fffbe8;border:2px solid #F5CD4A;border-radius:12px;padding:13px 15px;font-size:13px;color:#555;line-height:1.6;}
+.k8 .ahabox .tag{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#c89000;margin-bottom:5px;}
+.k8 .cliff{background:#2F4B43;color:#cfe;border-radius:10px;padding:12px 14px;font-size:12.5px;margin-top:10px;line-height:1.6;}
+.k8 .cliff .cd{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.k8 .cliff .cd:last-child{margin-bottom:0;}
+.k8 .cliff .cav{font-size:18px;flex-shrink:0;}
+.k8 .cliff .cw{font-weight:900;font-size:10px;text-transform:uppercase;color:#8fd;margin-bottom:1px;}
+.k8 .offen{background:#fde8e8;border:2px solid #c0392b;border-radius:12px;padding:12px 16px;font-size:12px;color:#c0392b;line-height:1.7;margin-top:16px;}
+.k8 .offen strong{display:block;margin-bottom:6px;font-size:13px;}
+.k8 .stern{color:#E5915C;}
+.k8 .k-tag{display:inline-block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;padding:2px 8px;border-radius:8px;}
+.k8 .k-tag.kurz{background:#fdf0e8;color:#c06a2a;}
+.k8 .k-tag.lang{background:#e8f0fa;color:#3a6aa8;}
+.k8 .grpnote{font-size:11px;color:#999;font-style:italic;margin:2px 0 8px;padding-left:4px;}
+</style>
+<div class="k8">
+
+<div class="header">
+  <p>besserlesenschreiben.at · Mag. Angelika Ortner · BLS-Lernapp</p>
+  <h1>Kapitel 8 — Extra-Rechtschreibkugeln &amp; Schreibsilben</h1>
+  <sub>Nur einsilbige Wörter · Laute + Buchstaben allein reichen nicht — der leere Stern ☆ bekommt einen zusätzlichen Buchstaben, der den Sprachrhythmus (kurz/lang) beim Lesen anzeigt</sub>
+</div>
+
+<div class="phase">🎬 Anlass</div>
+<div class="anlass">Aus dem Cliffhanger von Kapitel 7: Reimwörter klingen ähnlich, der Klang ist wichtig fürs Schreiben. Nepomuk schreibt Reimwörter auf und stolpert: „<em>Ball</em> — warum <strong>zwei</strong> l? Ich hör doch nur <strong>ein</strong> l — also drei Buchstabenkugeln!" Und: „<em>Lied</em> — woher das <strong>e</strong>? Ich hör nur ein <strong>i</strong> und kein e!" <strong>Der Klang verrät etwas übers Schreiben — aber was genau?</strong></div>
+
+<div class="phase e">E0 · Aufwärmen + Feedback</div>
+<div class="block">
+  <div class="dialog"><div class="avatar">🥒</div><div class="bubble doc"><div class="who">Dr. Zucchini</div>„Ihr habt entdeckt: der Klang der Wörter ist wichtig fürs Rechtschreiben. Heute wollen wir das Rätsel lösen! Aber vorher noch ein paar wichtige Aufwärmübungen zum Wortklang — damit ihr besser Bescheid wisst und gut geübt seid."</div></div>
+  <div class="regel">Anschluss nur über den allgemeinen Klang-Gedanken — kurz/lang wird erst in E1 entdeckt. Kapitel 7 bleibt reiner Reim-Cliffhanger.</div>
+</div>
+
+<div class="phase e">E1–E4 · Entdecken: den Klang hören (kurz/lang)</div>
+<div class="aufgabe"><div class="an">E2<span class="status built">gebaut</span></div><div class="at">🎮 Klingt der Reim kurz oder lang?</div><div class="ad">Bild + Audio, reines Hören (Haus/Baum vs. Sonne/Ball).</div></div>
+<div class="aufgabe"><div class="an">E3<span class="status built">gebaut</span></div><div class="at">🎮 Welches Wort klingt kurz?</div><div class="ad">Zwei Bilder, das kurze antippen.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#6EBCAE;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e3-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#e3-wrap .e3c{flex:1;max-width:160px;background:#f8f8f8;border:3px solid #e0e0e0;border-radius:14px;padding:18px 10px;cursor:pointer;text-align:center;font-size:22px;font-weight:900;color:#2F4B43;font-family:inherit;}#e3-wrap .e3c:hover{border-color:#6EBCAE;}#e3-wrap .e3c.right{border-color:#2a9e5e;background:#e3f5ea;color:#2a9e5e;}#e3-wrap .e3c.dim{opacity:.35;pointer-events:none;}</style>
+<div id="e3P" style="display:flex;gap:3px;margin-bottom:10px;"></div><div id="e3G"></div>
+<script>(function(){const P=[{a:"Hund",b:"Hut"},{a:"Bett",b:"Beet"},{a:"Wall",b:"Wal"},{a:"Muss",b:"Mus"},{a:"Kamm",b:"Zahn"},{a:"Schiff",b:"Schaf"},{a:"Nuss",b:"Fuß"},{a:"Ratte",b:"Rat"}];let o,i,s;function sh(a){for(let x=a.length-1;x>0;x--){let j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(P.length).keys()]);i=0;s=0;prog();render();}function prog(){let p=document.getElementById("e3P");p.innerHTML="";for(let x=0;x<o.length;x++){let d=document.createElement("div");d.style.cssText="flex:1;height:5px;border-radius:3px;background:"+(x<i?"#6EBCAE":x===i?"#F5CD4A":"#e0e0e0");p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById("e3G").innerHTML='<div style="text-align:center;padding:12px;font-size:32px;">👂</div><div style="text-align:center;font-size:15px;font-weight:900;color:#2F4B43;">'+s+'/'+o.length+' richtig</div><div style="text-align:center;margin-top:8px;"><button onclick="e3I()" style="background:#6EBCAE;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;">Nochmal</button></div>';return;}let p=P[o[i]],sw=Math.random()>.5,l=sw?p.b:p.a,r=sw?p.a:p.b,ai=sw?"r":"l";document.getElementById("e3G").innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">WELCHES WORT KLINGT KURZ?</div><div style="display:flex;gap:10px;justify-content:center;margin:14px 0;"><div class="e3c" id="e3L" onclick="e3P2('l',''+ai+'')">'+l+'</div><div class="e3c" id="e3R" onclick="e3P2('r',''+ai+'')">'+r+'</div></div><div id="e3F" style="text-align:center;font-size:12px;font-weight:700;min-height:18px;"></div><div style="text-align:center;"><button id="e3N" style="display:none;background:#6EBCAE;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="e3A()">Weiter →</button></div>';}window.e3P2=function(c,a){let ok=c===a;if(ok)s++;document.getElementById("e3L").style.pointerEvents="none";document.getElementById("e3R").style.pointerEvents="none";document.getElementById(a==="l"?"e3L":"e3R").classList.add("right");if(!ok)document.getElementById(c==="l"?"e3L":"e3R").classList.add("dim");document.getElementById("e3F").innerHTML='<span style="color:'+(ok?"#2a9e5e":"#c0392b")+'">'+(ok?"✓ Richtig!":"✗ Das andere klingt kurz.")+"</span>";document.getElementById("e3N").style.display="inline-block";};window.e3A=function(){i++;prog();render();};window.e3I=init;init();})();</script>
+</div></details>
+<div class="aufgabe"><div class="an">E4<span class="status built">gebaut</span></div><div class="at">🎮 Kurz/Lang sortieren</div><div class="ad">Wort hören → richtige Spalte.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#6EBCAE;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e4-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#e4-wrap .e4w{font-size:28px;font-weight:900;color:#2F4B43;text-align:center;margin:10px 0;}#e4-wrap .e4b{display:flex;gap:8px;justify-content:center;margin:10px 0;}#e4-wrap .e4o{flex:1;max-width:130px;padding:12px;border-radius:10px;border:3px solid;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;text-align:center;}#e4-wrap .e4o.k{background:#fff5f0;border-color:#E5915C;color:#E5915C;}#e4-wrap .e4o.l{background:#eef4fc;border-color:#4A83C4;color:#4A83C4;}#e4-wrap .e4o.right{animation:e4pop .3s}#e4-wrap .e4o.dim{opacity:.4}@keyframes e4pop{50%{transform:scale(1.06)}}#e4-wrap .e4f{text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;}#e4-wrap .e4f.ok{color:#2a9e5e;}#e4-wrap .e4f.no{color:#c0392b;}#e4-wrap .e4n{background:#6EBCAE;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}#e4-wrap .e4n.show{display:inline-block;}#e4-wrap .e4p{display:flex;gap:3px;margin-bottom:10px;}#e4-wrap .e4d{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}#e4-wrap .e4d.dn{background:#6EBCAE;}#e4-wrap .e4d.cu{background:#F5CD4A;}#e4-wrap .e4r{display:flex;gap:10px;margin-top:12px;}#e4-wrap .e4col{flex:1;border-radius:8px;padding:6px;min-height:40px;}#e4-wrap .e4col.kc{background:#fff5f0;border:2px solid #f0d0b8;}#e4-wrap .e4col.lc{background:#eef4fc;border:2px solid #c0d4ea;}#e4-wrap .e4ct{font-size:10px;font-weight:900;text-align:center;margin-bottom:4px;}#e4-wrap .e4col.kc .e4ct{color:#E5915C;}#e4-wrap .e4col.lc .e4ct{color:#4A83C4;}#e4-wrap .e4ch{display:inline-block;background:white;border-radius:5px;padding:2px 7px;margin:2px;font-size:11px;font-weight:700;color:#2F4B43;}</style>
+<div class="e4p" id="e4P"></div><div id="e4G"></div>
+<div class="e4r"><div class="e4col kc"><div class="e4ct">🔴 Kurz</div><div id="e4K"></div></div><div class="e4col lc"><div class="e4ct">🔵 Lang</div><div id="e4L"></div></div></div>
+<script>(function(){const W=[{w:'Topf',a:'kurz'},{w:'Hof',a:'lang'},{w:'Fell',a:'kurz'},{w:'Mehl',a:'lang'},{w:'Tipp',a:'kurz'},{w:'Tier',a:'lang'},{w:'Dock',a:'kurz'},{w:'Dom',a:'lang'},{w:'Sinn',a:'kurz'},{w:'Bier',a:'lang'},{w:'Stoff',a:'kurz'},{w:'Stuhl',a:'lang'}];let o,i,s;function sh(a){for(let x=a.length-1;x>0;x--){const j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(W.length).keys()]);i=0;s=0;document.getElementById('e4K').innerHTML='';document.getElementById('e4L').innerHTML='';prog();render();}function prog(){const p=document.getElementById('e4P');p.innerHTML='';for(let x=0;x<o.length;x++){const d=document.createElement('div');d.className='e4d'+(x<i?' dn':'')+(x===i?' cu':'');p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById('e4G').innerHTML='<div style="text-align:center;padding:12px;"><div style="font-size:32px;">📊</div><div style="font-size:15px;font-weight:900;color:#2F4B43;margin:6px 0;">'+s+'/'+o.length+' richtig sortiert</div><button class="e4n show" onclick="e4I()">Nochmal</button></div>';return;}const t=W[o[i]];document.getElementById('e4G').innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">IN WELCHE SPALTE?</div><div class="e4w">'+t.w+'</div><div class="e4b"><button class="e4o k" id="e4bK" onclick="e4C('kurz')">🔴 Kurz</button><button class="e4o l" id="e4bL" onclick="e4C('lang')">🔵 Lang</button></div><div class="e4f" id="e4F"></div><div style="text-align:center;"><button class="e4n" id="e4N" onclick="e4A()">Weiter →</button></div>';}window.e4C=function(c){const t=W[o[i]],ok=c===t.a;if(ok)s++;document.getElementById('e4bK').style.pointerEvents='none';document.getElementById('e4bL').style.pointerEvents='none';if(t.a==='kurz'){document.getElementById('e4bK').classList.add('right');document.getElementById('e4bL').classList.add('dim');}else{document.getElementById('e4bL').classList.add('right');document.getElementById('e4bK').classList.add('dim');}document.getElementById(t.a==='kurz'?'e4K':'e4L').innerHTML+='<span class="e4ch">'+t.w+'</span>';const f=document.getElementById('e4F');f.className='e4f '+(ok?'ok':'no');f.textContent=(ok?'✓ ':'✗ ')+t.w+' → '+t.a;document.getElementById('e4N').classList.add('show');};window.e4A=function(){i++;prog();render();};window.e4I=init;init();})();</script>
+</div></details>
+
+<div class="phase e">E5 · Vom Klang zur Schrift</div>
+<div class="aufgabe"><div class="an">E5<span class="status built">gebaut</span></div><div class="at">🎮 Gleicher Selbstlaut, verschiedener Reim</div><div class="ad">Erst Bild+Klang, dann Schreibung des Reims (Lied/Riss, Zahl/Sack…).</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#6EBCAE;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e5-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#e5-wrap .e5pair{display:flex;gap:10px;justify-content:center;margin:10px 0;}#e5-wrap .e5wd{flex:1;max-width:140px;background:#f8f8f8;border:3px solid #e0e0e0;border-radius:12px;padding:14px 8px;text-align:center;}#e5-wrap .e5wd .wt{font-size:22px;font-weight:900;color:#2F4B43;}#e5-wrap .e5wd .tag{display:inline-block;font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px;margin-top:4px;}#e5-wrap .e5wd .tag.k{background:#fdf0e8;color:#c06a2a;}#e5-wrap .e5wd .tag.l{background:#e8f0fa;color:#3a6aa8;}#e5-wrap .e5wd .spell{font-size:11px;color:#888;margin-top:4px;display:none;}#e5-wrap .e5wd .spell.show{display:block;}#e5-wrap .e5wd.kbd{border-color:#E5915C;}#e5-wrap .e5wd.lbd{border-color:#4A83C4;}#e5-wrap .e5btn{display:flex;gap:6px;justify-content:center;margin:10px 0;}#e5-wrap .e5o{padding:10px 16px;border-radius:8px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:#444;}#e5-wrap .e5o:hover{border-color:#6EBCAE;}#e5-wrap .e5o.right{border-color:#2a9e5e;background:#e3f5ea;color:#2a9e5e;pointer-events:none;}#e5-wrap .e5o.dim{opacity:.4;pointer-events:none;}#e5-wrap .e5f{text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;}#e5-wrap .e5f.ok{color:#2a9e5e;}#e5-wrap .e5f.no{color:#c0392b;}#e5-wrap .e5n{background:#6EBCAE;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}#e5-wrap .e5n.show{display:inline-block;}#e5-wrap .e5p{display:flex;gap:3px;margin-bottom:10px;}#e5-wrap .e5d{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}#e5-wrap .e5d.dn{background:#6EBCAE;}#e5-wrap .e5d.cu{background:#F5CD4A;}</style>
+<div class="e5p" id="e5P"></div><div id="e5G"></div>
+<script>(function(){const P=[{a:'Lied',ak:'lang',as:'ie ☆',b:'Riss',bk:'kurz',bs:'ss ☆',v:'i'},{a:'Zahl',ak:'lang',as:'Dehnungs-h ☆',b:'Sack',bk:'kurz',bs:'ck',v:'a'},{a:'Ofen',ak:'lang',as:'keine ☆',b:'Topf',bk:'kurz',bs:'pf',v:'o'},{a:'Hut',ak:'lang',as:'keine ☆',b:'Hund',bk:'kurz',bs:'nd',v:'u'},{a:'Beet',ak:'lang',as:'ee ☆',b:'Bett',bk:'kurz',bs:'tt ☆',v:'e'},{a:'Stuhl',ak:'lang',as:'Dehnungs-h ☆',b:'Stull',bk:'kurz',bs:'ll ☆',v:'u'}];let o,i,s,step;function sh(a){for(let x=a.length-1;x>0;x--){const j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(P.length).keys()]);i=0;s=0;prog();render();}function prog(){const p=document.getElementById('e5P');p.innerHTML='';for(let x=0;x<o.length;x++){const d=document.createElement('div');d.className='e5d'+(x<i?' dn':'')+(x===i?' cu':'');p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById('e5G').innerHTML='<div style="text-align:center;padding:12px;"><div style="font-size:32px;">🔍</div><div style="font-size:15px;font-weight:900;color:#2F4B43;margin:6px 0;">'+s+'/'+o.length+' Paare richtig</div><p style="font-size:12px;color:#888;">Gleicher Selbstlaut — verschiedener Rhythmus — verschiedene Schreibung!</p><button class="e5n show" onclick="e5I()">Nochmal</button></div>';return;}step=0;const p=P[o[i]];document.getElementById('e5G').innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">GLEICHER SELBSTLAUT ('+p.v.toUpperCase()+') — WAS KLINGT KURZ?</div><div class="e5pair"><div class="e5wd" id="e5A"><div class="wt">'+p.a+'</div><div class="tag" id="e5tA"></div><div class="spell" id="e5sA">'+p.as+'</div></div><div class="e5wd" id="e5B"><div class="wt">'+p.b+'</div><div class="tag" id="e5tB"></div><div class="spell" id="e5sB">'+p.bs+'</div></div></div><div class="e5btn"><button class="e5o" onclick="e5C('a')">← klingt kurz</button><button class="e5o" onclick="e5C('b')">klingt kurz →</button></div><div class="e5f" id="e5F"></div><div style="text-align:center;"><button class="e5n" id="e5N" onclick="e5A2()">Weiter →</button></div>';}window.e5C=function(c){const p=P[o[i]],ok=(c==='a'&&p.ak==='kurz')||(c==='b'&&p.bk==='kurz');if(ok)s++;document.querySelectorAll('#e5-wrap .e5o').forEach(b=>{b.style.pointerEvents='none';});const tA=document.getElementById('e5tA'),tB=document.getElementById('e5tB');tA.textContent=p.ak;tA.className='tag '+p.ak[0];tB.textContent=p.bk;tB.className='tag '+p.bk[0];document.getElementById('e5A').classList.add(p.ak==='kurz'?'kbd':'lbd');document.getElementById('e5B').classList.add(p.bk==='kurz'?'kbd':'lbd');document.getElementById('e5sA').classList.add('show');document.getElementById('e5sB').classList.add('show');const f=document.getElementById('e5F');f.className='e5f '+(ok?'ok':'no');f.textContent=ok?'✓ Gleicher Laut, verschiedener Rhythmus → verschiedene Schreibung!':'✗ Umgekehrt!';document.getElementById('e5N').classList.add('show');};window.e5A2=function(){i++;prog();render();};window.e5I=init;init();})();</script>
+</div></details>
+
+<div class="phase gold">🔑 Kern-Einsicht: Laute allein reichen nicht — der Sprachrhythmus gehört dazu</div>
+<div class="block">
+  <div class="dialog"><div class="avatar">🟠</div><div class="bubble nepo"><div class="who">Nepomuk stolpert</div>„M — u — s. Also <em>Mus</em>. Aber <em>Muss</em> klingt ganz anders — und ich hör nur ein s! Dieselben Laute, aber ein anderes Wort!"</div></div>
+  <div class="dialog"><div class="avatar">🥒</div><div class="bubble doc"><div class="who">Dr. Zucchini erklärt</div>„Für jeden Laut eine Buchstabenkugel — das kennt ihr schon. Bei einigen Wörtern reicht das. Aber bei vielen nicht.<br><br>Warum? Weil ein Wort nicht nur aus Lauten besteht. Jedes Wort hat auch einen <strong>Rhythmus</strong> — einen Klang. Und der ist wichtig! Denn der Rhythmus trägt die <strong>Bedeutung</strong>. <em>Mus</em> und <em>Muss</em>: gleiche Laute — aber verschiedener Rhythmus, und darum ein anderes Wort.<br><br>Beim Schreiben und Lesen braucht ihr also <strong>beides</strong>: die <strong>Laute</strong> — dafür habt ihr die Buchstabenkugeln. Und den <strong>Sprachrhythmus</strong> — dafür gibt es eine extra Kugel: einen <strong>leeren Stern ☆</strong>. In diesen Stern kommt ein <strong>zusätzlicher Buchstabe</strong> hinein — und der zeigt dir beim Lesen, wie du das Wort richtig aussprichst. Die Buchstabenkugeln zeigen, <em>welche</em> Laute im Wort stecken. Der Stern mit seinem Buchstaben zeigt, <em>wie</em> das Wort klingt."</div></div>
+</div>
+
+<div class="phase gold">🥒 Dr. Zucchinis Überblicksblatt — die Landkarte</div>
+<div class="block prinzip" style="margin-bottom:8px;">
+  <div class="text"><strong>Kurzer Klang → dem Kerni folgen immer 2 Mitlautkugeln.</strong> Sind sie <span class="k-tag kurz">gleich</span> → Doppel ☆. <span class="k-tag kurz">verschieden</span> → beide normal, keine ☆.<br><strong>Langer Klang:</strong> <span class="k-tag lang">Dehnung ie/h/aa-ee-oo</span> → extra Kugel ☆. <span class="k-tag lang">nur ein Buchstabe</span> → keine ☆ (du schreibst, was du hörst). Die extra Kugel ☆ gibt es also NUR bei Doppel und Dehnung.</div>
+</div>
+
+<div class="phase kurz">🔴 KURZ-Block · Herzstück — der zweite Stopper</div>
+<div class="block">
+  <div class="dialog"><div class="avatar">🥒</div><div class="bubble doc"><div class="who">Dr. Zucchini</div>„<strong>Muss</strong>: der Klang ist kurz, aber es gibt nur einen Mitlaut. Also baut die Schrift einen zweiten Stopper nach — verdoppelt! Der zweite ist die <strong>Extra-Rechtschreibkugel ☆</strong>."</div></div>
+</div>
+<div class="kugelrow">
+  <div class="cap">Mus (lang) — Muss (kurz)</div>
+  <div class="kette"><span class="kk">M</span><span class="kk kern">u</span><span class="kk">s</span></div>
+  <div class="kette"><span class="kk">M</span><span class="kk kern">u</span><span class="kk">s</span><span class="kk stern" title="leerer Stern mit s drin">☆s</span></div>
+  <div class="klbl"><span style="color:#2a8a7a">Mus — lang</span> · <span style="color:#c06a2a">Muss — kurz (☆s)</span></div>
+</div>
+<div class="taufe"><div class="tag">🏷️ Taufe</div>An der Besonderheits-Stelle sitzt ein <strong>leerer Stern ☆</strong>. In ihm steckt ein zusätzlicher Buchstabe — der zeigt dir beim Lesen den richtigen Rhythmus und beim Schreiben das richtige Zeichen.</div>
+<div class="hand">✋ <strong>Kontrollmoment:</strong> 2 Mitlautkugeln nach dem Kerni — gleich → Doppel ☆ (Be·tt, So·nne), verschieden → beide normal, keine ☆ (Ki·nd, Her·z).</div>
+
+<div class="aufgabe fset"><div class="an f">E6<span class="status built">gebaut</span></div><div class="at">🎮 Braucht das Wort eine extra Kugel?</div><div class="ad">Kugelkette mit offenem Slot: kurz → ☆, lang → keine extra Kugel.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e6-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#e6-wrap .e6w{font-size:28px;font-weight:900;color:#2F4B43;text-align:center;margin:10px 0;}#e6-wrap .e6kg{display:flex;justify-content:center;gap:4px;margin:10px 0;align-items:center;}#e6-wrap .e6kk{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;background:#eef4f2;border:2px solid #d5e3de;}#e6-wrap .e6kk.kern{background:#F5CD4A;color:#5a4a00;border:none;}#e6-wrap .e6kk.slot{border:2px dashed #E5915C;background:#fff8f0;font-size:16px;color:#E5915C;}#e6-wrap .e6kk.yes{border:2px solid #E5915C;background:#fff8f0;color:#E5915C;font-size:16px;}#e6-wrap .e6kk.nope{border:2px solid #ccc;background:#f5f5f5;color:#ccc;font-size:12px;}#e6-wrap .e6f{text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;}#e6-wrap .e6f.ok{color:#2a9e5e;}#e6-wrap .e6f.no{color:#c0392b;}#e6-wrap .e6p{display:flex;gap:3px;margin-bottom:10px;}#e6-wrap .e6d{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}#e6-wrap .e6d.dn{background:#E5915C;}#e6-wrap .e6d.cu{background:#F5CD4A;}</style>
+<div class="e6p" id="e6P"></div><div id="e6G"></div>
+<script>
+(function(){
+var W=[
+{w:"Muss",k:["M","u","s"],ki:1,ans:true,x:"Kurz \u2192 extra Kugel \u2606 (ss)"},
+{w:"Mus",k:["M","u","s"],ki:1,ans:false,x:"Lang \u2192 keine extra Kugel"},
+{w:"Wall",k:["W","a","l"],ki:1,ans:true,x:"Kurz \u2192 \u2606 (ll)"},
+{w:"Wal",k:["W","a","l"],ki:1,ans:false,x:"Lang \u2192 kein Doppel"},
+{w:"Bett",k:["B","e","t"],ki:1,ans:true,x:"Kurz \u2192 \u2606 (tt)"},
+{w:"Beet",k:["B","e","t"],ki:1,ans:false,x:"Lang \u2192 ee-Dehnung statt Doppel"},
+{w:"Schiff",k:["Sch","i","f"],ki:1,ans:true,x:"Kurz \u2192 \u2606 (ff)"},
+{w:"Schaf",k:["Sch","a","f"],ki:1,ans:false,x:"Lang \u2192 keine extra Kugel"},
+{w:"Kamm",k:["K","a","m"],ki:1,ans:true,x:"Kurz \u2192 \u2606 (mm)"},
+{w:"Ruhm",k:["R","u","m"],ki:1,ans:false,x:"Lang \u2192 kein Doppel"}
+];
+var ord,idx,sc;
+function shuffle(a){for(var x=a.length-1;x>0;x--){var j=Math.floor(Math.random()*(x+1));var tmp=a[x];a[x]=a[j];a[j]=tmp;}return a;}
+function init(){ord=[];for(var x=0;x<W.length;x++)ord.push(x);shuffle(ord);idx=0;sc=0;prog();render();}
+function prog(){var p=document.getElementById("e6P");p.innerHTML="";for(var x=0;x<ord.length;x++){var d=document.createElement("div");d.className="e6d"+(x<idx?" dn":"")+(x===idx?" cu":"");p.appendChild(d);}}
+function render(){
+if(idx>=ord.length){
+document.getElementById("e6G").innerHTML='<div style="text-align:center;padding:12px;"><div style="font-size:32px;">\u2728</div><div style="font-size:15px;font-weight:900;color:#2F4B43;margin:6px 0;">'+sc+'/'+ord.length+' richtig</div><button style="background:#E5915C;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="e6Init()">Nochmal</button></div>';
+return;}
+var t=W[ord[idx]];
+var kh='<div class="e6kg">';
+for(var j=0;j<t.k.length;j++){
+if(j===t.ki)kh+='<div class="e6kk kern">'+t.k[j]+'</div>';
+else kh+='<div class="e6kk">'+t.k[j]+'</div>';}
+kh+='<div class="e6kk slot" id="e6Slot">?</div></div>';
+var html='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">BRAUCHT DAS WORT EINE EXTRA KUGEL \u2606?</div>';
+html+='<div class="e6w">'+t.w+'</div>'+kh;
+html+='<div style="display:flex;gap:8px;justify-content:center;margin:10px 0;">';
+html+='<button id="e6BJ" style="padding:10px 18px;border-radius:10px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:13px;font-weight:700;cursor:pointer;color:#444;" onclick="e6Pick(true)">\u2606 Ja!</button>';
+html+='<button id="e6BN" style="padding:10px 18px;border-radius:10px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:13px;font-weight:700;cursor:pointer;color:#444;" onclick="e6Pick(false)">Nein</button></div>';
+html+='<div class="e6f" id="e6F"></div>';
+html+='<div style="text-align:center;"><button id="e6Nxt" style="display:none;background:#E5915C;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="e6Adv()">Weiter \u2192</button></div>';
+document.getElementById("e6G").innerHTML=html;
+}
+window.e6Pick=function(isJa){
+var t=W[ord[idx]];
+var ok=isJa===t.ans;
+if(ok)sc++;
+var bj=document.getElementById("e6BJ"),bn=document.getElementById("e6BN");
+bj.style.pointerEvents="none";bn.style.pointerEvents="none";
+if(t.ans){bj.style.borderColor="#2a9e5e";bj.style.background="#e3f5ea";bj.style.color="#2a9e5e";bn.style.opacity="0.4";}
+else{bn.style.borderColor="#2a9e5e";bn.style.background="#e3f5ea";bn.style.color="#2a9e5e";bj.style.opacity="0.4";}
+var sl=document.getElementById("e6Slot");
+sl.className="e6kk "+(t.ans?"yes":"nope");
+sl.textContent=t.ans?"\u2606":"\u2014";
+var f=document.getElementById("e6F");
+f.className="e6f "+(ok?"ok":"no");
+f.textContent=(ok?"\u2713 ":"\u2717 ")+t.x;
+document.getElementById("e6Nxt").style.display="inline-block";
+};
+window.e6Adv=function(){idx++;prog();render();};
+window.e6Init=init;
+init();
+})();
+</script>
+</div></details>
+<div class="aufgabe fset"><div class="an f">E6c<span class="status built">gebaut</span></div><div class="at">🎮 Wie viele Laute hörst du — wie viele Kugeln schreibst du?</div><div class="ad">Schiff-Typ, Bild+Wort: Sch-i-f = 3 Laute, aber 4 Kugeln (☆). Macht gehört≠geschrieben sichtbar.</div></div>
+<div class="aufgabe fset"><div class="an f">E6d<span class="status built">gebaut</span></div><div class="at">🎮 Kurz oder lang? + 2 Mitlautkugeln (gleich/verschieden)</div><div class="ad">Nach „kurz" erscheint Hinweis „dem Kerni folgen 2 Mitlautkugeln" (Kugelkette), dann gleich/verschieden. Ball/Wind/Bett/Hand/Hut/Brief.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e6d-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<div id="e6dP" style="display:flex;gap:3px;margin-bottom:10px;"></div><div id="e6dG"></div>
+<script>(function(){const W=[{w:"Ball",kl:"kurz",ml:"gleich",x:"ll → gleich → ☆"},{w:"Wind",kl:"kurz",ml:"verschieden",x:"nd → verschieden → keine ☆"},{w:"Bett",kl:"kurz",ml:"gleich",x:"tt → gleich → ☆"},{w:"Hand",kl:"kurz",ml:"verschieden",x:"nd → verschieden → keine ☆"},{w:"Fell",kl:"kurz",ml:"gleich",x:"ll → gleich → ☆"},{w:"Hund",kl:"kurz",ml:"verschieden",x:"nd → verschieden → keine ☆"},{w:"Hut",kl:"lang",ml:"-",x:"Lang → nur 1 Mitlaut"},{w:"Brief",kl:"lang",ml:"-",x:"Lang → ie ☆"}];let o,idx,sc,step;function sh(a){for(let x=a.length-1;x>0;x--){let j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(W.length).keys()]);idx=0;sc=0;prog();render();}function prog(){let p=document.getElementById("e6dP");p.innerHTML="";for(let x=0;x<o.length;x++){let d=document.createElement("div");d.style.cssText="flex:1;height:5px;border-radius:3px;background:"+(x<idx?"#BB3B85":x===idx?"#F5CD4A":"#e0e0e0");p.appendChild(d);}}function mkBtn(label,val,fn){return '<button onclick="'+fn+"('"+val+"')" style="padding:10px 16px;border-radius:10px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:#444;">"+label+"</button>";}function render(){if(idx>=o.length){document.getElementById("e6dG").innerHTML='<div style="text-align:center;padding:12px;font-size:32px;">🎯</div><div style="text-align:center;font-size:15px;font-weight:900;color:#2F4B43;">'+sc+'/'+o.length+' richtig</div><div style="text-align:center;font-size:12px;color:#888;margin:4px 0;">Kurz → 2 Mitlautkugeln: gleich = ☆, verschieden = keine ☆</div><div style="text-align:center;margin-top:8px;"><button onclick="e6dI()" style="background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;">Nochmal</button></div>';return;}step=1;let t=W[o[idx]];document.getElementById("e6dG").innerHTML='<div style="font-size:28px;font-weight:900;color:#2F4B43;text-align:center;margin:10px 0;">'+t.w+'</div><div style="text-align:center;font-size:10px;color:#999;font-weight:700;">SCHRITT 1: KURZ ODER LANG?</div><div id="e6dBtns" style="display:flex;gap:6px;justify-content:center;margin:8px 0;">'+mkBtn("🔴 Kurz","kurz","e6dC")+mkBtn("🔵 Lang","lang","e6dC")+'</div><div id="e6dInfo" style="display:none;background:#f8f8f8;border-radius:8px;padding:8px 10px;font-size:12px;color:#555;text-align:center;margin:6px 0;"></div><div id="e6dF" style="text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;"></div><div style="text-align:center;"><button id="e6dN" style="display:none;background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="e6dA()">Weiter →</button></div>';}window.e6dC=function(c){let t=W[o[idx]],f=document.getElementById("e6dF");if(step===1){let ok=c===t.kl;f.innerHTML='<span style="color:'+(ok?"#2a9e5e":"#c0392b")+'">'+(ok?"✓ ":"✗ ")+t.w+" klingt "+t.kl+"</span>";document.getElementById("e6dBtns").querySelectorAll("button").forEach(b=>b.style.pointerEvents="none");if(t.kl==="kurz"){step=2;setTimeout(()=>{let info=document.getElementById("e6dInfo");info.style.display="block";info.innerHTML="Dem Kerni folgen 2 Mitlautkugeln — <strong>gleich oder verschieden?</strong>";document.getElementById("e6dBtns").innerHTML=mkBtn("Gleich → ☆","gleich","e6dC")+mkBtn("Verschieden → keine ☆","verschieden","e6dC");f.textContent="";},1000);}else{if(ok)sc++;f.innerHTML+=" — "+t.x;document.getElementById("e6dN").style.display="inline-block";}}else{let ok=c===t.ml;if(ok)sc++;document.getElementById("e6dBtns").querySelectorAll("button").forEach(b=>b.style.pointerEvents="none");f.innerHTML='<span style="color:'+(ok?"#2a9e5e":"#c0392b")+'">'+(ok?"✓ ":"✗ ")+t.x+"</span>";document.getElementById("e6dN").style.display="inline-block";}};window.e6dA=function(){idx++;prog();render();};window.e6dI=init;init();})();</script>
+</div></details>
+
+<div class="phase lang">🔵 LANG-Block · Dehnung — was man nicht hört</div>
+<div class="block">
+  <div class="dialog"><div class="avatar">🟠</div><div class="bubble nepo"><div class="who">Nepomuk fragt</div>„Bei <em>Lied</em> hör ich nur langes i — woher das <strong>e</strong>?"</div></div>
+  <div class="dialog"><div class="avatar">🥒</div><div class="bubble doc"><div class="who">Dr. Zucchini</div>„Das ist eine Vereinbarung. Das stumme <strong>e</strong> (die extra Kugel ☆) sagt dem Leser: das i davor ist lang."</div></div>
+</div>
+<div class="block"><div style="font-size:12.5px;color:#555;line-height:1.7;">Vier lange Fälle: <span class="k-tag lang">ie</span> Lied/Brief · <span class="k-tag lang">Dehnungs-h</span> Zahn · <span class="k-tag lang">aa/ee/oo</span> Haar/See/Boot · <span class="k-tag lang">keine ☆</span> gut/rot/Tag.</div></div>
+
+<div class="aufgabe fset"><div class="an f">E7a · ie<span class="status built">gebaut</span></div><div class="at">🎮 Langes/kurzes i — nur hören → dann Schriftbild</div><div class="ad">Stufe 1: Bild+Klang ohne Schrift, lang/kurz wählen. Bei richtig klappt das Schriftbild auf (i bzw. ie☆). Brücke zu Stufe 2.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e7a-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#e7a-wrap .ew{font-size:30px;font-weight:900;color:#2F4B43;text-align:center;margin:10px 0;}#e7a-wrap .eb{display:flex;gap:8px;justify-content:center;margin:10px 0;}#e7a-wrap .eo{flex:1;max-width:130px;padding:12px;border-radius:10px;border:3px solid #e0e0e0;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;text-align:center;background:#f8f8f8;color:#444;}#e7a-wrap .eo:hover{border-color:#4A83C4;}#e7a-wrap .eo.right{border-color:#2a9e5e;background:#e3f5ea;color:#2a9e5e;pointer-events:none;}#e7a-wrap .eo.dim{opacity:.4;pointer-events:none;}#e7a-wrap .erev{text-align:center;margin-top:10px;font-size:20px;font-weight:900;display:none;}#e7a-wrap .erev.show{display:block;}#e7a-wrap .ef{text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;}#e7a-wrap .ef.ok{color:#2a9e5e;}#e7a-wrap .ef.no{color:#c0392b;}#e7a-wrap .en{background:#4A83C4;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}#e7a-wrap .en.show{display:inline-block;}#e7a-wrap .ep{display:flex;gap:3px;margin-bottom:10px;}#e7a-wrap .ed{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}#e7a-wrap .ed.dn{background:#4A83C4;}#e7a-wrap .ed.cu{background:#F5CD4A;}</style>
+<div class="ep" id="e7aP"></div><div id="e7aG"></div>
+<script>(function(){const W=[{w:'Lied',a:'lang',s:'ie ☆'},{w:'Fisch',a:'kurz',s:'i'},{w:'Brief',a:'lang',s:'ie ☆'},{w:'Ring',a:'kurz',s:'i'},{w:'Tier',a:'lang',s:'ie ☆'},{w:'Sinn',a:'kurz',s:'i (+ nn☆)'},{w:'Spiel',a:'lang',s:'ie ☆'},{w:'Kind',a:'kurz',s:'i'},{w:'Dieb',a:'lang',s:'ie ☆'},{w:'Bild',a:'kurz',s:'i'}];let o,i,s;function sh(a){for(let x=a.length-1;x>0;x--){const j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(W.length).keys()]);i=0;s=0;prog();render();}function prog(){const p=document.getElementById('e7aP');p.innerHTML='';for(let x=0;x<o.length;x++){const d=document.createElement('div');d.className='ed'+(x<i?' dn':'')+(x===i?' cu':'');p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById('e7aG').innerHTML='<div style="text-align:center;padding:12px;"><div style="font-size:32px;">👁️</div><div style="font-size:15px;font-weight:900;color:#2F4B43;margin:6px 0;">'+s+'/'+o.length+' richtig</div><p style="font-size:12px;color:#888;">Langes i → ie ☆ · Kurzes i → bleibt i</p><button class="en show" onclick="e7aI()">Nochmal</button></div>';return;}const t=W[o[i]];document.getElementById('e7aG').innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">HORCH: LANGES ODER KURZES i?</div><div class="ew">'+t.w+'</div><div class="eb"><button class="eo" data-v="kurz" onclick="e7aC('kurz')">kurzes i</button><button class="eo" data-v="lang" onclick="e7aC('lang')">langes i</button></div><div class="erev" id="e7aR"></div><div class="ef" id="e7aF"></div><div style="text-align:center;"><button class="en" id="e7aN" onclick="e7aA()">Weiter →</button></div>';}window.e7aC=function(c){const t=W[o[i]],ok=c===t.a;if(ok)s++;document.querySelectorAll('#e7a-wrap .eo').forEach(b=>{b.classList.add('dim');if(b.dataset.v===t.a)b.classList.add('right');});const r=document.getElementById('e7aR');r.classList.add('show');r.innerHTML=t.a==='lang'?'<span style="color:#4A83C4;">'+t.w+' → '+t.s+'</span>':'<span style="color:#E5915C;">'+t.w+' → '+t.s+'</span>';const f=document.getElementById('e7aF');f.className='ef '+(ok?'ok':'no');f.textContent=ok?'✓ Richtig!':'✗ '+t.w+' hat ein '+t.a+'es i';document.getElementById('e7aN').classList.add('show');};window.e7aA=function(){i++;prog();render();};window.e7aI=init;init();})();</script>
+</div></details>
+<div class="aufgabe fset"><div class="an f">E7b · ie<span class="status built">gebaut</span></div><div class="at">🎮 ie oder i? — mit Wörtern</div><div class="ad">Stufe 2: Wort mit Lücke, ie (langes i ☆) oder i (kurz) einsetzen. Brief/Fisch/Sieb/Ring/Tier.</div></div>
+<div class="aufgabe fset"><div class="an f">E7c · Dehnung<span class="status built">gebaut</span></div><div class="at">🎮 Welche extra Kugel macht den Kerni lang?</div><div class="ad">ie / Dehnungs-h / Doppelvokal / keine — 12 Wörter, Kugelkette mit ☆-Feedback.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#4A83C4;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e7c-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>
+#e7c-wrap .e7-prog{display:flex;gap:3px;margin-bottom:10px;}
+#e7c-wrap .e7-dot{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}
+#e7c-wrap .e7-dot.done{background:#4A83C4;}
+#e7c-wrap .e7-dot.cur{background:#F5CD4A;}
+#e7c-wrap .e7-word{font-size:32px;font-weight:900;color:#2F4B43;text-align:center;margin:8px 0;}
+#e7c-wrap .e7-kugeln{display:flex;justify-content:center;gap:4px;margin:10px 0;flex-wrap:wrap;}
+#e7c-wrap .e7-kk{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;background:#eef4f2;border:2px solid #d5e3de;}
+#e7c-wrap .e7-kk.kern{background:#F5CD4A;color:#5a4a00;border:none;}
+#e7c-wrap .e7-kk.stern{background:none;border:none;font-size:20px;color:#E5915C;opacity:0;transition:.3s;}
+#e7c-wrap .e7-kk.stern.show{opacity:1;}
+#e7c-wrap .e7-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0;}
+#e7c-wrap .e7-opt{background:#f8f8f8;border:2px solid #e0e0e0;border-radius:10px;padding:10px 6px;cursor:pointer;font-size:12px;font-weight:700;color:#444;text-align:center;transition:.15s;}
+#e7c-wrap .e7-opt:hover{border-color:#4A83C4;background:#eef4fc;}
+#e7c-wrap .e7-opt.correct{border-color:#2a9e5e;background:#e3f5ea;color:#2a9e5e;pointer-events:none;}
+#e7c-wrap .e7-opt.wrong{border-color:#c0392b;background:#fde8e8;color:#c0392b;pointer-events:none;}
+#e7c-wrap .e7-opt.dis{pointer-events:none;opacity:.5;}
+#e7c-wrap .e7-fb{margin-top:8px;padding:8px;border-radius:8px;font-size:12px;font-weight:700;display:none;}
+#e7c-wrap .e7-fb.show{display:block;}
+#e7c-wrap .e7-fb.ok{background:#e3f5ea;color:#2a9e5e;}
+#e7c-wrap .e7-fb.nope{background:#fde8e8;color:#c0392b;}
+#e7c-wrap .e7-btn{margin-top:10px;background:#4A83C4;color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}
+#e7c-wrap .e7-btn.show{display:inline-block;}
+</style>
+<div class="e7-prog" id="e7cProg"></div>
+<div id="e7cGame"></div>
+<script>
+(function(){
+const W=[
+{w:'Lied',t:'ie',k:['L','i','☆','d'],ki:1,si:2,x:'ie ☆ — stummes e zeigt langes i'},
+{w:'Zahn',t:'dh',k:['Z','a','☆','n'],ki:1,si:2,x:'Dehnungs-h ☆'},
+{w:'Haar',t:'dv',k:['H','a','☆','r'],ki:1,si:2,x:'Doppelvokal aa ☆'},
+{w:'Hut',t:'no',k:['H','u','t'],ki:1,si:-1,x:'Lang ohne ☆'},
+{w:'Brief',t:'ie',k:['B','r','i','☆','f'],ki:2,si:3,x:'ie ☆'},
+{w:'Kuh',t:'dh',k:['K','u','☆'],ki:1,si:2,x:'Dehnungs-h ☆'},
+{w:'See',t:'dv',k:['S','e','☆'],ki:1,si:2,x:'Doppelvokal ee ☆'},
+{w:'Tor',t:'no',k:['T','o','r'],ki:1,si:-1,x:'Lang ohne ☆'},
+{w:'Tier',t:'ie',k:['T','i','☆','r'],ki:1,si:2,x:'ie ☆'},
+{w:'Mehl',t:'dh',k:['M','e','☆','l'],ki:1,si:2,x:'Dehnungs-h ☆ vor l'},
+{w:'Boot',t:'dv',k:['B','o','☆','t'],ki:1,si:2,x:'Doppelvokal oo ☆'},
+{w:'Tag',t:'no',k:['T','a','g'],ki:1,si:-1,x:'Lang, keine ☆'},
+];
+const O=[{id:'ie',l:'ie'},{id:'dh',l:'Dehnungs-h'},{id:'dv',l:'aa·ee·oo'},{id:'no',l:'keine ☆'}];
+let ord,idx,sc;
+function sh(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function init(){ord=sh([...Array(W.length).keys()]);idx=0;sc=0;prog();render();}
+function prog(){const p=document.getElementById('e7cProg');p.innerHTML='';for(let i=0;i<ord.length;i++){const d=document.createElement('div');d.className='e7-dot'+(i<idx?' done':'')+(i===idx?' cur':'');p.appendChild(d);}}
+function render(){
+if(idx>=ord.length){document.getElementById('e7cGame').innerHTML='<div style="text-align:center;padding:16px;"><div style="font-size:36px;">🌟</div><div style="font-size:16px;font-weight:900;color:#2F4B43;margin:8px 0;">'+sc+' von '+ord.length+' richtig</div><button class="e7-btn show" onclick="e7cInit()">Nochmal</button></div>';return;}
+const it=W[ord[idx]];
+let kh='<div class="e7-kugeln">';it.k.forEach((c,i)=>{if(c==='☆')kh+='<div class="e7-kk stern" id="e7cSt">☆</div>';else if(i===it.ki)kh+='<div class="e7-kk kern">'+c+'</div>';else kh+='<div class="e7-kk">'+c+'</div>';});kh+='</div>';
+let oh='<div class="e7-opts">';O.forEach(o=>{oh+='<div class="e7-opt" data-t="'+o.id+'" onclick="e7cPick(\''+o.id+'\')">'+o.l+'</div>';});oh+='</div>';
+document.getElementById('e7cGame').innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">WELCHE ☆?</div><div class="e7-word">'+it.w+'</div>'+kh+oh+'<div class="e7-fb" id="e7cFb"></div><div style="text-align:center;"><button class="e7-btn" id="e7cNxt" onclick="e7cNext()">Weiter →</button></div>';
+}
+window.e7cPick=function(t){const it=W[ord[idx]];const ok=t===it.t;if(ok)sc++;document.querySelectorAll('#e7c-wrap .e7-opt').forEach(o=>{o.classList.add('dis');if(o.dataset.t===it.t)o.classList.add('correct');else if(o.dataset.t===t&&!ok)o.classList.add('wrong');});const s=document.getElementById('e7cSt');if(s)s.classList.add('show');const f=document.getElementById('e7cFb');f.className='e7-fb show '+(ok?'ok':'nope');f.textContent=(ok?'✓ ':'✗ ')+it.x;document.getElementById('e7cNxt').classList.add('show');};
+window.e7cNext=function(){idx++;prog();render();};
+window.e7cInit=init;
+init();
+})();
+</script>
+</div></details>
+
+<div class="aufgabe"><div class="an">E1<span class="status built">gebaut</span></div><div class="at">🎮 Kurz oder lang? — Forscher-Übung</div><div class="ad">Wort hören, kurz oder lang entscheiden, ins Forscher-Raster sortieren (rot=kurz, blau=lang). Erste Entdeckung.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#6EBCAE;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e1-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>
+#e1-wrap .e1-prog{display:flex;gap:3px;margin-bottom:12px;}
+#e1-wrap .e1-dot{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}
+#e1-wrap .e1-dot.done{background:#6EBCAE;}
+#e1-wrap .e1-dot.cur{background:#F5CD4A;}
+#e1-wrap .e1-word{font-size:36px;font-weight:900;color:#2F4B43;text-align:center;margin:12px 0 6px;}
+#e1-wrap .e1-hint{font-size:12px;color:#888;text-align:center;margin-bottom:14px;}
+#e1-wrap .e1-btns{display:flex;gap:10px;justify-content:center;margin:10px 0;}
+#e1-wrap .e1-btn{flex:1;max-width:140px;padding:14px 10px;border-radius:12px;border:3px solid;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;transition:.15s;text-align:center;}
+#e1-wrap .e1-btn:active{transform:scale(.96);}
+#e1-wrap .e1-btn.kurz{background:#fff5f0;border-color:#E5915C;color:#E5915C;}
+#e1-wrap .e1-btn.kurz:hover{background:#fde8d8;}
+#e1-wrap .e1-btn.lang{background:#eef4fc;border-color:#4A83C4;color:#4A83C4;}
+#e1-wrap .e1-btn.lang:hover{background:#dde8f6;}
+#e1-wrap .e1-btn.right{animation:e1pop .35s ease;}
+#e1-wrap .e1-btn.wrongb{opacity:.4;}
+@keyframes e1pop{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+#e1-wrap .e1-fb{text-align:center;margin-top:8px;padding:8px;border-radius:8px;font-size:13px;font-weight:700;min-height:20px;}
+#e1-wrap .e1-fb.ok{background:#e3f5ea;color:#2a9e5e;}
+#e1-wrap .e1-fb.nope{background:#fde8e8;color:#c0392b;}
+#e1-wrap .e1-raster{display:flex;gap:12px;margin-top:16px;}
+#e1-wrap .e1-col{flex:1;border-radius:10px;padding:8px;min-height:60px;}
+#e1-wrap .e1-col.kurz{background:#fff5f0;border:2px solid #f0d0b8;}
+#e1-wrap .e1-col.lang{background:#eef4fc;border:2px solid #c0d4ea;}
+#e1-wrap .e1-col-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:6px;}
+#e1-wrap .e1-col.kurz .e1-col-title{color:#E5915C;}
+#e1-wrap .e1-col.lang .e1-col-title{color:#4A83C4;}
+#e1-wrap .e1-chip{display:inline-block;background:white;border-radius:6px;padding:3px 8px;margin:2px;font-size:12px;font-weight:700;color:#2F4B43;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+#e1-wrap .e1-chip.new{animation:e1chipIn .3s ease;}
+@keyframes e1chipIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+#e1-wrap .e1-next{margin-top:10px;background:#6EBCAE;color:white;border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}
+#e1-wrap .e1-next.show{display:inline-block;}
+</style>
+<div class="e1-prog" id="e1Prog"></div>
+<div id="e1Game"></div>
+<div class="e1-raster">
+  <div class="e1-col kurz"><div class="e1-col-title">🔴 Kurz</div><div id="e1Kurz"></div></div>
+  <div class="e1-col lang"><div class="e1-col-title">🔵 Lang</div><div id="e1Lang"></div></div>
+</div>
+<script>
+(function(){
+const W=[
+  {w:'Hund',  ans:'kurz'},
+  {w:'Hut',   ans:'lang'},
+  {w:'Sonne', ans:'kurz'},
+  {w:'Ofen',  ans:'lang'},
+  {w:'Bett',  ans:'kurz'},
+  {w:'Beet',  ans:'lang'},
+  {w:'Ball',  ans:'kurz'},
+  {w:'Wal',   ans:'lang'},
+  {w:'Nuss',  ans:'kurz'},
+  {w:'Fuß',   ans:'lang'},
+  {w:'Kamm',  ans:'kurz'},
+  {w:'Zahn',  ans:'lang'},
+  {w:'Ratte', ans:'kurz'},
+  {w:'Lied',  ans:'lang'},
+  {w:'Fell',  ans:'kurz'},
+  {w:'Mehl',  ans:'lang'},
+];
+let ord,idx,sc,sorted;
+function sh(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function init(){
+  ord=sh([...Array(W.length).keys()]);idx=0;sc=0;sorted={kurz:[],lang:[]};
+  document.getElementById('e1Kurz').innerHTML='';
+  document.getElementById('e1Lang').innerHTML='';
+  prog();render();
+}
+function prog(){const p=document.getElementById('e1Prog');p.innerHTML='';for(let i=0;i<ord.length;i++){const d=document.createElement('div');d.className='e1-dot'+(i<idx?' done':'')+(i===idx?' cur':'');p.appendChild(d);}}
+function render(){
+  if(idx>=ord.length){
+    document.getElementById('e1Game').innerHTML='<div style="text-align:center;padding:14px;"><div style="font-size:36px;">🔬</div><div style="font-size:16px;font-weight:900;color:#2F4B43;margin:6px 0;">Forscher-Ergebnis: '+sc+' von '+ord.length+' richtig!</div><p style="font-size:12px;color:#666;">Schau dir das Raster an — kurze Wörter links, lange rechts. Hörst du den Unterschied?</p><button class="e1-next show" onclick="e1Init()">Nochmal forschen</button></div>';
+    return;
+  }
+  const it=W[ord[idx]];
+  document.getElementById('e1Game').innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">HORCH GENAU HIN</div><div class="e1-word">'+it.w+'</div><div class="e1-hint">Klingt der Selbstlaut kurz oder lang?</div><div class="e1-btns"><button class="e1-btn kurz" id="e1BtnK" onclick="e1Pick(\'kurz\')">🔴 Kurz</button><button class="e1-btn lang" id="e1BtnL" onclick="e1Pick(\'lang\')">🔵 Lang</button></div><div class="e1-fb" id="e1Fb"></div><div style="text-align:center;"><button class="e1-next" id="e1Nxt" onclick="e1Adv()">Weiter →</button></div>';
+}
+window.e1Pick=function(choice){
+  const it=W[ord[idx]];
+  const ok=choice===it.ans;
+  if(ok)sc++;
+  const bk=document.getElementById('e1BtnK'),bl=document.getElementById('e1BtnL');
+  bk.style.pointerEvents='none';bl.style.pointerEvents='none';
+  if(it.ans==='kurz'){bk.classList.add('right');bl.classList.add('wrongb');}
+  else{bl.classList.add('right');bk.classList.add('wrongb');}
+  const fb=document.getElementById('e1Fb');
+  if(ok){fb.className='e1-fb ok';fb.textContent='✓ Richtig — '+it.w+' klingt '+it.ans+'!';}
+  else{fb.className='e1-fb nope';fb.textContent='✗ '+it.w+' klingt '+it.ans+'.';}
+  sorted[it.ans].push(it.w);
+  const col=document.getElementById(it.ans==='kurz'?'e1Kurz':'e1Lang');
+  col.innerHTML+='<span class="e1-chip new">'+it.w+'</span>';
+  document.getElementById('e1Nxt').classList.add('show');
+};
+window.e1Adv=function(){idx++;prog();render();};
+window.e1Init=init;
+init();
+})();
+</script>
+</div></details>
+
+<div class="phase f">F1–F… · Einprägen &amp; Anwenden</div>
+<div class="grpnote">Aufgaben aus den Marburger/Winkler-Blättern — alle auf Einsilber gefiltert</div>
+<div class="aufgabe fset"><div class="an f">F1<span class="status built">gebaut</span></div><div class="at">🎮 Reimwörter — der Klang verrät die Schreibung</div><div class="ad">Deckt au, ie, rz, nn, -ind, ei ab.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="f1-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#f1-wrap .fw{font-size:26px;font-weight:900;color:#2F4B43;text-align:center;margin:8px 0;}#f1-wrap .fb2{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap;}#f1-wrap .fo{padding:8px 14px;border-radius:8px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:#444;}#f1-wrap .fo:hover{border-color:#BB3B85;}#f1-wrap .fo.right{border-color:#2a9e5e;background:#e3f5ea;color:#2a9e5e;pointer-events:none;}#f1-wrap .fo.dim{opacity:.4;pointer-events:none;}#f1-wrap .ff{text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;}#f1-wrap .ff.ok{color:#2a9e5e;}#f1-wrap .ff.no{color:#c0392b;}#f1-wrap .fn{background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}#f1-wrap .fn.show{display:inline-block;}#f1-wrap .fp{display:flex;gap:3px;margin-bottom:10px;}#f1-wrap .fd{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}#f1-wrap .fd.dn{background:#BB3B85;}#f1-wrap .fd.cu{background:#F5CD4A;}</style>
+<div class="fp" id="f1P"></div><div id="f1G"></div>
+<script>(function(){const W=[{w:'Haus',opts:['Maus','Kuss','Rind'],ans:'Maus',x:'Haus/Maus — gleicher Reim -aus'},{w:'Lied',opts:['Rind','Ried','Nuss'],ans:'Ried',x:'Lied/Ried — gleicher Reim -ied (ie ☆)'},{w:'Herz',opts:['Scherz','Fell','Zahn'],ans:'Scherz',x:'Herz/Scherz — gleicher Reim -erz'},{w:'Sonne',opts:['Mond','Tonne','Brief'],ans:'Tonne',x:'Sonne/Tonne — gleicher Reim -onne (nn ☆)'},{w:'Kind',opts:['Wind','Kamm','See'],ans:'Wind',x:'Kind/Wind — gleicher Reim -ind'},{w:'Stein',opts:['Ball','Bein','Schiff'],ans:'Bein',x:'Stein/Bein — gleicher Reim -ein (ei)'},{w:'Fell',opts:['Zahn','Mehl','Bell'],ans:'Bell',x:'Fell/Bell — gleicher Reim -ell (ll ☆)'},{w:'Fuß',opts:['Gruß','Nuss','Kamm'],ans:'Gruß',x:'Fuß/Gruß — gleicher Reim -uß'}];let o,i,s;function sh(a){for(let x=a.length-1;x>0;x--){const j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(W.length).keys()]);i=0;s=0;prog();render();}function prog(){const p=document.getElementById('f1P');p.innerHTML='';for(let x=0;x<o.length;x++){const d=document.createElement('div');d.className='fd'+(x<i?' dn':'')+(x===i?' cu':'');p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById('f1G').innerHTML='<div style="text-align:center;padding:12px;"><div style="font-size:32px;">🎵</div><div style="font-size:15px;font-weight:900;color:#2F4B43;margin:6px 0;">'+s+'/'+o.length+' richtig</div><button class="fn show" onclick="f1I()">Nochmal</button></div>';return;}const t=W[o[i]];const opts=sh([...t.opts]);let oh='';opts.forEach(op=>{oh+='<button class="fo" data-v="'+op+'" onclick="f1C(''+op+'')">'+op+'</button>';});document.getElementById('f1G').innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">WELCHES WORT REIMT SICH?</div><div class="fw">'+t.w+'</div><div class="fb2">'+oh+'</div><div class="ff" id="f1F"></div><div style="text-align:center;"><button class="fn" id="f1N" onclick="f1A()">Weiter →</button></div>';}window.f1C=function(c){const t=W[o[i]],ok=c===t.ans;if(ok)s++;document.querySelectorAll('#f1-wrap .fo').forEach(b=>{b.classList.add('dim');if(b.dataset.v===t.ans)b.classList.add('right');});const f=document.getElementById('f1F');f.className='ff '+(ok?'ok':'no');f.textContent=(ok?'✓ ':'✗ ')+t.x;document.getElementById('f1N').classList.add('show');};window.f1A=function(){i++;prog();render();};window.f1I=init;init();})();</script>
+</div></details>
+<div class="aufgabe fset"><div class="an f">F2<span class="status built">gebaut</span></div><div class="at">🎮 Sortieren: kurz/lang + welches Klangzeichen ☆?</div><div class="ad">Winkler-Wortliste (Bett/Ring/Hand/Fell/Tag/Brot…), dreistufig.</div></div>
+<div class="aufgabe fset"><div class="an f">F3<span class="status built">gebaut</span></div><div class="at">🎮 Kurzer oder langer Reim?</div><div class="ad">Marburger-Einsilber, kurz/lang bestimmen + extra Kugel zeigen.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="f3-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<div id="f3P" style="display:flex;gap:3px;margin-bottom:10px;"></div><div id="f3G"></div>
+<script>(function(){const W=[{w:"Topf",a:"kurz",star:"pf"},{w:"Hof",a:"lang",star:"keine ☆"},{w:"Kamm",a:"kurz",star:"mm ☆"},{w:"Zahn",a:"lang",star:"h ☆"},{w:"Nuss",a:"kurz",star:"ss ☆"},{w:"Fuß",a:"lang",star:"keine ☆"},{w:"Bett",a:"kurz",star:"tt ☆"},{w:"Beet",a:"lang",star:"ee ☆"},{w:"Schiff",a:"kurz",star:"ff ☆"},{w:"Brief",a:"lang",star:"ie ☆"},{w:"Fell",a:"kurz",star:"ll ☆"},{w:"Mehl",a:"lang",star:"h ☆"}];let o,i,s;function sh(a){for(let x=a.length-1;x>0;x--){let j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(W.length).keys()]);i=0;s=0;prog();render();}function prog(){let p=document.getElementById("f3P");p.innerHTML="";for(let x=0;x<o.length;x++){let d=document.createElement("div");d.style.cssText="flex:1;height:5px;border-radius:3px;background:"+(x<i?"#BB3B85":x===i?"#F5CD4A":"#e0e0e0");p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById("f3G").innerHTML='<div style="text-align:center;padding:12px;font-size:32px;">⭐</div><div style="text-align:center;font-size:15px;font-weight:900;color:#2F4B43;">'+s+'/'+o.length+' richtig</div><div style="text-align:center;margin-top:8px;"><button onclick="f3I()" style="background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;">Nochmal</button></div>';return;}let t=W[o[i]];document.getElementById("f3G").innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">KURZER ODER LANGER REIM?</div><div style="font-size:28px;font-weight:900;color:#2F4B43;text-align:center;margin:10px 0;">'+t.w+'</div><div style="display:flex;gap:8px;justify-content:center;margin:10px 0;"><button id="f3K" onclick="f3C('kurz')" style="flex:1;max-width:130px;padding:12px;border-radius:10px;border:3px solid #E5915C;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;text-align:center;background:#fff5f0;color:#E5915C;">🔴 Kurz</button><button id="f3L" onclick="f3C('lang')" style="flex:1;max-width:130px;padding:12px;border-radius:10px;border:3px solid #4A83C4;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;text-align:center;background:#eef4fc;color:#4A83C4;">🔵 Lang</button></div><div id="f3S" style="display:none;text-align:center;font-size:14px;font-weight:900;color:#E5915C;margin:6px 0;"></div><div id="f3F" style="text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;"></div><div style="text-align:center;"><button id="f3N" style="display:none;background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="f3A()">Weiter →</button></div>';}window.f3C=function(c){let t=W[o[i]],ok=c===t.a;if(ok)s++;document.getElementById("f3K").style.pointerEvents="none";document.getElementById("f3L").style.pointerEvents="none";if(t.a==="kurz"){document.getElementById("f3K").style.transform="scale(1.05)";document.getElementById("f3L").style.opacity=".4";}else{document.getElementById("f3L").style.transform="scale(1.05)";document.getElementById("f3K").style.opacity=".4";}let st=document.getElementById("f3S");st.style.display="block";st.textContent="☆ "+t.star;document.getElementById("f3F").innerHTML='<span style="color:'+(ok?"#2a9e5e":"#c0392b")+'">'+(ok?"✓ ":"✗ ")+t.w+" → "+t.a+"</span>";document.getElementById("f3N").style.display="inline-block";};window.f3A=function(){i++;prog();render();};window.f3I=init;init();})();</script>
+</div></details>
+<div class="aufgabe fset"><div class="an f">F4<span class="status built">gebaut</span></div><div class="at">🎮 Drei-Spalten-Sortieren</div><div class="ad">lang / kurz-verschieden / kurz-gleich (Hof/Wind/Bett…).</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="f4-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#f4-wrap .fw{font-size:28px;font-weight:900;color:#2F4B43;text-align:center;margin:10px 0;}#f4-wrap .fb{display:flex;gap:4px;justify-content:center;margin:8px 0;flex-wrap:wrap;}#f4-wrap .fo{padding:8px 10px;border-radius:8px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:#444;text-align:center;}#f4-wrap .fo:hover{border-color:#BB3B85;}#f4-wrap .fo.right{border-color:#2a9e5e;background:#e3f5ea;color:#2a9e5e;pointer-events:none;}#f4-wrap .fo.dim{opacity:.4;pointer-events:none;}#f4-wrap .ff{text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;}#f4-wrap .ff.ok{color:#2a9e5e;}#f4-wrap .ff.no{color:#c0392b;}#f4-wrap .fn{background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}#f4-wrap .fn.show{display:inline-block;}#f4-wrap .fp{display:flex;gap:3px;margin-bottom:10px;}#f4-wrap .fd{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}#f4-wrap .fd.dn{background:#BB3B85;}#f4-wrap .fd.cu{background:#F5CD4A;}#f4-wrap .fcols{display:flex;gap:6px;margin-top:10px;}#f4-wrap .fcol{flex:1;border-radius:8px;padding:5px;min-height:40px;font-size:10px;}#f4-wrap .fcol.c1{background:#eef4fc;border:2px solid #c0d4ea;}#f4-wrap .fcol.c2{background:#fff5f0;border:2px solid #f0d0b8;}#f4-wrap .fcol.c3{background:#fdf0e8;border:2px solid #e8c0a0;}#f4-wrap .fct{font-size:9px;font-weight:900;text-align:center;margin-bottom:3px;text-transform:uppercase;}#f4-wrap .fcol.c1 .fct{color:#4A83C4;}#f4-wrap .fcol.c2 .fct{color:#E5915C;}#f4-wrap .fcol.c3 .fct{color:#c06a2a;}#f4-wrap .fch{display:inline-block;background:white;border-radius:4px;padding:2px 6px;margin:1px;font-size:10px;font-weight:700;}</style>
+<div class="fp" id="f4P"></div><div id="f4G"></div>
+<div class="fcols"><div class="fcol c1"><div class="fct">🔵 Lang</div><div id="f4C1"></div></div><div class="fcol c2"><div class="fct">🔴 Kurz versch.</div><div id="f4C2"></div></div><div class="fcol c3"><div class="fct">🔴 Kurz gleich ☆</div><div id="f4C3"></div></div></div>
+<script>(function(){const W=[{w:'Hof',ans:'lang'},{w:'Wind',ans:'kurz-v'},{w:'Bett',ans:'kurz-g'},{w:'Tag',ans:'lang'},{w:'Hand',ans:'kurz-v'},{w:'Fell',ans:'kurz-g'},{w:'Brot',ans:'lang'},{w:'Hund',ans:'kurz-v'},{w:'Kamm',ans:'kurz-g'},{w:'Stuhl',ans:'lang'},{w:'Sinn',ans:'kurz-g'},{w:'Herz',ans:'kurz-v'}];let o,i,s;function sh(a){for(let x=a.length-1;x>0;x--){const j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(W.length).keys()]);i=0;s=0;document.getElementById('f4C1').innerHTML='';document.getElementById('f4C2').innerHTML='';document.getElementById('f4C3').innerHTML='';prog();render();}function prog(){const p=document.getElementById('f4P');p.innerHTML='';for(let x=0;x<o.length;x++){const d=document.createElement('div');d.className='fd'+(x<i?' dn':'')+(x===i?' cu':'');p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById('f4G').innerHTML='<div style="text-align:center;padding:12px;"><div style="font-size:32px;">📊</div><div style="font-size:15px;font-weight:900;color:#2F4B43;margin:6px 0;">'+s+'/'+o.length+' richtig</div><button class="fn show" onclick="f4I()">Nochmal</button></div>';return;}const t=W[o[i]];document.getElementById('f4G').innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">WELCHE SPALTE?</div><div class="fw">'+t.w+'</div><div class="fb"><button class="fo" data-v="lang" onclick="f4C('lang')">🔵 Lang</button><button class="fo" data-v="kurz-v" onclick="f4C('kurz-v')">🔴 Kurz versch.</button><button class="fo" data-v="kurz-g" onclick="f4C('kurz-g')">🔴 Kurz gleich ☆</button></div><div class="ff" id="f4F"></div><div style="text-align:center;"><button class="fn" id="f4N" onclick="f4A()">Weiter →</button></div>';}window.f4C=function(c){const t=W[o[i]],ok=c===t.ans;if(ok)s++;document.querySelectorAll('#f4-wrap .fo').forEach(b=>{b.classList.add('dim');if(b.dataset.v===t.ans)b.classList.add('right');});const col=t.ans==='lang'?'f4C1':t.ans==='kurz-v'?'f4C2':'f4C3';document.getElementById(col).innerHTML+='<span class="fch">'+t.w+'</span>';const f=document.getElementById('f4F');f.className='ff '+(ok?'ok':'no');f.textContent=ok?'✓ Richtig!':'✗ '+t.w+' gehört in die andere Spalte.';document.getElementById('f4N').classList.add('show');};window.f4A=function(){i++;prog();render();};window.f4I=init;init();})();</script>
+</div></details>
+<div class="aufgabe fset"><div class="an f">F5<span class="status built">gebaut</span></div><div class="at">🎮 Lücke füllen + kurz/lang</div><div class="ad">Fehlenden Buchstaben wählen (ff/nd/ie), dann kurz/lang.</div></div>
+<div class="aufgabe fset"><div class="an f">F6<span class="status built">gebaut</span></div><div class="at">🎮 Ferdinands Kugeln — erst Klang, dann Schrift</div><div class="ad">Minimalpaare Band/Bad, Hund/Hut. Schritt 1 kurz/lang, Schritt 2 Kugel wählen.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="f6-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<div id="f6P" style="display:flex;gap:3px;margin-bottom:10px;"></div><div id="f6G"></div>
+<script>(function(){const P=[{a:"Band",b:"Bad",qa:"kurz",qb:"kurz",sa:"nd (versch.)",sb:"d (1 Mitlaut)"},{a:"Hund",b:"Hut",qa:"kurz",qb:"lang",sa:"nd (versch.)",sb:"keine ☆"},{a:"Wal",b:"Wall",qa:"lang",qb:"kurz",sa:"keine ☆",sb:"ll ☆"},{a:"Mus",b:"Muss",qa:"lang",qb:"kurz",sa:"keine ☆",sb:"ss ☆"},{a:"Beet",b:"Bett",qa:"lang",qb:"kurz",sa:"ee ☆",sb:"tt ☆"}];let o,i,s;function sh(a){for(let x=a.length-1;x>0;x--){let j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(P.length).keys()]);i=0;s=0;prog();render();}function prog(){let p=document.getElementById("f6P");p.innerHTML="";for(let x=0;x<o.length;x++){let d=document.createElement("div");d.style.cssText="flex:1;height:5px;border-radius:3px;background:"+(x<i?"#BB3B85":x===i?"#F5CD4A":"#e0e0e0");p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById("f6G").innerHTML='<div style="text-align:center;padding:12px;font-size:32px;">⚖️</div><div style="text-align:center;font-size:15px;font-weight:900;color:#2F4B43;">'+s+'/'+P.length+' Paare</div><div style="text-align:center;margin-top:8px;"><button onclick="f6I()" style="background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;">Nochmal</button></div>';return;}window._f6d={a:false,b:false};let p=P[o[i]];document.getElementById("f6G").innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">MINIMALPAAR — ERST KLANG, DANN SCHRIFT</div><div style="display:flex;gap:12px;justify-content:center;margin:10px 0;"><div style="text-align:center;"><div style="font-size:24px;font-weight:900;color:#2F4B43;margin:4px 0;">'+p.a+'</div><div style="display:flex;gap:4px;justify-content:center;"><button onclick="f6S('a','kurz')" style="padding:6px 12px;border-radius:6px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:12px;font-weight:700;cursor:pointer;">kurz</button><button onclick="f6S('a','lang')" style="padding:6px 12px;border-radius:6px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:12px;font-weight:700;cursor:pointer;">lang</button></div><div id="f6Fa" style="font-size:11px;font-weight:700;min-height:16px;margin:4px 0;"></div></div><div style="text-align:center;"><div style="font-size:24px;font-weight:900;color:#2F4B43;margin:4px 0;">'+p.b+'</div><div style="display:flex;gap:4px;justify-content:center;"><button onclick="f6S('b','kurz')" style="padding:6px 12px;border-radius:6px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:12px;font-weight:700;cursor:pointer;">kurz</button><button onclick="f6S('b','lang')" style="padding:6px 12px;border-radius:6px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:12px;font-weight:700;cursor:pointer;">lang</button></div><div id="f6Fb" style="font-size:11px;font-weight:700;min-height:16px;margin:4px 0;"></div></div></div><div style="text-align:center;"><button id="f6N" style="display:none;background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="f6A()">Weiter →</button></div>';}window.f6S=function(w,c){let p=P[o[i]],exp=w==="a"?p.qa:p.qb,star=w==="a"?p.sa:p.sb,ok=c===exp;document.getElementById("f6F"+w).innerHTML='<span style="color:'+(ok?"#2a9e5e":"#c0392b")+'">'+(ok?"✓ ":"✗ ")+exp+" → "+star+"</span>";window._f6d[w]=true;if(window._f6d.a&&window._f6d.b){s++;document.getElementById("f6N").style.display="inline-block";}};window.f6A=function(){i++;prog();render();};window.f6I=init;init();})();</script>
+</div></details>
+<div class="aufgabe fset"><div class="an f">F8<span class="status built">gebaut</span></div><div class="at">🎮 Doppelungs-Reimwörter (ll · ss · tt · mm · nn)</div><div class="ad">Anlaut tauschen, neue Reimwörter finden — die ☆ bleibt. 5 Gruppen mit Kugelkette.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="f8-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>
+#f8-wrap .f8-tabs{display:flex;gap:3px;margin-bottom:10px;}
+#f8-wrap .f8-tab{flex:1;background:#f0f0f0;border:none;border-radius:6px;padding:7px 4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:#888;text-align:center;}
+#f8-wrap .f8-tab.active{background:#BB3B85;color:white;}
+#f8-wrap .f8-starter{font-size:26px;font-weight:900;color:#BB3B85;text-align:center;margin:8px 0 4px;}
+#f8-wrap .f8-kugeln{display:flex;justify-content:center;gap:3px;margin:8px 0;}
+#f8-wrap .f8-kk{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;background:#eef4f2;border:2px solid #d5e3de;}
+#f8-wrap .f8-kk.kern{background:#F5CD4A;color:#5a4a00;border:none;}
+#f8-wrap .f8-kk.stern{background:none;border:none;font-size:18px;color:#E5915C;}
+#f8-wrap .f8-kk.q{background:#f0e0f0;border-color:#d0a0c0;color:#BB3B85;font-size:14px;}
+#f8-wrap .f8-row{display:flex;gap:5px;align-items:center;justify-content:center;margin:10px 0;}
+#f8-wrap .f8-inp{width:55px;border:2px solid #ddd;border-radius:6px;padding:6px;font-size:16px;font-weight:900;text-align:center;font-family:inherit;outline:none;}
+#f8-wrap .f8-inp:focus{border-color:#BB3B85;}
+#f8-wrap .f8-end{font-size:18px;font-weight:900;color:#BB3B85;}
+#f8-wrap .f8-go{background:#BB3B85;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+#f8-wrap .f8-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;justify-content:center;}
+#f8-wrap .f8-chip{background:#f8e8f2;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;color:#BB3B85;}
+#f8-wrap .f8-fb{font-size:11px;font-weight:700;min-height:16px;text-align:center;margin-top:4px;}
+#f8-wrap .f8-fb.ok{color:#2a9e5e;}
+#f8-wrap .f8-fb.nope{color:#c0392b;}
+#f8-wrap .f8-fb.dup{color:#E5915C;}
+#f8-wrap .f8-sc{font-size:11px;color:#888;text-align:center;margin-top:6px;}
+</style>
+<div class="f8-tabs" id="f8Tabs"></div>
+<div id="f8Game"></div>
+<script>
+(function(){
+const G=[
+{end:'all',d:'ll',starter:'Ball',valid:['Fall','Hall','Stall','Wall','Knall','Schall','Tall','Prall','Drall']},
+{end:'uss',d:'ss',starter:'Nuss',valid:['Fluss','Schluss','Kuss','Schuss','Guss','Stuss','Muss']},
+{end:'ett',d:'tt',starter:'Bett',valid:['Fett','Nett','Brett','Wett']},
+{end:'amm',d:'mm',starter:'Kamm',valid:['Schwamm','Damm','Lamm','Stamm','Ramm']},
+{end:'ann',d:'nn',starter:'Mann',valid:['Dann','Wann','Kann','Bann','Tann','Spann']},
+];
+let cg=0,found={};
+G.forEach((_,i)=>found[i]=[]);
+function tabs(){const t=document.getElementById('f8Tabs');t.innerHTML='';G.forEach((g,i)=>{const b=document.createElement('button');b.className='f8-tab'+(i===cg?' active':'');b.textContent=g.d;b.onclick=()=>{cg=i;tabs();render();};t.appendChild(b);});}
+function render(){const g=G[cg];
+let kh='<div class="f8-kugeln"><div class="f8-kk q">?</div><div class="f8-kk kern">'+g.end[0]+'</div><div class="f8-kk">'+g.d[0]+'</div><div class="f8-kk stern">☆</div></div>';
+let ch=found[cg].map(w=>'<span class="f8-chip">'+w+'</span>').join('');
+document.getElementById('f8Game').innerHTML='<div style="text-align:center;font-size:10px;color:#999;">Starterwort</div><div class="f8-starter">'+g.starter+'</div>'+kh+'<div class="f8-row"><input class="f8-inp" id="f8Inp" maxlength="4" placeholder="…"><span class="f8-end">-'+g.end+'</span><button class="f8-go" onclick="f8Try()">OK</button></div><div class="f8-fb" id="f8Fb"></div><div class="f8-chips">'+ch+'</div><div class="f8-sc">Gefunden: '+found[cg].length+' / '+g.valid.length+'</div>';
+document.getElementById('f8Inp').addEventListener('keydown',e=>{if(e.key==='Enter')f8Try();});document.getElementById('f8Inp').focus();}
+window.f8Try=function(){const g=G[cg],inp=document.getElementById('f8Inp'),fb=document.getElementById('f8Fb'),raw=inp.value.trim();if(!raw)return;const w=raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase()+g.end;const m=g.valid.find(v=>v.toLowerCase()===w.toLowerCase());if(m){if(found[cg].find(f=>f.toLowerCase()===m.toLowerCase())){fb.className='f8-fb dup';fb.textContent=m+' hast du schon!';}else{found[cg].push(m);fb.className='f8-fb ok';fb.textContent='✓ '+m;render();}}else{fb.className='f8-fb nope';fb.textContent=w+' — kein echtes Wort.';}inp.value='';inp.focus();};
+tabs();render();
+})();
+</script>
+</div></details>
+<div class="aufgabe fset"><div class="an f">F9<span class="status built">gebaut</span></div><div class="at">🎮 Falsche Zwillinge — Minimalpaare im Satz</div><div class="ad">Zwei ähnliche Wörter (kurz/lang) — beide in denselben Satz einsetzen. Ofen/offen, schief/Schiff, rief/Riff… Der Unterschied kurz/lang verändert die Bedeutung!</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="f9zw-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>
+#f9zw-wrap .progf9{display:flex;gap:3px;margin-bottom:10px;}
+#f9zw-wrap .df9{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}
+#f9zw-wrap .df9.dn{background:#BB3B85;}
+#f9zw-wrap .df9.cu{background:#F5CD4A;}
+#f9zw-wrap .wpair{display:flex;gap:8px;justify-content:center;margin:10px 0;}
+#f9zw-wrap .wp{padding:8px 16px;border-radius:10px;background:#f5eef5;border:2px solid #BB3B85;font-size:16px;font-weight:900;color:#2F4B43;}
+</style>
+<div class="progf9" id="f9zP"></div>
+<div id="f9zG"></div>
+<script>
+(function(){
+var W=[
+{pair:["Ofen","offen"],satz:"Julius lie\u00df die _1_t\u00fcr _2_.",a1:"Ofen",a2:"offen"},
+{pair:["Miete","Mitte"],satz:"Wir m\u00fcssen unsere _1_ bis _2_ des Monats \u00fcberweisen.",a1:"Miete",a2:"Mitte"},
+{pair:["schief","Schiff"],satz:"Das rote _1_ liegt ganz _2_ im Wasser.",a1:"Schiff",a2:"schief"},
+{pair:["Aale","alle"],satz:"Der Fischverk\u00e4ufer konnte heute _1_ _2_ verkaufen.",a1:"alle",a2:"Aale"},
+{pair:["Wiesen","wissen"],satz:"Wir untersuchten heute zwei _1_, weil wir _2_ wollten, welche Tiere dort leben.",a1:"Wiesen",a2:"wissen"},
+{pair:["rief","Riff"],satz:"Ich _1_ laut deinen Namen, denn rund um das _2_ tobte laut das Meer.",a1:"rief",a2:"Riff"},
+{pair:["stehlen","stellen"],satz:"Diebe _1_ wertvolle Gegenst\u00e4nde und manche _2_ sie dann zum Verkauf ins Internet.",a1:"stehlen",a2:"stellen"},
+{pair:["Bett","Beet"],satz:"Vor dem _1_ im Garten steht mein _2_ am Fenster.",a1:"Beet",a2:"Bett"},
+{pair:["Lamm","lahm"],satz:"Das kleine _1_ ist leider _2_ und kann nicht laufen.",a1:"Lamm",a2:"lahm"},
+{pair:["H\u00f6lle","H\u00f6hle"],satz:"In der _1_ war es dunkel, aber drau\u00dfen war die Hitze die reinste _2_.",a1:"H\u00f6hle",a2:"H\u00f6lle"}
+];
+var ord,idx,sc;
+function shuffle(a){for(var x=a.length-1;x>0;x--){var j=Math.floor(Math.random()*(x+1));var t=a[x];a[x]=a[j];a[j]=t;}return a;}
+function init(){ord=[];for(var x=0;x<W.length;x++)ord.push(x);shuffle(ord);idx=0;sc=0;prog();render();}
+function prog(){var p=document.getElementById("f9zP");p.innerHTML="";for(var x=0;x<ord.length;x++){var d=document.createElement("div");d.className="df9"+(x<idx?" dn":"")+(x===idx?" cu":"");p.appendChild(d);}}
+function render(){
+if(idx>=ord.length){document.getElementById("f9zG").innerHTML='<div style="text-align:center;padding:14px;"><div style="font-size:36px;">\u2728</div><div style="font-size:16px;font-weight:900;color:#2F4B43;margin:8px 0;">'+sc+'/'+ord.length+' richtig!</div><p style="font-size:12px;color:#888;">\u00c4hnliche W\u00f6rter, verschiedene Bedeutung \u2014 kurz/lang macht den Unterschied!</p><button style="margin-top:10px;background:#BB3B85;color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;" onclick="f9zInit()">Nochmal</button></div>';return;}
+var t=W[ord[idx]];
+var html='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;margin-bottom:8px;">SETZE BEIDE W\u00d6RTER RICHTIG EIN!</div>';
+html+='<div class="wpair"><span class="wp">'+t.pair[0]+'</span><span class="wp">'+t.pair[1]+'</span></div>';
+var satzDisplay=t.satz.replace("_1_",'<input id="f9zI1" type="text" maxlength="12" placeholder="\u2026" style="width:90px;border:2px solid #E5915C;border-radius:8px;padding:5px;font-size:14px;font-weight:900;text-align:center;font-family:inherit;outline:none;">').replace("_2_",'<input id="f9zI2" type="text" maxlength="12" placeholder="\u2026" style="width:90px;border:2px solid #E5915C;border-radius:8px;padding:5px;font-size:14px;font-weight:900;text-align:center;font-family:inherit;outline:none;">');
+html+='<div style="font-size:14px;color:#2F4B43;text-align:center;margin:12px 0;line-height:2.2;">'+satzDisplay+'</div>';
+html+='<div style="text-align:center;"><button onclick="f9zCheck()" style="background:#BB3B85;color:white;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;">Pr\u00fcfen</button></div>';
+html+='<div id="f9zFb" style="text-align:center;font-size:13px;font-weight:700;min-height:22px;margin:8px 0;"></div>';
+html+='<div style="text-align:center;"><button id="f9zN" style="display:none;background:#BB3B85;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="f9zAdv()">Weiter \u2192</button></div>';
+document.getElementById("f9zG").innerHTML=html;}
+window.f9zCheck=function(){var t=W[ord[idx]];
+var v1=(document.getElementById("f9zI1").value||"").trim();
+var v2=(document.getElementById("f9zI2").value||"").trim();
+if(!v1||!v2)return;
+var ok=(v1.toLowerCase()===t.a1.toLowerCase()&&v2.toLowerCase()===t.a2.toLowerCase());
+if(ok)sc++;
+document.getElementById("f9zI1").disabled=true;
+document.getElementById("f9zI2").disabled=true;
+var fb=document.getElementById("f9zFb");fb.style.color=ok?"#2a9e5e":"#c0392b";
+fb.textContent=ok?"\u2713 Richtig!":"\u2717 L\u00f6sung: "+t.a1+" / "+t.a2;
+document.getElementById("f9zN").style.display="inline-block";};
+window.f9zAdv=function(){idx++;prog();render();};
+window.f9zInit=init;init();})();
+</script>
+</div></details>
+<div class="aufgabe fset"><div class="an f">F7<span class="status built">gebaut</span></div><div class="at">🎮 Fantasiewörter richtig lesen ⭐</div><div class="ad">Unbekannte Wörter (Munz, Galp, Teff…) — nur an den Kugeln erkennen, wie sie klingen. Beweist die Lesehilfe-Funktion.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#BB3B85;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="f7-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#f7-wrap .fw{font-size:30px;font-weight:900;color:#7B68AE;text-align:center;margin:10px 0;letter-spacing:2px;}#f7-wrap .fkg{display:flex;justify-content:center;gap:4px;margin:10px 0;}#f7-wrap .fkk{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;background:#eef4f2;border:2px solid #d5e3de;}#f7-wrap .fkk.kern{background:#F5CD4A;color:#5a4a00;border:none;}#f7-wrap .fkk.stern{background:none;border:none;font-size:18px;color:#E5915C;}#f7-wrap .fb{display:flex;gap:8px;justify-content:center;margin:10px 0;}#f7-wrap .fo{flex:1;max-width:130px;padding:12px;border-radius:10px;border:3px solid;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;text-align:center;}#f7-wrap .fo.k{background:#fff5f0;border-color:#E5915C;color:#E5915C;}#f7-wrap .fo.l{background:#eef4fc;border-color:#4A83C4;color:#4A83C4;}#f7-wrap .fo.right{animation:f7p .3s}@keyframes f7p{50%{transform:scale(1.06)}}#f7-wrap .fo.dim{opacity:.4}#f7-wrap .ff{text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;}#f7-wrap .ff.ok{color:#2a9e5e;}#f7-wrap .ff.no{color:#c0392b;}#f7-wrap .fn{background:#7B68AE;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}#f7-wrap .fn.show{display:inline-block;}#f7-wrap .fp{display:flex;gap:3px;margin-bottom:10px;}#f7-wrap .fd{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}#f7-wrap .fd.dn{background:#7B68AE;}#f7-wrap .fd.cu{background:#F5CD4A;}</style>
+<div class="fp" id="f7P"></div><div id="f7G"></div>
+<script>(function(){const W=[{w:'Munz',k:['M','u','n','z'],ki:1,a:'kurz',x:'2 verschiedene Mitlaute → kurz, keine ☆'},{w:'Galp',k:['G','a','l','p'],ki:1,a:'kurz',x:'2 verschiedene Mitlaute → kurz, keine ☆'},{w:'Teff',k:['T','e','f','☆'],ki:1,a:'kurz',x:'Doppel-f → ☆ → kurz!'},{w:'Loff',k:['L','o','f','☆'],ki:1,a:'kurz',x:'Doppel-f → ☆ → kurz!'},{w:'Pien',k:['P','i','☆','n'],ki:1,a:'lang',x:'ie → ☆ → lang!'},{w:'Fuhl',k:['F','u','☆','l'],ki:1,a:'lang',x:'Dehnungs-h → ☆ → lang!'},{w:'Dass',k:['D','a','s','☆'],ki:1,a:'kurz',x:'Doppel-s → ☆ → kurz!'},{w:'Wiem',k:['W','i','☆','m'],ki:1,a:'lang',x:'ie → ☆ → lang!'}];let o,i,s;function sh(a){for(let x=a.length-1;x>0;x--){const j=Math.floor(Math.random()*(x+1));[a[x],a[j]]=[a[j],a[x]];}return a;}function init(){o=sh([...Array(W.length).keys()]);i=0;s=0;prog();render();}function prog(){const p=document.getElementById('f7P');p.innerHTML='';for(let x=0;x<o.length;x++){const d=document.createElement('div');d.className='fd'+(x<i?' dn':'')+(x===i?' cu':'');p.appendChild(d);}}function render(){if(i>=o.length){document.getElementById('f7G').innerHTML='<div style="text-align:center;padding:12px;"><div style="font-size:32px;">🔮⭐</div><div style="font-size:15px;font-weight:900;color:#2F4B43;margin:6px 0;">'+s+'/'+o.length+' richtig</div><p style="font-size:12px;color:#888;">Du kannst Fantasiewörter richtig lesen — nur an den Kugeln!</p><button class="fn show" onclick="f7I()">Nochmal</button></div>';return;}const t=W[o[i]];let kh='<div class="fkg">';t.k.forEach((c,j)=>{if(c==='☆')kh+='<div class="fkk stern">☆</div>';else if(j===t.ki)kh+='<div class="fkk kern">'+c+'</div>';else kh+='<div class="fkk">'+c+'</div>';});kh+='</div>';document.getElementById('f7G').innerHTML='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;">FANTASIEWORT — WIE KLINGT ES?</div><div class="fw">'+t.w+'</div>'+kh+'<div class="fb"><button class="fo k" id="f7K" onclick="f7C('kurz')">🔴 Kurz</button><button class="fo l" id="f7L" onclick="f7C('lang')">🔵 Lang</button></div><div class="ff" id="f7F"></div><div style="text-align:center;"><button class="fn" id="f7N" onclick="f7A()">Weiter →</button></div>';}window.f7C=function(c){const t=W[o[i]],ok=c===t.a;if(ok)s++;const bk=document.getElementById('f7K'),bl=document.getElementById('f7L');bk.style.pointerEvents='none';bl.style.pointerEvents='none';if(t.a==='kurz'){bk.classList.add('right');bl.classList.add('dim');}else{bl.classList.add('right');bk.classList.add('dim');}const f=document.getElementById('f7F');f.className='ff '+(ok?'ok':'no');f.textContent=(ok?'✓ ':'✗ ')+t.x;document.getElementById('f7N').classList.add('show');};window.f7A=function(){i++;prog();render();};window.f7I=init;init();})();</script>
+</div></details>
+
+<div class="aufgabe fset"><div class="an f">F10<span class="status built">gebaut</span></div><div class="at">🤖 Roboter-Lese-Spiel</div><div class="ad">Roboter liest ohne Rhythmus — Kind wählt die richtige ☆, Roboter liest richtig vor. 10 Wörter mit Sprachausgabe.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#2F4B43;padding:6px 0;">▶ Roboter-Lese-Spiel öffnen</summary>
+<div id="f10-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>#f10-wrap .f10-robot{font-size:52px;text-align:center;transition:.3s;}#f10-wrap .f10-robot.happy{animation:f10b .5s ease;}@keyframes f10b{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}#f10-wrap .f10-speech{background:#eef4f2;border-radius:10px;padding:8px 12px;margin:6px auto;max-width:280px;font-size:13px;color:#555;text-align:center;}#f10-wrap .f10-speech.mono{font-family:monospace;letter-spacing:3px;font-size:15px;font-weight:700;color:#aaa;}#f10-wrap .f10-speech.ok{background:#e3f5ea;color:#2a9e5e;font-weight:700;}#f10-wrap .f10-word{font-size:26px;font-weight:900;color:#2F4B43;text-align:center;margin:10px 0 4px;}#f10-wrap .f10-kg{display:flex;justify-content:center;gap:3px;margin:8px 0;}#f10-wrap .f10-kk{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;background:#eef4f2;border:2px solid #d5e3de;}#f10-wrap .f10-kk.kern{background:#F5CD4A;color:#5a4a00;border:none;}#f10-wrap .f10-kk.slot{background:#fff;border:2px dashed #E5915C;font-size:17px;color:#E5915C;}#f10-wrap .f10-kk.filled{background:#fff8f0;border:2px solid #E5915C;color:#E5915C;font-size:17px;}#f10-wrap .f10-kk.wrongf{background:#fde8e8;border-color:#c0392b;color:#c0392b;font-size:17px;}</style>
+<div id="f10P" style="display:flex;gap:3px;margin-bottom:10px;"></div>
+<div id="f10G"></div>
+<script>
+(function(){
+var W=[
+{word:"Muss",mono:"M. U. S.",k:["M","u","s","_"],ki:1,ans:"ss",opts:["ss","h","ie"],x:"Kurz \u2192 Doppel-s \u2606",rc:"Muss"},
+{word:"Lied",mono:"L. I. D.",k:["L","i","_","d"],ki:1,ans:"ie",opts:["ss","ie","h"],x:"Lang \u2192 ie \u2606",rc:"Lied"},
+{word:"Zahn",mono:"Z. A. N.",k:["Z","a","_","n"],ki:1,ans:"h",opts:["nn","h","ie"],x:"Lang \u2192 Dehnungs-h \u2606",rc:"Zahn"},
+{word:"Wall",mono:"W. A. L.",k:["W","a","l","_"],ki:1,ans:"ll",opts:["ll","h","ie"],x:"Kurz \u2192 Doppel-l \u2606",rc:"Wall"},
+{word:"Beet",mono:"B. E. T.",k:["B","e","_","t"],ki:1,ans:"ee",opts:["tt","h","ee"],x:"Lang \u2192 Doppelvokal ee \u2606",rc:"Beet"},
+{word:"Schiff",mono:"SCH. I. F.",k:["Sch","i","f","_"],ki:1,ans:"ff",opts:["ff","ie","h"],x:"Kurz \u2192 Doppel-f \u2606",rc:"Schiff"},
+{word:"Stuhl",mono:"S. T. U. L.",k:["St","u","_","l"],ki:1,ans:"h",opts:["ll","ie","h"],x:"Lang \u2192 Dehnungs-h \u2606",rc:"Stuhl"},
+{word:"Dieb",mono:"D. I. B.",k:["D","i","_","b"],ki:1,ans:"ie",opts:["bb","ie","h"],x:"Lang \u2192 ie \u2606",rc:"Dieb"},
+{word:"Kamm",mono:"K. A. M.",k:["K","a","m","_"],ki:1,ans:"mm",opts:["mm","h","ee"],x:"Kurz \u2192 Doppel-m \u2606",rc:"Kamm"},
+{word:"Boot",mono:"B. O. T.",k:["B","o","_","t"],ki:1,ans:"oo",opts:["tt","ie","oo"],x:"Lang \u2192 Doppelvokal oo \u2606",rc:"Boot"}
+];
+var ord,idx,sc;
+function shuffle(a){for(var x=a.length-1;x>0;x--){var j=Math.floor(Math.random()*(x+1));var t=a[x];a[x]=a[j];a[j]=t;}return a;}
+function speak(text,rate,onEnd){
+  try{
+    var u=new SpeechSynthesisUtterance(text);
+    u.lang="de-DE";u.rate=rate||1;u.pitch=1;
+    if(onEnd)u.onend=onEnd;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function speakRobot(item){
+  var letters=item.mono.split(". ");
+  var i=0;
+  function next(){
+    if(i>=letters.length)return;
+    var u=new SpeechSynthesisUtterance(letters[i]);
+    u.lang="de-DE";u.rate=0.6;u.pitch=0.5;
+    u.onend=function(){i++;setTimeout(next,200);};
+    window.speechSynthesis.speak(u);
+  }
+  window.speechSynthesis.cancel();
+  next();
+}
+function speakCorrect(item){
+  setTimeout(function(){speak(item.rc,0.8);},300);
+}
+function init(){ord=[];for(var x=0;x<W.length;x++)ord.push(x);shuffle(ord);idx=0;sc=0;prog();render();}
+function prog(){var p=document.getElementById("f10P");p.innerHTML="";for(var x=0;x<ord.length;x++){var d=document.createElement("div");d.style.cssText="flex:1;height:5px;border-radius:3px;background:"+(x<idx?"#2a9e5e":x===idx?"#F5CD4A":"#e0e0e0");p.appendChild(d);}}
+function render(){
+if(idx>=ord.length){
+document.getElementById("f10G").innerHTML='<div style="text-align:center;padding:14px;"><div style="font-size:40px;">\ud83e\udd16\u2728</div><div style="font-size:15px;font-weight:900;color:#2F4B43;margin:6px 0;">'+sc+'/'+ord.length+' richtig</div><p style="font-size:12px;color:#666;">Der Roboter liest jetzt mit Rhythmus!</p><button style="background:#2F4B43;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="f10Init()">Nochmal</button></div>';
+return;}
+var t=W[ord[idx]];
+var kh='<div class="f10-kg">';
+for(var j=0;j<t.k.length;j++){
+if(t.k[j]==="_")kh+='<div class="f10-kk slot" id="f10Slot">?</div>';
+else if(j===t.ki)kh+='<div class="f10-kk kern">'+t.k[j]+'</div>';
+else kh+='<div class="f10-kk">'+t.k[j]+'</div>';}
+kh+='</div>';
+var opts=t.opts.slice();shuffle(opts);
+var oh='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:10px 0;">';
+for(var j=0;j<opts.length;j++){
+oh+='<button id="f10o'+j+'" data-v="'+opts[j]+'" style="background:#f8f8f8;border:2px solid #e0e0e0;border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;font-weight:700;font-size:12px;color:#444;" onclick="f10Pick(this)">\u2606 '+opts[j]+'</button>';}
+oh+='</div>';
+var html='<div class="f10-robot" id="f10Bot">\ud83e\udd16</div>';
+html+='<div class="f10-speech mono" id="f10Sp">'+t.mono+'</div>';
+html+='<button id="f10Listen" style="display:block;margin:6px auto;background:#eef4f2;border:1px solid #d5e3de;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;color:#888;" onclick="f10Hear()">\ud83d\udd0a Roboter vorlesen lassen</button>';
+html+='<div class="f10-word">'+t.word+'</div>';
+html+=kh;
+html+='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;margin:6px 0;">WELCHE EXTRA KUGEL \u2606 BRAUCHT DER ROBOTER?</div>';
+html+=oh;
+html+='<div id="f10F" style="text-align:center;font-size:12px;font-weight:700;min-height:18px;margin:6px 0;"></div>';
+html+='<div style="text-align:center;"><button id="f10Nxt" style="display:none;background:#2F4B43;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="f10Adv()">Weiter \u2192</button></div>';
+document.getElementById("f10G").innerHTML=html;
+setTimeout(function(){speakRobot(W[ord[idx]]);},400);
+}
+window.f10Hear=function(){speakRobot(W[ord[idx]]);};
+window.f10Pick=function(el){
+var t=W[ord[idx]],v=el.getAttribute("data-v"),ok=v===t.ans;
+if(ok)sc++;
+var btns=document.querySelectorAll("#f10-wrap [data-v]");
+for(var j=0;j<btns.length;j++){
+btns[j].style.pointerEvents="none";
+if(btns[j].getAttribute("data-v")===t.ans){btns[j].style.borderColor="#2a9e5e";btns[j].style.background="#e3f5ea";btns[j].style.color="#2a9e5e";}
+else if(btns[j]===el&&!ok){btns[j].style.borderColor="#c0392b";btns[j].style.background="#fde8e8";btns[j].style.color="#c0392b";}
+else{btns[j].style.opacity="0.4";}}
+var sl=document.getElementById("f10Slot");
+sl.className="f10-kk "+(ok?"filled":"wrongf");
+sl.textContent="\u2606";
+var bot=document.getElementById("f10Bot"),sp=document.getElementById("f10Sp");
+if(ok){bot.classList.add("happy");sp.className="f10-speech ok";sp.textContent="\u201e"+t.rc+"!\u201c \u2014 So klingt es richtig!";speakCorrect(t);}
+else{sp.className="f10-speech";sp.textContent="Das war "+t.ans+"!";}
+var f=document.getElementById("f10F");
+f.style.color=ok?"#2a9e5e":"#c0392b";
+f.textContent=(ok?"\u2713 ":"\u2717 ")+t.x;
+document.getElementById("f10Nxt").style.display="inline-block";
+document.getElementById("f10Listen").style.display="none";
+};
+window.f10Adv=function(){idx++;prog();render();};
+window.f10Init=init;
+init();
+})();
+</script>
+</div></details>
+
+
+
+<div class="phase">💡 Aha-Box &amp; Cliffhanger</div>
+<div class="ahabox">
+  <div class="tag">🥒 Dr. Zucchini fasst zusammen</div>
+  Beim Schreiben und Lesen braucht man <strong>beides</strong>: die Laute und Buchstaben — <em>und</em> den <strong>Sprachrhythmus</strong>. Die Buchstabenkugeln zeigen die Laute. Die extra Kugeln <span class="stern">☆</span> zeigen den Rhythmus dazu — ob der Kerni kurz oder lang klingt. Ohne sie schreibt und liest man <strong>wie ein Roboter</strong>: Buchstabe für Buchstabe, aber ohne den Klang, der die Bedeutung macht.
+  <div class="cliff">
+    <div class="cd"><div class="cav">🟠</div><div><div class="cw">Nepomuk</div>„Laute <em>und</em> Rhythmus — verstanden! Aber das waren doch alles nur <strong>kurze, einsilbige</strong> Wörter. Wie schaut es bei <strong>längeren Wörtern</strong> aus?"</div></div>
+    <div class="cd"><div class="cav">🥒</div><div><div class="cw">Dr. Zucchini</div>„Gute Frage, Nepo! Bei längeren Wörtern kommt ein neues Werkzeug dazu — die <strong>Schreibsilben</strong>. Damit kannst du jedes Wort Silbe für Silbe schreiben. Das ist Kapitel 9!"</div></div>
+    <div style="margin-top:8px;font-weight:900;">☛ Cliffhanger → Kapitel 9: längere (mehrsilbige) Wörter &amp; Schreibsilben</div>
+  </div>
+</div>
+
+<div class="offen"><strong>⚠ Offene Punkte — Kapitel 8</strong>
+<ol style="margin:6px 0 0 18px;line-height:1.7;">
+<li><s>Noch zu bauen: E7c, F8, F9, F10</s> — ✅ alle gebaut.</li>
+<li>Reihenfolge/Nummerierung der F-Aufgaben mit Angelika finalisieren (10 Aufgaben ist viel — evtl. bündeln).</li>
+<li>Schiff in E7b: kurzes i (i), aber Doppel-ff als ☆ — evtl. durch Wind ersetzen.</li>
+<li>tz/ck-Sonderfall: eigene Kategorie? Lange Seite (E7c) evtl. eigenes Kapitel.</li>
+<li>Boot/Moos im Überblicksblatt: oo-Gruppe, kein exakter Reim.</li>
+<li>Begriff „Extra-Rechtschreibkugel" im Kugel-Lehrgang &amp; Projektstand nachziehen.</li>
+</ol></div>
+
+</div>
+</div>
+</div>
+</body>
+</html>

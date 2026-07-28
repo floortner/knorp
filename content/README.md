@@ -5,6 +5,13 @@ pro Lektion in `lectures/`. Was hier auf dem `main`-Branch liegt, wird beim näc
 automatisch in die App übernommen. Die Trainerinnen und Trainer weisen die Lektionen im
 Trainer-Portal einzelnen Schülern zu — geschrieben werden sie hier.
 
+Daneben liegt `linguist-contrib/`: der **Austauschordner mit dem Linguistik-Team**. Jede Lieferung
+bekommt einen eigenen Unterordner (`iteration-1/` = der Developer-Handoff `lernapp3-opus.md` mit den
+`BLS_*.html`-Kapitelplänen, die nächste Lieferung dann `iteration-2/` usw.); Engineerings
+Rückmeldungen (`RUECKMELDUNG-ENGINEERING.md`) und erwartete Antworten wie `fertigkeiten.md` liegen
+direkt im Ordner. Inhalte dort werden **nicht** von der App importiert — in die App kommt nur,
+was als Lektionsdatei in `lectures/` liegt.
+
 ## Eine Lektion anlegen
 
 1. Kopiere die Vorlage `lectures/_vorlage.md` zu `lectures/<name>.md`.
