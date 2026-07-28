@@ -16,7 +16,7 @@ This is the **third subproject** of the monorepo, deployed independently (future
 | Users | parents + students | ~3 internal staff trainers |
 | Auth realm | family cookie (`aud:"family"`) | **staff** cookie (`aud:"staff"`) — disjoint, separate key |
 | Form factor | mobile-first PWA | **desktop/tablet, landscape, no PWA** |
-| Data shown | the family's own data | **pseudonymised** queue: image + LLM draft + skill tags + grade band only |
+| Data shown | the family's own data | student name + learning data (known-trainer model) — never parent email/chat/billing |
 | Look | warm student canvas, mascots | calm neutral slate tool |
 
 ## Two non-negotiables
@@ -35,21 +35,23 @@ React Router 7 · Vitest + Testing Library. No PWA, no student fonts/mascots. Ma
 
 ```
 src/
-  main.tsx  App.tsx          # providers + routes (/login, /login/code, /queue, /review/:uploadId, /users, /lexemes)
+  main.tsx  App.tsx          # providers + routes (/login, /login/code, /queue, /review/:uploadId,
+                             #   /lectures, /students, /users, /profile)
   index.css                  # neutral staff @theme tokens (teal accent, slate surface)
   app/AppLayout.tsx          # top bar: (b) brand + trainer name, nav with live count badges, logout
   lib/
     api.ts                   # transport only — staff cookie, error-envelope → ApiError
     api.gen.ts               # types GENERATED from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
     contract.ts              # ergonomic aliases over api.gen.ts `operations` (no hand-authored shapes)
-    endpoints.ts             # typed wrappers: staffAuthApi, reviewApi, usersApi, lexemesApi
+    endpoints.ts             # typed wrappers: staffAuthApi, reviewApi, usersApi, lecturesApi, studentsApi
     decision.ts  cn.ts
   features/
     auth/                    # StaffAuthProvider, /staff/me probe, RequireStaff guard, login + code screens
-    queue/                   # review list "Chats" (Offen | Erledigt | Alle) — pseudonymised rows
+    queue/                   # review list "Chats" (Offen | Erledigt | Alle) — rows by student name
     review/                  # ReviewScreen (two-pane image | editable draft) + AnalysisEditor + claim/submit
+    lectures/                # "Lektionen": content-library browse + assign + outcome table
+    students/                # "Schüler": learner directory + activity timeline + session drill-down
     users/                   # ADMIN "Nutzer": account approval/deactivate/delete + per-student progress
-    lexemes/                 # ADMIN "Wortschatz": word-pool curation (filters, stats, editor, export)
     progress/                # shared learner-progress panel (summary · skills · activity)
   components/ui/             # button, input, select, textarea, modal, filter-chips
 ```
@@ -68,8 +70,8 @@ npm run gen:api              # regenerate types from backend OpenAPI (committed;
 
 > **Status: shipped.** Wired to the live backend `staff/` module; types are generated from the published
 > `/staff/*` OpenAPI (`lib/api.gen.ts`, committed) and aliased in `lib/contract.ts`; CI fails on drift, same
-> as the family app. Beyond review, the portal carries the ADMIN surfaces: **Nutzer** (account lifecycle +
-> per-student learner progress) and **Wortschatz** (lexeme-foundation curation — see `../backend/SPEC.md` §6).
+> as the family app. Beyond review, the portal carries the teaching console (**Lektionen** + **Schüler**,
+> all trainers) and the ADMIN surface **Nutzer** (account lifecycle + per-student learner progress).
 
 ## The review flow (backend SPEC §10, ARCHITECTURE §11)
 

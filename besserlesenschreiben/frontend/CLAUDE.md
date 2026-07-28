@@ -10,15 +10,13 @@ reports what happened. No lesson logic lives here.
 ## Contents
 
 - **`docs/knorp.html`** — the interactive design prototype. Visual source of truth for the **shell, screens
-  and brand** (login, onboarding, tabs, feedback). Its parent area/PIN gate was removed from the app
-  (2026-07-22 — those trainer actions now live in `/profil` behind a two-step confirmation). Its exercise interactions document a legacy
-  type set that predates even the (now also dropped) Vokaltraining program — the current `Exercise` contract
-  lives in `SPEC.md` §3 and the built renderers, not in the prototype. **Recreate** looks in the real stack
-  (React + TS + Tailwind + shadcn) — do **not** paste the prototype's HTML/inline styles into the app.
-- **`fixtures/`** — golden example API payloads (`session.example.json`, `units.example.json`). The
-  Vokaltraining content set (14 exercise types, 7 units) was dropped 2026-07-13 (ROADMAP.md §F) — these
-  currently hold a single stand-in `placeholder` exercise and an empty units array. Build renderers and
-  snapshot tests against these.
+  and brand** (login, onboarding, tabs, feedback). Its parent area/PIN gate and its exercise interactions
+  are **obsolete** — the current `Exercise` contract lives in `SPEC.md` §3 and the built renderers, not in
+  the prototype. **Recreate** looks in the real stack (React + TS + Tailwind + shadcn) — do **not** paste
+  the prototype's HTML/inline styles into the app.
+- **`fixtures/`** — golden example API payloads (`session.example.json`, `units.example.json`). Until §F
+  lands the new content set these hold a single stand-in `placeholder` exercise and an empty units array.
+  Build renderers and snapshot tests against these.
 - **`docs/screens/`** — a screenshot of each screen, as a quick visual index.
 - **`monster-pets/`** — SVG mascot characters (Nepo, Stella, and others) in four emotional states each
   (`froehlich`, `traurig`, `cool`, `ueberrascht`).
@@ -41,8 +39,8 @@ spine — see `SPEC.md` §4. Telemetry plumbing was built before the renderers �
   set); the ✨ **generated-lecture entry** on `/lernen` + the lesson **intro card** (§2) and the **homework
   "Foto & verbessern"** flow (§9). The app is **free** — no billing/supporter UI anywhere (ARCHITECTURE §9).
   **Homework upload lives in the student Chat tab** (`tabs/Chat.tsx`): the photo is sent as a chat message and
-  the trainer's verdict is echoed back in-chat. The professional-in-the-loop model
-  is unchanged (the photo still goes to the pseudonymised staff queue; the LLM never auto-applies it).
+  the trainer's verdict is echoed back in-chat. The professional-in-the-loop model is unchanged (the photo
+  goes to the staff review queue; the LLM never auto-applies it).
 
 ## Brand quick-reference
 
@@ -53,9 +51,8 @@ spine — see `SPEC.md` §4. Telemetry plumbing was built before the renderers �
 
 ## The exercise contract at a glance
 
-The Vokaltraining 14-type program (Wortraster, kurz/lang-Vokal, Quatschwörter, Komposita, Wortfamilien) was
-dropped 2026-07-13 (ROADMAP.md §F) — training types, sequence, and word lists are being redesigned from
-scratch. The contract currently holds a single stand-in type:
+Training types, sequence, and word lists are being redesigned in §F (HISTORY.md pivot log has the
+back-story). The contract currently holds a single stand-in type:
 
 - **`placeholder`** — single-choice (tap one option → correct/wrong), rendered via the generic
   `SingleChoiceExercise`. `fixtures/session.example.json` has the one example.

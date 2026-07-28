@@ -13,16 +13,16 @@ besserlesenschreiben/
 ├── backend/             ← the API service  (TypeScript · NestJS · Postgres · AWS)
 │   ├── AGENTS.md        ← Claude Code: read this FIRST when working in backend/
 │   ├── SPEC.md          ← backend data model, endpoints, algorithms
-│   ├── item_bank.seed.json   ← seeded exercise content (~360 items, 7 units)
-│   ├── lexeme.seed.json + lexeme.overrides.json ← the curated word foundation (2,127 words ⊕ trainer change-set)
-│   ├── prisma/seed.ts   ← idempotent seed loader (prisma db seed)
+│   ├── prisma/seed.ts   ← idempotent seed (staff admins + dev accounts)
 ├── frontend/            ← the family SPA / PWA  (TypeScript · React · Vite · Tailwind)
 │   ├── AGENTS.md        ← Claude Code: read this FIRST when working in frontend/
-│   └── SPEC.md          ← screens, the 14 Vokaltraining exercise renderers, telemetry
-└── trainer/            ← internal STAFF portal for homework review  (React · Vite · Tailwind)
+│   └── SPEC.md          ← screens, the exercise renderers, telemetry
+└── trainer/            ← internal STAFF portal (review + teaching console)  (React · Vite · Tailwind)
     ├── AGENTS.md        ← Claude Code: read this FIRST when working in trainer/
     └── README.md        ← what it is, layout, the review flow
 ```
+Lecture content lives outside these three, in the repo-root `content/` library (§I) — authored by the
+linguists, imported at deploy.
 
 The **family app** (`frontend/`) and the **trainer portal** (`trainer/`) are **two disjoint auth realms**
 (ARCHITECTURE §1a): a credential in one is never valid in the other. The trainer portal is internal-only
@@ -34,15 +34,16 @@ This is **three projects in one directory**. Open Claude Code at this root to bu
 a subfolder to build one at a time. Either way, the agent should read, in order:
 **`<subproject>/AGENTS.md` → `ARCHITECTURE.md` → `<subproject>/SPEC.md` (or `README.md` for `trainer/`).**
 
-Suggested order of work (shipped milestones and the forward plan live in the repo-root
-[`../ROADMAP.md`](../ROADMAP.md) — the single source of truth):
-1. **Backend first** — auth + profiles (the security boundary everything depends on), then the
-   item bank (load `item_bank.seed.json`), sessions + attempts, progress, digest, chat, homework, then the
-   **staff realm** (trainer auth, review queue, authoritative apply — Phase 2.5). No billing — the app is free.
-2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, then the 14 renderers +
-   telemetry (the bulk), then progress/voice/accessibility, chat, and the parent area (homework upload).
-3. **Trainer portal** — staff login, the review queue + two-pane review screen, and the ADMIN surfaces
-   (account approval, learner progress, "Wortschatz" lexeme curation). Types are generated from the backend
+The app is **built and live in beta** — the forward plan lives in the repo-root
+[`../ROADMAP.md`](../ROADMAP.md), shipped detail + the pivot log in [`../HISTORY.md`](../HISTORY.md).
+The three projects at a glance:
+1. **Backend** — auth + profiles (the security boundary everything depends on), sessions + attempts,
+   progress, digest, chat, homework, and the **staff realm** (trainer auth, review queue, authoritative
+   apply, lectures, learner activity). No billing — the app is free.
+2. **Frontend** — app shell + auth screens, onboarding, the home + session loop, the exercise renderers +
+   telemetry, progress/voice/accessibility, chat (incl. homework upload).
+3. **Trainer portal** — staff login, the review queue + two-pane review screen, the teaching console
+   (Lektionen + Schüler), and the ADMIN surfaces (account approval, learner progress). Types are generated from the backend
    `/staff/*` OpenAPI and drift-gated in CI.
 
 The frontends depend on the backend's API contract (`backend/SPEC.md §6`). Build the backend endpoints a
@@ -55,7 +56,7 @@ feature needs before the frontend/portal feature that calls them.
 - **Two disjoint auth realms.** The family app and the staff trainer portal authenticate separately
   (different cookie/`aud`, different signing key); a credential in one is never valid in the other.
 - **Security boundary.** `user_id`/`profile_id` come only from the auth token; object-storage access is via
-  presigned URLs scoped to the caller's prefix; login codes are hashed + rate-limited. Staff see only a **pseudonymised** review queue — no student name, parent email, chat, or billing.
+  presigned URLs scoped to the caller's prefix; login codes are hashed + rate-limited. Staff surfaces show the student's name + learning data (known-trainer model) — never a parent email, chat, or billing; account identity stays admin-only.
 - **This is an app for minors.** The logging rules, the SVG-first media policy, EXIF stripping on photos, and
   EU data residency are part of the build, not afterthoughts.
 - **The app is free.** No payment UI exists anywhere (billing deferred — ARCHITECTURE §9); access is gated by staff approval.

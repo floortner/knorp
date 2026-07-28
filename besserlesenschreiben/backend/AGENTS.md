@@ -19,36 +19,27 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 2. `../ARCHITECTURE.md` §4 (API rules), §5 (errors), §6 (logging), §9 (payments), §10 (media).
 
 ## Golden rules (do not violate)
-1. **`user_id` / `profile_id` come ONLY from the JWT** — never from a request body or path. Grep for this.
-2. **Object-storage access = presigned URLs scoped to one object under the caller's prefix.** Never expose bucket credentials/paths.
-3. **Destructive profile routes** (`/profiles/:id/reset`, `/profiles/:id/reset-chat`) assert ownership of `:id`
-   against the JWT account (missing/foreign → 404). There is no PIN/parent elevation (removed 2026-07-22) —
-   the family UI fronts them with a two-step confirmation instead.
-4. **Access is gated by account status, not payment.** The family `JwtAuthGuard` requires `account.status='active'`
-   (a per-request check → immediate revocation). AI (`★`) endpoints are **free** — no entitlement/credit/`402`
-   check (billing deferred, ARCHITECTURE §9). Signup is silent pending-on-first-code: a first `/auth/request-code`
-   creates a `pending` account and emails nothing until a **staff admin** approves it (still `200`, no enumeration).
-5. **Two disjoint auth realms (ARCHITECTURE §1a).** `/staff/*` requires a staff cookie (`aud:'staff'`,
-   `StaffAuthGuard`, signed with `STAFF_JWT_SECRET` ≠ `JWT_SECRET`); a family JWT never validates there and vice
-   versa. The trainer queue is **pseudonymised** (image + LLM draft + skill tags + grade band only). Staff
-   user-administration (approve/deactivate/delete real emails) is **admin-role-only**, separate from the queue.
-6. **Never log** student answers, homework/OCR content, emails, login codes, JWTs, presigned URLs, or bodies.
-   Log identifiers + outcomes only (ARCHITECTURE §6).
-7. **Errors use the one envelope** (`{error:{code,message,requestId,details}}`) via a global exception filter —
-   never leak stack traces, Prisma errors, or provider errors to clients.
-8. **The API is the contract.** Every route under `/api/v1`; breaking changes go to `/api/v2`, never edit in
-   place. After any request/response shape change: edit the Zod schema in `src/contract/*`, then run
-   `npm run openapi:export` (regenerates the committed `openapi.json`) and the frontend's `npm run gen:api`,
-   and commit both. CI fails on drift. Annotate responses with `ApiZodResponse`/`ApiZodCreatedResponse` so the
-   global `ZodResponseInterceptor` validates them at runtime (dev throws, prod logs+strips).
-9. **No in-memory security state.** Lockout counters / rate-limit windows live in the DB (e.g. login-code
-   attempts on `login_code`), never a process-local Map — the service scales to zero/out.
+The **security-boundary rules are canonical in `../ARCHITECTURE.md`** (§8 boundary + §1a realms + §5
+errors + §6 logging) and mirrored in the repo-root `CLAUDE.md` — JWT-only ids, presigned single-object
+URLs, ownership-checked destructive routes, status-gated access (no billing/`402`), two disjoint auth
+realms (staff surfaces show the student's **name** — known-trainer model — but never parent
+email/chat/billing outside the admin-only surface), no-PII logging, the one error envelope, no
+in-memory security state. Follow them as written there. Backend-specific:
+
+1. **The API is the contract.** Every route under `/api/v1`; breaking changes go to `/api/v2`, never edit
+   in place. After any request/response shape change: edit the Zod schema in `src/contract/*`, then run
+   `npm run openapi:export` (regenerates the committed `openapi.json`) and `npm run gen:api` in
+   `../frontend` **and** `../trainer`, and commit all three. CI fails on drift. Annotate responses with
+   `ApiZodResponse`/`ApiZodCreatedResponse` so the global `ZodResponseInterceptor` validates them at
+   runtime (dev throws, prod logs+strips).
+2. **Durable security state.** Lockout counters / rate-limit windows live in the DB (e.g. login-code
+   attempts on `login_code`), never a process-local Map.
 
 ## Conventions
 - **Wire format is camelCase JSON; DB columns are snake_case.** Use Prisma `@map`/`@@map` to bridge; keep the
   camelCase boundary in DTOs.
 - **Controllers handle HTTP only.** Per-resource folders under `modules/` hold a controller + service + Zod DTOs.
-  Heavy domain logic (session generation, fsrs, digest, vision, tts) lives in `services/` as **plain injectables
+  Heavy domain logic (session generation, fsrs, digest, vision) lives in `services/` as **plain injectables
   with no HTTP/controller concerns** (the dtctl transport-purity lesson).
 - **Validation = Zod** via `nestjs-zod` (`createZodDto`); the same Zod schemas drive Claude structured output
   (`zodOutputFormat` + `messages.parse`) so the digest/homework JSON stays typed end-to-end.
@@ -70,9 +61,8 @@ Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleForm
 - Full local-dev setup (local Postgres, env, first run, calling the API): see [`./README.md`](./README.md).
 
 ## Build milestones
-Shipped milestones and the forward plan live in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)** — the
-single source of truth. Everything through Phase 2.5 + Post-2.5 is done; billing is deferred (schema kept
-dormant, ARCHITECTURE §9); TTS + deploy/hardening remain.
+The forward plan lives in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)**; shipped detail + the pivot
+log in **[`HISTORY.md`](../../HISTORY.md)**. The beta is deployed and live; billing + TTS are deferred.
 
 ## Definition of done for a feature
 Endpoint matches `SPEC.md §6`; `user_id` from token; correct error codes; structured logs with `requestId`

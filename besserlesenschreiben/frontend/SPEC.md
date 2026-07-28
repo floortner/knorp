@@ -44,7 +44,7 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (student
 ```
 
 **Tabs** (bottom nav, mobile): `lernen · erfolge · chat · profil`. There is no separate parent area and no
-PIN (both removed 2026-07-22) — the trainer actions live in `/profil`.
+PIN — the destructive actions live in `/profil` behind two-step confirmations.
 
 **The app is free.** No price, paywall, or buy button exists anywhere — student or parent view. The ✨ lecture
 card requests `POST /sessions {source:'llm'}` (loading state: generation takes a few seconds) and falls back
@@ -58,10 +58,8 @@ The backend serves a `session` = ordered `Exercise[]`. Render one at a time. The
 backend Zod union in `backend/src/contract/exercise.ts`. Each renderer: shows the prompt, captures the
 answer, gives feedback, **emits telemetry**.
 
-> **The Vokaltraining content set was dropped 2026-07-13** (ROADMAP.md §F) — the 14-type program described
-> in earlier revisions of this section (Wortraster, kurz/lang-Vokal, Quatschwörter, Komposita, Wortfamilien)
-> no longer exists. The contract currently holds a single stand-in type; training types, sequence, and word
-> lists are being redesigned from scratch. Add new types via `ExerciseView.tsx`'s dispatch as they're
+> The contract currently holds a single stand-in type; the real training types arrive with §F
+> (HISTORY.md pivot log has the back-story). Add new types via `ExerciseView.tsx`'s dispatch as they're
 > designed (ROADMAP.md §C2 has the playbook).
 
 Discriminated union on `type` (currently):
@@ -76,9 +74,7 @@ Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice,
 **Interaction pattern:** `placeholder` renders via the generic `SingleChoiceExercise` — tap one option →
 correct/wrong. States: `idle | correct | wrong`. On correct: chime + speak the answer + `praise`, advance.
 On wrong: buzz + "Nochmal versuchen", allow retry. Confetti/fanfare on session complete. This state machine
-and the `ExerciseCard`/`ChoiceTile`/`useAnswer` scaffolding are reusable for whatever training types replace
-the dropped 14 — the Vokaltraining-specific mechanics (Wortraster grid, syllable-tile reordering,
-sentence-token tapping) were deleted along with their renderers.
+and the `ExerciseCard`/`ChoiceTile`/`useAnswer` scaffolding are the reusable base for the §F training types.
 
 ---
 
@@ -118,7 +114,7 @@ postAttempt({
 
 ## 5. Voice playback
 
-- If `ex.audioUrl` present → play it (and `syllableAudio[i]` for syllable-wise playback in `sylarrange`).
+- If `ex.audioUrl` present → play it (`syllableAudio[i]` is the slot for future syllable-wise playback).
 - Else fall back to **Web Speech API** (`SpeechSynthesisUtterance`, `lang='de-DE'`, `rate≈0.85`) — same as prototype.
 - Respect `settings.soundOn`. Gate audio init behind first user gesture (mobile autoplay rules).
 
@@ -169,8 +165,8 @@ error paths (the message is written for the student); no special routing. Nothin
 
 ## 8. Verwaltung (destructive actions in `/profil`)
 
-The former parent area and its PIN were removed (2026-07-22). The two destructive actions live in the
-`/profil` tab under **Verwaltung**, each fronted by a **two-step confirmation** (action → "Wirklich …?" →
+There is no parent area and no PIN. The two destructive actions live in the `/profil` tab under
+**Verwaltung**, each fronted by a **two-step confirmation** (action → "Wirklich …?" →
 "Bist du ganz sicher? Das kann nicht rückgängig gemacht werden.") — deliberate friction, since anyone
 holding the family session can trigger them:
 
@@ -199,8 +195,8 @@ draft and has **no confirm/edit UI** (the trainer portal `-trainer` owns that, a
 4. The validated focus shapes the **next** generated lecture; surface that session in `/lernen` when it
    appears. There is no family confirm step and the student is never blocked while a photo is in review.
 - Student handwriting OCR is unreliable → the mandatory human gate is the **staff trainer**, whose verdict
-  is authoritative (the former parent-confirm step is removed). The upload is **not** PIN-gated — it lives in
-  the student-facing chat by product decision; the professional-in-the-loop pipeline is unchanged.
+  is authoritative (there is no parent-confirm step). The upload is not PIN-gated — it lives in the
+  student-facing chat by product decision; the professional-in-the-loop pipeline is unchanged.
 
 ---
 

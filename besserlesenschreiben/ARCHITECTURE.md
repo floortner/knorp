@@ -53,12 +53,11 @@ and the JWTs carry a different `aud`/role so a guard can never confuse them.
   **hand-provisioned by an admin** (no self-signup); they pull homework from a shared queue and are
   employees/contractors under a staff DPA, not a family's own teacher. There is **no per-family professional**
   in v1, and the pool is small enough that the queue is about preventing double-review, not load-balancing.
-- **Minimisation at the realm boundary (hard rule, revised 2026-07-25 — ROADMAP §H1.3):** trainers work
-  under the **known-trainer model** — they know each student personally and see the student's **name**,
-  grade band, skill tags, session/attempt activity, the homework **image**, and the **LLM draft analysis**
-  (the old `L-xxxxxx` pseudonym is retired). What a trainer **never** sees: the parent email, free-text
-  chat, billing, or account lifecycle — those stay on the admin-only surface. This keeps staff access to
-  minors' data scoped to what the teaching task needs (§8).
+- **Minimisation at the realm boundary (hard rule):** trainers work under the **known-trainer model** —
+  they know each student personally and see the student's **name**, grade band, skill tags,
+  session/attempt activity, the homework **image**, and the **LLM draft analysis**. What a trainer
+  **never** sees: the parent email, free-text chat, billing, or account lifecycle — those stay on the
+  admin-only surface. This keeps staff access to minors' data scoped to what the teaching task needs (§8).
 - The trainer's verdict is **authoritative** and **replaces the parent-confirm step** for homework
   (§10). Review is **asynchronous**: it never blocks a student mid-lesson; it shapes the *next* generated
   lecture.
@@ -138,11 +137,11 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 | Tests | Vitest (Jest = Nest default alternative) | current |
 | Lint / format / types | ESLint + Prettier · `tsc` | — |
 | **Hosting (compute)** | Small AWS EC2 instance (Graviton, systemd — no container) | — |
-| **Hosting (DB)** | Amazon RDS for PostgreSQL | PG 17 |
+| **Hosting (DB)** | PostgreSQL **self-hosted on the EC2 box** (beta; managed RDS is the full-prod target, §7) | PG 17 |
 | **Hosting (objects)** | Amazon S3 | — |
 | **Secrets** | AWS SSM Parameter Store (SecureString), fetched at boot | — |
-| **Login email** | Amazon SES (or Resend/Postmark) | — |
-| **Region** | Frankfurt (eu-central-1) primary · Ireland (eu-west-1) fallback | — |
+| **Login email** | Amazon SES (IAM-role auth) | — |
+| **Region** | Frankfurt (eu-central-1) — single region in beta (eu-west-1 is the full-prod DR target) | — |
 
 **Backend-language decision (deliberate, revisitable):** **TypeScript/NestJS** is chosen for **one language
 across both repos** — shared types, shared tooling, one mental model for a solo dev, and the ability to reuse
@@ -178,9 +177,9 @@ src/
     security/             # JWT, argon2 hashing, rate limiting
   modules/                # one folder per resource: controller (HTTP) + service + Zod DTOs
     auth/  profiles/  sessions/  attempts/  progress/
-    chat/  homework/          # (no billing/ module — billing deferred, §9)
+    chat/  homework/  assignments/
     staff/                # STAFF realm (§1a): trainer auth, review queue + authoritative apply,
-                          #   admin user administration, learner progress (lexeme curation dropped, §F)
+                          #   lectures browse/assign, learner activity, admin user administration
   services/               # DOMAIN logic only — plain injectables, NO controllers/HTTP here (dtctl lesson)
     digest/               # derived markdown performance digest
     fsrs/                 # scheduling (ts-fsrs)
@@ -188,14 +187,11 @@ src/
     storage/              # S3 presigned URLs / local-FS dev store (+ local image endpoint)
     email/                # login-code delivery (console | ses | resend | capture)
 prisma/
-  schema.prisma           # the model truth (account, profile, item_bank, attempt, …). The `lexeme` model
-                           # + the Vokaltraining content set were dropped 2026-07-13 (ROADMAP.md §F) — the
-                           # word-list schema is being redesigned.
-  seed.ts                 # idempotent loader: staff admins + dev accounts (content seeding dropped with §F)
+  schema.prisma           # the model truth (account, profile, item_bank, lecture, attempt, …);
+                           # the word-list model is a §F slot (HISTORY.md pivot log)
+  seed.ts                 # idempotent loader: staff admins + dev accounts
 scripts/
-  export-openapi.ts  seed-e2e.ts  llm-smoke.ts
-                           # `item_bank.seed.json` and its generation scripts were deleted with the
-                           # Vokaltraining content set (ROADMAP.md §F) — re-add once new content is seeded.
+  export-openapi.ts  seed-e2e.ts  llm-smoke.ts  content-validate.ts  content-import.ts
 test/                     # Vitest; incl. golden snapshots for digest.md + Exercise JSON
 package.json  package-lock.json  tsconfig.json  eslint.config.mjs  .env.example  AGENTS.md
 ```
@@ -210,9 +206,8 @@ src/
     telemetry.ts          # attempt timing + emit (frontend SPEC §4)
   app/                    # shell, routing, tabs (lernen | liga | profil | chat)
   features/
-    exercises/            # the Exercise union type (currently a single `placeholder` scaffold — the
-                          # Vokaltraining renderer set was dropped, ROADMAP.md §F) + audio.ts (audio_url
-                          # playback + Web Speech fallback)
+    exercises/            # the Exercise union type (a single `placeholder` scaffold until §F lands the
+                          # new types) + audio.ts (audio_url playback + Web Speech fallback)
     auth/  lessons/  progress/  profile/   # homework upload lives in the Chat tab; no billing/ — the app is free
   components/ui/          # shadcn components
   hooks/  styles/theme.css (@theme tokens)
@@ -225,8 +220,8 @@ index.html  vite.config.ts  package.json  package-lock.json  .env.example  AGENT
 ### Trainer `-trainer` (internal staff portal)
 ```
 src/
-  main.tsx  App.tsx        # providers + routes: /login, /login/code, /queue, /review/:uploadId, /users
-                           # (/lexemes dropped with the Wortschatz tab, ROADMAP.md §F)
+  main.tsx  App.tsx        # providers + routes: /login, /login/code, /queue, /review/:uploadId,
+                           # /lectures, /students, /users, /profile
   index.css               # neutral staff @theme tokens (teal accent, slate surface) — no PWA, no mascots
   app/AppLayout.tsx       # top bar: (b) brand + trainer name, nav with live count badges, logout
   lib/
@@ -240,9 +235,8 @@ src/
     review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
     students/             # learner directory + activity timeline + session drill-down (§H1.3/§H3)
     lectures/             # teaching console: content-library browse + assign + outcome table (§H1/§I3;
-                          #   authoring moved to repo-root content/ — the editor was removed)
+                          #   lectures are authored in repo-root content/, never here)
     users/                # ADMIN: account approval / deactivate / delete + per-student progress
-                          # (the "Wortschatz" lexeme-curation tab was dropped with the content set, §F)
     progress/             # shared learner-progress panel (summary · skills · activity)
   components/ui/          # button, input, select, textarea, modal, filter-chips
 index.html  vite.config.ts  package.json  .env.example  README.md  AGENTS.md
@@ -274,8 +268,8 @@ media rule, and the security-boundary invariants. It measurably improves agent o
   `/auth/verify` and cleared on `/auth/logout`. The browser SPA holds **no token in JS** — it derives auth from
   a `/me` probe, so a refresh never logs the student out. `JwtAuthGuard` also accepts `Authorization: Bearer <jwt>`
   for non-browser/API clients. (Refresh-token rotation is deferred; the 30-day cookie is the v1 posture.)
-  The former parent-PIN elevation was removed 2026-07-22 — destructive profile routes are plain
-  family-session routes, ownership-checked and double-confirmed in the UI (backend SPEC §4).
+  There is no PIN or parent-elevation step — destructive profile routes are plain family-session
+  routes, ownership-checked and double-confirmed in the UI (backend SPEC §4).
 - **CSRF posture:** there is no CSRF token — protection rests entirely on `SameSite=Lax` (so a genuinely
   cross-site `evil.com` POST carries no cookie) plus the explicit production CORS allowlist (the backend
   refuses to boot without one). This is adequate for beta because the apps and API are subdomains of one
@@ -286,9 +280,8 @@ media rule, and the security-boundary invariants. It measurably improves agent o
   DB columns use snake_case; the backend maps between them. Pick one and never mix on the wire: **camelCase wins.**
 - **Status codes:** `200` ok · `201` created · `204` no body · `400` malformed · `401` unauthenticated ·
   `403` authenticated-but-forbidden · `404` · `409` conflict ·
-  `422` validation · `429` rate-limited · `5xx` server. (`402` is **deferred** — reserved for paid tiers, §9.)
+  `422` validation · `429` rate-limited · `5xx` server.
 - **Idempotency:** `POST /attempts` must be idempotent (dedupe on `(session_id, item_id, attempt_no)`).
-  The billing webhook's idempotency (on the provider event id) is preserved but **deferred** (§9).
 - **Correlation:** the backend assigns an `X-Request-Id` per request (or echoes the client's). It appears in
   every log line and in error envelopes. The frontend generates one per user action and sends it.
 - **Pagination:** cursor-based where lists can grow (`?limit=&cursor=`); responses carry `nextCursor`.
@@ -327,7 +320,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 ```json
 {
   "error": {
-    "code": "INSUFFICIENT_CREDITS",
+    "code": "VALIDATION_ERROR",
     "message": "Human-readable, safe to surface in the family app.",
     "requestId": "req_8f3a…",
     "details": [ { "field": "code", "issue": "expired" } ]
@@ -341,12 +334,11 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 |---|---|---|
 | 401 | `UNAUTHENTICATED` / `SESSION_EXPIRED` | route to `/login`, show "Sitzung abgelaufen" |
 | 403 | `FORBIDDEN` | generic "not allowed" |
-| 402 | `INSUFFICIENT_CREDITS` / `TIER_REQUIRED` | **deferred (§9)** — not emitted today; the app is free |
 | 422 | `VALIDATION_ERROR` | field-level messages from `details[]` |
 | 429 | `RATE_LIMITED` | back off using `Retry-After`; soft message |
 | 404 | `NOT_FOUND` | — |
 | 409 | `CONFLICT` | — |
-| 503 | `PROVIDER_UNAVAILABLE` | AI/TTS provider down; retry later — **no credit consumed** |
+| 503 | `PROVIDER_UNAVAILABLE` | AI provider down; retry later |
 | 500 | `INTERNAL` | generic apology + `requestId`; nothing technical |
 
 **Backend rules**
@@ -356,8 +348,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 - Zod validation failures (via `nestjs-zod`) are reshaped into `VALIDATION_ERROR` with a `details[]` array (field + issue).
 - **Never leak** which emails exist (`/auth/request-code` always `200`), or any other
   account-enumeration signal.
-- Expensive AI ops wrap provider failures: on Anthropic/TTS error, return `503 PROVIDER_UNAVAILABLE` and
-  **do not** consume a credit.
+- Expensive AI ops wrap provider failures: on an Anthropic error, return `503 PROVIDER_UNAVAILABLE`.
 
 **Frontend rules**
 - A single error interceptor in `api.ts` maps `code → action` per the table; components don't hand-roll
@@ -407,37 +398,37 @@ SPEC §10, deleted on a schedule, EU residency.
 
 ## 7. Build · update · distribution
 
-**Hosting: AWS**, region **Frankfurt (eu-central-1)** primary — data at rest in the EU (AWS has no Austria
-region; Frankfurt is the closest EU location). **Ireland (eu-west-1)** is the EU fallback/DR region.
+**Hosting: AWS**, region **Frankfurt (eu-central-1)** — data at rest in the EU (AWS has no Austria
+region; Frankfurt is the closest EU location). The environment is authored in `infra/` (Terraform) +
+`deploy/` (on-box scripts) and sized for the **€50/mo all-in beta budget** (HISTORY.md §E). *Local
+dev needs none of it.*
 
-> **Beta deployment (round 1, ROADMAP §E).** The first-feedback-round environment is implemented in
-> `infra/` (Terraform) + `deploy/` (on-box scripts) and **deliberately deviates from the full-prod target
-> below to fit a €50/mo all-in budget**: Postgres is **self-hosted on the same EC2 box** (not RDS) with an
-> off-platform encrypted `pg_dump` as its safety net; TLS is **nginx + Let's Encrypt** (no ALB); there is
-> **one region, no DR-region copy**; observability is **OpenTelemetry as the chosen approach but not yet
-> built** (Sentry dropped); and **staff MFA is a conscious beta exception** (email-code only, ~3 admin-seeded
-> trainers). Deploys run from **GitHub Actions via OIDC → a scoped role → SSM Run Command** (no static AWS
-> keys, no inbound SSH). The full-prod design below (RDS, ALB/multi-instance, cross-region DR, OTel build-out,
-> MFA) is the target these deviations graduate to. *Local dev needs none of it.*
-
-### Backend
-- **Compute:** a **small EC2 instance** (t4g Graviton), running `node dist/main.js` under **systemd** — no
-  container, no registry. TLS via nginx + Let's Encrypt (or an ALB). App Runner is the noted future option if
-  containerising ever pays for itself.
-- **Database:** **Amazon RDS for PostgreSQL**, automated backups on, snapshot copy to the DR region above.
+### Backend (the live beta stack)
+- **Compute:** one **small EC2 instance** (t4g Graviton), running `node dist/main.js` under **systemd** —
+  no container, no registry. TLS via **nginx + Let's Encrypt** (no ALB — a single box needs neither its
+  load-balancing nor its health checks).
+- **Database:** **PostgreSQL self-hosted on the same box** (EBS data volume, 5432 never exposed), with the
+  off-platform encrypted `pg_dump` below as its safety net.
 - **Objects:** **Amazon S3**, one bucket, per-user prefixes (`users/{account}/{profile}/…`), access via
   short-lived **presigned URLs** scoped to a single object; the app authenticates via the **IAM instance
   role** (default credential chain — no keys in env). Lifecycle policy auto-deletes raw homework images on
   schedule.
-- **Secrets:** **SSM Parameter Store (SecureString)**, fetched at boot; nothing in the repo or on disk.
-- **Health:** `GET /api/v1/health` → `{status, version, commit}` for the load-balancer/uptime probe.
-- **Migrations:** `prisma migrate deploy` runs as a **pre-traffic release step** (never at import). Forward-only,
-  expand→migrate→contract so rollouts are zero-downtime and rollback-safe.
-- **Seed:** `npm run seed` (`prisma db seed` → `prisma/seed.ts`) is idempotent; run on first deploy and when the seed JSON changes.
-- **Content import:** `npm run content:import` (ROADMAP §I2) runs pre-traffic right after the seed —
-  versioned + idempotent import of the `content/` lecture library (the release tarball ships it).
-  Release order: `migrate deploy → seed → content:import → restart`. Fail-loud: invalid content aborts
-  the deploy (CI's `content` job is the first line of defense).
+- **Secrets:** **SSM Parameter Store (SecureString)**, rendered to a root-only systemd `EnvironmentFile`
+  at deploy; nothing in the repo or on disk.
+- **Deploys:** GitHub Actions via **OIDC → a scoped IAM role → SSM Run Command** (no static AWS keys, no
+  inbound SSH); manual `workflow_dispatch` only — merging never auto-deploys.
+- **Health:** `GET /api/v1/health` → `{status, version, commit}` for the uptime probe.
+- **Migrations:** `prisma migrate deploy` runs as a **pre-traffic release step** (never at app startup).
+  Forward-only, expand→migrate→contract so rollouts are zero-downtime and rollback-safe.
+- **Seed + content:** release order is `migrate deploy → seed → content:import → restart`. `npm run seed`
+  is idempotent (staff admins + dev accounts); `npm run content:import` (§I2) is the versioned, idempotent
+  import of the `content/` lecture library — invalid content aborts the deploy (CI's `content` job is the
+  first line of defense).
+
+**Deferred to full production** (the graduation targets, in ROADMAP's Deferred list): managed **RDS** +
+cross-region DR snapshot copy (eu-west-1) · multi-instance + **ALB**/blue-green · the **OpenTelemetry**
+collector/exporter build-out (OTel is the chosen approach; beta ships an uptime ping only) · **staff MFA**
+(email-code-only is a conscious beta exception, ~3 admin-seeded trainers).
 
 ### Backups & off-platform disaster recovery
 The in-AWS cross-region backup above survives a *regional* incident, but **not** an account-level event — a
@@ -448,9 +439,9 @@ costs uptime, not data and users.
 - **Postgres:** scheduled `pg_dump` (daily; a cron on the instance or GitHub Actions) → compressed,
   **client-side encrypted** (age/gpg) → pushed to a **different provider** (e.g. Cloudflare R2, Backblaze B2,
   or another cloud's object storage). Keep the in-AWS automated backups too; this is the off-platform tier.
-- **Objects:** periodic export of the user prefixes (`users/{account}/{profile}/…` — homework images, generated
-  sessions/digests, TTS audio) to the same off-platform target, encrypted. TTS audio is regenerable so it's
-  lowest priority; student homework + learning artifacts are the priority.
+- **Objects:** periodic export of the user prefixes (`users/{account}/{profile}/…` — homework images,
+  generated sessions/digests) to the same off-platform target, encrypted; student homework + learning
+  artifacts are the priority.
 - **Retention:** short rolling window (e.g. 7 daily + 4 weekly), aligned with the minors'-data retention
   posture in §8 — backups are not an excuse to keep student data forever; expire them on the same clock.
 - **Encryption & access:** the off-platform copy is encrypted with a key **not stored in SSM/AWS**
@@ -505,7 +496,7 @@ restore from the off-platform dumps) rather than the loss of every family's data
   access is via **short-lived presigned URLs scoped to a single object** under the caller's prefix (never a
   path from the client); routes are gated by **account status (approved/active, §1b)**
   (entitlement/credit gating is deferred, §9); login codes are hashed and rate-limited. Destructive
-  profile routes are ownership-checked and double-confirmed in the UI (no PIN — removed 2026-07-22).
+  profile routes are ownership-checked and double-confirmed in the UI (no PIN).
 - **No in-memory security state in prod.** Anything that gates access — lockout counters, rate-limit
   windows — lives in a durable store (DB columns / Redis), never a process-local Map. A restart or a second
   replica must never reset a lockout (a brute-force hole). The login-code lockout (5 fails) is persisted
@@ -516,7 +507,7 @@ restore from the off-platform dumps) rather than the loss of every family's data
   call** — see the data-flow options below.
 - **Staff access to minors' data (trainers).** Homework review (§11) means internal staff see a student's
   homework photo — the strongest minors'-data exposure in the system. Gate it hard: (a) trainers are a small,
-  **vetted, DPA-bound** staff pool with named accounts and MFA, never anonymous; (b) trainer surfaces are
+  **vetted, DPA-bound** staff pool with named accounts (MFA at full prod, §7), never anonymous; (b) trainer surfaces are
   **minimised** — student name + learning data + image + LLM draft, never parent email/chat/billing (§1a); (c)
   every trainer action (claim, approve, correct, reject) is **audit-logged** with the staff id and upload id
   (identifiers + outcome, never image/answer content — §6); (d) consent copy at upload states that a homework
@@ -545,19 +536,12 @@ restore from the off-platform dumps) rather than the loss of every family's data
 
 ## 9. Payments — **DEFERRED (not built; the app is free)**
 
-Current product decision: **free, including the AI features** (chat, homework vision, LLM-generated lessons,
-premium TTS). Access is **gated by staff approval, not payment** (§1b). There is **no** billing module, checkout,
-webhook, `EntitlementGuard`, credit enforcement, or billing UI anywhere. `★` on an endpoint just marks an
-"AI-backed / cost-bearing op" — free today for any approved, active account; the marker only flags what *could*
-be metered later. The former dormant `entitlement` / `credits_ledger` / `processed_webhook` tables have been
-**dropped** from the schema (they were dead weight for an unbuilt feature).
-
-**Reserved seam (only if metering is ever introduced — its own milestone, not current):** use a **Merchant of
-Record** (Lemon Squeezy / Paddle) so card data never touches the backend and EU VAT/OSS is filed for you — a
-hosted checkout, a signed **idempotent** `POST /billing/webhook` (on the provider event id) that updates an
-`entitlement` + append-only `credits_ledger` (re-added by migration), billing UI **parent-facing only** (never
-shown to a student; a parent-verification gate would need designing — the PIN was removed 2026-07-22), and an
-optional pay-it-forward subsidy. No lives/energy/loot mechanics, ever.
+The app is **free, including the AI features**; access is gated by staff approval (§1b). There is **no**
+billing module, checkout, webhook, entitlement/credit enforcement, or billing UI anywhere, and no billing
+tables in the schema (re-add by migration if metering is ever introduced). `★` on an endpoint just marks an
+"AI-backed / cost-bearing op" — free for any approved, active account. If metering ever becomes a milestone:
+use a Merchant of Record (card data never touches the backend, EU VAT handled), parent-facing only, and
+never lives/energy/loot mechanics.
 
 ---
 
@@ -605,9 +589,9 @@ homework photo's LLM analysis is **never** applied on its own. A vetted **intern
 (staff trainer, §1a) validates it first. The trainer's verdict is **authoritative** and **replaces** the
 former parent-confirm step. The flow is **asynchronous** — the student is never blocked.
 
-**Teaching-console extension (ROADMAP §H shipped 2026-07-25; authoring moved 2026-07-26, §I):** the
-portal is no longer review-only — and it does not author either. Lectures (Merksatz + solvability-
-gated exercises) are written by the **linguists** as markdown in the repo's `content/` directory and
+**Teaching-console extension (§H/§I):** the portal is not review-only — and it does not author either.
+Lectures (Merksatz + solvability-gated exercises) are written by the **linguists** as markdown in the
+repo's `content/` directory and
 imported versioned at deploy (§I2, `item_bank` rows with `generated_by='content'`). Trainers **browse**
 the library and **assign** lectures to specific students; the assignment pins the lecture version it
 was created against and appears on `/lernen` as a personal offer ("Übung von {Trainer}", never a

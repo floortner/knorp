@@ -8,11 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `besserlesenschreiben/backend/` — NestJS API (`-api` repo)
 - `besserlesenschreiben/frontend/` — Vite/React SPA/PWA, the family app (`-web` repo)
-- `besserlesenschreiben/trainer/` — Vite/React internal **staff portal** for professional homework review (`-trainer` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner directory + activity, lecture browse/assign/outcomes (§H1/§I3 — lectures are authored in `content/`, not in the portal). (The "Wortschatz" lexeme-curation tab was dropped 2026-07-13 with the Vokaltraining content set — ROADMAP.md §F.)
+- `besserlesenschreiben/trainer/` — Vite/React internal **staff portal** for professional homework review (`-trainer` repo; ARCHITECTURE §1a/§11). Internal-only (~3 hand-provisioned staff), never shipped to families; **desktop/tablet landscape, not mobile-first**. Shipped: review queue + history, admin user administration, learner directory + activity, lecture browse/assign/outcomes (§H1/§I3 — lectures are authored in `content/`, not in the portal).
 
 Two disjoint **auth realms** (ARCHITECTURE §1a): the **family** realm (parents + students, `-web`) and the **staff** realm (internal trainers, `-trainer`). A credential in one is never valid in the other — different cookie/`aud`, different guard (`JwtAuthGuard` vs `StaffAuthGuard`).
 
-The seed script lives in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent; bootstraps staff admins from `STAFF_ADMIN_EMAILS`, and — with `SEED_DEV_ACCOUNTS=true` — dev login accounts). Content seeding (the item bank + lexeme base ⊕ overrides, `npm run gen:items`) was dropped 2026-07-13 along with the Vokaltraining content set — see ROADMAP.md §F for the content-set redesign in progress. `item_bank.seed.json` is the curated source of truth for exercise content once it exists — there is no regeneration script (never rebuild it wholesale).
+The seed script lives in the backend: `besserlesenschreiben/backend/prisma/seed.ts` (idempotent; bootstraps staff admins from `STAFF_ADMIN_EMAILS`, and — with `SEED_DEV_ACCOUNTS=true` — dev login accounts). Exercise content does **not** arrive via the seed — it comes from the `content/` lecture library through the versioned `npm run content:import` (§I); a bank-content seed is a §F slot.
 
 Currently one **monorepo** for fast cross-cutting iteration; the subprojects are independently buildable/deployable and split into the `-api`/`-web`/`-trainer` repos before launch (ARCHITECTURE §1).
 
@@ -48,8 +48,6 @@ npm run seed                    # bootstrap staff admins + (with SEED_DEV_ACCOUN
 npm run content:validate        # validate the content/ lecture library (German errors; runs in CI)
 npm run content:import          # versioned, idempotent import of content/ into the DB (deploy + local after migrate dev)
 ```
-Content seeding (`item_bank.seed.json`, the lexeme foundation, `gen:items`/`export:overrides`) was dropped
-2026-07-13 along with the Vokaltraining content set — see ROADMAP.md §F.
 
 ### Frontend (`besserlesenschreiben/frontend/`)
 ```bash
@@ -71,7 +69,7 @@ cd e2e && npm install && npx playwright install --with-deps chromium webkit   # 
 npm test                          # boots backend :3100 + family :5273, seeds, runs the Playwright suite
 npm run test:ui                   # interactive debug
 ```
-Real user journeys over family frontend + backend, deterministic and offline: `ANTHROPIC_API_KEY=''` → `StubLlmProvider`, `EMAIL_PROVIDER=capture` (login codes read back via a gated test route), local-disk storage, and the anchor journey uses a **bank session** (zero LLM calls). Dedicated ports so a run never collides with `dev.sh`. `global-setup.ts` runs `migrate deploy` + `npm run seed` (item bank) + `npm run seed:e2e` (an active family account + a trainer). **Run locally only — the Playwright suite is intentionally not part of CI**; the fast backend/frontend/trainer jobs (contract-drift gates, golden snapshots, unit specs) are the CI safety net, so this is a thin real-journey layer you run yourself before pushing.
+Real user journeys over family frontend + backend, deterministic and offline: `ANTHROPIC_API_KEY=''` → `StubLlmProvider`, `EMAIL_PROVIDER=capture` (login codes read back via a gated test route), local-disk storage, and the anchor journey uses a **bank session** (zero LLM calls). Dedicated ports so a run never collides with `dev.sh`. `global-setup.ts` runs `migrate deploy` + `npm run seed` (staff admins) + `npm run seed:e2e` (an active family account + a trainer). **Run locally only — the Playwright suite is intentionally not part of CI**; the fast backend/frontend/trainer jobs (contract-drift gates, golden snapshots, unit specs) are the CI safety net, so this is a thin real-journey layer you run yourself before pushing.
 
 **CI (`.github/workflows/ci.yml`):** per-project jobs run `lint · typecheck · test · build` plus the **contract-drift gates** — `npm run openapi:export` then `git diff --exit-code openapi.json` (backend), and `npm run gen:api` then `git diff --exit-code api.gen.ts` (frontend/trainer). Regenerate and commit these whenever a Zod contract changes or CI fails red.
 
@@ -84,9 +82,7 @@ Rückmeldungen and expected answers (e.g. `fertigkeiten.md`) at the folder root;
 (the importer reads only `content/lectures/`);
 `website/` — static marketing page; `assets/` — the master mascot/art source library +
 `manifest.json` catalog (SVG masters versioned, large PNG renders gitignored; the app serves the SVG subset
-from `besserlesenschreiben/frontend/monster-pets/`). (`data-foundation/` — the *Rechtschreibwortschatz* source
-corpus + `parse-rwe.py` — was deleted 2026-07-13 along with the lexeme foundation, ROADMAP.md §F.)
-
+from `besserlesenschreiben/frontend/monster-pets/`).
 ## Architecture overview
 
 ### System topology
@@ -104,19 +100,19 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 ### Backend structure
 - `src/contract/` — Zod schemas (`exercise.ts`, `models.ts`) that are the **source** of the contract pipeline: Zod → `openapi.json` → `api.gen.ts`. Edit here first, then re-export.
 - `src/modules/` — one folder per resource: controller (HTTP only) + service + Zod DTOs
-- `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (S3 presigned URLs / local-FS dev store), `email`, `llm`. (`lexeme` was deleted 2026-07-13 with the content set, ROADMAP.md §F.)
+- `src/services/` — domain logic only, no HTTP concerns: `digest` (renders `digest.md` for LLM), `fsrs` (spaced-repetition scheduler), `storage` (S3 presigned URLs / local-FS dev store), `email`, `llm`.
 - `src/common/guards/` — `JwtAuthGuard` (family; requires `status='active'`), `StaffAuthGuard` (staff realm)
 - `src/common/filters/` — global exception filter → the one error envelope
 - `prisma/schema.prisma` — the model truth; DDL in `backend/SPEC.md §3` is its conceptual form
-- `prisma/seed.ts` — bootstraps staff admins + dev accounts (content seeding dropped 2026-07-13, §F)
+- `prisma/seed.ts` — bootstraps staff admins + dev accounts
 
 ### Frontend structure
 - `docs/knorp.html` — **interactive design prototype**; visual source of truth for the shell, screens and brand. Its exercise interactions document a legacy type set — the current exercise types live in `frontend/SPEC.md §3`. Recreate looks in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
-- `fixtures/` — committed golden JSON payloads (`session.example.json`, `units.example.json`). The Vokaltraining content set (14 exercise types, 7 units) was dropped 2026-07-13 (ROADMAP.md §F) — these currently hold a single stand-in `placeholder` exercise and an empty units array. Build renderers and snapshot tests against these.
+- `fixtures/` — committed golden JSON payloads (`session.example.json`, `units.example.json`). Until §F lands the new content set these hold a single stand-in `placeholder` exercise and an empty units array. Build renderers and snapshot tests against these.
 - `src/lib/api.gen.ts` — types **generated** from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
 - `src/lib/api.ts` — typed fetch client, **transport only** (no JSX), built on `api.gen.ts` types
-- `src/features/exercises/types.ts` — the `Exercise` discriminated union (currently a single `placeholder` stand-in type; training types are being redesigned from scratch, §F)
-- `src/features/exercises/` — the exercise renderers + reusable scaffolding (`ExerciseCard`/`ChoiceTile`/`useAnswer`/`SingleChoiceExercise`). The Vokaltraining-specific renderers (Wortraster, tile order, sentence) were deleted with their types.
+- `src/features/exercises/types.ts` — the `Exercise` discriminated union (a single `placeholder` stand-in type until §F)
+- `src/features/exercises/` — the exercise renderers + reusable scaffolding (`ExerciseCard`/`ChoiceTile`/`useAnswer`/`SingleChoiceExercise`)
 - `src/features/exercises/audio.ts` — `audioUrl` playback + Web Speech API fallback
 - `src/lib/telemetry.ts` — attempt timing + fire-and-forget emit
 
@@ -129,31 +125,33 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 The database decides *what* to drill — informed by telemetry **and the staff-validated homework focus**; the LLM only generates *new content and conversation*.
 
 ### Homework review (professional-in-the-loop)
-Homework photos are uploaded by the family but validated by an **internal staff trainer**, not the parent (ARCHITECTURE §11, backend SPEC §10). Vision produces a **draft** (`homework_upload.llm_analysis`) that is **never applied on its own**; a trainer approves/corrects/rejects in the staff portal, and only the **authoritative** `reviewed_analysis` mutates `attempt`/`review_state` and feeds the next lecture. Review is **async** (the student is never blocked) and the queue is **pseudonymised** (image + draft + skill tags + grade band only). The old `POST /homework/{id}/confirm` parent step is **removed**.
+Homework photos are uploaded by the family but validated by an **internal staff trainer**, not the parent (ARCHITECTURE §11, backend SPEC §10). Vision produces a **draft** (`homework_upload.llm_analysis`) that is **never applied on its own**; a trainer approves/corrects/rejects in the staff portal, and only the **authoritative** `reviewed_analysis` mutates `attempt`/`review_state` and feeds the next lecture. Review is **async** (the student is never blocked); the queue shows the student's **name** + image + draft + skill tags + grade band (known-trainer model, rule 10) — never parent email/chat/billing. There is no parent-confirm step.
 
 ### Build status & roadmap
-The single source of truth for what's shipped and what's next is the repo-root **`ROADMAP.md`**. In short:
-everything through Phase 2.5 + Post-2.5, plus the **AWS beta deployment (E)**, is **done** — the app is live
-on real HTTPS domains. The Vokaltraining content set (word lists, 14 exercise types, 7-unit sequence, lecture
-prompt) was **dropped 2026-07-13**; **next** is **F** — redesigning that content layer from scratch — **then**
-D5/D6 (badges, weekly parent email). **Product decision — the app is FREE, including the AI features; access
-is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred** and not built: no
-`EntitlementGuard`, credits, or `402` gating; the `entitlement`/`credits_ledger` tables stay dormant so
-metering stays a future option, and `★` means "AI-backed / cost-bearing op," free for any approved active
-account. TTS is deferred (Web-Speech fallback for now; target Amazon Polly).
+The forward plan lives in the repo-root **`ROADMAP.md`**; shipped detail + the **pivot log** in
+**`HISTORY.md`**. In short: the app is **live** on real HTTPS domains (beta, €50/mo budget); **next** is
+**§F** — the content-set rebuild, externally driven by the linguists (their export + engineering's
+Rückmeldung are in `content/linguist-contrib/`; blocked on their answers, above all the skill taxonomy) —
+**then** D5/D6 (badges, weekly parent email). **Product decision — the app is FREE, including the AI
+features; access is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred**
+and not built: no entitlement/credits/`402` anywhere, no billing tables; `★` means "AI-backed /
+cost-bearing op," free for any approved active account. TTS is deferred (Web-Speech fallback for now).
 
 ## Non-negotiable security rules
 
+(Canonical home: `besserlesenschreiben/ARCHITECTURE.md` §8/§1a/§5/§6 — this list is the always-loaded
+working copy; on any doubt, ARCHITECTURE wins.)
+
 1. **`user_id`/`profile_id` come ONLY from the JWT** — never from a request body or path parameter. Grep for violations.
 2. **Object-storage access via presigned URLs scoped to one object under the caller's prefix** (`users/{account_id}/{profile_id}/…`). Bucket credentials never exposed.
-3. **Destructive profile routes** (`/profiles/:id/reset`, `/profiles/:id/reset-chat`) assert ownership of `:id` against the JWT account (missing/foreign → 404) and are fronted by a two-step confirmation in the Profil tab. There is no PIN/parent elevation (the Eltern-Bereich + PIN were removed 2026-07-22).
+3. **Destructive profile routes** (`/profiles/:id/reset`, `/profiles/:id/reset-chat`) assert ownership of `:id` against the JWT account (missing/foreign → 404) and are fronted by a two-step confirmation in the Profil tab. There is no PIN/parent elevation.
 4. **Access is gated by account status, not payment.** The family `JwtAuthGuard` requires `account.status='active'` (a per-request check) — `pending`/`deactivated`/deleted accounts can't act, and revocation is immediate. AI (`★`) endpoints are **free**; there is no entitlement/credit check (billing deferred, ARCHITECTURE §9).
 5. **Signup is silent pending-on-first-code.** A first `/auth/request-code` for an unknown email creates a `pending` account and **emails nothing** (still `200`, no enumeration); a staff admin approves before any code is sent. The family UI says "we'll email you soon," never advancing to code entry.
 6. **Never log** student answers, homework/OCR content, email addresses, login codes, JWTs, presigned URLs, or request/response bodies. Log identifiers + outcomes only.
 7. **One error envelope** for every non-2xx response: `{error:{code,message,requestId,details[]}}`. The global exception filter handles this — never leak Prisma/provider errors.
 8. **Staff user-administration is admin-role-only and sees account identity.** Approve/deactivate/delete (`/staff/users/*`) handle real parent emails and are gated by `role='admin'` — kept separate from the all-trainer surfaces (rule 10). Account deletion erases DB rows **and** the account's blobs.
 9. **The two auth realms never cross.** `/staff/*` requires a staff cookie (`aud:"staff"`, `StaffAuthGuard`); a family JWT is rejected there and a staff cookie is rejected on every family route. Realms use **distinct signing keys** (`STAFF_JWT_SECRET` ≠ `JWT_SECRET`).
-10. **Known-trainer data minimisation.** Trainer surfaces (`/staff/*`: queue, review, learner directory + activity) show the student's **name and learning data** — the 2–3 trainers know each student personally (revised 2026-07-25, ROADMAP §H1.3; the old `L-xxxxxx` pseudonym is retired) — but **never a parent email, chat text, or billing**; account identity/lifecycle stays admin-only (rule 8). Homework's `llm_analysis` is a draft and **must not** mutate the learning profile before a trainer verdict; only `reviewed_analysis` applies.
+10. **Known-trainer data minimisation.** Trainer surfaces (`/staff/*`: queue, review, learner directory + activity) show the student's **name and learning data** — the 2–3 trainers know each student personally — but **never a parent email, chat text, or billing**; account identity/lifecycle stays admin-only (rule 8). Homework's `llm_analysis` is a draft and **must not** mutate the learning profile before a trainer verdict; only `reviewed_analysis` applies.
 
 ## Key conventions
 
@@ -166,7 +164,7 @@ account. TTS is deferred (Web-Speech fallback for now; target Amazon Polly).
 - **Golden tests:** `digest.md` format (LLM-facing) and `Exercise` JSON (client-facing) are pinned with golden files. Any change to these contract outputs must update the golden files intentionally.
 - **SVG-first media:** all app art, mascots (Nepo/Stella), icons, and badges are SVG. Sanitize any non-hand-authored SVG with DOMPurify before inlining — never `dangerouslySetInnerHTML` on raw SVG. Homework photos are the only raster exception (strip EXIF server-side, transcode to WebP).
 - **Prisma 7 + NestJS:** Prisma 7 is ESM-first — set `moduleFormat = "cjs"` in the Prisma client generator config for NestJS's CommonJS setup.
-- **Docs upkeep (keep them true):** a PR that changes routes, the Prisma schema, env vars, screens/tabs, or hosting must update the matching SPEC/ARCHITECTURE section in the same PR — and milestones (shipped + planned) are tracked only in the repo-root `ROADMAP.md`, ticked there when they ship. The lexeme foundation's schema→contract→overrides→editor extensibility pattern was dropped with the content set (2026-07-13, ROADMAP.md §F) — the new word-list schema's design, and whether it needs an equivalent pattern, is open.
+- **Docs upkeep (keep them true):** a PR that changes routes, the Prisma schema, env vars, screens/tabs, or hosting must update the matching SPEC/ARCHITECTURE section in the same PR. Planned milestones live only in the repo-root `ROADMAP.md`; when one ships, tick it there and move its detail to `HISTORY.md` (which also holds the pivot log — don't re-narrate old pivots in other docs).
 - **Telemetry:** every answered exercise emits exactly one `POST /attempts` with a real `timeMs` (timer starts on item mount). Fire-and-forget; queue + retry offline via Workbox; never block the student's UI.
 
 ## Hosting & env
