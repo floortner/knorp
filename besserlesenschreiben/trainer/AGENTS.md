@@ -19,11 +19,10 @@ This app is **internal-only**: ~3 hand-provisioned staff, never shipped to famil
    (`credentials:'include'`); there is **no token in JS**. Never import or reuse anything from the `-web`
    family app's auth. A family JWT must never work here and vice-versa (the backend enforces it; don't
    undermine it client-side).
-2. **Minimise what you show (known-trainer model, revised 2026-07-25 — ROADMAP §H1.3).** Trainer surfaces
-   show the student's **name and learning data** (the trainers know each student personally; the old
-   `L-xxxxxx` pseudonym is retired). **Never** render or request a parent email, chat text, billing, or
-   account lifecycle outside the admin-only **Nutzer** surface — the backend won't send them; don't add a
-   call that asks for them.
+2. **Minimise what you show (known-trainer model — ARCHITECTURE §1a).** Trainer surfaces show the
+   student's **name and learning data** (the trainers know each student personally). **Never** render or
+   request a parent email, chat text, billing, or account lifecycle outside the admin-only **Nutzer**
+   surface — the backend won't send them; don't add a call that asks for them.
 
 ## Stack (matches `-web`; see ARCHITECTURE §2)
 Node 24 LTS · TypeScript 5.x · React 19.2.x · Vite 8.1.x (+ @vitejs/plugin-react 6) · Tailwind CSS 4.3.x
@@ -74,17 +73,15 @@ job. Comfortable tap targets for tablet are welcome.
   to the OTel build-out).
 - **Lektionen** (all trainers, §H1/§I3): the teaching console — browse the content library (lectures
   are authored as markdown in repo-root `content/` by the linguists and imported at deploy; the portal
-  editor was removed 2026-07-26), assign to students (picker = the learner directory; drafts are
-  visible but unassignable), and see the per-student outcome table (Offen | Begonnen | Erledigt,
-  spanning all lecture versions; results link into the session drill-down). Rows show `Version {n}` +
+  never authors), assign to students (picker = the learner directory; drafts are visible but
+  unassignable), and see the per-student outcome table (Offen | Begonnen | Erledigt, spanning all
+  lecture versions; results link into the session drill-down). Rows show `Version {n}` +
   Content-Bibliothek provenance. Keys: `['staff-lectures'…]` / `['staff-lecture', id]` /
   `['staff-lecture-assignments', id]`.
 - **Schüler** (all trainers, §H1.3/§H3): learner directory (`/students`) → per-student detail with the
   progress header + day-grouped activity timeline (filter by source) → question-by-question session
   drill-down (`/students/:profileId/sessions/:sessionId`).
-- ADMIN surface: **Nutzer** (approve/deactivate/delete + per-student learner progress + email search). The **Wortschatz**
-  lexeme-curation tab was dropped 2026-07-13 along with the `lexeme` table and the Vokaltraining content set
-  (ROADMAP.md §F) — re-add a curation surface if the new word-list schema needs one.
+- ADMIN surface: **Nutzer** (approve/deactivate/delete + per-student learner progress + email search).
 Identity note: the ADMIN user administration shows real parent emails by design; trainer surfaces never do.
 
 ## Definition of done for a feature

@@ -14,8 +14,8 @@ Node 24 LTS · TypeScript 5.x · React 19.2.x · Vite 8.1.x (+ @vitejs/plugin-re
 vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grotesque (display).
 
 ## Read order before coding
-1. `./SPEC.md` §3 (the `Exercise` union + renderers — currently a single `placeholder` stand-in type; the
-   Vokaltraining content set was dropped, ROADMAP.md §F) and §4 (telemetry).
+1. `./SPEC.md` §3 (the `Exercise` union + renderers — a single `placeholder` stand-in type until §F) and
+   §4 (telemetry).
 2. `../ARCHITECTURE.md` §4 (API rules), §5 (errors → UI behaviour), §10 (SVG-first media).
 
 ## Golden rules (do not violate)
@@ -53,11 +53,9 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 - Types from API: `npm run gen:api` (openapi-typescript against the backend OpenAPI)
 
 ## Build milestones
-Shipped milestones and the forward plan live in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)** — the
-single source of truth. Everything through Phase 2.5 + Post-2.5 is done and the beta is live (§E); the
-Vokaltraining content set (14-type exercise set, 7-unit progression, ~360 seed items) was dropped 2026-07-13
-and is being redesigned from scratch (§F) — the exercise contract currently holds a single `placeholder`
-stand-in type. No billing — the app is free.
+The forward plan lives in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)**; shipped detail + the pivot
+log in **[`HISTORY.md`](../../HISTORY.md)**. The beta is live; the exercise contract holds a single
+`placeholder` stand-in type until §F lands the new content set. No billing — the app is free.
 
 ## Definition of done for a feature
 Renders from backend JSON; one `/attempts` per answer with sane timing; error codes map to the right UI;

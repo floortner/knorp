@@ -1,528 +1,182 @@
 # ROADMAP.md
 
-**Single source of truth** for build milestones (what's shipped) and the forward plan (what's next) across
-*besserlesenschreiben* — backend (`-api`), frontend (`-web`), trainer (`-trainer`) — and the top-level
-`e2e/` suite.
+**Single source of truth for the forward plan** across *besserlesenschreiben* — backend (`-api`),
+frontend (`-web`), trainer (`-trainer`) — and the top-level `e2e/` suite. The specs describe *what
+the system is*; this file tracks *what's left to build*. **Shipped detail and the pivot log live in
+`HISTORY.md`** — when a milestone ships, tick it here and move its detail there. Section letters
+(§A…§J) are stable across both files.
 
-This file replaces the former per-spec milestone sections (`backend/SPEC.md §12`, `frontend/SPEC.md §11`)
-and the old `saved-plan.md`. **When a milestone ships, tick it here** — not in the specs. The specs describe
-*what the system is*; this file tracks *what has been built and what's left*.
+## Status & order
 
-## Status at a glance
+Everything through the beta deployment is **done and live** (HISTORY.md): backend + family app +
+trainer portal on real HTTPS domains, €50/mo all-in budget, full ★ AI enabled with beta caps. The
+teaching console (§H1/§H3) and the content pipeline (§I) shipped 2026-07-25/26.
 
-Everything through **Phase 2.5 + the Post-2.5 work** below is **DONE** and CI-green. The whole forward plan's
-hardening (A), cleanup (B), most engagement work (C1, D1–D4, D7), and the **E — beta on AWS** milestone
-have shipped: backend + family frontend + trainer portal are live on real HTTPS domains (`infra/` Terraform
-+ `deploy/` on-box scripts + `.github/workflows/deploy.yml`), inside the €50/mo all-in budget.
+**Now:** the linguists own the critical path. Their §F export landed 2026-07-27
+(`content/linguist-contrib/iteration-1/`); engineering's Rückmeldung went back
+(`content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`) — **next move is theirs**, above all the
+skill-tag taxonomy (see §F).
 
-- **Direction change 2026-07-26 — see §I:** lecture content moves to **markdown files in `content/`**
-  authored by the **group of linguists** via GitHub PRs (single source of truth, versioned deploy-time
-  import, pin-at-assign). **§H2 (portal authoring UI) is cancelled**; the portal keeps assign + track.
-- **In progress (external):** **F — content-set redesign** (§F): the linguists are authoring the new word
-  lists, training types, and sequence — now landing as `content/` lecture files (§I). Engineering picks
-  each piece up as it lands. Don't start F implementation unprompted — the pedagogy is the linguists'.
-  **2026-07-27: their export landed** (`content/linguist-contrib/`) and engineering's Rückmeldung went back
-  (`content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`) — next move is theirs (skill taxonomy above all; see §F).
-- **Done (engineering):** **H — lectures + student tracking** (§H): the trainer portal as teaching
-  console — trainers assign lectures to specific students (known-trainer model: real names) and
-  **review thoroughly what each student did** (sessions started/duration, every question & answer,
-  retries, timing). H1 rails + H3 tracking shipped 2026-07-25; the per-type authoring UI (H2) was
-  **cancelled** in favour of the §I content pipeline (shipped 2026-07-26).
-- **Then:** **D5 / D6** (badges, weekly parent email) — self-contained engagement work.
-- **Planned:** **J — content feedback loop** (§J, 2026-07-27): content-indexed analytics over the §I
-  anchors (which lectures/exercises underperform, v-compare) → trainer portal screen + anonymized
-  repo report for the linguists. J1 (digest hardening) lands with §F's taxonomy; J2–J4 once real
-  content produces telemetry; J5 (telemetry v2: robust time_ms, audio replays, generation
-  provenance, givenFirst) rides its natural triggers.
-- **Opportunistic:** **C2** (a concrete new exercise type), whenever the content work calls for it. Each
-  new type now extends the content-file frontmatter schema (§I) — the §H2 authoring form is cancelled.
-- **Option (parked):** **H4 — paper delivery channel** (§H4, designed 2026-07-27): assign a lecture as
-  a printed worksheet (browser-print PDF from the portal) instead of into the app; tracked, manually
-  completed. Build when a trainer actually needs it; §F's type design should note print-capability.
-- **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9; schema kept
-  dormant) · TTS pipeline (Web-Speech fallback on the client for now; target Amazon Polly) · full-prod
-  hardening (multi-instance/ALB, managed RDS + DR, OTel collector, staff MFA — see §E "Deferred to full
-  production").
+**Then, in rough order:** §F implementation as the answers land (word-list schema → taxonomy →
+training types → sequence → lecture prompt) · **D5/D6** (badges, weekly parent email) once real
+content is live · **C2** is *how* new exercise types land during §F · **§J** rides alongside — J1
+(digest hardening) with §F's taxonomy, J2–J4 (content analytics) once real content produces
+telemetry, J5 piecemeal (the robust-`time_ms` fix anytime) · §G's P3 remainder opportunistically.
 
----
-
-## Shipped (DONE)
-
-### Backend / cross-cutting
-
-**Phase 1 — free tier:**
-1. ✅ Auth (email code + JWT, httpOnly cookie + logout), account/profile, settings, parent PIN.
-2. ✅ Item bank: unique `seed_key` column on the `item_bank` table (idempotent upsert-on-`seed_key`). The
-   `item_bank.seed.json` content **and** the JSON-loading half of `prisma/seed.ts` were dropped 2026-07-13
-   (§F) — the empty `item_bank` table and its `seed_key` shape remain, so re-seeding content is a matter of
-   restoring the loader + a new seed file, not a migration.
-3. ✅ Sessions (bank) + attempts ingest + progress + FSRS.
-4. ✅ Digest generation.
-
-**Phase 1.5 — hardening:** runtime response-contract validation (`ZodResponseInterceptor`); httpOnly cookie
-auth + `/me`-probe frontend; durable PIN lockout (`pin_attempts`/`pin_locked_until`); prod email (Resend) +
-object-storage adapters (fail-loud, no silent no-op); 201 statuses on creating POSTs; FSRS `learning_steps`
-persistence; React error boundary + renderer safety; offline session caching + telemetry retention;
-guard/flow tests; the docs.
-
-**Phase 1.6 — content + UX polish:** auto-unlock next unit on session complete (atomic, backend);
-all-units-complete celebration (pixel mascot, fanfare, confetti); 5 new exercise types (`swipe`, `odd`,
-`listen`, `sentence`, `build` — Zod contract + renderers + seed items); parent area (PIN gate, set-PIN, student
-progress, two-step reset); profile Ton toggle wired end-to-end (removed Legasthenie-Schrift + Schriftgröße
-stubs).
-
-**Phase 1.6 technical debt — RESOLVED:**
-- ✅ Parent-scoped student id no longer comes from the request body: `verify-pin` binds the target `profileId`
-  into the `parentToken` JWT (ownership validated at issue); `reset`/`unlock-next` read it via
-  `@ParentProfileId()`. Destructive routes take no body id.
-- ✅ `apiFetch` takes a per-request `token`; the global `setAuthToken` mutation is gone.
-- ✅ `sessionCompleteSchema` includes `allUnitsComplete: boolean` (backend authoritative; no hardcoded
-  `TOTAL_UNITS`).
-- ✅ Unsafe `as ApiError` casts replaced by an `isApiError` guard + `errorMessage()` helper.
-
-**Phase 2 — free AI features + approval-gated access (★):**
-> Product decision: the app is **free, including AI**. No billing/`EntitlementGuard`/credit enforcement —
-> `★` means "AI-backed / cost-bearing op," free for any **approved, active** account. The
-> `entitlement`/`credits_ledger`/`processed_webhook` tables stay **dormant** (metering addable later without a
-> migration — ARCHITECTURE §9). Access control lives in the **account lifecycle** (ARCHITECTURE §1b), driven
-> from the staff portal.
-5. ✅ **`LlmService`** — abstracted; Anthropic-direct dev default; structured output via a forced tool whose
-   `input_schema` is the JSON Schema of the caller's `src/contract` Zod schema, re-validated (incl. per-type
-   **solvability**) with a one-shot re-ask on a contract miss; EU-residency gate before prod; canned/stub
-   path when `ANTHROPIC_API_KEY` is unset. Model policy: `ANTHROPIC_MODEL` = `claude-sonnet-4-6`
-   (generation/chat), `ANTHROPIC_VISION_MODEL` = `claude-opus-4-8` (homework OCR); no `temperature`/`top_p`/
-   `top_k` (rejected on current models — steer via prompt); stable system prompts sent as cacheable blocks.
-6. ✅ **Chat** (free ★).
-7. ✅ **Homework upload + vision draft (family side).** `POST /homework` → storage (EXIF strip, WebP) → Claude
-   vision → `llm_analysis` draft, `status='pending_review'`, enqueued for the staff review queue. **Nothing
-   mutates the profile** until a trainer approves.
-8. ✅ **LLM session generation** — folds a reviewed upload's `reviewed_analysis.suggestedFocus` into the next
-   on-the-fly lecture; generated exercises validated for solvability, stamped with a grade-band difficulty.
-
-**Phase 2 access-control — approval-gated signup + staff user-admin (ARCHITECTURE §1b):**
-9. ✅ **Account lifecycle.** `account.status` (`pending|active|deactivated`) + migration; silent
-   pending-on-first-code (no email until approved); family `JwtAuthGuard` requires `status='active'`
-   (immediate deactivate/delete).
-10. ✅ **Staff user administration (admin role only).** `GET /staff/users`, approve / deactivate / delete
-    (erases DB + blobs) — distinct from the pseudonymised trainer queue; trainer-portal admin screens.
-
-~~Billing (entitlements, credits, webhook, pay-it-forward)~~ — **removed from the roadmap** (schema kept
-dormant; ARCHITECTURE §9).
-
-**Phase 2.5 — professional review + staff portal:** the entire staff realm and the `-trainer` portal;
-reviewed homework now shapes lectures.
-11. ✅ **Staff realm foundation.** `trainer` + `homework_review` tables; `StaffAuthGuard` (`aud:"staff"`,
-    disjoint `STAFF_JWT_SECRET`, rejected on family routes and vice-versa); staff login (email code, own
-    httpOnly cookie) + `GET /staff/me`; ~3 trainers admin-seeded (no self-signup).
-12. ✅ **Review queue + authoritative apply.** `GET /staff/queue` (pseudonymised, cursor-paged, per-upload
-    short-lived presigned `imageUrl`); claim/lease (`409` if held); `POST /staff/reviews/{id}` writes
-    `reviewed_analysis`, derives `attempt` rows + adjusts `review_state`, sets `status='reviewed'`, records
-    the LLM-vs-trainer diff (`agreed_with_llm`).
-13. ✅ **Lecture wiring + family status.** `reviewed_analysis.suggestedFocus` folds into the next lecture;
-    `-web` surfaces `pending_review → reviewed` + the read-only authoritative result (no confirm UI).
-14. ✅ **Trainer portal** (`besserlesenschreiben/trainer`) — thin client over `/staff/*`, desktop/tablet
-    landscape: shell + staff auth; pseudonymised queue screen + claim; two-pane review screen
-    (approve / correct / reject) → `POST /staff/reviews/{id}`.
-
-**Post-2.5:**
-- ~~**Lexeme foundation**~~ — **DROPPED 2026-07-13** (`chore/drop-vokaltraining-content`), along with the
-  entire Vokaltraining content set: the `lexeme` table, `lexeme.seed.json`/`lexeme.overrides.json`,
-  `data-foundation/`, `npm run gen:items`, and the trainer's Wortschatz curation tab are all removed. The
-  word-list schema, training types, sequence, and lecture-generation approach are being redesigned from
-  scratch — see **§F** below.
-- ✅ **Trainer portal expansion** — brand-aligned chrome, nav count badges, queue history (`Offen/Erledigt/
-  Alle`), admin-only learner-progress views (identity-bearing per account; pseudonymised per upload).
-- ✅ **Trainer workflow batch (2026-07-14, #79)** — queue: cursor "Mehr laden" paging, waiting-since cue,
-  `claimed`/"in Prüfung" locks (open now lists ALL undecided items), read-only history detail
-  (`/history/:uploadId`). Review flow: submit→next-item, unsaved-changes guard, claim-conflict read-only
-  lockout, reject confirmation, homework-image lightbox (zoom/pan/rotate). Own **Profil** tab (`/profile`
-  → `PATCH /staff/me` rename; `GET /staff/me` gains `email`+`createdAt`). Admin email search
-  (`GET /staff/users?q=`). Content rule: trainer copy is emoji-free, lucide icons used consistently
-  (AGENTS.md). Audit trail still deferred to the OTel build-out (§E).
-- ✅ **Homework-in-chat** — upload moved into the family Chat tab; durable photo + status bubbles served by
-  chat history; verdict echoed in-chat.
-- ✅ **E2E harness** — top-level `e2e/` Playwright suite (backend + frontends via `webServer`, capture email
-  provider, seeded dev accounts via `SEED_DEV_ACCOUNTS`). Run **locally only** (`cd e2e && npm test`) —
-  intentionally not in CI.
-- ✅ **AWS retarget** — S3 storage adapter (presigned URLs), Frankfurt region docs; deployment still pending.
-- ~~**Lexeme `age_band`**~~ — **DROPPED** with the lexeme foundation above.
-
-### Frontend (`-web`)
-
-**Phase 1:**
-1. ✅ App shell, routing, tab nav, API client, auth (email-code + code-entry; cookie session + `/me` probe).
-2. ✅ Onboarding (buddy + goal) → `POST /profiles`.
-3. ✅ `/lernen` home + unit cards + session fetch.
-4. ✅ **Telemetry plumbing** (`lib/telemetry.ts`): fire-and-forget `POST /attempts` with a real `timeMs`,
-   offline queue + retry (48h retention/size cap).
-5. ✅ **The exercise renderers** — each emits exactly one attempt through the milestone-4 pipeline.
-6. ✅ Progress (`/profil`, `/liga`→`/erfolge`) + voice + accessibility settings.
-
-**Phase 1.5:** error boundary + renderer safety; offline session caching (PWA runtime caching); query
-correctness fixes; committed `api.gen.ts` + drift gate; flow tests.
-
-**Phase 1.6:** auto-unlock next unit; all-units-complete celebration; parent area; profile Ton toggle.
-
-**Phase 2:** Chat (★) + the ✨ generated-lecture entry on `/lernen` with the intro card; homework
-"Foto & verbessern" upload (moved into the **Chat tab** — photo as a chat message; no confirm UI; the staff
-portal owns review). No billing UI — the app is free.
-
-**Family-app tweaks (2026-07-14, #77/#78):** parent **"Chat löschen"** fully wipes the trainer chat —
-messages + homework uploads (rows, review-audit cascade, stored image blobs) — and re-locks to the PIN
-gate like the progress reset; editable **username** on `/profil` (capped at 10 chars) + read-only login
-email; Angelika SVG as the chat trainer icon; **Switch** thumb-alignment fix. **Regression fix:**
-civil-day/week bucketing moved **UTC → Europe/Berlin** (`common/dates.ts`, DST-safe) — the week strip was
-crediting an early-morning-local session to the previous day; also corrects streak, daily caps, joker
-week, and heatmap.
-
-**Elternbereich + parent PIN removed (2026-07-22).** The separate `/parent` area and its 4-digit PIN
-gate are gone — the trainers know each family personally (known-trainer model, §H) and the PIN was more
-friction than protection. **"Lernfortschritt zurücksetzen"** and **"Chat löschen"** moved into the
-**Profil tab** ("Verwaltung"), each behind a **two-step confirmation** (no PIN). Backend: `/parent/*` and
-the `ParentScopeGuard`/`parentToken` machinery deleted; the actions are now `POST /profiles/:id/reset` +
-`/profiles/:id/reset-chat` (family session, ownership-checked); the `account` PIN columns
-(`parent_pin_hash`, `pin_attempts`, `pin_locked_until`) were removed in **two releases** for deploy-window
-safety — schema/client first, then the `DROP COLUMN` migration once no serving binary selected them
-(dropping in one release would 500 the old binary during the pre-traffic-migrate→restart window).
-Docs (ARCHITECTURE, both SPECs, CLAUDE/AGENTS) updated in the same change.
-
-**Vokaltraining pivot — DROPPED 2026-07-13.** The exercise set that replaced the legacy prototype — the
-**14 types** (Wortraster, Selbstlaute, kurz/lang, Quatschwörter, Komposita, Wortfamilien), a 7-unit
-progression with per-unit Merksatz intro cards, and a ~360-item seed bank — was itself removed along with
-the whole content set (§F). The `Exercise` contract now holds a single stand-in `placeholder` type; training
-types, sequence, and word lists are being redesigned from scratch.
-
-> The **staff trainer portal** is a **separate subproject** (`besserlesenschreiben/trainer`, future
-> `-trainer` repo), out of scope for `-web`: don't build review/queue screens there. The only homework surface
-> in `-web` is the upload + status tracking in the Chat tab.
+**Parked options:** §H4 (paper delivery channel — designed, build on demand).
+**Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9) · TTS
+pipeline (Web-Speech fallback for now; target Amazon Polly) · full-prod hardening
+(multi-instance/ALB, managed RDS + DR, OTel collector build-out, staff MFA — ARCHITECTURE §7).
 
 ---
 
 ## Forward plan
 
-### A. Hardening & best practices — DONE
+### A. Hardening & best practices — ✅ DONE → HISTORY.md §A
 
-1. ~~No request-level rate limiting.~~ **DONE** — `@fastify/rate-limit` in `main.ts`: 10 req/min for
-   `/auth/*`, 300/min elsewhere, loopback exempt for e2e (PR #49 + allowList fix).
-2. ~~E2E coverage misses the upload → trainer verdict → chat-status seam.~~ **DONE** —
-   `homework-loop.spec.ts` cross-realm Playwright journey (PR #50).
-
-> The remaining pre-prod hardening — observability, off-platform backups, staff-MFA decision — is
-> deploy-coupled and lives in **section E** so it ships as one milestone.
-
-### B. Remove / simplify — DONE
-
-1. ~~Delete `scripts/build-seed.ts`~~ **DONE** (PR #49) — it regenerated `item_bank.seed.json` from the legacy
-   prototype's 12-type LESSONS; one run would wipe the curated bank. Removed, with its ARCHITECTURE/CLAUDE refs.
-2. ~~Drop `TTS_PROVIDER`/`TTS_KEY` and `BILLING_PROVIDER`/`BILLING_WEBHOOK_SECRET`~~ **DONE** (PR #49) — dead
-   env, wrong for the AWS design (Polly authenticates via IAM role; billing re-adds by migration if ever needed).
-3. ~~Expired login-code rows accumulate (`login_code`, `staff_login_code`).~~ **DONE** (PR #49) — cleanup
-   exists; scheduling it folds into E5.
-4. ~~Trainer claim isn't released on leaving the review screen (lease expires after 15 min).~~ **DONE** (PR #49).
+### B. Remove / simplify — ✅ DONE → HISTORY.md §B
 
 ### C. Extensibility
 
-1. ~~Age property (`ageBand` on lexeme).~~ **DONE, then DROPPED 2026-07-13** — shipped end-to-end
-   (`ageBand ∈ {"6-7","8-9",null}`, `gradeBand()` → `wordPoolFor`/`pickForSkill` word-pool selection, trainer
-   Wortschatz filter/column/editor) but removed along with the whole `lexeme` foundation (§F). The
-   profile-side counterpart (grade or birth year — `unlockedUnit` is a weak age proxy) is still an open,
-   independent idea for whenever profile-level age targeting is wanted again.
+1. **Age property** — shipped, then dropped with the lexeme foundation (HISTORY.md §C1). The
+   profile-side counterpart (grade or birth year — `unlockedUnit` is a weak age proxy) remains an
+   open, independent idea for whenever profile-level age targeting is wanted again.
 
-2. **New exercise / test types (open — this is where the §F content redesign lands them).** Per-type cost is
-   fixed and safe; the drift gates catch everything. The Vokaltraining-era pipeline this playbook used to
-   reference (`item_bank.seed.json`'s old content, `scripts/gen-items-from-lexemes.ts`, lexeme grounding) was
-   dropped 2026-07-13 — this now starts from the single `placeholder` type in `src/contract/exercise.ts`.
-   - **Backend:** `src/contract/exercise.ts` (add the Zod variant, extend the `discriminatedUnion`, add a
-     `superRefine` case to `solvableExerciseSchema` so it can't emit an unanswerable item) → `exercise.spec.ts`
-     (solvability unit test) → hand-curate seed content for the new type in `item_bank.seed.json` →
-     `sessions.service.ts` `LLM_SYSTEM` (only if it should be LLM-generatable). `npm run openapi:export`.
-     **Note:** the old 14-type union approached strict tool-mode's limits — watch for this again as the union
-     regrows; keep the wire schema strict-agnostic, leave solvability enforcement post-hoc, don't re-enable
-     strict.
-   - **Frontend:** `ExerciseView.tsx` (dispatch case — reuse `SingleChoiceExercise` where the shape fits, else
-     a new renderer) → `derive.ts` `promptAndExpected()` (telemetry case — stay total over the union) →
-     `fixtures/session.example.json` (one golden example per type so the "covers all types" gate stays green)
-     → `ExerciseView.spec.tsx` (snapshot + interaction test). `npm run gen:api`.
-   - **Telemetry (per-type decision, made when the type ships):** define the type's `given` serialization
-     deliberately — a flat string is perfect for choice types (it carries which distractor was picked) but
-     loses structure for reorder/grid/typed-input types; the `derive.ts` case is where the convention lives.
-     For **typed-input** types additionally decide whether to capture the pre-correction answer
-     (`givenFirst` — „schrieb ‚Fahrad', korrigierte zu ‚Fahrrad'" is pedagogically valuable and the same
-     privacy class as `given`; raw keystrokes stay off-limits on principle, §J5).
+2. **New exercise / test types (open — this is where the §F content redesign lands them).**
+   Per-type cost is fixed and safe; the drift gates catch everything. Starts from the single
+   `placeholder` type in `src/contract/exercise.ts`.
+   - **Backend:** `src/contract/exercise.ts` (Zod variant, extend the `discriminatedUnion`, a
+     `superRefine` case in `solvableExerciseSchema` so it can't emit an unanswerable item) →
+     `exercise.spec.ts` solvability test → content for the new type (via the §I content pipeline) →
+     `sessions.service.ts` `LLM_SYSTEM` (only if LLM-generatable) → `npm run openapi:export`.
+     **Note:** the old 14-type union approached strict tool-mode's limits — keep the wire schema
+     strict-agnostic, leave solvability enforcement post-hoc, don't re-enable strict.
+   - **Content pipeline:** extend the frontmatter schema (`backend/src/content/lecture-file.schema.ts`)
+     + the German guide in `content/README.md` — authoring is markdown, never a form (§I).
+   - **Frontend:** `ExerciseView.tsx` dispatch case (reuse `SingleChoiceExercise` where the shape
+     fits) → `derive.ts` `promptAndExpected()` (stay total over the union) →
+     `fixtures/session.example.json` golden example per type → `ExerciseView.spec.tsx` →
+     `npm run gen:api`.
+   - **Telemetry (per-type decision at ship time):** define the type's `given` serialization
+     deliberately — a flat string is perfect for choice types but loses structure for
+     reorder/grid/typed-input types; the `derive.ts` case is where the convention lives. For
+     typed-input types decide whether to capture the pre-correction answer (`givenFirst` — §J5;
+     raw keystrokes stay off-limits on principle).
    - **Trainer:** none — exercise types don't surface in the staff portal.
 
 ### D. Frontend engagement & retention
 
-Constraint (from the docs and correct for struggling readers): calm feedback, **no lives/energy/dark
-patterns**. Ranked by impact-per-effort.
+Constraint (correct for struggling readers): calm feedback, **no lives/energy/dark patterns**.
+D1–D4 + D7 shipped (HISTORY.md §D).
 
-1. ~~Bring the buddy to life.~~ **DONE** — `useBuddyState` hook + `buddyStateSrc`; all 4 states wired to live
-   progress data (PR #51).
-2. ~~A visible "today" goal.~~ **DONE** — `GoalCard` with SVG ring + activity `WeekStrip`; "Heute geübt ✓"
-   (PR #54).
-3. ~~Session-end forward hook.~~ **DONE** — forward-hook card with buddy in cool state at `LessonComplete`;
-   buddy threaded from `LessonRunner` (PR #54).
-4. ~~Kind streaks.~~ **DONE** — flame hidden at 0, warm restart card, weekly Streak-Joker (PRs #52 + #53).
-
-5. **Badges (OPEN).** The SVG policy reserves them and `review_state` already knows mastery: "Silben-Meister",
-   7-Tage-Serie, unit badges, shown in `/profil`. Medium effort (small backend addition). Pairs with D7.
-6. **Weekly parent email (OPEN — highest leverage for the target audience).** Retention at this age runs
-   through the parent. `digest.md` already computes everything — a Friday "Mia hat 3× geübt, stark bei Silben,
-   als Nächstes: Dehnungs-h" via the existing email service turns parents into the reminder system, without
-   pushing notifications at a student.
-7. ~~Rename `/liga` → "Erfolge".~~ **DONE** — route, tab, heading, tier labels updated (PR #52).
+5. **Badges (OPEN).** The SVG policy reserves them and `review_state` already knows mastery:
+   "Silben-Meister", 7-Tage-Serie, unit badges, shown in `/profil`. Medium effort (small backend
+   addition).
+6. **Weekly parent email (OPEN — highest leverage for the target audience).** Retention at this age
+   runs through the parent. `digest.md` already computes everything — a Friday "Mia hat 3× geübt,
+   stark bei Silben, als Nächstes: Dehnungs-h" via the existing email service turns parents into
+   the reminder system, without pushing notifications at a student.
 8. **Spoken praise variety (later — needs Polly).** Audio reward beats visual for pre-readers.
 
-> Deliberately **not** recommended: push notifications to the student, real leaderboards, time pressure, loss
-> mechanics — antagonistic to a remedial-literacy audience and to the stated values.
+> Deliberately **not** recommended: push notifications to the student, real leaderboards, time
+> pressure, loss mechanics — antagonistic to a remedial-literacy audience and to the stated values.
 
-### E. First feedback round (beta) on AWS — DONE
+### E. First feedback round (beta) on AWS — ✅ DONE → HISTORY.md §E
 
-**Goal:** get backend + family frontend + trainer portal running in AWS on real HTTPS domains so **~10
-families and 1–2 trainers** can give a first round of feedback. A beta soft-launch, not full prod
-hardening — but with a minimum data-safety floor, because it handles minors' data.
+### F. Content-set redesign — **the next step (externally driven)**
 
-**Budget: €50/mo total, AWS + Anthropic combined** (≈ $54 total — *not* a separate Anthropic figure).
-The AWS floor is ~€15–16/mo, leaving **~€34/mo for Anthropic**. This drives every decision below: no ALB
-(~€17/mo — a single box needs neither its load-balancing nor its health checks; nginx+LE gives the same
-TLS for ~€0), no managed RDS (~€15/mo — self-host Postgres on the box instead), single region, no DR-region
-copy. Frankfurt (eu-central-1); hosting per ARCHITECTURE §7 (small EC2 + systemd, no container).
+**Goal:** design and rebuild the pedagogical content layer from scratch — a new word-list schema,
+training types (replacing the single `placeholder` scaffold), a unit/sequence catalogue, and the
+LLM lecture-generation prompt — on top of the skeleton kept from the Vokaltraining program (auth,
+homework review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline). The
+linguists' material lands as **markdown files in `content/`** (§I): contract-touching steps (2, 3,
+6) are unchanged; content/curation steps (4, 5, 7) should be read through the §I lens — unit/bank
+content may also live in the content library (open design question), and a staff curation surface
+is likely never needed.
 
-**Architecture:** one **EC2 `t4g.small`** (2 vCPU / 2 GB) running `node dist/main.js` under systemd,
-**self-hosted Postgres on the same box**, **nginx + Let's Encrypt** terminating TLS for `api.<domain>`, and
-an **S3 blob bucket** (homework/sessions/digests) reached via the **IAM instance role**. The two frontends
-are **S3 + CloudFront** (`app.` / `review.`), ACM certs in **us-east-1**. All three are subdomains of one
-Route-53 domain the owner already holds, so the `SameSite=Lax` login cookie flows `app.`↔`api.` /
-`review.`↔`api.`. Secrets in **SSM Parameter Store** (SecureString), rendered to a root-only systemd
-`EnvironmentFile` at deploy. Deploys run from **GitHub Actions via OIDC → a scoped IAM role** (no static AWS
-keys) — an `api` job triggers the on-box release through **SSM Run Command** (no SSH / no inbound 22), a
-`web` job builds + `s3 sync` + invalidates CloudFront.
+> **Current state (2026-07-27):** the linguist export landed in
+> `content/linguist-contrib/iteration-1/` (canonical: `lernapp3-opus.md` + nine `BLS_*.html`
+> chapter plans with ~40 playable prototype exercises incl. real item data). Engineering's
+> Rückmeldung (`content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`) committed to building the
+> **10 proposed exercise types in one wave** (incl. a composite-telemetry design for
+> SortIntoBuckets/DragAndOrder/PairMatching/CatchFalling), keeps the app brand + Nepo/Stella buddy
+> choice, ignores the export's own SQL model, and contains a capacity model (built prototypes ≈ 1/3
+> of a 6–9-month training run, full export ≈ 2/3) plus a **generator proposal** (annotated word
+> pool × type templates) to close the rest. **Blocked on the linguists' answers** — above all the
+> skill-tag taxonomy (expected as `content/linguist-contrib/fertigkeiten.md`; deliberately NOT
+> drafted by engineering), plus item material for the "zu bauen" exercises, the per-item
+> wrong-feedback fields, Kugel/☆ artwork, and the fate of Kapitel 2–6 / custom one-offs.
 
-Provisioned as **Terraform in `infra/`** (reproducible, reviewable, doubles as the DR rebuild path).
+> **Re-creation reference.** The complete working Vokaltraining implementation (the `Lexeme` model,
+> 14 exercise types with solvability rules, 7-unit catalogue, full `LLM_SYSTEM`/`FEW_SHOT` prompt
+> with word-pool grounding, `gen-items-from-lexemes.ts`, the Wortschatz tab, the corpus) is
+> preserved at **commit `0d4948b`** — re-creation is fill-in-the-slots against a working reference
+> (`git show 0d4948b:<path>`), not invention from a blank page.
 
-**Round-1 checklist — all DONE:**
-1. ✅ **Terraform infra** (`infra/`) — EC2 `t4g.small` + Elastic IP + security groups (443 open; no inbound
-   22 — SSM deploys; 5432 never exposed) + EBS data volume; IAM instance role (blob-bucket prefix + SSM
-   param read + SSM managed instance); **GitHub OIDC provider + scoped deploy role** (`s3 sync`, CloudFront
-   invalidation, `ssm:SendCommand`); one blob bucket (lifecycle on `users/*/homework/`) + two private web
-   buckets (OAC); two CloudFront distributions (hashed assets immutable 1y, `index.html`/SW `no-cache`);
-   ACM cert in **us-east-1**; Route 53 records (`app.`/`review.`→CloudFront, `api.`→EIP) + SES DKIM/MAIL
-   FROM (Terraform-managed); SSM SecureString params (`JWT_SECRET`, `STAFF_JWT_SECRET`, `DATABASE_URL`,
-   `EMAIL_KEY`, `ANTHROPIC_API_KEY`); an **AWS Budgets** alert (~€40) + hard spend-cap auto-stop.
-2. ✅ **Box bootstrap + service** (`infra/cloud-init.sh.tftpl`, `deploy/`) — cloud-init installs Node 24,
-   Postgres, nginx, certbot; local Postgres role/db; `blsb-api.service` systemd unit with the SSM-rendered
-   `EnvironmentFile` (incl. `GIT_COMMIT`); nginx reverse-proxy `api.<domain>` :443→:3000 + certbot renew
-   timer; built on the Graviton box (Prisma has no `binaryTargets`) to avoid an arm64 engine mismatch.
-3. ✅ **GitHub Actions deploy** (`.github/workflows/deploy.yml`, manual `workflow_dispatch` button only —
-   merging never auto-deploys) — `api` job: `aws ssm send-command` → on-box `deploy/release.sh` (`npm ci` →
-   build → `prisma migrate deploy` pre-traffic → `npm run seed` → refresh env from SSM → `systemctl
-   restart`); `web` job: build family + trainer with prod `VITE_API_BASE` (+ `VITE_PWA=true` for `-web`) →
-   `s3 sync` → CloudFront invalidation. Contract drift gates stay green before any deploy.
-4. ✅ **Prod config** (`infra/ssm.tf`) — `WEB_ORIGIN`/`REVIEWER_ORIGIN`/`PUBLIC_API_URL`,
-   `STAFF_ADMIN_EMAILS`, `EMAIL_PROVIDER=ses` (IAM-role auth, no key), `AWS_S3_BUCKET` +
-   `AWS_REGION=eu-central-1`, `LLM_RESIDENCY_ACK=true`, lowered daily caps for beta
-   (`LLM_SESSIONS_PER_DAY=3`, `CHAT_MESSAGES_PER_DAY=20`), `SEED_DEV_ACCOUNTS` blank, plus a hard monthly
-   spend limit set in the Anthropic console.
-5. ✅ **Off-platform backup** (`deploy/backup.sh`, `blsb-backup.service`/`.timer`) — daily `pg_dump` →
-   `age`-encrypt (key held outside AWS/SSM) → push to a non-AWS remote (Cloudflare R2 / Backblaze B2) via
-   `rclone`; 7-daily + 4-weekly retention. Expired login-code cleanup (B3) folded into the same cron.
-6. ✅ **Full ★ AI on, watched** — chat + LLM lessons + Opus homework-vision enabled; low caps + AWS Budgets
-   alert + Anthropic spend limit keep run-rate inside €50/mo.
+**What survives (the slots to fill):** the contract pipeline; `solvableExerciseSchema` + the
+`EXERCISE_TYPES` gate; the (empty) `ItemBank` table; FSRS per `skill_tag`; telemetry; the digest
+roll-up; the `LlmService` forced-tool/Zod-revalidate path — all keyed on *opaque*
+`skill_tag`/`exercise_type` strings, so they carry over to any taxonomy. Frontend:
+`ExerciseCard`/`ChoiceTile`/`useAnswer`/`SingleChoiceExercise`, the `ExerciseView.tsx` dispatch,
+`derive.ts`, the golden-fixture harness.
 
-**Observability for beta:** **OpenTelemetry** is the chosen approach (instrument to emit request traces),
-but the collector/exporter build-out is **deferred** — round 1 ships only a free uptime ping on
-`/api/v1/health`. (Sentry is dropped in favour of OTel.)
+**Sequence** (each step ends green — drift gates + golden tests catch mistakes):
+1. **Word-list schema.** Re-add a `Lexeme`-equivalent model (migration). Which linguistic facts to
+   keep vs. FRESCH-specific columns; re-derive the base list fresh vs. restore the corpus
+   extraction. **Proposed direction (Rückmeldung, pending linguist reaction): the generator
+   approach** — an LLM-annotated ~1,000-word pool, cross-checked by the rules that are already
+   algorithms (the Dehnungs-h decision tree), disagreements routed to trainer review; linguists
+   sign off the annotation schema + spot-check rather than authoring items.
+2. **Skill-tag taxonomy** (`src/contract/skills.ts`) — replace `SKILL_TAGS = ['placeholder']`.
+   This is the **spine**: FSRS scheduling, digest roll-up, LLM targeting. Arrives as
+   `content/linguist-contrib/fertigkeiten.md` (two tables: Kennung/description/chapter +
+   exercise-code mapping).
+3. **Training types** (`src/contract/exercise.ts` + renderers) — grow the union per the §C2
+   playbook; all 10 export types in one wave, incl. the composite-telemetry design for the four
+   multi-step types (§J5.5).
+4. **Sequence** (`sessions/units.catalog.ts`) — populate `UNIT_CATALOG` (currently `[]`) +
+   per-unit Merksätze + theme colors. Mirror in `frontend/fixtures/units.example.json`.
+5. **Content ingest.** Port the built prototype exercises from `iteration-1/` into `content/`
+   lectures (engineering ports, linguists review by PR); new items authored by the linguists in
+   the extended format. If the generator direction is confirmed, restore/rewrite
+   `gen-items-from-lexemes.ts` against the annotated pool.
+6. **Lecture-generation prompt** (`sessions.service.ts` `LLM_SYSTEM`/`FEW_SHOT`) — rewrite
+   per-type solvability rules + few-shots; re-add word-pool grounding if the schema wants it. At
+   ~10+ types, select per-type rules + few-shots at generation time instead of one static prompt.
+7. **Trainer curation surface** — decide whether the new word-list schema needs a staff curation
+   tab (the old Wortschatz tab is at `0d4948b` as reference). Likely not (§I).
 
-**Deferred to full production** (documented, not built now): multi-instance + **ALB**/blue-green · managed
-**RDS** + cross-region DR snapshot copy · **OpenTelemetry** collector/exporter build-out · **staff MFA**
-(email-code-only is a conscious beta exception — note it in ARCHITECTURE) · advanced PWA/CDN cache tuning ·
-load testing.
+**Cross-cutting §F design notes:** the content schema should carry a **printable** notion before
+audio-dependent types land (§H4 depends on it); per-item feedback fields
+(`feedbackRichtig`/`feedbackFalsch`/`vorgeloest`) join the frontmatter schema pending linguist
+confirmation.
 
-### F. Content-set redesign — **the next step**
+**Docs to re-true when this lands:** `backend/SPEC.md` §2/§3/§8, `frontend/SPEC.md` §3, both
+`CLAUDE.md`/`AGENTS.md` exercise sections, `content/README.md`, and this file.
 
-**Goal:** design and rebuild the pedagogical content layer from scratch — a new word-list schema, training
-types (replacing the single `placeholder` scaffold left by the drop), a unit/sequence catalogue, and the LLM
-lecture-generation prompt — on top of the skeleton kept from the Vokaltraining program (auth, homework
-review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline). Dropped 2026-07-13 (the
-`chore/drop-vokaltraining-content` commit); see **Post-2.5** above for exactly what was removed.
+### G. Security review follow-ups
 
-> **Reframed 2026-07-26 (§I):** the linguists' lecture material now lands as **markdown files in
-> `content/`** (validated in CI, imported versioned at deploy) — not as portal-authored or seed-JSON
-> artifacts. F's remaining engineering steps are unchanged where they touch the contract (steps 2, 3, 6)
-> but steps 4/5/7 should be read through the §I lens: unit/bank content may also live in the content
-> library (open design question), and a staff curation surface is likely never needed.
+Full review in `SECURITY_REVIEW.md`; tracking issue **#81**. P1, P2, and P3 batch 1 are done
+(HISTORY.md §G).
 
-> **Linguist export landed 2026-07-27** (`content/linguist-contrib/iteration-1/` — deliveries are grouped
-> per iteration; canonical version `lernapp3-opus.md` + nine `BLS_*.html` chapter plans with ~40 playable
-> prototype exercises incl. real item data).
-> Engineering's analysis went back to the team as `content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`:
-> the 10 proposed exercise types will be built **all in one wave** (incl. a composite-telemetry design
-> for the multi-step types SortIntoBuckets/DragAndOrder/PairMatching/CatchFalling); app brand + the
-> Nepo/Stella buddy choice stay (export CI = trainer-handbook only); the export's own SQL data model
-> is ignored (existing backend covers it). **Blocked on the linguists' answers** — above all the
-> skill-tag taxonomy (step 2's spine; deliberately NOT drafted by engineering, per the never-invent
-> rule), plus item material for the "zu bauen" exercises, required per-item wrong-feedback fields,
-> Kugel/☆ artwork (none exists in `assets/`), and the fate of Kapitel 2–6 / custom one-off exercises.
-
-> **Re-creation reference (read this first).** The complete, working Vokaltraining implementation — the
-> `Lexeme` model, all 14 exercise types with their solvability rules, the 7-unit catalogue, the full
-> `LLM_SYSTEM`/`FEW_SHOT` lecture prompt with word-pool grounding, `LexemeService`, `gen-items-from-lexemes.ts`,
-> the Wortschatz trainer tab, and the `lexeme.seed.json`/`data-foundation` corpus — is preserved intact at
-> **commit `0d4948b`** (the parent of the drop commit). Re-creation is **fill-in-the-slots against a working
-> reference, not invention from a blank page**: `git show 0d4948b:<path>` any old file. The drop deliberately
-> left the plumbing wired to a single `placeholder` type so each piece plugs back into a known seam.
-
-**What survives (the slots to fill), so you're not rebuilding plumbing:**
-- Contract pipeline (ARCHITECTURE §4): Zod → `openapi.json` → `api.gen.ts` + the CI drift gate — intact.
-- `solvableExerciseSchema` + the `EXERCISE_TYPES` gate, the `ItemBank` table (empty), FSRS scheduling per
-  `skill_tag`, telemetry (`attempt` rows), the `digest.md` roll-up, the `LlmService` forced-tool/Zod-revalidate
-  path — all intact, all keyed on the *opaque* `skill_tag: string[]` / `exercise_type: string`, so they carry
-  over to any taxonomy.
-- Frontend renderer scaffolding: `ExerciseCard`/`ChoiceTile`/`useAnswer`/`SingleChoiceExercise`,
-  `ExerciseView.tsx` dispatch, `derive.ts`, the golden-fixture + snapshot test harness — intact.
-
-**Re-creation sequence** (each step ends green — the drift gates + golden tests catch mistakes):
-1. **Word-list schema.** Re-add a `Lexeme`-equivalent Prisma model (migration). Decide which linguistic facts
-   to keep (frequency, syllabification, IPA, gender survive any German-orthography approach) vs. which
-   annotation columns were FRESCH-specific (`features`/`familyStem`/`compoundParts`/`isLernwort`/`isTrennbar`/
-   `isMerkwort`). Decide whether to re-derive the base list fresh or restore the corpus extraction
-   (`data-foundation/` + `parse-rwe.py` are at `0d4948b`). Reference: `git show 0d4948b:besserlesenschreiben/backend/prisma/schema.prisma`.
-2. **Skill-tag taxonomy** (`src/contract/skills.ts`) — replace `SKILL_TAGS = ['placeholder']` with the new
-   taxonomy. This is the **spine**: it drives FSRS scheduling (`review_state.skill_tag`), the digest roll-up,
-   and LLM targeting. `assertKnownTags` in the seed loader keeps content honest against it.
-3. **Training types** (`src/contract/exercise.ts` + frontend renderers) — grow the `placeholder`-only union
-   one type at a time, per the **§C2 playbook** (which lists the exact per-file seams). Each type needs its
-   solvability `superRefine` case, a renderer (reuse `SingleChoiceExercise` where it fits), a `derive.ts`
-   telemetry case, and a golden fixture example.
-4. **Sequence** (`sessions/units.catalog.ts`) — populate `UNIT_CATALOG` (currently `[]`) with the new
-   unit progression + per-unit `intro` Merksätze + theme colors. Mirror in `frontend/fixtures/units.example.json`.
-5. **Content seed + loader.** Restore the JSON-loading half of `prisma/seed.ts` and author a new
-   `item_bank.seed.json` (hand-curated; the `contract.spec.ts` solvability gate re-validates every row). If
-   the new approach wants deterministic generation, restore/rewrite `gen-items-from-lexemes.ts`.
-6. **Lecture-generation prompt** (`sessions.service.ts` `LLM_SYSTEM`/`FEW_SHOT`) — rewrite the per-type
-   solvability rules + few-shot examples for the new training types; re-add word-pool grounding
-   (`wordPoolFor`/`LexemeService`) and the `gradeBand` `maxHk`/`ageBand` calibration if the new schema wants it.
-   At the full type count (~20) this stops being one static prompt: select the per-type rules + few-shots
-   for the session's focus types at generation time instead of shipping all of them on every call.
-7. **Trainer curation surface** — decide whether the new word-list schema needs a staff curation tab (the old
-   Wortschatz tab + `/staff/lexemes` routes are at `0d4948b` as a reference). The lecture **authoring**
-   surface is a separate, decided milestone — see **§H** (this step is only about word-list curation).
-
-**Docs to re-true when this lands** (per the ARCHITECTURE docs-upkeep rule): `backend/SPEC.md` §2/§3/§8 (DDL,
-Exercise contract, session algorithm), `frontend/SPEC.md` §3, both `CLAUDE.md`/`AGENTS.md` exercise sections,
-and this file. They currently carry "dropped 2026-07-13 (§F)" annotations marking exactly the sections to
-restore.
-
-### G. Security review follow-ups (pre-beta review, 2026-07-14)
-
-Full-surface review in `SECURITY_REVIEW.md`; tracking issue **#81**.
-
-- **P1 (must-fix) — DONE** (PR #80): parent-PIN reset bypass, `blsb`→root deploy escalation, CloudFront/nginx
-  security headers + CSP, and JWT removed from the `/auth/verify` body.
-- **P2 — DONE** (PR #80): SW-cache offline-logout bypass, telemetry-queue clear on logout, family login-code
-  resend throttle, homework skill-tag bounds/sanitisation, student name dropped from the LLM digest, API bound
-  to localhost in prod, and a backup dead-man's-switch.
-- **P3 batch 1 — DONE**: Swagger gated out of prod, `VITE_API_BASE` prod guard, `qc.clear()` on logout,
-  `dnf-automatic` patching, systemd unit hardening, `sudo --preserve-env` in `release.sh`, CSRF note in
-  ARCHITECTURE.
 - **P3 remaining — DEFERRED (do here, opportunistically):**
   1. 6-digit family login code (align with staff; touches the code regex + tests).
-  2. Normalise emails (`trim().toLowerCase()`) at the auth boundary (family + staff, matching `seed.ts`).
-  3. Dedicated image-token secret instead of reusing `STAFF_JWT_SECRET` (new env var → `env.ts`/`.env.example`).
+  2. Normalise emails (`trim().toLowerCase()`) at the auth boundary (family + staff).
+  3. Dedicated image-token secret instead of reusing `STAFF_JWT_SECRET`.
   4. Scope the S3 blob lifecycle rule to the `…/homework/` prefix (not all of `users/`).
-  5. Operational CloudWatch alarms (instance status-check, data-volume disk-full, cert-renewal) → existing SNS topic.
-  6. GitHub deploy approval gate (environment protection rule + OIDC `sub` scoped to `environment:beta`) and
-     SHA-pin third-party actions.
-- **Operator actions (not code):** `terraform validate`/`plan` + staging CSP smoke-test before apply;
-  provision a write-only backup token + `HEALTHCHECK_URL`; re-verify the dormant P2-4 taxonomy filter once
-  `SKILL_TAGS` is populated in §F. (All in #81.)
+  5. Operational CloudWatch alarms (instance status-check, disk-full, cert-renewal) → SNS topic.
+  6. GitHub deploy approval gate (environment protection + OIDC `sub` scoped to
+     `environment:beta`) and SHA-pin third-party actions.
+- **Operator actions (not code):** `terraform validate`/`plan` + staging CSP smoke-test before
+  apply; provision a write-only backup token + `HEALTHCHECK_URL`; re-verify the dormant P2-4
+  taxonomy filter once `SKILL_TAGS` is populated in §F. (All in #81.)
 
 ### H. Lectures + student tracking — the trainer portal as teaching console
 
-**Goal (revised 2026-07-26, §I):** a trainer **assigns** an individual lecture — teaching intro
-(Merksatz) + an ordered set of exercises — **to specific students**, who see it in the family app
-("Übung von deiner Trainerin"), complete it as a normal session, and the trainer sees the result.
-Lectures are **authored by the linguists in the content library** (`content/`, §I) — the portal
-browses, assigns, and tracks; it never composes. (The original §H goal had trainers authoring in the
-portal; that shipped 2026-07-25 and was replaced by the §I content pipeline one day later — the
-H1 rails and H3 tracking below survive unchanged.)
-
-**Why tracking is core, not a nice-to-have:** the trainer must see *thoroughly* what the student did —
-which lectures/sessions were started when, how long completion took, every question with the given
-answer(s), retries, and timing — to adapt the next training material. That same signal is what lets
-the LLM generate proper future lectures, and it's the economic basis for the app being free in the
-beginning (the app data powers the trainer's paid in-person work). The raw data already exists —
-`attempt` records every answer with `time_ms`/`attempt_no`, `session` records start/completion — H
-adds the trainer-facing read model and screens, not new telemetry.
-
-**Product reality (2026-07-15, supersedes the pseudonymisation rationale):** the trainers (2–3 in the
-beginning) **know each student personally** and speak with the parents in person. The staff portal is a
-known-trainer tool, not an anonymous review desk — trainers work with **real student names**. The old
-pseudonymised-queue rule (ARCHITECTURE §1a / security rule 10) was designed for anonymous trainers
-and no longer matched the product; **revised 2026-07-25 (H1.3)**: staff surfaces show the student's name +
-progress; parent email/account administration stays admin-only. (The `L-xxxxxx` handle was deleted —
-`profileId` is the stable id.)
-
-**Invariants (extend §11's):**
-- **Staff-authored exercises pass the same solvability gate as LLM output** (`solvableExerciseSchema`
-  on create/update) — the student can never receive an unanswerable item, regardless of author.
-- **Never blocking, never pushy:** an assignment is an *offer* on `/lernen` alongside bank/★ sessions —
-  no push at the student, no due-date pressure mechanics (same values as §D).
-- Attempts from assigned sessions are ordinary telemetry: they feed FSRS, the digest, and weak-skill
-  selection exactly like bank/LLM sessions.
-- Trainers see student names + learning data; **parent email + account lifecycle stay admin-only**.
-
-**H1 — the rails (type-agnostic; buildable NOW against `placeholder`):**
-1. ✅ **Schema (DONE 2026-07-25):** `lecture` (id, created_by → trainer, title, intro, item_ids uuid[],
-   skill_tags, status `draft|published`, timestamps) + `assignment` (lecture_id, profile_id, assigned_by,
-   assigned_at, session_id nullable + SetNull, completed_at nullable; unique lecture×profile).
-   `item_bank.generated_by` gained `'staff'` (unit 0, excluded from bank rotation); `session.source`
-   gained `'assigned'`. Additive migration — single-release deploy.
-2. ✅ **Staff routes (DONE 2026-07-25; write half removed 2026-07-26, §I3)** (backend SPEC §6):
-   originally lecture CRUD + publish/unpublish — replaced by the content-library import; what remains
-   is list/detail (superseded-filtered, with slug + version), assign to N profiles (idempotent,
-   `{assigned, skipped}`, cross-version dedupe), withdraw uncompleted, list assignments with derived
-   status (`open | started | completed`) + outcome rollup across versions; per-item results via the
-   existing session drill-down. Portal "Lektionen" tab.
-3. ✅ **Learner directory (DONE 2026-07-25, with H3.1/H3.2):** a student list for **all trainers** —
-   student name, grade band, skill breakdown, recent activity (`GET /staff/students`, portal
-   "Schüler" tab) — the picker for assignment and the context for authoring. The rule-10 revision
-   shipped with it: `profileHandle` replaced by the student's name across staff surfaces (queue
-   included; the `L-xxxxxx` handle is deleted), `queue/{id}/progress` opened to all trainers, and
-   ARCHITECTURE §1a/§11 + CLAUDE.md rule 10 + backend SPEC §6/§10 + trainer AGENTS.md re-trued in
-   the same PR.
-4. ✅ **Family surface (DONE 2026-07-25):** `/lernen` shows a personal "Übung von {Trainer}" card per
-   open assignment (real trainer name — known-trainer model; calm, no badges);
-   `POST /sessions {source:'assigned', assignmentId}` serves the lecture's items (intro = the lecture's
-   Merksatz via the existing IntroCard); the normal attempts/complete loop marks the assignment
-   completed and the card disappears.
-5. ✅ **(DONE 2026-07-25)** Contract regen + golden fixtures (`session-assigned.example.json`) + the
-   e2e journey `assignment-loop.spec.ts` (trainer authors → assigns → student completes → trainer sees
-   the result incl. drill-down) — passing.
-
-**H2 — authoring UX — ~~per-type portal editor~~ CANCELLED 2026-07-26 (§I):** lecture authoring moved
-to the markdown content library (`content/`, §I) — linguists author via GitHub PRs with CI validation;
-the portal's editor and the lecture write routes were removed in §I3. A new exercise type now ships a
-**frontmatter-schema extension** (`backend/src/content/lecture-file.schema.ts`) instead of an
-authoring form; the §C2 playbook note about per-type authoring-form sections is void.
-
-**H3 — student activity tracking (the trainer's review loop):**
-1. ✅ **Staff read model (DONE 2026-07-25)** (backend SPEC §6): per-student session history —
-   `GET /staff/students/{profileId}/sessions` (each: source `bank|llm|homework` — `assigned` joins
-   with the H1 rails — startedAt, completedAt, `activeMs`, abandoned flag, items answered/total,
-   correct %) — and per-session drill-down with the full attempt detail (prompt, expected, given,
-   correct, `time_ms`, `attempt_no` retries, in order). All of this reads the existing
-   `session`/`attempt` tables — no new telemetry.
-2. ✅ **Portal screens (DONE 2026-07-25** — except the per-assignment outcome list, which waits for
-   the H1 rails**):** the student activity timeline on the learner detail (filter by source, grouped
-   by day), session drill-down as a question-by-question review. Informs the next authored lecture
-   and the in-person parent conversation.
-3. ✅ **Digest extension (DONE 2026-07-25):** `digest.md` gained the "Zugewiesene Übungen" section
-   (recent assigned lectures: title, focus skills, outcome incl. correct %) so LLM-generated lectures
-   build on the trainer's material instead of ignoring it. Golden updated.
-4. ✅ **(DONE 2026-07-25)** Abandoned/never-started assignments are visible on the lecture's assignment
-   table (Offen | Begonnen, calm wording) and the activity timeline — signal for the parent
-   conversation, never pressure at the student.
+**Shipped** (HISTORY.md §H1/§H3): trainers assign content-library lectures to specific students
+(pin-at-assign versioning, offer-not-push) and review thoroughly what each student did (activity
+timeline, per-question drill-down, digest section). H2 authoring was cancelled for the §I content
+pipeline (pivot log).
 
 **H4 — paper delivery channel: assign a lecture as a printed worksheet — OPTION, parked 2026-07-27
 (designed, not built):** some students should get a lecture **on paper** instead of in the app. The
@@ -530,8 +184,8 @@ design is settled and deliberately cheap; pick it up as-is when the need is real
 - **Tracked channel, not a print button:** `assignment.delivery_channel` (`app` default | `print`,
   string column, additive migration). A paper assignment shows in the portal's Zuweisungen table
   (Papier tag) but **never surfaces in the family app**: the family `GET /assignments` read filters
-  to `app`, and `createAssigned` scopes its selector the same way (a paper assignment is a plain 404
-  there — unplayable even with a guessed id).
+  to `app`, and `createAssigned` scopes its selector the same way (a paper assignment is a plain
+  404 there — unplayable even with a guessed id).
 - **No session, no telemetry → manual completion:** paper rows go `open → completed` (never
   `started`; the derived-status logic needs no change) via a new all-trainer route
   `POST /staff/lectures/{id}/assignments/{id}/complete`, valid only for the print channel (app
@@ -539,92 +193,33 @@ design is settled and deliberately cheap; pick it up as-is when the need is real
   `channel` (default `app`); cross-version dedupe stays channel-agnostic. Withdraw unchanged.
 - **PDF is client-side** — a print-styled portal route (`/lectures/:lectureId/print`, outside the
   AppLayout chrome) + `window.print()` → browser "Save as PDF". Worksheet (title, Name/Datum line,
-  Merksatz, numbered exercises with checkbox options) + optional Lösungsblatt on a `break-before-page`.
-  No backend PDF dependency, no binary endpoint — the contract pipeline and `api.ts` stay JSON-only
-  and the €50/mo box is untouched. AssignDialog gets an "In der App / Auf Papier" choice with a
+  Merksatz, numbered exercises with checkbox options) + optional Lösungsblatt on a
+  `break-before-page`. No backend PDF dependency, no binary endpoint — the contract pipeline and
+  `api.ts` stay JSON-only. AssignDialog gets an "In der App / Auf Papier" choice with a
   "Jetzt drucken" follow-up.
 - **§F coupling:** only `placeholder` exists today, which prints fine. When §F introduces real
   exercise types, audio-dependent ones can't go on paper — the new content schema should carry a
-  printable notion and the print view/assign flow must respect it. **Check this box in the §F design.**
+  printable notion and the print view/assign flow must respect it (noted in §F).
 - Out of scope when built: server-rendered/archived PDFs, per-student pre-filled sheets, paper
   outcomes beyond done/not-done (the homework-photo review loop is the paper feedback channel).
 
-> **Sequencing note:** H3.1–H3.2 are type-agnostic and don't depend on lectures existing — they're
-> valuable for today's bank/★ sessions already. Build them **with H1** (same PR series), not after H2.
+### I. Content pipeline — ✅ DONE → HISTORY.md §I
 
-**Docs to true when H lands:** ARCHITECTURE §1a + §11 (known-trainer model replaces the pseudonymised
-queue; teaching-console extension + the new invariants), CLAUDE.md security rule 10, backend SPEC
-§3/§6/§8 (tables, staff routes, `source='assigned'`), frontend SPEC §2 (assignment card), trainer
-AGENTS.md (new screens + updated golden rules), and this file.
-
-### I. Content pipeline — lectures as markdown files in the repo (decided 2026-07-26)
-
-**Goal:** lecture content is authored by the **group of linguists** as markdown files in the repo-root
-`content/` directory — the **single source of truth** for all lectures. Collaboration happens on GitHub
-(web editor / PRs) with CI as the linguists' feedback loop; a versioned deploy-time import brings the
-files into the DB. The trainer portal stops authoring and becomes **browse + assign + track outcomes**.
-
-**Decisions (settled 2026-07-26):**
-- **Format:** markdown + YAML frontmatter, one file per lecture (`content/lectures/<slug>.md`). English
-  keys mirroring the wire contract; German authoring guide (`content/README.md`) + German validation
-  errors. Structured exercises live in the frontmatter; the body is reserved for future richer prose.
-  `status: draft | published` (default `published` — merged to main = live at next deploy; drafts are
-  browsable in the portal, never assignable).
-- **Scope:** files are the ONE source. **§H2 (per-type portal editor) is cancelled** — a new exercise
-  type now ships a frontmatter-schema extension instead of an authoring form. §H1's assignment rails and
-  §H3 tracking stay as the portal's job.
-- **Versioning: pin at assign-time.** Git versions the authoring; the import versions the content: a
-  changed lecture gets a NEW `lecture` row (version+1, old row `superseded`, never mutated) and changed
-  exercises get NEW content-addressed `item_bank` rows (`seed_key = content:{slug}.{exId}:{hash12}`),
-  so attempts always reference exactly what the student saw. Assignments pin via the existing
-  `lecture_id` FK; new assignments get the latest version. Slugs and exercise ids are the durable
-  telemetry anchors — never renamed.
-- **Skill-tag guard:** `content/skills.lock.json` is a committed copy of `SKILL_TAGS`; CI fails on any
-  taxonomy drift, making renames/removals (which orphan attempt history) a deliberate two-file change.
-
-**I1 — format + validator + CI (✅ DONE 2026-07-26):** `content/` (German README, `_vorlage.md`,
-draft example, `skills.lock.json`) · `backend/src/content/` (frontmatter Zod schema reusing
-`solvableExerciseSchema` — the §H solvability invariant survives the authoring move — parser with
-German path-addressed errors, canonical content hashing with `status` excluded, loader, skills-lock
-diff) + specs · `npm run content:validate` (GitHub `::error` annotations in Actions) · CI `content` job.
-Linguists can write real lectures from here on.
-
-**I2 — schema + versioned import + deploy wiring (✅ DONE 2026-07-26):** migration (lecture `slug`/
-`version`/`content_hash`/`source_path`/`superseded_at`, `created_by` nullable, `@@unique([slug,
-version])`; legacy portal-authored rows → `superseded`) · `npm run content:import` (validate-all-first,
-then per-lecture transaction: create v1 / no-op / status-only update / version bump / retire-on-file-
-removal — never delete, never mutate old rows; item rows content-addressed via seed_key
-`content:{slug}.{exId}:{hash12}`) · deploy tarball gains `content/`, `release.sh` runs the import
-pre-traffic after the seed · e2e fixture content dir imported in `global-setup`.
-
-**I3 — route + portal reduction (✅ DONE 2026-07-26):** staff lecture write routes (`POST/PATCH/
-DELETE`, publish/unpublish) removed; list/detail/assign/withdraw stay (list filters `superseded`,
-gains `slug`/`version`, counts assignments across versions; assign gains cross-version dedupe —
-an open assignment on any version of the slug skips, a completed older-version one doesn't block) ·
-contract regen (both `api.gen.ts`) · portal editor deleted, provenance copy („aus der Content-
-Bibliothek", version badge, drafts unassignable) · e2e `assignment-loop` rewritten against imported
-fixture content · §H/§F/ARCHITECTURE/SPEC docs re-trued.
-
-**Docs to true as I lands:** ARCHITECTURE §1a (linguists author in-repo, outside both auth realms —
-the deploy pipeline is their "write API"), §3 (`content/` in the layout), §7 (release steps), §11
-(trainers assign, don't author); backend SPEC §3/§6/§8; trainer AGENTS.md; frontend SPEC §2 (card
-wording); CLAUDE.md; this file (§H2 strike-through, §F reframe).
-
-> §I's durable anchors (slug, `{slug}.{exId}` lineage, content-addressed item rows) are the substrate
-> **§J** consumes for content-effectiveness analytics — "no curation surface needed" (F7) does not mean
-> "no content analytics ever."
+Lectures are markdown files in `content/` — CI-validated, versioned deploy import, pin-at-assign.
+§I's durable anchors (slug, `{slug}.{exId}` lineage, content-addressed item rows) are the substrate
+**§J** consumes for content-effectiveness analytics.
 
 ### J. Content feedback loop — telemetry → content quality (planned 2026-07-27)
 
 **Goal:** close the missing half of the improvement cycle. Today all four feedback loops flow
 telemetry *forward* into what one student gets next (attempt→FSRS, weak/due→bank selection,
-focus+digest→generated lecture, homework verdict→FSRS — see ARCHITECTURE §12), and every read model
-is **student-indexed**. Nothing aggregates by **content**: nobody can answer "which of the lectures
+focus+digest→generated lecture, homework verdict→FSRS — ARCHITECTURE §12), and every read model is
+**student-indexed**. Nothing aggregates by **content**: nobody can answer "which of the lectures
 underperforms," "is this exercise badly worded (90 % wrong, 30 s average)," or "did v2 beat v1" —
 even though §I built exactly the durable anchors for it. §J adds the content-indexed half and the
 channel back to the authors.
 
-**Why now-ish:** at the target scale (≈20 exercise types × ≈200 lectures × generated lectures ×
+**Why now-ish:** at the target scale (≈10+ exercise types × ≈200 lectures × generated lectures ×
 detailed telemetry), content improvement cannot run on trainer anecdotes. The linguists' only
 feedback today is CI validation — whether a file is well-formed, never how it performs.
 
@@ -634,11 +229,11 @@ aggregate report exported into the repo** — they stay outside both auth realms
 DPA), and the repo is already their interface: the deploy pipeline is their write API, the §J4
 report becomes their read API.
 
-**J1 — digest hardening (build when §F's taxonomy lands; independent of J2–J4):** the digest is the
-main prompt-size risk under a real taxonomy — its attempt fetch is uncapped (14-day window, no
-`take`, unlike the session paths' 200-row cap) and the per-skill table + FSRS-due list are unbounded
-(one row per skill seen/due). Cap the fetch, top-N the skill table (weakest-first, ~12) and the due
-list; keep the existing caps (wrong-answers 8, assigned lectures 5). Files:
+**J1 — digest hardening (build when §F's taxonomy lands; independent of J2–J4):** the digest is
+the main prompt-size risk under a real taxonomy — its attempt fetch is uncapped (14-day window, no
+`take`, unlike the session paths' 200-row cap) and the per-skill table + FSRS-due list are
+unbounded. Cap the fetch, top-N the skill table (weakest-first, ~12) and the due list; keep the
+existing caps (wrong-answers 8, assigned lectures 5). Files:
 `src/services/digest/digest.service.ts`, `digest.render.ts` + golden digest test update.
 
 **J2 — content-analytics read model (gated on: real §F content + real telemetry to aggregate):**
@@ -646,8 +241,8 @@ aggregates over `attempt` joined to `item_bank`/`lecture` — per **item lineage
 across versions, derived from the `content:` seed_key prefix), per **exercise type**, per **lecture
 slug**, and **per version** (v-compare): attempts, first-try correct %, avg `time_ms`, retry rate,
 abandon rate. Minimum-N floor baked into the read model (suppress aggregates with too few
-students/attempts), so every consumer inherits it. Read-side only — plain Prisma
-groupBy/SQL is fine at beta scale; no schema change expected.
+students/attempts), so every consumer inherits it. Read-side only — plain Prisma groupBy/SQL is
+fine at beta scale; no schema change expected.
 
 **J3 — portal „Content-Qualität" screen (all trainers):** worst-performing lectures/items ranked,
 per-lecture drill-down with per-exercise stats, v(n) vs v(n−1) comparison — the trainer-facing
@@ -657,48 +252,31 @@ list. German copy, lucide icons only, no emoji.
 **J4 — repo report for the linguists:** `npm run content:stats` renders the J2 aggregates into a
 generated report in the repo (proposed `content/stats.md`; committed via PR or published as a CI
 artifact — decide at build time). **Privacy rule (hard): content-indexed aggregates only** —
-counts, percentages, average times per lecture/exercise/type — with the J2 minimum-N floor; never a
-student name, profileId, or any per-student row. Linguists are outside the staff DPA; this report
+counts, percentages, average times per lecture/exercise/type — with the J2 minimum-N floor; never
+a student name, profileId, or any per-student row. Linguists are outside the staff DPA; this report
 must stay safe to read by anyone with repo access.
 
 **J5 — telemetry v2 (small additive capture improvements; each lands with its natural trigger):**
-1. **Robust `time_ms` (build anytime — a correctness fix, not a feature):** the timer runs from item
-   mount to answer, so a backgrounded tab or a dinner break inflates it unboundedly — and the
-   weak-skill heuristic (>15 s avg) and the digest's „Ø Zeit" read it as "slow at this skill". Pause
-   the timer via the Page Visibility API in the frontend, and winsorize (cap ~60 s) in every
+1. **Robust `time_ms` (build anytime — a correctness fix, not a feature):** the timer runs from
+   item mount to answer, so a backgrounded tab or a dinner break inflates it unboundedly — and the
+   weak-skill heuristic (>15 s avg) and the digest's „Ø Zeit" read it as "slow at this skill".
+   Pause the timer via the Page Visibility API in the frontend, and winsorize (cap ~60 s) in every
    aggregation (`session-select.ts weakSkills`, digest, J2).
 2. **`audio_plays` on `attempt` (lands with the audio/TTS work):** "played the audio 4× before
    answering" is a stronger reading-difficulty signal than time for this audience. Trivial additive
    column + one counter in the exercise scaffolding.
 3. **Generation provenance on `item_bank` (lands with §F6):** stamp `generatedBy:'llm'` rows with
-   model id + prompt version (additive columns) — enables "items from prompt v3 outperform v2",
-   the one loop J2 can't close without the data being stamped at write time.
+   model id + prompt version (additive columns) — enables "items from prompt v3 outperform v2".
 4. **Roll up `agreed_with_llm` (lands with J2):** stored per homework review since §H, never
    aggregated — one J2 query measuring vision-analysis quality over time.
-5. **Per-type `given` serialization + `givenFirst` for typed input:** a §C2 playbook step (see the
-   telemetry bullet there), decided per type as §F types land.
+5. **Per-type `given` serialization + `givenFirst` for typed input; composite-attempt design for
+   the multi-step §F types (SortIntoBuckets/DragAndOrder/PairMatching/CatchFalling):** decided
+   per type as §F types land (§C2 playbook telemetry step).
 - **Explicitly NOT captured (privacy stance, load-bearing):** keystrokes, cursor/touch traces,
   device fingerprints, session recordings. The restraint is what keeps the J4 report and the whole
   minors-data story clean. Abandonment needs no new capture — the drop-off item is derivable from
   the last answered position vs. `session.item_ids` order (a J2 computation).
 
-> The LLM **generation** side of the cycle scales separately: at ~20 types the single static
+> The LLM **generation** side of the cycle scales separately: at ~10+ types the single static
 > `LLM_SYSTEM` prompt becomes per-type few-shot selection — that work stays in **§F step 6**, not
 > here. §J is about measuring content, §F6 about generating it.
-
----
-
-## Suggested order
-
-~~B1+B2~~ ✓ → ~~D1~~ ✓ → ~~D4 + D7~~ ✓ → ~~D2 + D3~~ ✓ → ~~C1~~ ✓ → ~~E — first feedback round (beta) on
-AWS~~ ✓ → ~~H1 assignment rails + H3 student-activity tracking~~ ✓ (2026-07-25 — the teaching console
-is live: directory, activity, assignment, digest section) → ~~I — content pipeline~~ ✓ (2026-07-26 —
-lectures as markdown in `content/`, CI-validated, versioned deploy import; H2 portal authoring
-cancelled) → **now:** the linguists write lectures in `content/` and work on **F** (word-list schema →
-skill taxonomy → training types → sequence → lecture prompt, landed piece by piece as delivered) →
-then **D5 / D6** (badges, parent email) once the new content is live. **C2** (a concrete new exercise
-type) is how new training types land during §F — each now also extends the content-file frontmatter
-schema (§I) instead of shipping an authoring form. **J** rides alongside: **J1** (digest hardening)
-lands with §F's taxonomy; **J2–J4** (content analytics → portal screen + linguist repo report) once
-the first real content cohort has produced telemetry worth aggregating; **J5** (telemetry v2)
-piecemeal — the robust-`time_ms` fix anytime, the rest with their trigger milestones.

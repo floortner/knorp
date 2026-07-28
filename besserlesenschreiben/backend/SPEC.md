@@ -14,13 +14,13 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
   (via `nestjs-zod`) for all request/response DTOs; `@nestjs/swagger` emits the OpenAPI the frontend types from.
 - **DB:** PostgreSQL 17 via **Prisma 7** (`prisma/schema.prisma` is the model truth). Migrations with **Prisma Migrate**.
 - **Object storage:** **Amazon S3** (per-user prefixes, short-lived **presigned** URLs) via `@aws-sdk/client-s3`.
-- **Auth:** passwordless email code → JWT session token. (The former parent-PIN elevation was removed 2026-07-22 — destructive actions are ownership-checked and double-confirmed in the UI instead.)
+- **Auth:** passwordless email code → JWT session token. No PIN/parent elevation — destructive actions are ownership-checked and double-confirmed in the UI (§4).
 - **LLM:** `@anthropic-ai/sdk` (session generation, chat, homework vision); structured JSON via `zodOutputFormat` +
   `messages.parse` reuses the same Zod schemas. Model string configurable via env. See `../ARCHITECTURE.md` §8 for
   the LLM data-flow decision (Anthropic-direct, `inference_geo: "eu"`).
-- **TTS:** **Amazon Polly** neural voices (`de-DE`), pre-generated per item and cached in S3 — deferred (Web-Speech fallback in the client).
+- **TTS:** deferred — Web-Speech fallback in the client (§9).
 - **Payments:** none — the app is **free** (billing deferred; ARCHITECTURE §9).
-- **Hosting:** small **AWS EC2** instance, region Frankfurt eu-central-1 (see `../ARCHITECTURE.md` §7; deployment is a future milestone). **Never rely on local disk for persistence.**
+- **Hosting:** small **AWS EC2** instance, region Frankfurt eu-central-1 (`../ARCHITECTURE.md` §7 — the beta is live). **Never rely on local disk for persistence.**
 
 **Hard rules (security boundary):**
 1. `user_id` / `profile_id` is **always derived from the JWT**, never from a client-supplied path or body field.
@@ -42,8 +42,7 @@ profile (1) ───< homework_upload ───< homework_review
 profile (1) ───< chat_message
 profile (1) ───< review_state
 item_bank (global, shared) ──referenced by── attempt.item_id
-# The `lexeme` word foundation (and the exercise-generation pipeline it grounded) was dropped 2026-07-13
-# along with the Vokaltraining content set — see ROADMAP.md §F for the content-set redesign in progress.
+# A word-list model grounding exercise generation is a §F slot (ROADMAP §F step 1) — not yet designed.
 
 # STAFF realm (disjoint identity — ARCHITECTURE §1a):
 trainer (internal staff) ───< homework_review        # authoritative homework verdicts
@@ -104,13 +103,11 @@ item_bank(
   id            uuid pk,
   seed_key      text unique,            -- stable natural key for idempotent seeding; null for generated_by='llm'
   unit          int not null,           -- which unit/Einheit (1..N)
-  exercise_type text not null,          -- currently a single 'placeholder' type — the Vokaltraining
-                                         -- 14-type taxonomy was dropped 2026-07-13 (ROADMAP.md §F)
+  exercise_type text not null,          -- a single 'placeholder' type until §F lands the new types
   payload       jsonb not null,         -- the exercise spec (see §8 for per-type shape)
-  audio_url     text,                   -- pre-generated TTS for the word (presigned at read time)
+  audio_url     text,                   -- pre-generated audio for the word (presigned at read time)
   syllable_audio jsonb,                 -- optional per-syllable audio urls
-  skill_tags    text[] not null,        -- taxonomy in src/contract/skills.ts — currently a single
-                                         -- 'placeholder' tag; the 14-tag taxonomy was dropped with §F
+  skill_tags    text[] not null,        -- taxonomy in src/contract/skills.ts ('placeholder' until §F)
   difficulty    int default 1,
   generated_by  text default 'seed',    -- seed | llm | staff (legacy §H1) | content (§I2 import)
   created_at    timestamptz default now()
@@ -122,10 +119,8 @@ item_bank(
 -- row while the old row keeps serving pinned assignments. Like legacy 'staff' rows they are excluded
 -- from bank rotation (the bank's generated pool filters generated_by='llm' only).
 
--- The LEXEME FOUNDATION table (curated word pool grounding exercise generation) was dropped 2026-07-13
--- along with the whole Vokaltraining content set — see ROADMAP.md §F. A new word-list schema is being
--- designed from scratch (which linguistic facts to keep vs. which annotation columns were approach-
--- specific is an open design question, not a given).
+-- A word-list model (curated pool grounding exercise generation) is a §F slot — not yet designed
+-- (HISTORY.md pivot log · ROADMAP §F step 1).
 
 -- SESSION (a generated training session = ordered list of items)
 session(
@@ -133,7 +128,7 @@ session(
   profile_id   uuid fk -> profile,
   unit         int,
   item_ids     uuid[] not null,         -- the items served, in order
-  source       text not null,           -- 'bank' | 'llm' | 'homework'
+  source       text not null,           -- 'bank' | 'llm' | 'homework' | 'assigned'
   created_at   timestamptz default now(),
   completed_at timestamptz,
   stars_award  int
@@ -294,12 +289,11 @@ assignment(
 
 The session JWT alone is not enough: the family `JwtAuthGuard` re-reads the account each request and rejects anything not `status='active'`, so deactivate/delete take effect immediately (not at 30-day token expiry).
 
-**No PIN / parent elevation.** The former Eltern-Bereich and its 4-digit PIN were removed (2026-07-22):
-the household is small and personally known to the trainers, and the PIN was more friction than protection.
-The destructive actions (`/profiles/:id/reset`, `/profiles/:id/reset-chat`) are plain family-session routes —
-ownership-checked server-side, fronted by a **two-step confirmation** in the `/profil` tab (frontend SPEC §8).
-Consequence to be aware of: anyone holding the family session (i.e. the student on the family device) can
-trigger them; the double confirm is deliberate friction, not a security boundary.
+**No PIN / parent elevation.** The destructive actions (`/profiles/:id/reset`, `/profiles/:id/reset-chat`)
+are plain family-session routes — ownership-checked server-side, fronted by a **two-step confirmation** in
+the `/profil` tab (frontend SPEC §8). Consequence to be aware of: anyone holding the family session (i.e.
+the student on the family device) can trigger them; the double confirm is deliberate friction, not a
+security boundary.
 
 **Session cookie.** The session JWT (30-day TTL) is set as an **httpOnly, Secure, SameSite=Lax cookie** on `/auth/verify` and cleared on `POST /auth/logout`. `JwtAuthGuard` reads the cookie or a `Bearer` header (the SPA uses the cookie and holds no token in JS, deriving auth from a `/me` probe; API clients/tests may use Bearer).
 
@@ -443,13 +437,12 @@ GET /staff/students                 ?limit=&cursor=  -> {items:[{profileId, name
 GET /staff/students/{profileId}                      -> {profileId, name, summary, skills, activity}
                                                         # the learner-detail header (= ProgressPanel payload)
 GET /staff/students/{profileId}/sessions ?limit=&cursor=&source=
-                                                     -> {items:[{sessionId, source: bank|llm|homework,
+                                                     -> {items:[{sessionId, source: bank|llm|homework|assigned,
                                                          startedAt, completedAt, abandoned, itemsTotal,
                                                          itemsAnswered, attemptCount, correctPct,
                                                          activeMs}], nextCursor, total}  # newest-first
                                                         # abandoned = completedAt null, EXCEPT homework
-                                                        #   sessions (terminal by design). 'assigned'
-                                                        #   joins source with the §H1 rails.
+                                                        #   sessions (terminal by design)
 GET /staff/students/{profileId}/sessions/{sessionId} -> the session summary + attempts[] in answer order:
                                                         {attemptId, itemId, exerciseType, prompt, expected,
                                                          given, isCorrect, timeMs, attemptNo, skillTags,
@@ -504,10 +497,6 @@ DELETE /staff/users/{id}                               -> 204   # erasure: DB ca
   removes the account's blobs).
 - All routes here require the staff cookie **and** `role='admin'`; a plain trainer gets `403`.
 
-> The staff lexeme foundation curation routes (`/staff/lexemes/*`) were dropped 2026-07-13 along with the
-> `lexeme` table and the Vokaltraining content set (ROADMAP.md §F). Re-add a curation surface once the new
-> word-list schema is designed, if the new approach needs one.
-
 ### Profiles — destructive actions
 ```
 POST /profiles/{id}/reset       -> {ok}   # destructive; wipes learning progress (attempts, plan, stars); identity/settings kept
@@ -515,8 +504,6 @@ POST /profiles/{id}/reset-chat  -> {ok}   # destructive; wipes the whole chat: m
 ```
 Ownership of `{id}` is asserted against the JWT account (missing/foreign → 404). No PIN/elevation —
 the family UI fronts both with a two-step confirmation (frontend SPEC §8).
-**Billing — DEFERRED (not built):** `/billing/*` (`status`, `checkout`, `webhook`) belong to the deferred
-paid-tier option (ARCHITECTURE §9). The app is free; nothing here is implemented. Listed for the future only.
 
 ### Digest generation (`GET /digest`)
 Regenerate `digest.md` from the `attempt` table (last ~14 days), write to storage, return markdown.
@@ -544,20 +531,10 @@ This is the **LLM-facing view** — compact, not raw rows. Target format:
 
 ## 7. Billing logic — **DEFERRED (not built; ARCHITECTURE §9)**
 
-> The app is currently **free, including the ★ AI ops** — there is no credit decrement, no `402` gating, no
-> webhook. Access is gated by **account status** (§4 / ARCHITECTURE §1b), not payment. The model below is the
-> preserved future option; the `entitlement`/`credits_ledger` tables stay dormant. `★` now means
-> "AI-backed / cost-bearing op," free for any approved active account.
-
-- **Free tier:** unlimited bank sessions, scheduling, progress, Web-Speech voice. No gate.
-- **Gated (★) ops:** `source='llm'` sessions, `/chat` LLM replies, `/homework`, premium TTS.
-  - Supporter subscription → included monthly quota.
-  - Credit packs → decrement `credits_ledger` by 1 per op; **reject with 402 if balance ≤ 0** (frontend shows a parent-facing upsell, never shown to student).
-- **Pay-it-forward:** `/billing/checkout` accepts `payItForwardAmount`; on payment, log `credits_ledger(+N, reason='pay_it_forward_gift')` to a **subsidy pool**; grant pool credits to flagged free accounts as `subsidy_grant`.
-- **Webhook:** verify provider signature, update `entitlement` + ledger. Idempotent on the provider **event id** — dedupe via the `processed_webhook(provider, event_id)` table (ARCHITECTURE §4/§9).
-- **Transparency endpoint** feeds a parent-facing "this month cost €X, you funded Y" line.
-
-Payment surface rules: billing UI (if ever built) must be parent-facing only; the student app never references price, paywall, or purchase. No lives/energy/loot mechanics anywhere. (A parent-verification gate would need to be re-designed first — the PIN was removed 2026-07-22.)
+The app is **free, including the ★ AI ops** — no credit decrement, no `402` gating, no webhook, no billing
+tables. Access is gated by **account status** (§4 / ARCHITECTURE §1b), not payment. `★` means "AI-backed /
+cost-bearing op," free for any approved active account. If metering ever becomes a milestone, ARCHITECTURE
+§9 holds the reserved seam (Merchant of Record, parent-facing only, no loss mechanics).
 
 ---
 
@@ -570,9 +547,8 @@ Two mechanisms — **most sessions never touch the LLM:**
 2. Cross-reference `review_state` for FSRS-due skills.
 3. Select `item_bank` rows matching weak/due `skill_tags`, mixed with some mastered items for confidence. Order easy→hard.
 4. Return as a `session` (`source='bank'`), carrying the unit's **Merksatz** as `intro` (from
-   `units.catalog.ts`) — the teaching layer of the unit sequence, rendered as the lesson's intro card. The
-   Vokaltraining 7-unit catalogue was dropped 2026-07-13; `units.catalog.ts` is currently empty pending the
-   new sequence design (ROADMAP.md §F).
+   `units.catalog.ts`) — the teaching layer of the unit sequence, rendered as the lesson's intro card.
+   `units.catalog.ts` is empty until §F step 4 lands the new sequence.
 
 **FSRS:** use the `ts-fsrs` package (or SM-2 as a simpler fallback). Schedule **per skill_tag**, not per word. Update `review_state` on `/attempts`.
 
@@ -587,15 +563,12 @@ drill and *with which real words*; Claude only writes the teaching intro and the
    - the **professionally-reviewed** homework focus — `reviewed_analysis.suggestedFocus` from the last 5
      `status='reviewed'` uploads (never the raw LLM draft).
 2. **Calibration band.** `gradeBand(unlockedUnit)` → `{ label (Klassenstufe text), difficulty 1–3 }`.
-   (Previously also carried `maxHk`/`ageBand` to drive lexeme word-pool grounding — dropped with the lexeme
-   foundation, ROADMAP.md §F.)
 3. **Behavioural context.** `digest.md` (§6) — per-skill accuracy, **response time** (`time_ms`), **retries**
    (`attempt_no`), recent trend. Slow-but-correct and hesitation are weak signals, not just errors. Best-effort.
 4. **Prompt + structured output.** `LLM_SYSTEM` + a user message (Klassenstufe + Förderschwerpunkte +
    Lernstand digest) → `llm.extract(generatedSessionSchema, …)`, so every exercise is Zod-validated and
-   solvable end-to-end. `LLM_SYSTEM` currently targets only the single `placeholder` type — the per-type
-   solvability rules and word-pool grounding block (the "Wortschatz lever") were dropped with the lexeme
-   foundation and will be rebuilt as new training types are designed (ROADMAP.md §F).
+   solvable end-to-end. `LLM_SYSTEM` targets only the single `placeholder` type until §F rebuilds the
+   per-type solvability rules and word-pool grounding (ROADMAP §F step 6).
 5. **Persist + return.** Each exercise → an `item_bank` row (`unit=LLM_ITEM_UNIT` sentinel, `generated_by='llm'`,
    `difficulty=band.difficulty`); then a `session` (`source='llm'`) referencing them; return the teaching
    `intro` + items. (TTS synth is deferred — §9.)
@@ -619,8 +592,7 @@ flowchart TD
 
 **Rule:** the database decides *what* to drill (deterministic, free) — informed by telemetry **and the
 professionally-validated** homework focus — the LLM only generates *new content* and *conversation*. (Word
-grounding — deciding *which real words* to drill it with — was a lexeme-foundation feature dropped with the
-content set; see ROADMAP.md §F.)
+grounding — deciding *which real words* to drill with — returns with the §F word-list schema.)
 
 ---
 
@@ -680,12 +652,11 @@ allUnitsComplete}`.
 
 ---
 
-## 9. TTS pipeline
+## 9. TTS pipeline — **DEFERRED (not built)**
 
-- Vocabulary is **bounded** (item bank) → synthesize once, cache forever.
-- On item insert (seed or LLM): enqueue a synth job → Amazon Polly neural (`de-DE`; Polly has no `de-AT` neural voice — acceptable) → store audio in S3 → set `item_bank.audio_url` (+ per-syllable audio for syllable exercises).
-- Frontend plays `audio_url` if present; **Web Speech API is the fallback** for dynamic text (chat) only.
-- Verify current provider voices/pricing before committing — those change.
+The client falls back to the Web Speech API today; `item_bank.audio_url`/`syllable_audio` are the ready
+slots for pre-generated audio. Target when built: synthesize once per item (bounded vocabulary, Amazon
+Polly neural `de-DE`), cache in S3, set `audio_url`. Verify voices/pricing at build time.
 
 ## 10. Homework vision pipeline — professional-in-the-loop (ARCHITECTURE §11)
 
@@ -708,9 +679,9 @@ allUnitsComplete}`.
 5. **Async, never blocking:** the student plays on; review latency lands in the *next* generated lecture. The
    family only ever sees the authoritative `reviewed_analysis` (once `status='reviewed'`), never the draft.
 
-**Known-trainer data minimisation (hard rule, revised 2026-07-25 §H1.3):** the trainer queue exposes the
-student's name + image + draft + skill tags + grade band — never a parent email, chat, or billing
-(ARCHITECTURE §1a). `imageUrl` is a per-upload short-lived presigned URL.
+**Known-trainer data minimisation (hard rule):** the trainer queue exposes the student's name + image +
+draft + skill tags + grade band — never a parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl`
+is a per-upload short-lived presigned URL.
 
 **Data-protection (minors):** parent-consented at upload (copy states a trained professional reviews the
 photo), short retention on raw images regardless of review state, EU data residency where the provider offers
@@ -752,8 +723,9 @@ SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_TRAINER_EMAIL=   # dev-only seeded logi
 - ★ ops are free but capped per profile per day (`LLM_SESSIONS_PER_DAY`, `CHAT_MESSAGES_PER_DAY`); over cap
   returns a friendly `429 RATE_LIMITED`, and no model call or row write happens.
 - Homework analysis cannot mutate `review_state` before a **staff trainer** verdict (`llm_analysis` is a
-  draft; only `reviewed_analysis` applies). The former parent-confirm path no longer exists.
+  draft; only `reviewed_analysis` applies). There is no parent-confirm path.
 - A staff (`aud:"staff"`) cookie is rejected on every family route, and a family JWT is rejected on every
   `/staff/*` route — the two realms never cross.
-- The `/staff/queue` payload contains no student name, parent email, chat text, or billing field.
+- The `/staff/queue` payload contains no parent email, chat text, or billing field (the student **name**
+  is shown — known-trainer model, ARCHITECTURE §1a).
 - A claimed upload returns `409` to a second trainer until the lease expires.
