@@ -76,9 +76,13 @@ Real user journeys over family frontend + backend, deterministic and offline: `A
 **CI (`.github/workflows/ci.yml`):** per-project jobs run `lint · typecheck · test · build` plus the **contract-drift gates** — `npm run openapi:export` then `git diff --exit-code openapi.json` (backend), and `npm run gen:api` then `git diff --exit-code api.gen.ts` (frontend/trainer). Regenerate and commit these whenever a Zod contract changes or CI fails red.
 
 Other root dirs: `content/` — the **lecture content library** (ROADMAP §I): one markdown+YAML-frontmatter
-file per lecture, authored by the linguist group via GitHub PRs, single source of truth for all lectures
-(`content/README.md` is the German authoring guide; validated by the CI `content` job); `website/` — static
-marketing page; `assets/` — the master mascot/art source library +
+file per lecture in `content/lectures/`, authored by the linguist group via GitHub PRs, single source of truth
+for all lectures (`content/README.md` is the German authoring guide; validated by the CI `content` job).
+`content/linguist-contrib/` is the exchange folder with the linguist team — deliveries grouped per iteration
+(`iteration-1/` = the §F developer handoff `lernapp3-opus.md` + `BLS_*.html` chapter plans), with engineering's
+Rückmeldungen and expected answers (e.g. `fertigkeiten.md`) at the folder root; **never imported into the app**
+(the importer reads only `content/lectures/`);
+`website/` — static marketing page; `assets/` — the master mascot/art source library +
 `manifest.json` catalog (SVG masters versioned, large PNG renders gitignored; the app serves the SVG subset
 from `besserlesenschreiben/frontend/monster-pets/`). (`data-foundation/` — the *Rechtschreibwortschatz* source
 corpus + `parse-rwe.py` — was deleted 2026-07-13 along with the lexeme foundation, ROADMAP.md §F.)

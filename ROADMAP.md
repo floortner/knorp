@@ -21,6 +21,8 @@ have shipped: backend + family frontend + trainer portal are live on real HTTPS 
 - **In progress (external):** **F — content-set redesign** (§F): the linguists are authoring the new word
   lists, training types, and sequence — now landing as `content/` lecture files (§I). Engineering picks
   each piece up as it lands. Don't start F implementation unprompted — the pedagogy is the linguists'.
+  **2026-07-27: their export landed** (`content/linguist-contrib/`) and engineering's Rückmeldung went back
+  (`content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`) — next move is theirs (skill taxonomy above all; see §F).
 - **Done (engineering):** **H — lectures + student tracking** (§H): the trainer portal as teaching
   console — trainers assign lectures to specific students (known-trainer model: real names) and
   **review thoroughly what each student did** (sessions started/duration, every question & answer,
@@ -349,6 +351,18 @@ review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline).
 > artifacts. F's remaining engineering steps are unchanged where they touch the contract (steps 2, 3, 6)
 > but steps 4/5/7 should be read through the §I lens: unit/bank content may also live in the content
 > library (open design question), and a staff curation surface is likely never needed.
+
+> **Linguist export landed 2026-07-27** (`content/linguist-contrib/iteration-1/` — deliveries are grouped
+> per iteration; canonical version `lernapp3-opus.md` + nine `BLS_*.html` chapter plans with ~40 playable
+> prototype exercises incl. real item data).
+> Engineering's analysis went back to the team as `content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`:
+> the 10 proposed exercise types will be built **all in one wave** (incl. a composite-telemetry design
+> for the multi-step types SortIntoBuckets/DragAndOrder/PairMatching/CatchFalling); app brand + the
+> Nepo/Stella buddy choice stay (export CI = trainer-handbook only); the export's own SQL data model
+> is ignored (existing backend covers it). **Blocked on the linguists' answers** — above all the
+> skill-tag taxonomy (step 2's spine; deliberately NOT drafted by engineering, per the never-invent
+> rule), plus item material for the "zu bauen" exercises, required per-item wrong-feedback fields,
+> Kugel/☆ artwork (none exists in `assets/`), and the fate of Kapitel 2–6 / custom one-off exercises.
 
 > **Re-creation reference (read this first).** The complete, working Vokaltraining implementation — the
 > `Lexeme` model, all 14 exercise types with their solvability rules, the 7-unit catalogue, the full

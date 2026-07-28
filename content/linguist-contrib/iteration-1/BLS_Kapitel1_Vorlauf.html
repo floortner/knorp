@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 1 — Vorlauf · BLS-Lernapp</title>
+</head>
+<body style="margin:0;background:#f5f7f6;">
+<div style="max-width:720px;margin:0 auto;padding-bottom:20px;">
+<a href="BLS-Lernapp.html" style="display:inline-block;margin:16px 0 0 16px;font-size:12px;color:#2F4B43;font-weight:700;text-decoration:none;">← Zurück zur Übersicht</a>
+<div style="font-family:'Lato',sans-serif;background:#f5f7f6;color:#1a1a2e;border-radius:12px;padding:16px;">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+.k1 *{box-sizing:border-box;margin:0;padding:0;}
+.k1 .header{background:#2F4B43;color:white;padding:18px 22px;border-radius:14px;text-align:center;margin-bottom:16px;}
+.k1 .header p{font-size:12px;opacity:.7;margin-bottom:4px;}
+.k1 .header h1{font-size:20px;font-weight:900;}
+.k1 .header sub{font-size:12px;opacity:.7;display:block;margin-top:6px;line-height:1.5;}
+.k1 .phase{background:#6EBCAE;color:white;border-radius:8px;padding:6px 12px;margin:22px 0 10px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;}
+.k1 .aufgabe{background:white;border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.05);border-left:4px solid #6EBCAE;}
+.k1 .aufgabe .an{font-size:10.5px;font-weight:900;color:white;background:#6EBCAE;display:inline-block;padding:2px 10px;border-radius:10px;margin-bottom:6px;}
+.k1 .status{font-size:9.5px;font-weight:900;padding:1px 7px;border-radius:8px;margin-left:6px;}
+.k1 .status.done{background:#e3f5ea;color:#2a9e5e;}
+.k1 .status.todo{background:#fde8e8;color:#c0392b;}
+.k1 .aufgabe .at{font-size:13px;font-weight:700;color:#2F4B43;margin-bottom:4px;}
+.k1 .aufgabe .ad{font-size:12px;color:#555;line-height:1.5;}
+.k1 .nepo-tipp{display:flex;gap:8px;align-items:flex-start;background:#fff3e0;border-radius:10px;padding:8px 12px;margin:8px 0;font-size:12px;color:#8a5230;line-height:1.5;}
+.k1 .nepo-tipp .nav{font-size:20px;flex-shrink:0;}
+.k1 .leitfaden{background:#f8f8f8;border:1px dashed #ccc;border-radius:10px;padding:10px 14px;font-size:11px;color:#999;line-height:1.5;margin:8px 0;}
+.k1 .leitfaden strong{color:#888;}
+.k1 .trainerin{border:2px dashed #ccc;border-radius:12px;padding:14px;margin-bottom:10px;background:#fafafa;}
+.k1 .trainerin .label{font-size:10px;font-weight:900;text-transform:uppercase;color:#999;letter-spacing:1px;margin-bottom:8px;}
+.k1 .app{border:2px solid #4A83C4;border-radius:12px;padding:14px;margin-bottom:10px;background:#f8faff;}
+.k1 .app .label{font-size:10px;font-weight:900;text-transform:uppercase;color:#4A83C4;letter-spacing:1px;margin-bottom:8px;}
+.k1 .dialog{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.k1 .dialog:last-child{margin-bottom:0;}
+.k1 .bz{border-radius:14px;padding:10px 13px;font-size:13px;color:#444;line-height:1.55;flex:1;background:#eef7ee;}
+.k1 .bz .who{font-weight:900;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;color:#4a8a4a;}
+.k1 .bn{border-radius:14px;padding:10px 13px;font-size:13px;color:#444;line-height:1.55;flex:1;background:#fff3e0;}
+.k1 .bn .who{font-weight:900;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;color:#d07a2a;}
+.k1 .bk{border-radius:14px;padding:10px 13px;font-size:13px;color:#444;line-height:1.55;flex:1;background:#e8f5f2;}
+.k1 .bk .who{font-weight:900;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;color:#3a8a78;}
+.k1 .av{font-size:24px;flex-shrink:0;width:32px;text-align:center;}
+.k1 .ahabox{background:#fffbe8;border:2px solid #F5CD4A;border-radius:12px;padding:13px 15px;font-size:13px;color:#555;line-height:1.6;}
+.k1 .stufe-r{font-size:8px;font-weight:900;padding:1px 6px;border-radius:6px;margin-left:6px;background:#e3f5ea;color:#2a9e5e;}
+.k1 .stufe-a{font-size:8px;font-weight:900;padding:1px 6px;border-radius:6px;margin-left:6px;background:#eef4fc;color:#3a6aa8;}
+.k1 .stufe-p{font-size:8px;font-weight:900;padding:1px 6px;border-radius:6px;margin-left:6px;background:#fff5f0;color:#E5915C;}
+</style>
+<div class="k1">
+
+<div class="header">
+  <p>besserlesenschreiben.at · Mag. Angelika Ortner · BLS-Lernapp</p>
+  <h1>Kapitel 1 — Vorlauf</h1>
+  <sub>Selbstlaute sicher erkennen und von Mitlauten unterscheiden · einsilbige, streng lautgetreue Wörter</sub>
+</div>
+
+<!-- ANLASS -->
+<div class="phase">Anlass — Vorgeschichte der App</div>
+<div class="trainerin"><div class="label">📋 Trainerin-Version (Leitfaden)</div>
+<div class="leitfaden" style="margin-top:0;">
+<strong>Was soll das Kind lernen:</strong> Es gibt fünf besondere Buchstaben — a, e, i, o, u. Bei ihnen ist der Mund offen und die Stimme kommt frei heraus. Sie heißen Selbstlaute. Alle anderen (Mitlaute) knallen, zischen oder brummen nur.<br><br>
+<strong>Wortschatz:</strong> Einsilbig, streng lautgetreu. a — mal, Ast · e — Bett, Fest · i — Kind, Tisch · o — Tor, Not · u — Hut, Mut.<br>
+Ausgeschlossen: Schwa, Auslautverhärtung, Dehnung/Doppelung. Umlaute und Zwielaute erst ab Kapitel 2/3.<br><br>
+<strong>Duolingo-Prinzip:</strong> Das Kind entdeckt die Selbstlaute durch Machen (E0–E3), erst danach „tauft" Zucchini sie. Kerni wird erst in Kapitel 2 eingeführt.
+</div>
+<div style="background:white;border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px;">
+  <div style="font-size:13px;color:#444;line-height:1.6;margin-bottom:10px;">🟠 Nepomuk redet für sein Leben gern — quatschen kann er stundenlang! Aber neulich wollte er seiner Oma etwas schicken: einen <strong>Brief</strong>. Und da merkte er: <em>Sprechen kann ich — aber schreiben?</em></div>
+  <div class="dialog"><div class="av">🟠</div><div class="bn"><div class="who">Nepomuk</div>„Ich möchte das, was ich <strong>sage</strong>, auch <strong>aufschreiben</strong> können — Briefe! E-Mails! Und ich will <strong>spannende Geschichten lesen</strong> — richtig schnell!"</div></div>
+  <div style="font-size:12px;color:#555;line-height:1.6;margin:10px 0;">Sein Freund <strong>Jax</strong> zockt Online-Games — und will im <strong>Chat</strong> mitreden: blitzschnell lesen und zurückschreiben! Jedes Monster hat seinen eigenen Grund. <strong>Und dein Lernbuddy?</strong> Such einen aus — oder trag deinen eigenen ein!</div>
+  <div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Gemeinsam entdeckt ihr, wie das geht — was hinter dem Schreiben und Lesen steckt. Ich habe das alles studiert! Ich helfe euch, gebe Tipps und stelle euch Aufgaben."</div></div>
+</div>
+</div>
+
+<!-- E0 VORÜBUNG -->
+<div class="phase">E0 · Vorübung: Genau hinschauen</div>
+<div class="trainerin"><div class="label">📋 Trainerin-Version</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Für das Schreiben und Lesen brauchen wir — Buchstaben! <strong>Kennst du Buchstaben?</strong> Fangen wir gleich an: <strong>Wie schnell erkennst du sie?</strong> Keine Sorge, wenn dir das leichtfällt: <strong>Super — dann kannst du Nepo helfen!</strong> Aufgepasst: <strong>Ein paar freche Monster haben sich zwischen die Buchstaben geschwindelt!</strong> Kreist nur die Buchstaben ein!"</div></div>
+</div>
+<div class="app"><div class="label">📱 App-Version</div>
+<div class="aufgabe"><div class="an">E0<span class="stufe-r">rezeptiv</span><span class="status done">vorhanden ✅</span></div><div class="at">🎮 Meteoritenschauer — Buchstaben fangen!</div><div class="ad">Buchstaben einkreisen — Zahlen und Monster liegen lassen. 3 Runden, steigend schwerer.<br><em style="color:#999;font-size:11px;">So sieht es aus: Buchstaben, Zahlen und kleine Monster fliegen über den Bildschirm. Kind tippt nur die Buchstaben an.</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Nepomuk nach E0:</strong> „Das war knapp! Die Monster sind ganz schön flink!"</div></div>
+</div>
+<div class="trainerin"><div class="label">📋 Feedback nach E0</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„<strong>Das habt ihr super gemacht!</strong> Jetzt kennt ihr die Buchstaben vom Sehen — als Nächstes hören wir sie uns genauer an!"</div></div>
+</div>
+
+<!-- ENTDECKEN E1-E3 -->
+<div class="phase">Entdecken — die Selbstlaute finden (vor der Taufe)</div>
+<div class="trainerin"><div class="label">📋 Trainerin-Version</div>
+<div class="leitfaden" style="margin-top:0;"><strong>Duolingo-Trick:</strong> Das Kind entdeckt die Selbstlaute durch drei Übungen BEVOR sie benannt werden. Erst machen, dann taufen.<br><strong>🌱 Beiläufig:</strong> Hand-Grafik füllt sich — jeder Selbstlaut auf einen Finger. Die Zahl Fünf wird nie genannt, bis zum Kontroll-Moment.</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Du willst aufschreiben, was du sprichst? <strong>Texte bestehen aus Wörtern. Wörter bestehen aus Buchstaben. Und Buchstaben stehen für gesprochene Laute.</strong> Einfache Wörter schreibt man so, wie man sie spricht!"</div></div>
+<div class="dialog"><div class="av">🟠</div><div class="bn"><div class="who">Nepomuk</div>„Ich probier mal alle Laute aus! <em>Aaaa</em> … <em>Oooo</em> — das klingt schön! Da kommt die Stimme durch den offenen Mund heraus. Aber… <strong>T?</strong> Da knallt es nur kurz. Und bei <strong>P</strong> sind die Lippen ganz fest zu! Die klingen ja <strong>völlig verschieden</strong>!"</div></div>
+<div class="dialog"><div class="av">🧒</div><div class="bk"><div class="who">Du</div>„Stimmt! Bei <em>A</em> ist mein Mund weit auf. Bei <em>P</em> knallt es nur — und <em>S</em> und <em>F</em> zischen."</div></div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Genau hingespürt! Eure Aufgabe: <strong>Probiert die Buchstaben aus und achtet auf euren Mund — findet die Besonderen!</strong>"</div></div>
+</div>
+
+<div class="app"><div class="label">📱 App-Version</div>
+<div style="font-size:10px;color:#999;font-weight:700;margin-bottom:6px;">REZEPTIV</div>
+
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Nepomuk hilft:</strong> So erkennst du den Unterschied!<br>
+👄 <strong>Selbstlaut:</strong> Mund ist offen — die Stimme kommt frei heraus — du kannst den Laut lange singen: Aaaaaa! Ooooo!<br>
+🤐 <strong>Mitlaut:</strong> Mund ist zu oder eng — es knallt (P! T!), zischt (Ssss, Ffff) oder brummt (Mmmm) — der Laut klingt erst richtig MIT einem Selbstlaut.</div></div>
+<div class="aufgabe"><div class="an">E1<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welchen Laut hörst du?</div><div class="ad">Laut hören (Audio) → aus Selbstlauten UND Mitlauten den richtigen antippen.<br><em style="color:#999;font-size:11px;">So sieht es aus: Lautsprecher spielt „Aaaa" → 6 Buttons (a, t, s, o, p, e). Kind tippt a. Erstes Beispiel vorgelöst.</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Feedback richtig:</strong> „Genau! Bei A ist der Mund weit offen und die Stimme kommt frei heraus!"<br><strong>Feedback falsch:</strong> „Hm, probier nochmal — hör genau hin: kommt die Stimme frei heraus?"</div></div>
+<div class="aufgabe"><div class="an">E2<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Mundbilder — welcher Laut passt?</div><div class="ad">Nepo macht den Mund auf → welcher Laut? Nur a, i, o — die drei Eindeutigen.<br><em style="color:#999;font-size:11px;">So sieht es aus: Nepo-Gesicht mit weit offenem Mund → „a". Breit gezogen → „i". Rund → „o". Spiegel-Hinweis!</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Feedback richtig:</strong> „Ja! Mund weit auf = A. Probier es selbst im Spiegel!"<br><strong>Feedback falsch:</strong> „Schau nochmal genau auf Nepos Mund — ist er offen, breit oder rund?"</div></div>
+<div class="aufgabe"><div class="an">E3<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Ausrufe — welcher Selbstlaut?</div><div class="ad">Situation → Ausruf zuordnen. 🕷️ Spinne → Iiii! · 🎆 Feuerwerk → Oooh! · 🦷 Zahnarzt → Aaaa!<br><em style="color:#999;font-size:11px;">So sieht es aus: Emoji-Bild → 5 Selbstlaut-Buttons + Mitlaut-Ablenker.</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Feedback richtig:</strong> „Genau — Iiiii! 🕷️ Die Stimme kommt frei heraus — das ist ein Selbstlaut!"<br><strong>Feedback falsch:</strong> „Was rufst du, wenn du eine Spinne siehst? Probier es laut! Welcher Laut kommt heraus?"</div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">✋ <strong>Hand-Grafik:</strong> Jeder gefundene Selbstlaut setzt sich auf einen Finger: a → Daumen · e → Zeigefinger · i → Mittelfinger · o → Ringfinger · u → kleiner Finger.</div>
+</div>
+
+<!-- TAUFE -->
+<div class="phase" style="background:#F5CD4A;color:#5a4a00;">Kontroll-Moment + Taufe</div>
+<div class="trainerin"><div class="label">📋 Trainerin-Version</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Schaut auf eure Hand: <strong>Jeder Finger hat einen Laut — eine ganze Hand voll!</strong> Genau <strong>fünf</strong>. Streckt die Finger aus — a, e, i, o, u!"</div></div>
+<div class="dialog"><div class="av">🟠</div><div class="bn"><div class="who">Nepomuk</div>„Fünf Buchstaben, bei denen der Mund offen ist und die Stimme frei herauskommt! Aber … wie <em>heißen</em> die denn?"</div></div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Diese fünf heißen <strong>Selbstlaute</strong> — weil sie sich ganz von selbst hören lassen. Alle anderen heißen <strong>Mitlaute</strong>: Bei denen knallt, zischt oder brummt es nur. Passt gut auf die fünf auf — sie sind die wichtigsten Buchstaben von allen!"</div></div>
+</div>
+
+<!-- EINPRÄGEN F1-F5 -->
+<div class="phase">Einprägen — Selbstlaute sicher unterscheiden</div>
+<div class="app"><div class="label">📱 App-Version</div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Nepomuk:</strong> „Jetzt kenne ich die fünf — aber kann ich sie auch schnell erkennen?"</div></div>
+<div style="font-size:10px;color:#999;font-weight:700;margin-bottom:6px;">ANALYTISCH</div>
+<div class="aufgabe"><div class="an">F1<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Labyrinth — nur über Selbstlaute!</div><div class="ad">Weg nur über Selbstlaute bahnen, Mitlaute sind Sackgassen.<br><em style="color:#999;font-size:11px;">So sieht es aus: Gitter mit Buchstaben. Kind tippt sich von a zu o zu u — Mitlaute blockieren.</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Feedback Ziel erreicht:</strong> „Geschafft! Du hast den Weg durch die Selbstlaute gefunden!"<br><strong>Feedback Sackgasse:</strong> „Achtung — das ist ein Mitlaut! Da geht es nicht weiter. Such einen Selbstlaut!"</div></div>
+<div class="aufgabe"><div class="an">F2<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Selbstlaute fangen — Tempo!</div><div class="ad">Nur Selbstlaute fangen, Mitlaute fliegen lassen. Automatisierung durch Geschwindigkeit.<br><em style="color:#999;font-size:11px;">So sieht es aus: Buchstaben fallen von oben. Kind tippt nur a, e, i, o, u. Tempo steigt.</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Feedback richtig:</strong> „Treffer! Das ist ein Selbstlaut!"<br><strong>Feedback falsch (Mitlaut gefangen):</strong> „Ups — das war ein Mitlaut! Der zischt nur."<br><strong>Feedback Ende:</strong> „Wow, du wirst immer schneller!"</div></div>
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">PRODUKTIV — Transfer aufs Wort</div>
+<div class="aufgabe"><div class="an">F3<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wort hören — welchen Selbstlaut hörst du?</div><div class="ad">Einsilbiges Wort hören → welcher Selbstlaut? mal → a · Not → o · Hut → u<br><em style="color:#999;font-size:11px;">So sieht es aus: Lautsprecher spielt „Mal" → 5 Buttons. Kind tippt a.</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Feedback richtig:</strong> „Ja! In <em>Mal</em> steckt der Selbstlaut a — hörst du ihn klingen?"<br><strong>Feedback falsch:</strong> „Hör nochmal — sprich das Wort langsam: Mmmm-aaaa-lll. Welcher Laut klingt am längsten?"</div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback zeigt den Selbstlaut farbig im Wort: „m<span style="color:#E5915C;font-weight:900;">a</span>l — der Selbstlaut sitzt in der Mitte!" → bereitet Kapitel 2 vor (Kerni finden).</div>
+<div class="aufgabe"><div class="an">F4<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wort sehen — Selbstlaut markieren!</div><div class="ad">Geschriebenes Wort → Selbstlaut antippen. Direkte Vorbereitung auf Kap. 2.<br><em style="color:#999;font-size:11px;">So sieht es aus: „Tor" steht groß da → Kind tippt o → o leuchtet gelb.</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Feedback richtig:</strong> „Genau — das O leuchtet! Der Selbstlaut sitzt immer mittendrin."<br><strong>Feedback falsch:</strong> „Das ist ein Mitlaut. Such den Buchstaben, bei dem der Mund offen ist!"</div></div>
+<div class="aufgabe"><div class="an">F5<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wörter sortieren — in welche Spalte?</div><div class="ad">5 Spalten: a · e · i · o · u — Wörter in die passende Spalte ziehen.<br><em style="color:#999;font-size:11px;">So sieht es aus: „Hut" → u-Spalte. 5–8 Wörter pro Runde.</em></div></div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Feedback richtig:</strong> „Stimmt — Hut hat ein U! Ab in die U-Spalte!"<br><strong>Feedback falsch:</strong> „Hmm, welchen Selbstlaut hörst du in Hut? Sprich es langsam: Huuuut."<br><strong>Feedback Ende:</strong> 🥒 „Sauber sortiert — ihr erkennt die Selbstlaute jetzt auch im Wort!"</div></div>
+</div>
+
+<!-- AHA-BOX -->
+<div class="phase" style="background:#F5CD4A;color:#5a4a00;">Kapitelende — Aha!</div>
+<div class="ahabox">
+  <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#c89000;margin-bottom:5px;">🥒💡 Dr. Zucchini: „Aha!"</div>
+  „Ihr habt es selbst herausgefunden: <strong>Fünf Buchstaben sind Selbstlaute — a, e, i, o, u.</strong> Mund offen, Stimme frei — daran erkennt ihr sie immer. Und wenn du sie mal vergisst: <strong>Schau auf deine Hand — fünf Finger, fünf Selbstlaute!</strong> Und warum sie die <em>wichtigsten</em> sind? Das findet ihr im nächsten Kapitel heraus — <strong>ohne sie gibt es kein einziges deutsches Wort!</strong>"
+</div>
+
+<div class="trainerin" style="margin-top:10px;"><div class="label">📋 Übergang zu Kapitel 2</div>
+<div class="leitfaden" style="margin-top:0;"><strong>Nächstes Kapitel:</strong> Kerni wird eingeführt (gelbe Kugel) — der Selbstlaut als Kern jeder Silbe. Umlaute (ä, ö, ü) und Zwielaute (au, ei, eu/äu) kommen dazu.</div>
+</div>
+
+</div>
+</div>
+</div>
+</body>
+</html>

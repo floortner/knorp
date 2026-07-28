@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapitel 10 — Wortfamilien · BLS-Lernapp</title>
+</head>
+<body style="margin:0;background:#f5f7f6;">
+<div style="max-width:720px;margin:0 auto;padding-bottom:20px;">
+<a href="BLS-Lernapp.html" style="display:inline-block;margin:16px 0 0 16px;font-size:12px;color:#2F4B43;font-weight:700;text-decoration:none;">← Zurück zur Übersicht</a>
+<div style="font-family:'Lato',sans-serif;background:#f5f7f6;color:#1a1a2e;border-radius:12px;padding:16px;">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+.k10 *{box-sizing:border-box;margin:0;padding:0;}
+.k10 .header{background:#2F4B43;color:white;padding:18px 22px;border-radius:14px;text-align:center;margin-bottom:16px;}
+.k10 .header p{font-size:12px;opacity:.7;margin-bottom:4px;}
+.k10 .header h1{font-size:20px;font-weight:900;}
+.k10 .header sub{font-size:12px;opacity:.7;display:block;margin-top:6px;line-height:1.5;}
+.k10 .phase{background:#6EBCAE;color:white;border-radius:8px;padding:6px 12px;margin:22px 0 10px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;}
+.k10 .phase.gold{background:#F5CD4A;color:#5a4a00;}
+.k10 .phase.orange{background:#E5915C;}
+.k10 .phase.blue{background:#4A83C4;}
+.k10 .phase.purple{background:#7B68AE;}
+.k10 .phase.red{background:#c0392b;}
+.k10 .aufgabe{background:white;border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.05);border-left:4px solid #6EBCAE;}
+.k10 .aufgabe .an{font-size:10.5px;font-weight:900;color:white;background:#6EBCAE;display:inline-block;padding:2px 10px;border-radius:10px;margin-bottom:6px;}
+.k10 .status{font-size:9.5px;font-weight:900;padding:1px 7px;border-radius:8px;margin-left:6px;}
+.k10 .status.built{background:#e3f5ea;color:#2a9e5e;}
+.k10 .status.todo{background:#fde8e8;color:#c0392b;}
+.k10 .aufgabe .at{font-size:13px;font-weight:700;color:#2F4B43;margin-bottom:4px;}
+.k10 .aufgabe .ad{font-size:12px;color:#555;line-height:1.5;}
+.k10 .nepo-tipp{display:flex;gap:8px;align-items:flex-start;background:#fff3e0;border-radius:10px;padding:8px 12px;margin:8px 0;font-size:12px;color:#8a5230;line-height:1.5;}
+.k10 .nepo-tipp .nav{font-size:20px;flex-shrink:0;}
+.k10 .leitfaden{background:#f8f8f8;border:1px dashed #ccc;border-radius:10px;padding:10px 14px;font-size:11px;color:#999;line-height:1.5;margin:8px 0;}
+.k10 .leitfaden strong{color:#888;}
+.k10 .trainerin{border:2px dashed #ccc;border-radius:12px;padding:14px;margin-bottom:10px;background:#fafafa;}
+.k10 .trainerin .label{font-size:10px;font-weight:900;text-transform:uppercase;color:#999;letter-spacing:1px;margin-bottom:8px;}
+.k10 .app{border:2px solid #4A83C4;border-radius:12px;padding:14px;margin-bottom:10px;background:#f8faff;}
+.k10 .app .label{font-size:10px;font-weight:900;text-transform:uppercase;color:#4A83C4;letter-spacing:1px;margin-bottom:8px;}
+.k10 .dialog{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.k10 .dialog:last-child{margin-bottom:0;}
+.k10 .bz{border-radius:14px;padding:10px 13px;font-size:13px;color:#444;line-height:1.55;flex:1;background:#eef7ee;}
+.k10 .bz .who{font-weight:900;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;color:#4a8a4a;}
+.k10 .bn{border-radius:14px;padding:10px 13px;font-size:13px;color:#444;line-height:1.55;flex:1;background:#fff3e0;}
+.k10 .bn .who{font-weight:900;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;color:#d07a2a;}
+.k10 .av{font-size:24px;flex-shrink:0;width:32px;text-align:center;}
+
+.k10 .stufe-r{font-size:8px;font-weight:900;padding:1px 6px;border-radius:6px;margin-left:6px;background:#e3f5ea;color:#2a9e5e;}
+.k10 .stufe-a{font-size:8px;font-weight:900;padding:1px 6px;border-radius:6px;margin-left:6px;background:#eef4fc;color:#3a6aa8;}
+.k10 .stufe-p{font-size:8px;font-weight:900;padding:1px 6px;border-radius:6px;margin-left:6px;background:#fff5f0;color:#E5915C;}
+.k10 .ahabox{background:#fffbe8;border:2px solid #F5CD4A;border-radius:12px;padding:13px 15px;font-size:13px;color:#555;line-height:1.6;}
+</style>
+<div class="k10">
+
+<div class="header">
+  <p>besserlesenschreiben.at · Mag. Angelika Ortner · BLS-Lernapp</p>
+  <h1>Kapitel 10 — Wortfamilien</h1>
+  <sub>Verwandte Wörter schreibt man gleich — die Rechtschreibbesonderheit bleibt erhalten</sub>
+</div>
+
+<!-- ═══════════════ TRAINERIN-LEITFADEN ═══════════════ -->
+<div class="trainerin">
+<div class="label">📋 Trainerin-Version (Leitfaden)</div>
+<div class="leitfaden" style="margin-top:0;">
+<strong>Ziel:</strong> Kind erkennt, dass Wörter mit dem gleichen Wortstamm zusammengehören und gleich geschrieben werden. Die ☆ vererbt sich in der Wortfamilie.<br><br>
+<strong>Aufbau orientiert sich an MORPHEUS (Kargl &amp; Purgstaller, Uni Graz):</strong><br><br>
+<strong>Methodischer Aufbau — 3 Stufen:</strong> Rezeptiv → Analytisch → Produktiv<br>
+<strong>Inhaltlicher Aufbau — gestaffelt nach Rechtschreibbesonderheiten:</strong><br>
+1. Lauttreue Wortstämme (keine ☆) · 2. Doppelung · 3. ie · 4. Dehnungs-h · 5. S-Schreibung<br>
+<em>Von häufig → selten, von transparent → komplex.</em><br><br>
+<strong>Wortstruktur-Progression (phonologische Komplexität):</strong><br>
+1a: KVK (geb, hol, les) · 1b: KVKK (hand, berg) · 2a: KKVK (sprech, schlaf) · 2b: KKVKK (spring, grund)<br>
+Dann: Doppelung → Dehnungs-h → ie → S-Schreibung<br><br>
+<strong>MORPHEUS PC-Übungstypen (Ü1–Ü12):</strong> Nachsilben finden · Wortbausteine ordnen · Wortfamilien ordnen · Wortbausteine zählen · Nomen erkennen · Wortarten erkennen · silbengegliedert schreiben (2×) · Wörter schreiben (3 Stufen: mit Bild → ohne Bild → nur gehört) · Wortstämme finden<br><br>
+<strong>Jedes Unterkapitel folgt demselben Schema:</strong> Rezeptive Übung → Analytische Übung → Produktive Übung. Das Kind durchläuft den Dreierschritt für jede Rechtschreibbesonderheit.<br><br>
+<strong>Evidenz:</strong> Morphologische Bewusstheit klärt eigenständig Varianz in Rechtschreibleistung auf (r = .58–.65). Wirkung von MORPHEUS behavioral und neurophysiologisch bestätigt (Uni Graz).
+</div>
+
+<div style="background:white;border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:10px 0;">
+  <div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Wörter können eine <strong>Wortfamilie</strong> bilden: sie haben den gleichen <strong>Wortstamm</strong>, der sich meistens nicht verändert. Im Wortstamm steckt die Wortbedeutung — und die <strong>Rechtschreibbesonderheit</strong> (kurz/lang, Mitlautdoppelung, ck, tz, ie, h).<br><br>An den Wortstamm kann eine <strong>Vorsilbe</strong> angehängt werden, die zur Wortbedeutung beiträgt, und auch eine <strong>Endung</strong>, die die Wortart bestimmt. Zum Beispiel: <em>ver</em> + <em>kauf</em> + <em>en</em> = verkaufen. Oder: <em>Ver</em> + <em>käuf</em> + <em>er</em> = Verkäufer.<br><br>Vorsilben und Endungen schreibt man <strong>immer gleich</strong> — <em>ver-</em> ist immer <em>ver-</em>, <em>-ung</em> ist immer <em>-ung</em>. Auch der Wortstamm bleibt meistens gleich — nur bei manchen Verben in der Vergangenheit ändert sich der Vokal: <em>sprechen</em> → <em>sprach</em>, <em>fahren</em> → <em>fuhr</em>. Aber die Wörter gehören trotzdem zur selben Familie!<br><br>Aus diesen Bausteinen kannst du viele <strong>neue Wörter bilden</strong>. Wer den Wortstamm <em>fahr</em> kennt, kann daraus über tausend Wörter ableiten: <em>fahren, Fahrt, Fahrer, Abfahrt, erfahren, Erfahrung, vorfahren, Zufahrt…</em> — und alle behalten das Dehnungs-h! Präge dir die einzelnen Bausteine gut ein mit den Übungen!"</div></div>
+  <div class="dialog"><div class="av">🟠</div><div class="bn"><div class="who">Nepomuk</div>„Also wenn ich weiß, dass <em>fahren</em> mit h geschrieben wird, dann weiß ich auch: <em>Fahrt</em>, <em>Fahrer</em>, <em>Abfahrt</em>, <em>erfahren</em> — alle mit h!"</div></div>
+  <div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Ja, genau — du hast es herausgefunden, Nepo! Ein Wort richtig gelernt, und die ganze Familie profitiert. So funktioniert der Wortfamilien-Trick!"</div></div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- UNTERKAPITEL A: LAUTTREUE WORTSTÄMME                   -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase gold">A · Lauttreue Wortstämme — Wortfamilien entdecken</div>
+
+<div class="leitfaden">📋 <strong>Trainerin:</strong> Hier keine ☆ — das Kind lernt zuerst das Prinzip Wortfamilie an einfachen, lauttreuen Stämmen (BOD, GEB, HOL, LES, SAG, TAG…). MORPHEUS Stufe 1.<br><br><strong>Duolingo-Trick:</strong> In A1–A3 zeigt das Feedback nach jeder richtigen Antwort <strong>beiläufig die Wortbausteine</strong>: „✓ verkaufen — das sind 3 Bausteine: <strong>ver</strong> + <strong>kauf</strong> + <strong>en</strong>". Das Kind sieht es, muss aber nichts damit tun — es sickert ein. Wenn dann A4 (Wortbausteine zählen) kommt, ist das Konzept schon vertraut. Kein Kaltstart.</div>
+
+<div class="app"><div class="label">📱 App-Version</div>
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Nepomuk:</strong> Diese Wörter gehören zusammen — sortiere sie!</div></div>
+
+<div class="aufgabe"><div class="an">A1<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche Wörter gehören zusammen? (lauttreu)</div><div class="ad">Wörter aus 2–3 lauttreuen Familien mischen → Kind sortiert. z.B. sagen/Ansage/untersagen vs. leben/Erlebnis/lebhaft vs. Tag/Geburtstag/täglich<br><em style="color:#999;font-size:11px;">So sieht es aus: 8–12 Wortkarten liegen durcheinander. Oben 2–3 Familien-Körbe mit dem Stammwort. Kind tippt ein Wort an → tippt den richtigen Korb an. Erstes Wort ist vorgelöst.</em></div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback zeigt nach jeder richtigen Zuordnung die Wortbausteine: „✓ untersagen — <strong>unter</strong> + <strong>sag</strong> + <strong>en</strong>" → bereitet A4–A6 vor (Wortbausteine zählen/ordnen).</div>
+
+<div class="aufgabe"><div class="an">A2<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Finde den Wortstamm (lauttreu)</div><div class="ad">Wortfamilie sehen → Wortstamm eintippen. fragen/fraglich/Frage/Umfrage/befragen → <strong>frag</strong><br><em style="color:#999;font-size:11px;">So sieht es aus: 4–5 verwandte Wörter stehen nebeneinander. Darunter ein Eingabefeld: „Was ist der gemeinsame Wortteil?" Kind tippt den Stamm ein. Feedback zeigt den Stamm farbig hervorgehoben in allen Wörtern.</em></div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback zeigt kurz: „✓ frag — Dieser Kerni ist lang. Keine Extra-Kugel notwendig." → bereitet Block B–E vor (Kind merkt: es gibt auch Familien MIT Extra-Kugel).</div>
+
+<div class="aufgabe"><div class="an">A3<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welches gehört nicht dazu? (lauttreu)</div><div class="ad">4 Wörter, eines ist Störer. Meldung/anmelden/abmelden/melken → melken raus!<br><em style="color:#999;font-size:11px;">So sieht es aus: 4 Wortkarten nebeneinander. Kind tippt das Wort an, das nicht zur Familie gehört. Richtig → Störer wird durchgestrichen, die anderen leuchten grün. Feedback: „melken hat den Stamm melk, nicht meld!"</em></div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback benennt Wortarten: „✓ Meldung (Nomen) — anmelden (Verb) — gleicher Stamm <strong>meld</strong>. Die Endung -ung macht ein Nomen daraus!" → bereitet A7 vor (Nachsilbe bestimmt Wortart).</div>
+
+<div class="aufgabe"><div class="an">A4<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wortbausteine zählen</div><div class="ad">Wort sehen → wie viele Bausteine hat es? Besichtigung = Be+sicht+ig+ung = 4. (MORPHEUS Ü4)</div></div>
+
+<div class="aufgabe"><div class="an">A5<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wortbausteine ordnen — Vorsilbe + Stamm + Nachsilbe</div><div class="ad">Durcheinander geworfene Bausteine in die richtige Reihenfolge bringen: en/hol/wieder → wieder+hol+en. (MORPHEUS Ü2)<br><em style="color:#999;font-size:11px;">So sieht es aus: 3 Puzzlesteine liegen durcheinander (wie im Marburger Foto). Kind zieht sie in die richtige Reihenfolge: Vorsilbe → Stamm → Nachsilbe. Das fertige Wort erscheint zusammengesetzt.</em></div></div>
+
+<div class="aufgabe"><div class="an">A6<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Puzzlesteine — Vorsilbe + Stamm + Endung kombinieren</div><div class="ad">Be+ruf+en = Beruf, an+ruf+en = anrufen. Vorsilben-Puzzle: mehrere Kombinationen finden! (Marburger)<br><em style="color:#999;font-size:11px;">So sieht es aus: In der Mitte steht der Stamm (z.B. RUF). Links 3 Vorsilben (Be/an/Zu), rechts 2 Nachsilben (en/ung). Kind kombiniert und schreibt die gefundenen Wörter auf: Beruf, anrufen, Zurufen… Mindestens 3 finden!</em></div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback bei Dopplungs-Stamm: „✓ verfallen — Kerni a ist kurz. Eine Extra-Kugel ☆ ist notwendig. Die bleibt in allen verwandten Wörtern!" → bereitet Block B (Doppelung) vor.</div>
+
+<div class="aufgabe"><div class="an">A7<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Nachsilbe bestimmt die Wortart</div><div class="ad">Wörter der richtigen Wortart zuordnen: -ung/-heit/-keit → Nomen, -lich/-ig/-sam → Adjektiv, -en → Verb. (MORPHEUS Ü5/Ü6, BLS Wörter fischen)<br><em style="color:#999;font-size:11px;">So sieht es aus: Mindmap wie im BLS-Foto „Wörter fischen": Mitte = Wortbausteine, 3 Äste = Nomen / Verben / Adjektive, Nachsilben an den Ästen. Wörter (Ergebnis, aufgeben, gefährlich…) in den richtigen Ast ziehen.</em></div></div>
+
+<div class="aufgabe"><div class="an">A8<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wortrallye — folge dem Pfad!</div><div class="ad">Pfad durch Wortbausteine: Start → LES → ER → Ziel = Leser. Mehrere Pfade, mehrere Wörter finden. (BLS Wortrallye)</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- UNTERKAPITEL B: DOPPELUNG                              -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase orange">B · Doppelung in der Wortfamilie ☆</div>
+
+<div class="leitfaden">📋 <strong>Trainerin:</strong> Häufigste Sonderkugel. Wortstämme: BRENN, DECK, FALL, FÜLL, HERR, KOMM, MANN, MITT, PLATZ, RENN, SCHNELL, SCHWIMM, SITZ/SETZ, STELL, TREFF. Kind entdeckt: die Doppelung bleibt in der ganzen Familie!</div>
+
+<div class="trainerin"><div class="label">📋 Trainerin-Version</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Jetzt schauen wir uns Wortfamilien mit einer <strong>Sonderkugel</strong> an. Zuerst: die <strong>Doppelung</strong>. <em>Schwimmen</em> hat Doppel-m — und das bleibt in der ganzen Familie: <em>Schwimmbad</em>, <em>schwimmt</em>, <em>Schwimmhalle</em>."</div></div>
+</div>
+
+<div class="app"><div class="label">📱 App-Version</div>
+<div style="font-size:10px;color:#999;font-weight:700;margin-bottom:6px;">REZEPTIV</div>
+<div class="aufgabe"><div class="an">B1<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche Wörter gehören zusammen? (Doppelung)</div><div class="ad">Wörter aus 2–3 Dopplungs-Familien mischen → sortieren. fallen/Unfall/Zufall vs. schwimmen/Schwimmbad/schwimmt vs. rennen/Rennbahn/Rennauto</div></div>
+
+<div class="aufgabe"><div class="an">B2<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Finde den Wortstamm (Doppelung)</div><div class="ad">Wortfamilie sehen → Wortstamm eintippen. Treffpunkt/antreffen/treffen/Treffer → <strong>treff</strong>. Die Doppelung bleibt überall!</div></div>
+
+<div class="aufgabe"><div class="an">B3<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welches gehört nicht dazu? (Doppelung)</div><div class="ad">4 Wörter, eines ist Störer. Schwimmbad/schwimmt/Schwindel/Schwimmhalle → Schwindel raus!</div></div>
+
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">ANALYTISCH</div>
+<div class="aufgabe"><div class="an">B4<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche ☆ hat die Familie? — Doppelung</div><div class="ad">Stammwort + Familienmitglieder sehen → Kind wählt: Doppel-m / Doppel-l / Doppel-n / Doppel-ff…<br><em style="color:#999;font-size:11px;">So sieht es aus: Oben das Stammwort groß + 3–4 Familienmitglieder kleiner. Darunter 4 Buttons: „Doppel-m / Doppel-l / ie / keine ☆". Kind tippt. Feedback: „✓ Doppel-m — überall in der Familie!"</em></div></div>
+
+<div class="aufgabe"><div class="an">B5<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wörter in Tabelle zerlegen — Dopplungs-Stämme</div><div class="ad">ABSTELLUNG → AB + STELL + UNG. Vorsilbe / Wortstamm (mit Doppelung!) / Nachsilbe eintragen.</div></div>
+
+<div class="aufgabe"><div class="an">B6<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wortstamm-Deep-Dive: „fall"</div><div class="ad">Alle Familienmitglieder von FALL: hinfallen, ebenfalls, Zufall, anfällig, Abfall, gefallen, verfallen… alle mit ll!<br><em style="color:#999;font-size:11px;">So sieht es aus: Wie ein Stammbaum (Treppe aus dem Marburger Foto). Stammwort FALL oben, darunter leere Felder. Kind tippt Familienmitglieder ein. Nach jedem richtigen Wort wächst der Baum. Ziel: mindestens 6 finden!</em></div></div>
+
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">PRODUKTIV</div>
+<div class="aufgabe"><div class="an">B7<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Puzzlesteine — Vorsilbe + Dopplungs-Stamm + Endung</div><div class="ad">ver + fall + en = verfallen. ab + stell + ung = Abstellung. Mehrere Kombinationen finden!</div></div>
+
+<div class="aufgabe"><div class="an">B8<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Nomen + Adjektiv verbinden — Doppelung</div><div class="ad">Nuss → nussig, Glück → glücklich. Stammwort + abgeleitetes Adjektiv verbinden und Wortpaar schreiben.</div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback bei B3 zeigt am Ende: „Nicht alle Familien haben eine Doppelung — manche haben ein <strong>ie</strong>: spielen, Spielplatz, verspielt. Das kommt als nächstes!" → bereitet Block C (ie) vor.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- UNTERKAPITEL C: ie ALS DEHNUNGSZEICHEN                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase blue">C · ie in der Wortfamilie ☆</div>
+
+<div class="leitfaden">📋 <strong>Trainerin:</strong> Wortstämme: FLIEG/FLUG, LIEB, LIEG/LEG, SPIEL, WIED(ER), WIEG/WICHT. Kind entdeckt: das ie bleibt in der ganzen Familie!</div>
+
+<div class="trainerin"><div class="label">📋 Trainerin-Version</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Jetzt kommt das <strong>ie</strong>. <em>Spielen</em> hat ie — und das bleibt in der ganzen Familie: <em>Spielplatz</em>, <em>Spielzeug</em>, <em>verspielt</em>, <em>Spieler</em>."</div></div>
+</div>
+
+<div class="app"><div class="label">📱 App-Version</div>
+<div style="font-size:10px;color:#999;font-weight:700;margin-bottom:6px;">REZEPTIV</div>
+<div class="aufgabe"><div class="an">C1<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche Wörter gehören zusammen? (ie)</div><div class="ad">Wörter aus 2–3 ie-Familien mischen → sortieren. spielen/Spielplatz/verspielt vs. fliegen/Flieger/Flugzeug vs. lieben/Liebling/beliebt</div></div>
+
+<div class="aufgabe"><div class="an">C2<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Finde den Wortstamm (ie)</div><div class="ad">Wortfamilie sehen → Wortstamm eintippen. Spielplatz/verspielt/Spielzeug/Spieler → <strong>spiel</strong>. Das ie bleibt überall!</div></div>
+
+<div class="aufgabe"><div class="an">C3<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welches gehört nicht dazu? (ie)</div><div class="ad">4 Wörter, eines ist Störer. spielen/Spiegel/Spielplatz/verspielt → Spiegel raus!</div></div>
+
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">ANALYTISCH</div>
+<div class="aufgabe"><div class="an">C4<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche ☆ hat die Familie? — ie</div><div class="ad">spielen → Spielplatz, Spielzeug, verspielt. fliegen → Flug, Flieger, Flugzeug. Überall ie!</div></div>
+
+<div class="aufgabe"><div class="an">C5<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wörter in Tabelle zerlegen — ie-Stämme</div><div class="ad">BESIEGUNG → BE + SIEG + UNG. Vorsilbe / Wortstamm (mit ie!) / Nachsilbe eintragen.</div></div>
+
+<div class="aufgabe"><div class="an">C6<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche Nachsilbe passt? — ie-Wortstämme</div><div class="ad">ABBIEG + ? (UNG/HEIT/NIS) → Abbiegung. BELIEBT + ? → Beliebtheit. WIEDERHOL + ? → Wiederholung.</div></div>
+
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">PRODUKTIV</div>
+<div class="aufgabe"><div class="an">C7<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Puzzlesteine — Vorsilbe + ie-Stamm + Endung</div><div class="ad">ver + spiel + en = verspielen. be + lieg + en = beliegen. Mehrere Kombinationen finden!</div></div>
+
+<div class="aufgabe"><div class="an">C8<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wortstamm-Deep-Dive: „spiel"</div><div class="ad">Alle Familienmitglieder von SPIEL: spielen, Spielplatz, Spielzeug, verspielt, Spieler, Beispiel, ausspielen… alle mit ie!</div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback zeigt: „Es gibt noch eine andere Art, einen langen Vokal zu markieren: das <strong>Dehnungs-h</strong>. fahren, wohnen, fühlen — wo steht das h wohl immer?" → bereitet Block D vor.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- UNTERKAPITEL D: DEHNUNGS-H                             -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase purple">D · Dehnungs-h in der Wortfamilie ☆</div>
+
+<div class="leitfaden">📋 <strong>Trainerin:</strong> Wortstämme: NAH, BAHN, FAHR, FEHL, KEHR, LEHR, NEHM, UHR, WOHN, ZAHL, ZAHN. Bedingungen: nur vor l, m, n, r. Nicht nach Sch, t, Qu, Sp, Kr, Gr. Nicht nach Zwielauten (au, ei, eu/äu).</div>
+
+<div class="trainerin"><div class="label">📋 Trainerin-Version</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Jetzt verrate ich euch noch etwas zum <strong>Dehnungs-h</strong>:<br><br>✅ <strong>Ja, Dehnungs-h:</strong> Langer Kerni + danach kommt <strong>l, m, n</strong> oder <strong>r</strong> (fahren, wohnen, Mehl, Rahm)<br><br>❌ <strong>Nein, kein Dehnungs-h bei:</strong><br>• <strong>Kurzem Kerni</strong> — da kommt die Doppelung (fallen, rennen)<br>• <strong>Zwielauten</strong> (au, ei, eu/äu) — Raum, Seile, Feuer<br>• <strong>Sch, Sp, t, Qu, Kr, Gr</strong> am Anfang — Schule, Ton, Spur, Krone, grün"</div></div>
+</div>
+
+<!-- Entscheidungsbaum Dehnungs-h -->
+<div style="background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px;">
+<div style="font-size:10px;font-weight:900;text-transform:uppercase;color:#7B68AE;text-align:center;margin-bottom:8px;">Entscheidungsbaum: Dehnungs-h <span style="color:#c0392b;">(mit Vorbehalt — noch verändern/hinzufügen)</span></div>
+<svg width="100%" viewBox="0 0 380 340" style="display:block;">
+<text style="font-family:inherit;font-size:14px;font-weight:500;fill:var(--text-primary)" x="190" y="24" text-anchor="middle">Dehnungs-h?</text>
+<line x1="100" y1="34" x2="100" y2="50" stroke="#2a9e5e" stroke-width="1"/>
+<rect x="20" y="50" width="160" height="40" rx="8" fill="#e3f5ea" stroke="#2a9e5e" stroke-width="0.5"/>
+<text style="font-family:inherit;font-size:13px;font-weight:500;fill:#1a6e3a" x="100" y="66" text-anchor="middle" dominant-baseline="central">Langer Kerni</text>
+<text style="font-family:inherit;font-size:11px;fill:#2a9e5e" x="100" y="82" text-anchor="middle" dominant-baseline="central">a, e, i, o, u, ä, ö, ü</text>
+<text style="font-family:inherit;font-size:14px;fill:#2a9e5e;font-weight:500" x="100" y="104" text-anchor="middle">+</text>
+<line x1="100" y1="90" x2="100" y2="114" stroke="#2a9e5e" stroke-width="1"/>
+<rect x="20" y="114" width="160" height="40" rx="8" fill="#e3f5ea" stroke="#2a9e5e" stroke-width="0.5"/>
+<text style="font-family:inherit;font-size:13px;font-weight:500;fill:#1a6e3a" x="100" y="130" text-anchor="middle" dominant-baseline="central">danach l, m, n, r</text>
+<text style="font-family:inherit;font-size:11px;fill:#2a9e5e" x="100" y="146" text-anchor="middle" dominant-baseline="central">fahren, Mehl, Rahm</text>
+<line x1="100" y1="154" x2="100" y2="172" stroke="#2a9e5e" stroke-width="1"/>
+<rect x="30" y="172" width="140" height="34" rx="17" fill="#2a9e5e"/>
+<text style="font-family:inherit;font-size:13px;font-weight:500;fill:white" x="100" y="192" text-anchor="middle" dominant-baseline="central">Dehnungs-h ✓</text>
+<text style="font-family:inherit;font-size:11px;fill:var(--text-secondary)" x="100" y="226" text-anchor="middle">fahren · wohnen · Mehl</text>
+<text style="font-family:inherit;font-size:11px;fill:var(--text-secondary)" x="100" y="242" text-anchor="middle">Rahm · Bahn · fühlen</text>
+<text style="font-family:inherit;font-size:11px;fill:var(--text-secondary)" x="100" y="258" text-anchor="middle">Lehre · Zahl · Uhr</text>
+<line x1="280" y1="34" x2="280" y2="50" stroke="#c0392b" stroke-width="1"/>
+<rect x="200" y="50" width="160" height="40" rx="8" fill="#fde8e8" stroke="#c0392b" stroke-width="0.5"/>
+<text style="font-family:inherit;font-size:13px;font-weight:500;fill:#791f1f" x="280" y="66" text-anchor="middle" dominant-baseline="central">Kurzer Kerni</text>
+<text style="font-family:inherit;font-size:11px;fill:#c0392b" x="280" y="82" text-anchor="middle" dominant-baseline="central">→ Doppelung (fallen)</text>
+<line x1="280" y1="90" x2="280" y2="104" stroke="#c0392b" stroke-width="1"/>
+<rect x="200" y="104" width="160" height="40" rx="8" fill="#fde8e8" stroke="#c0392b" stroke-width="0.5"/>
+<text style="font-family:inherit;font-size:13px;font-weight:500;fill:#791f1f" x="280" y="120" text-anchor="middle" dominant-baseline="central">Zwielaute</text>
+<text style="font-family:inherit;font-size:11px;fill:#c0392b" x="280" y="136" text-anchor="middle" dominant-baseline="central">au, ei, eu/äu</text>
+<line x1="280" y1="144" x2="280" y2="158" stroke="#c0392b" stroke-width="1"/>
+<rect x="200" y="158" width="160" height="48" rx="8" fill="#fde8e8" stroke="#c0392b" stroke-width="0.5"/>
+<text style="font-family:inherit;font-size:13px;font-weight:500;fill:#791f1f" x="280" y="176" text-anchor="middle" dominant-baseline="central">davor</text>
+<text style="font-family:inherit;font-size:11px;fill:#c0392b" x="280" y="196" text-anchor="middle" dominant-baseline="central">Sch · Sp · t · Qu · Kr · Gr</text>
+<line x1="280" y1="206" x2="280" y2="224" stroke="#c0392b" stroke-width="1"/>
+<rect x="210" y="224" width="140" height="34" rx="17" fill="#c0392b"/>
+<text style="font-family:inherit;font-size:13px;font-weight:500;fill:white" x="280" y="244" text-anchor="middle" dominant-baseline="central">Kein h ✗</text>
+<text style="font-family:inherit;font-size:11px;fill:var(--text-secondary)" x="280" y="278" text-anchor="middle">fallen · rennen (kurz)</text>
+<text style="font-family:inherit;font-size:11px;fill:var(--text-secondary)" x="280" y="294" text-anchor="middle">Raum · Seile · Feuer</text>
+<text style="font-family:inherit;font-size:11px;fill:var(--text-secondary)" x="280" y="310" text-anchor="middle">Schule · Tal · Qual · Kran</text>
+</svg>
+</div>
+
+<div class="app"><div class="label">📱 App-Version</div>
+<div style="font-size:10px;color:#999;font-weight:700;margin-bottom:6px;">REZEPTIV</div>
+<div class="aufgabe"><div class="an">D1<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche Wörter gehören zusammen? (Dehnungs-h)</div><div class="ad">Wörter aus 2–3 h-Familien mischen → sortieren. fahren/Fahrt/Abfahrt vs. wohnen/Wohnung/Bewohner vs. zählen/Zahl/zahlreich</div></div>
+
+<div class="aufgabe"><div class="an">D2<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Finde den Wortstamm (Dehnungs-h)</div><div class="ad">Wortfamilie sehen → Wortstamm eintippen. Wohnung/bewohnen/Bewohner/wohnhaft → <strong>wohn</strong>. Das h bleibt überall!<br><em style="color:#999;font-size:11px;">Feedback: „✓ wohn — nach dem langen Kerni o steht ein h, dann kommt n. Das h bleibt in der ganzen Familie!"</em></div></div>
+
+<div class="aufgabe"><div class="an">D3<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welches gehört nicht dazu? (Dehnungs-h)</div><div class="ad">4 Wörter, eines ist Störer. Fahrer/Fahrt/Farbe/Abfahrt → Farbe raus (kein h!)</div></div>
+
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">ANALYTISCH</div>
+<div class="aufgabe"><div class="an">D4<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Dehnungs-h — welcher Buchstabe kommt danach?</div><div class="ad">fa_ren → r, wo_nen → n, Me_l → l, Ra_m → m. Das Muster (l, m, n, r) entsteht beim Machen!<br><em style="color:#999;font-size:11px;">So sieht es aus: Wort groß angezeigt mit Lücke: fa_ren → h_. Darunter 4 runde Buttons: l / m / n / r. Kind tippt. Oben sammeln sich die gefundenen Buchstaben: nach 4–5 Wörtern leuchten l, m, n, r alle auf → „Siehst du das Muster?"</em></div></div>
+
+<div class="aufgabe"><div class="an">D5<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche ☆ hat die Familie? — Dehnungs-h</div><div class="ad">fahren → Fahrt, Fahrer, Abfahrt, erfahren. wohnen → Wohnung, Bewohner. Überall das h!</div></div>
+
+<div class="aufgabe"><div class="an">D5b<span class="stufe-a">analytisch</span><span class="status built">gebaut</span></div><div class="at">🎮 Warum Dehnungs-h? — Bedingungen prüfen!</div><div class="ad">Wort sehen → Bedingungen anklicken: Langer Kerni? Danach l, m, n oder r? Beginnt NICHT mit Sch/Sp/t/Qu/Kr/Gr? Kein Zwielaut? Nur wenn alle ✓ → Dehnungs-h!</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#6EBCAE;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="d5b-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>
+#d5b-wrap .prog5b{display:flex;gap:3px;margin-bottom:10px;}
+#d5b-wrap .d5b{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}
+#d5b-wrap .d5b.dn{background:#7B68AE;}
+#d5b-wrap .d5b.cu{background:#F5CD4A;}
+#d5b-wrap .checks{display:flex;flex-direction:column;gap:8px;margin:12px 0;max-width:340px;margin-left:auto;margin-right:auto;}
+#d5b-wrap .chk{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:2px solid #e0e0e0;background:#f8f8f8;cursor:pointer;transition:.15s;font-size:13px;font-weight:700;color:#2F4B43;}
+#d5b-wrap .chk:hover{border-color:#7B68AE;background:#f0ecf5;}
+#d5b-wrap .chk .box{width:22px;height:22px;border-radius:6px;border:2px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:.15s;}
+#d5b-wrap .chk.yes .box{border-color:#2a9e5e;background:#e3f5ea;color:#2a9e5e;}
+#d5b-wrap .chk.no .box{border-color:#c0392b;background:#fde8e8;color:#c0392b;}
+#d5b-wrap .chk.locked{pointer-events:none;opacity:.7;}
+</style>
+<div class="prog5b" id="d5bP"></div>
+<div id="d5bG"></div>
+<script>
+(function(){
+var W=[
+{word:"fahren",lang:true,lmnr:true,nichtSch:true,keinZwie:true,h:true,nach:"r"},
+{word:"Schule",lang:true,lmnr:true,nichtSch:false,keinZwie:true,h:false,grund:"Sch am Anfang"},
+{word:"wohnen",lang:true,lmnr:true,nichtSch:true,keinZwie:true,h:true,nach:"n"},
+{word:"Ton",lang:true,lmnr:true,nichtSch:false,keinZwie:true,h:false,grund:"t am Anfang"},
+{word:"Mehl",lang:true,lmnr:true,nichtSch:true,keinZwie:true,h:true,nach:"l"},
+{word:"Spur",lang:true,lmnr:true,nichtSch:false,keinZwie:true,h:false,grund:"Sp am Anfang"},
+{word:"f\u00fchlen",lang:true,lmnr:true,nichtSch:true,keinZwie:true,h:true,nach:"l"},
+{word:"Krone",lang:true,lmnr:true,nichtSch:false,keinZwie:true,h:false,grund:"Kr am Anfang"},
+{word:"Zahl",lang:true,lmnr:true,nichtSch:true,keinZwie:true,h:true,nach:"l"},
+{word:"gr\u00fcn",lang:true,lmnr:true,nichtSch:false,keinZwie:true,h:false,grund:"Gr am Anfang"},
+{word:"Rahm",lang:true,lmnr:true,nichtSch:true,keinZwie:true,h:true,nach:"m"},
+{word:"Raum",lang:true,lmnr:true,nichtSch:true,keinZwie:false,h:false,grund:"Zwielaut au"},
+{word:"Bahn",lang:true,lmnr:true,nichtSch:true,keinZwie:true,h:true,nach:"n"},
+{word:"Seile",lang:true,lmnr:true,nichtSch:true,keinZwie:false,h:false,grund:"Zwielaut ei"},
+{word:"Lehre",lang:true,lmnr:true,nichtSch:true,keinZwie:true,h:true,nach:"r"},
+{word:"Feuer",lang:true,lmnr:true,nichtSch:true,keinZwie:false,h:false,grund:"Zwielaut eu"},
+{word:"Qual",lang:true,lmnr:true,nichtSch:false,keinZwie:true,h:false,grund:"Qu am Anfang"},
+{word:"Traum",lang:true,lmnr:false,nichtSch:false,keinZwie:false,h:false,grund:"t am Anfang + Zwielaut au"}
+];
+var ord,idx,sc,picks;
+function shuffle(a){for(var x=a.length-1;x>0;x--){var j=Math.floor(Math.random()*(x+1));var t=a[x];a[x]=a[j];a[j]=t;}return a;}
+function init(){ord=[];for(var x=0;x<W.length;x++)ord.push(x);shuffle(ord);idx=0;sc=0;prog();render();}
+function prog(){var p=document.getElementById("d5bP");p.innerHTML="";for(var x=0;x<ord.length;x++){var d=document.createElement("div");d.className="d5b"+(x<idx?" dn":"")+(x===idx?" cu":"");p.appendChild(d);}}
+function render(){
+if(idx>=ord.length){document.getElementById("d5bG").innerHTML='<div style="text-align:center;padding:14px;"><div style="font-size:36px;">\u2728</div><div style="font-size:16px;font-weight:900;color:#2F4B43;margin:8px 0;">'+sc+'/'+ord.length+' richtig!</div><p style="font-size:12px;color:#7B68AE;font-weight:700;">Bedingungen f\u00fcr Dehnungs-h:<br>Langer Kerni \u2713 + l/m/n/r danach \u2713<br>+ nicht Sch/Sp/t/Qu/Kr/Gr \u2713 + kein Zwielaut \u2713</p><button style="margin-top:10px;background:#7B68AE;color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;" onclick="d5bInit()">Nochmal</button></div>';return;}
+var t=W[ord[idx]];picks={a:null,b:null,c:null,d:null};
+var html='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;margin-bottom:6px;">PR\u00dcFE DIE BEDINGUNGEN!</div>';
+html+='<div style="text-align:center;font-size:28px;font-weight:900;color:#2F4B43;margin:8px 0;">'+t.word+'</div>';
+html+='<div class="checks">';
+html+='<div class="chk" id="d5bA" onclick="d5bToggle(\'a\')"><div class="box" id="d5bAbox"></div>Kerni ist lang</div>';
+html+='<div class="chk" id="d5bB" onclick="d5bToggle(\'b\')"><div class="box" id="d5bBbox"></div>Danach kommt l, m, n oder r</div>';
+html+='<div class="chk" id="d5bC" onclick="d5bToggle(\'c\')"><div class="box" id="d5bCbox"></div>Anfang ist keines davon: <span style="background:#f0ecf5;padding:1px 5px;border-radius:4px;font-size:11px;margin-left:2px;">Sch</span> <span style="background:#f0ecf5;padding:1px 5px;border-radius:4px;font-size:11px;">Sp</span> <span style="background:#f0ecf5;padding:1px 5px;border-radius:4px;font-size:11px;">t</span> <span style="background:#f0ecf5;padding:1px 5px;border-radius:4px;font-size:11px;">Qu</span> <span style="background:#f0ecf5;padding:1px 5px;border-radius:4px;font-size:11px;">Kr</span> <span style="background:#f0ecf5;padding:1px 5px;border-radius:4px;font-size:11px;">Gr</span></div>';
+html+='<div class="chk" id="d5bD" onclick="d5bToggle(\'d\')"><div class="box" id="d5bDbox"></div>Kein Zwielaut (au, ei, eu/\u00e4u)</div>';
+html+='</div>';
+html+='<div style="text-align:center;margin:10px 0;"><button id="d5bOK" style="background:#7B68AE;color:white;border:none;border-radius:10px;padding:10px 24px;font-size:14px;font-weight:900;cursor:pointer;" onclick="d5bCheck()">Ergebnis \u2192 Dehnungs-h?</button></div>';
+html+='<div id="d5bFb" style="text-align:center;font-size:14px;font-weight:900;min-height:22px;margin:8px 0;"></div>';
+html+='<div style="text-align:center;"><button id="d5bN" style="display:none;background:#7B68AE;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="d5bAdv()">Weiter \u2192</button></div>';
+document.getElementById("d5bG").innerHTML=html;}
+window.d5bToggle=function(key){
+if(picks[key]===null)picks[key]=true;
+else if(picks[key]===true)picks[key]=false;
+else picks[key]=true;
+var el=document.getElementById("d5b"+key.toUpperCase());
+var box=document.getElementById("d5b"+key.toUpperCase()+"box");
+if(picks[key]){el.className="chk yes";box.textContent="\u2713";}
+else{el.className="chk no";box.textContent="\u2717";}};
+window.d5bCheck=function(){var t=W[ord[idx]];
+var a=picks.a===true,b=picks.b===true,c=picks.c===true,d=picks.d===true;
+var kidSaysH=a&&b&&c&&d;
+var ok=kidSaysH===t.h;if(ok)sc++;
+["A","B","C","D"].forEach(function(k){document.getElementById("d5b"+k).className="chk locked "+(picks[k.toLowerCase()]?"yes":"no");});
+document.getElementById("d5bOK").style.display="none";
+var fb=document.getElementById("d5bFb");
+if(t.h){
+fb.style.color=ok?"#2a9e5e":"#c0392b";
+fb.innerHTML=ok?"\u2713 Richtig! <strong>"+t.word+"</strong> hat ein Dehnungs-h (vor "+t.nach+")":"\u2717 <strong>"+t.word+"</strong> hat ein Dehnungs-h! Alle Bedingungen erf\u00fcllt.";
+}else{
+fb.style.color=ok?"#2a9e5e":"#c0392b";
+fb.innerHTML=ok?"\u2713 Richtig! Kein Dehnungs-h \u2014 "+t.grund+"!":"\u2717 Kein Dehnungs-h! "+t.grund+".";
+}
+document.getElementById("d5bN").style.display="inline-block";};
+window.d5bAdv=function(){idx++;prog();render();};
+window.d5bInit=init;init();})();
+</script>
+</div></details>
+
+<div class="aufgabe"><div class="an">D5c<span class="stufe-r">rezeptiv</span><span class="status built">gebaut</span></div><div class="at">🎮 Bilder zuordnen — Dehnungs-h oder nicht?</div><div class="ad">Bild sehen → in den richtigen Korb ziehen: MIT h oder OHNE h. Das Muster (Sch, Sp, t, Qu, Kr, Gr → nie h!) entsteht beim Sortieren.</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#6EBCAE;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="d5c-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>
+#d5c-wrap .buckets5c{display:flex;gap:10px;margin:10px 0;}
+#d5c-wrap .bkt{flex:1;min-height:70px;border-radius:12px;border:3px dashed #ddd;padding:8px;text-align:center;cursor:pointer;transition:.15s;}
+#d5c-wrap .bkt:hover{background:#f8f8f8;}
+#d5c-wrap .bkt.yes{border-color:#7B68AE;background:#f0ecf5;}
+#d5c-wrap .bkt.no{border-color:#E5915C;background:#fff5f0;}
+#d5c-wrap .bkt .blbl{font-size:11px;font-weight:900;text-transform:uppercase;margin-bottom:4px;}
+#d5c-wrap .bkt .items{font-size:11px;color:#555;line-height:1.8;}
+#d5c-wrap .card5c{text-align:center;margin:12px 0;padding:16px;background:#f8f8f8;border-radius:12px;}
+#d5c-wrap .card5c .emoji{font-size:48px;}
+#d5c-wrap .card5c .wname{font-size:10px;color:#ccc;margin-top:4px;}
+</style>
+<div id="d5cG"></div>
+<script>
+(function(){
+var W=[
+{emoji:"\ud83d\ude97",word:"fahren",h:true,anfang:"f"},
+{emoji:"\ud83c\udfeb",word:"Schule",h:false,anfang:"Sch"},
+{emoji:"\ud83c\udfe0",word:"wohnen",h:true,anfang:"w"},
+{emoji:"\ud83d\udc51",word:"Krone",h:false,anfang:"Kr"},
+{emoji:"\ud83c\udf3e",word:"Mehl",h:true,anfang:"M"},
+{emoji:"\ud83d\udca8",word:"Spur",h:false,anfang:"Sp"},
+{emoji:"\u2764\ufe0f",word:"f\u00fchlen",h:true,anfang:"f"},
+{emoji:"\ud83c\udfb5",word:"Ton",h:false,anfang:"t"},
+{emoji:"\ud83d\udcb0",word:"Zahl",h:true,anfang:"Z"},
+{emoji:"\ud83c\udf3f",word:"gr\u00fcn",h:false,anfang:"Gr"},
+{emoji:"\ud83d\ude82",word:"Bahn",h:true,anfang:"B"},
+{emoji:"\u2753",word:"Qual",h:false,anfang:"Qu"},
+{emoji:"\ud83e\uddd1\u200d\ud83c\udfeb",word:"Lehrer",h:true,anfang:"L"},
+{emoji:"\u2702\ufe0f",word:"Schere",h:false,anfang:"Sch"},
+{emoji:"\ud83d\udeaa",word:"Tor",h:false,anfang:"t"},
+{emoji:"\u23f0",word:"Uhr",h:true,anfang:"U"}
+];
+var ord,idx,yesItems=[],noItems=[],sc;
+function shuffle(a){for(var x=a.length-1;x>0;x--){var j=Math.floor(Math.random()*(x+1));var t=a[x];a[x]=a[j];a[j]=t;}return a;}
+function init(){ord=[];for(var x=0;x<W.length;x++)ord.push(x);shuffle(ord);idx=0;sc=0;yesItems=[];noItems=[];render();}
+function render(){
+if(idx>=ord.length){
+var html='<div style="text-align:center;padding:14px;"><div style="font-size:36px;">\u2728</div><div style="font-size:16px;font-weight:900;color:#2F4B43;margin:8px 0;">'+sc+'/'+ord.length+' richtig!</div>';
+html+='<div style="display:flex;gap:10px;margin:10px 0;"><div style="flex:1;background:#f0ecf5;border-radius:10px;padding:8px;text-align:center;"><div style="font-size:10px;font-weight:900;color:#7B68AE;">MIT h</div><div style="font-size:11px;color:#555;">'+yesItems.join(", ")+'</div></div>';
+html+='<div style="flex:1;background:#fff5f0;border-radius:10px;padding:8px;text-align:center;"><div style="font-size:10px;font-weight:900;color:#E5915C;">OHNE h</div><div style="font-size:11px;color:#555;">'+noItems.join(", ")+'</div></div></div>';
+html+='<p style="font-size:12px;color:#7B68AE;font-weight:700;">Muster: Sch, Sp, t, Qu, Kr, Gr am Anfang \u2192 kein Dehnungs-h!</p>';
+html+='<button style="margin-top:10px;background:#7B68AE;color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;" onclick="d5cInit()">Nochmal</button></div>';
+document.getElementById("d5cG").innerHTML=html;return;}
+var t=W[ord[idx]];
+var html='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;margin-bottom:4px;">SORTIERE: MIT h ODER OHNE h? ('+idx+1+'/'+ord.length+')</div>';
+html+='<div class="card5c"><div class="emoji">'+t.emoji+'</div></div>';
+html+='<div class="buckets5c">';
+html+='<div class="bkt yes" onclick="d5cPick(true)"><div class="blbl" style="color:#7B68AE;">MIT h \u2713</div><div class="items" id="d5cYes">'+yesItems.join(", ")+'</div></div>';
+html+='<div class="bkt no" onclick="d5cPick(false)"><div class="blbl" style="color:#E5915C;">OHNE h \u2717</div><div class="items" id="d5cNo">'+noItems.join(", ")+'</div></div>';
+html+='</div>';
+html+='<div id="d5cFb" style="text-align:center;font-size:13px;font-weight:700;min-height:20px;margin:8px 0;"></div>';
+html+='<div style="text-align:center;"><button id="d5cN" style="display:none;background:#7B68AE;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="d5cAdv()">Weiter \u2192</button></div>';
+document.getElementById("d5cG").innerHTML=html;}
+window.d5cPick=function(picked){var t=W[ord[idx]];var ok=picked===t.h;if(ok)sc++;
+if(t.h)yesItems.push(t.word);else noItems.push(t.word);
+var fb=document.getElementById("d5cFb");fb.style.color=ok?"#2a9e5e":"#c0392b";
+if(ok){fb.textContent=t.h?"\u2713 "+t.word+" \u2014 mit Dehnungs-h!":"\u2713 "+t.word+" \u2014 "+t.anfang+" am Anfang, kein h!";}
+else{fb.textContent=t.h?"\u2717 "+t.word+" hat ein Dehnungs-h!":"\u2717 "+t.word+" \u2014 "+t.anfang+" am Anfang \u2192 kein h!";}
+document.getElementById("d5cN").style.display="inline-block";
+var bkts=document.querySelectorAll("#d5c-wrap .bkt");for(var k=0;k<bkts.length;k++)bkts[k].style.pointerEvents="none";};
+window.d5cAdv=function(){idx++;render();};
+window.d5cInit=init;init();})();
+</script>
+</div></details>
+
+<div class="aufgabe"><div class="an">D6<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wörter in Tabelle zerlegen — h-Stämme</div><div class="ad">ERFAHRUNG → ER + FAHR + UNG. Vorsilbe / Wortstamm (mit h!) / Nachsilbe eintragen.</div></div>
+
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">PRODUKTIV</div>
+<div class="aufgabe"><div class="an">D7<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Puzzlesteine — Vorsilbe + h-Stamm + Endung</div><div class="ad">er + fahr + ung = Erfahrung. be + wohn + er = Bewohner. Mehrere Kombinationen finden!</div></div>
+
+<div class="aufgabe"><div class="an">D8<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wortfamilien mit Dehnungs-h sammeln</div><div class="ad">Stammwort vorgegeben (fahren, wohnen, fühlen, nehmen, zählen…) → möglichst viele Familienmitglieder finden.</div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback zeigt: „Noch eine Sonderkugel: die <strong>S-Schreibung</strong>. fließen hat ß, Fluss hat ss — beides gleiche Familie! Warum der Unterschied? Das kommt jetzt." → bereitet Block E vor.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- UNTERKAPITEL E: S-SCHREIBUNG                           -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase red">E · S-Schreibung in der Wortfamilie ☆</div>
+
+<div class="leitfaden">📋 <strong>Trainerin:</strong> Komplexeste Regel, daher zuletzt. Wortstämme: BESS, ESS/Aß, FASS, FLIEß/FLOSS/FLUSS, FUß, GROß, GRUß, HEIß, KLASS, MESS/MAß, REIß/RISS, SCHLIEß/SCHLOSS, SCHLUSS, STOß, STRAß, WASS, WISS/WUSS.</div>
+
+<div class="trainerin"><div class="label">📋 Trainerin-Version</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Die S-Schreibung ist die schwierigste Sonderkugel. Nach <strong>kurzem</strong> Vokal steht <strong>ss</strong> (Fluss, wissen), nach <strong>langem</strong> Vokal steht <strong>ß</strong> (Fuß, weiß). Innerhalb einer Wortfamilie können ss und ß <strong>wechseln</strong>: <em>schließen</em> (ß) → <em>schloss</em> (ss) → <em>geschlossen</em> (ss) — der Vokal ändert sich, und damit auch die S-Schreibung. Aber: ein einfaches <strong>s bleibt immer s</strong>: <em>lesen</em> → <em>las</em> → <em>gelesen</em> — überall s, nie ss oder ß."</div></div>
+</div>
+
+<div class="app"><div class="label">📱 App-Version</div>
+<div style="font-size:10px;color:#999;font-weight:700;margin-bottom:6px;">REZEPTIV</div>
+<div class="aufgabe"><div class="an">E1<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche Wörter gehören zusammen? (S-Schreibung)</div><div class="ad">Wörter aus 2–3 S-Familien mischen → sortieren. fließen/Fluss/Flüsse vs. wissen/Wissen/gewusst vs. groß/Größe/vergrößern</div></div>
+
+<div class="aufgabe"><div class="an">E2<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Finde den Wortstamm (S-Schreibung)</div><div class="ad">Wortfamilie sehen → Wortstamm eintippen. fließen/Fluss/Flüsse/Fließband → <strong>fließ/fluss</strong>. Achtung: der Stamm wechselt zwischen ß und ss!</div></div>
+
+<div class="aufgabe"><div class="an">E3<span class="stufe-r">rezeptiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welches gehört nicht dazu? (S-Schreibung)</div><div class="ad">4 Wörter, eines ist Störer. wissen/Gewissen/Wiese/wissentlich → Wiese raus!</div></div>
+
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">ANALYTISCH</div>
+<div class="aufgabe"><div class="an">E4<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 ss oder ß? — Wortfamilie hilft!</div><div class="ad">fließen (ß, lang) → Fluss (ss, kurz). gießen (ß) → Guss (ss). Die Wortfamilie zeigt die Verwandtschaft!<br><em style="color:#999;font-size:11px;">So sieht es aus: Stammwort mit ß steht da (fließen). Daneben Familienmitglied mit Lücke: Flu__ → Kind wählt ss oder ß. Feedback erklärt: „Kerni u ist kurz → ss!"</em></div></div>
+
+<div class="nepo-tipp"><div class="nav">🟠</div><div><strong>Nepomuk-Feedback bei richtiger Antwort:</strong><br>
+„schließen → schloss → geschlossen — ß und ss können in einer Familie <strong>wechseln</strong>! Der Kerni ändert sich, und damit die Schreibung."<br>
+„lesen → las → gelesen — ein einfaches <strong>s bleibt immer s</strong>. Nie ss oder ß!"</div></div>
+
+<div class="aufgabe"><div class="an">E4b<span class="stufe-a">analytisch</span><span class="status built">gebaut</span></div><div class="at">🎮 s, ss oder ß? — Was passiert in der Wortfamilie?</div><div class="ad">Stammwort steht da → Familienmitglieder ergänzen. Wechselt die S-Schreibung oder bleibt sie gleich?</div></div>
+<details style="margin:-4px 0 10px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#6EBCAE;padding:6px 0;">▶ Übung öffnen</summary>
+<div id="e4b-wrap" style="background:#fff;border-radius:14px;padding:16px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+<style>
+#e4b-wrap .prog4b{display:flex;gap:3px;margin-bottom:10px;}
+#e4b-wrap .d4b{flex:1;height:5px;border-radius:3px;background:#e0e0e0;}
+#e4b-wrap .d4b.dn{background:#c0392b;}
+#e4b-wrap .d4b.cu{background:#F5CD4A;}
+#e4b-wrap .sopts{display:flex;gap:8px;justify-content:center;margin:10px 0;}
+#e4b-wrap .sopt{padding:10px 20px;border-radius:12px;border:2px solid #e0e0e0;background:#f8f8f8;font-size:18px;font-weight:900;cursor:pointer;font-family:inherit;color:#2F4B43;transition:.15s;min-width:50px;text-align:center;}
+#e4b-wrap .sopt:hover{border-color:#c0392b;background:#fde8e8;}
+#e4b-wrap .sopt.right{border-color:#2a9e5e;background:#e3f5ea;color:#2a9e5e;pointer-events:none;}
+#e4b-wrap .sopt.dim{opacity:.3;pointer-events:none;}
+</style>
+<div class="prog4b" id="e4bP"></div>
+<div id="e4bG"></div>
+<script>
+(function(){
+var W=[
+{stamm:"schlie\u00dfen",wort:"er schlo__",ans:"ss",pre:"er schlo",suf:"",full:"er schloss",fam:"schlie\u00dfen \u2192 schloss",tip:"\u00df und ss k\u00f6nnen in einer Familie wechseln! Kerni o ist kurz \u2192 ss"},
+{stamm:"schlie\u00dfen",wort:"ge__en (zu)",ans:"\u00df",pre:"geschlo",suf:"en",full:"geschlossen",fam:"schlie\u00dfen \u2192 geschlossen",tip:"Moment \u2014 geschlossen hat ss! Kerni o ist kurz."},
+{stamm:"flie\u00dfen",wort:"der Flu__",ans:"ss",pre:"der Flu",suf:"",full:"der Fluss",fam:"flie\u00dfen \u2192 Fluss",tip:"flie\u00dfen hat \u00df (Kerni lang), Fluss hat ss (Kerni kurz). Gleiche Familie!"},
+{stamm:"flie\u00dfen",wort:"die Fl\u00fc__e",ans:"ss",pre:"die Fl\u00fc",suf:"e",full:"die Fl\u00fcsse",fam:"Fluss \u2192 Fl\u00fcsse",tip:"Kerni \u00fc ist kurz \u2192 ss"},
+{stamm:"gie\u00dfen",wort:"er go__",ans:"ss",pre:"er go",suf:"",full:"er goss",fam:"gie\u00dfen \u2192 goss",tip:"\u00df und ss wechseln! Kerni o ist kurz \u2192 ss"},
+{stamm:"lesen",wort:"er la_",ans:"s",pre:"er la",suf:"",full:"er las",fam:"lesen \u2192 las",tip:"Einfaches s bleibt immer s! Nie ss oder \u00df."},
+{stamm:"lesen",wort:"gele_en",ans:"s",pre:"gele",suf:"en",full:"gelesen",fam:"lesen \u2192 gelesen",tip:"s bleibt s \u2014 in der ganzen Familie!"},
+{stamm:"rei\u00dfen",wort:"er ri__",ans:"ss",pre:"er ri",suf:"",full:"er riss",fam:"rei\u00dfen \u2192 riss",tip:"rei\u00dfen hat \u00df (lang), riss hat ss (kurz). Wechsel!"},
+{stamm:"reisen",wort:"er rei_te",ans:"s",pre:"er rei",suf:"te",full:"er reiste",fam:"reisen \u2192 reiste",tip:"Einfaches s bleibt s! reisen \u2260 rei\u00dfen \u2014 verschiedene Familien!"},
+{stamm:"bei\u00dfen",wort:"er bi__",ans:"ss",pre:"er bi",suf:"",full:"er biss",fam:"bei\u00dfen \u2192 biss",tip:"bei\u00dfen (\u00df, lang) \u2192 biss (ss, kurz). Kerni wechselt!"},
+{stamm:"wissen",wort:"er wu__te",ans:"ss",pre:"er wu",suf:"te",full:"er wusste",fam:"wissen \u2192 wusste",tip:"Kerni u ist kurz \u2192 ss bleibt ss"},
+{stamm:"gro\u00df",wort:"die Gr\u00f6__e",ans:"\u00df",pre:"die Gr\u00f6",suf:"e",full:"die Gr\u00f6\u00dfe",fam:"gro\u00df \u2192 Gr\u00f6\u00dfe",tip:"Kerni \u00f6 ist lang \u2192 \u00df bleibt \u00df"}
+];
+var ord,idx,sc;
+function shuffle(a){for(var x=a.length-1;x>0;x--){var j=Math.floor(Math.random()*(x+1));var t=a[x];a[x]=a[j];a[j]=t;}return a;}
+function init(){ord=[];for(var x=0;x<W.length;x++)ord.push(x);shuffle(ord);idx=0;sc=0;prog();render();}
+function prog(){var p=document.getElementById("e4bP");p.innerHTML="";for(var x=0;x<ord.length;x++){var d=document.createElement("div");d.className="d4b"+(x<idx?" dn":"")+(x===idx?" cu":"");p.appendChild(d);}}
+function render(){
+if(idx>=ord.length){document.getElementById("e4bG").innerHTML='<div style="text-align:center;padding:14px;"><div style="font-size:36px;">\u2728</div><div style="font-size:16px;font-weight:900;color:#2F4B43;margin:8px 0;">'+sc+'/'+ord.length+' richtig!</div><p style="font-size:12px;color:#888;">\u00df und ss k\u00f6nnen wechseln \u2014 aber s bleibt immer s!</p><button style="margin-top:10px;background:#c0392b;color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;" onclick="e4bInit()">Nochmal</button></div>';return;}
+var t=W[ord[idx]];
+var html='<div style="text-align:center;font-size:10px;color:#999;font-weight:700;margin-bottom:6px;">STAMMWORT: <span style="color:#c0392b;">'+t.stamm+'</span></div>';
+html+='<div style="text-align:center;font-size:24px;font-weight:900;color:#2F4B43;margin:10px 0;">'+t.wort.replace("__",'<span style="color:#c0392b;border-bottom:3px solid #c0392b;">__</span>').replace(/_(?!_)/g,'<span style="color:#c0392b;border-bottom:3px solid #c0392b;">_</span>')+'</div>';
+html+='<div class="sopts">';
+html+='<button class="sopt" data-v="s" onclick="e4bPick(this)">s</button>';
+html+='<button class="sopt" data-v="ss" onclick="e4bPick(this)">ss</button>';
+html+='<button class="sopt" data-v="\u00df" onclick="e4bPick(this)">\u00df</button>';
+html+='</div>';
+html+='<div id="e4bFb" style="text-align:center;font-size:13px;font-weight:700;min-height:20px;margin:8px 0;"></div>';
+html+='<div id="e4bTip" style="display:none;text-align:center;margin:6px 0;"></div>';
+html+='<div style="text-align:center;"><button id="e4bN" style="display:none;background:#c0392b;color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;" onclick="e4bAdv()">Weiter \u2192</button></div>';
+document.getElementById("e4bG").innerHTML=html;}
+window.e4bPick=function(el){var t=W[ord[idx]];var v=el.getAttribute("data-v");var ok=v===t.ans;if(ok)sc++;
+var btns=document.querySelectorAll("#e4b-wrap .sopt");for(var k=0;k<btns.length;k++){if(btns[k].getAttribute("data-v")===t.ans)btns[k].className="sopt right";else btns[k].className="sopt dim";}
+var fb=document.getElementById("e4bFb");fb.style.color=ok?"#2a9e5e":"#c0392b";
+fb.textContent=ok?"\u2713 "+t.full:"\u2717 "+t.full;
+var tip=document.getElementById("e4bTip");tip.style.display="block";
+tip.innerHTML='<div style="background:#fff3e0;border-radius:8px;padding:8px 12px;font-size:12px;color:#8a5230;display:inline-block;">\ud83d\udfe0 '+t.tip+'</div>';
+document.getElementById("e4bN").style.display="inline-block";};
+window.e4bAdv=function(){idx++;prog();render();};
+window.e4bInit=init;init();})();
+</script>
+</div></details>
+
+<div class="aufgabe"><div class="an">E5<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Welche ☆ hat die Familie? — S-Schreibung</div><div class="ad">wissen → Wissen, gewusst, wissentlich. groß → Größe, vergrößern, großartig.</div></div>
+
+<div class="aufgabe"><div class="an">E6<span class="stufe-a">analytisch</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wörter in Tabelle zerlegen — S-Stämme</div><div class="ad">VERSCHLUSS → VER + SCHLIEß/SCHLOSS + ? Vorsilbe / Wortstamm / Nachsilbe — Stammvokal wechselt!</div></div>
+
+<div style="font-size:10px;color:#999;font-weight:700;margin:10px 0 6px;">PRODUKTIV</div>
+<div class="aufgabe"><div class="an">E7<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Puzzlesteine — Vorsilbe + S-Stamm + Endung</div><div class="ad">ver + schließ + en = verschließen. ab + schluss = Abschluss. Gleiche Familie, anderer Vokal!</div></div>
+
+<div class="aufgabe"><div class="an">E8<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Wortstamm-Deep-Dive: „fließ/fluss"</div><div class="ad">Alle Familienmitglieder: fließen, Fluss, Flüsse, Fließband, Zufluss, Einfluss, fließend… ss nach kurzem, ß nach langem Vokal!</div></div>
+<div style="background:#fffbe8;border-left:4px solid #F5CD4A;border-radius:0 8px 8px 0;padding:8px 12px;margin:6px 0;font-size:11px;color:#8a7020;line-height:1.5;">🌱 <strong>Beiläufig einführen:</strong> Feedback zeigt bei „Größe": „groß → Größe — da wird das o zu ö! Und kaufen → Verkäufer — au wird zu äu! Die Wortfamilie erklärt den Umlaut. Das üben wir jetzt!" → bereitet Block F (Rätselhaftes ä) vor.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- UNTERKAPITEL F: GEMISCHT + ANWENDEN                    -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phase">F · Gemischt — Wortfamilie als Rechtschreibstrategie</div>
+
+<div class="leitfaden">📋 <strong>Trainerin:</strong> MORPHEUS Stufe 3 (produktiv). Kind wendet das Gelernte an: gemischte ☆, Ableitung ä/äu, Fehlerwörter korrigieren. Alle Rechtschreibbesonderheiten kommen vor.</div>
+
+<div class="trainerin"><div class="label">📋 Trainerin-Version</div>
+<div class="dialog"><div class="av">🥒</div><div class="bz"><div class="who">Dr. Zucchini</div>„Jetzt könnt ihr den Wortfamilien-Trick anwenden: Wenn ihr unsicher seid, wie ein Wort geschrieben wird — sucht ein verwandtes Wort, das ihr sicher kennt! Die Sonderkugel bleibt erhalten."</div></div>
+</div>
+
+<div class="app"><div class="label">📱 App-Version</div>
+<div class="aufgabe"><div class="an">F1<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Gemischt — welche ☆ hat die Familie?</div><div class="ad">Wortfamilien mit verschiedenen ☆ durcheinander: Doppelung, ie, h, ss/ß, oder keine ☆?</div></div>
+
+<div class="aufgabe"><div class="an">F2<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Rätselhaftes ä — finde das Stammwort!</div><div class="ad">Verkäufer → kaufen (au!), Bäcker → backen (a!), Häuser → Haus (au!). Wortfamilie beweist das ä/äu! (BLS FRESCH-Wörterbuch + LingoPlay)<br><em style="color:#999;font-size:11px;">So sieht es aus: Wort mit ä/äu steht da (Verkäufer). Darunter: „Von welchem Stammwort kommt es?" Eingabefeld. Kind tippt „kaufen". Feedback: „✓ kaufen hat au → darum Verkäufer mit äu!" Das a/au im Stammwort und das ä/äu im abgeleiteten Wort leuchten farbig.</em></div></div>
+
+<div class="aufgabe"><div class="an">F3<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 ä oder e? äu oder eu? — Stammwort entscheidet!</div><div class="ad">er l_chelt → lachen (a!) → lächelt. der R_uber → rauben (au!) → Räuber. w_rmer → warm (a!) → wärmer.<br><em style="color:#999;font-size:11px;">So sieht es aus: Wort mit Lücke: „er l_chelt" — zwei Buttons: ä / e. Kind wählt. Bei Fehler: Nepomuk-Tipp: „Suche das Stammwort! lachen hat a → also ä!" Wie im BLS FRESCH-Wörterbuch S. 9.</em></div></div>
+
+<div class="aufgabe"><div class="an">F4<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Verwandte Wörter verbinden</div><div class="ad">Schale → schälen, sauber → säubern, Kamm → kämmen, Tat → Täter. Stammwort + Ableitung mit Umlaut.</div></div>
+
+<div class="aufgabe"><div class="an">F5<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Unsicheres Wort — frag die Familie!</div><div class="ad">Schwieriges Wort → einfacheres Stammwort suchen → ☆ übertragen. „Erfahrung" → fahren → h!</div></div>
+
+<div class="aufgabe"><div class="an">F6<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Fehlerwörter mit Wortfamilien-Trick</div><div class="ad">Falsch geschriebenes Wort → Stammwort hilft! „Fart" → fahren → Fahrt! „Schwimmbat" → Bad → Schwimmbad!<br><em style="color:#999;font-size:11px;">So sieht es aus: Fehlerwort rot markiert: „Fart". Darunter: „Was ist falsch? Finde das Stammwort!" Kind tippt Stammwort ein (fahren). Feedback: „fahren hat h → also Fahrt mit h!" Kind tippt das richtige Wort. 2-Schritt-Übung.</em></div></div>
+
+<div class="aufgabe"><div class="an">F7<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Adjektiv → Nomen — Nachsilbe -heit/-keit</div><div class="ad">krank → Krankheit, gesund → Gesundheit, tapfer → Tapferkeit, schön → Schönheit. (Finken Verlag)</div></div>
+
+<div class="aufgabe"><div class="an">F8<span class="stufe-p">produktiv</span><span class="status todo">zu bauen</span></div><div class="at">🎮 Verkleinerungsform bilden — Umlaut + -chen</div><div class="ad">Rad → Rädchen, Hand → Händchen, Baum → Bäumchen. Wortstamm + Umlaut + Nachsilbe.</div></div>
+</div>
+
+<!-- ═══════════════ AHA-BOX ═══════════════ -->
+<div style="margin-top:20px;">
+<div class="ahabox">
+  <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#c89000;margin-bottom:5px;">💡 Das Wichtigste</div>
+  Verwandte Wörter haben den gleichen <strong>Wortstamm</strong> und werden gleich geschrieben. Im Wortstamm steckt die Wortbedeutung und die Rechtschreibbesonderheit (☆). Die ☆ vererbt sich in der Wortfamilie: Doppelung, ie, Dehnungs-h, ss/ß. Vorsilben verändern die Bedeutung, Nachsilben bestimmen die Wortart. Wenn du unsicher bist: such ein verwandtes Wort, das du sicher kennst!
+</div>
+</div>
+
+</div><!-- /k10 -->
+</div>
+</div>
+</body>
+</html>
