@@ -1,30 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { reviewApi } from '@/lib/endpoints';
-import type { QueuePage, ReviewSubmitBody } from '@/lib/contract';
+import { ApiError } from '@/lib/api';
+import type { ReviewSubmitBody } from '@/lib/contract';
 
 /**
- * Source the item to review from the OPEN queue cache — only open items are actionable, and the key
- * matches `useQueue('open')` so a click reads the already-cached list (no refetch). A deep-link / refresh
- * has no cached list, so we refetch the open queue and pick it out. (If the backend later adds
- * GET /staff/queue/{id}, swap this for a direct fetch.)
+ * One review item by id — a direct fetch (GET /staff/queue/{uploadId}), so a deep link or refresh
+ * resolves no matter how deep the item sits in the paged list. Serves both the review screen (open
+ * items) and the history detail (decided items); the screens decide actionability off `decision`.
+ * Keyed under the 'staff-queue' prefix so a submitted verdict (which invalidates ['staff-queue'])
+ * refreshes it too. A 404 means gone — don't retry it as a transient error.
  */
-export function useQueueItem(uploadId: string) {
+export function useReviewItem(uploadId: string) {
   return useQuery({
-    queryKey: ['staff-queue', 'open'],
-    queryFn: () => reviewApi.queue({ status: 'open', limit: 50 }),
-    select: (page: QueuePage) => page.items.find((i) => i.uploadId === uploadId) ?? null,
-  });
-}
-
-/**
- * A DECIDED item for the read-only history detail — sourced from the done slice (newest-first; covers
- * the recent history the list shows). Same cache-or-refetch pattern as `useQueueItem`.
- */
-export function useHistoryItem(uploadId: string) {
-  return useQuery({
-    queryKey: ['staff-queue', 'history'],
-    queryFn: () => reviewApi.queue({ status: 'done', limit: 50 }),
-    select: (page: QueuePage) => page.items.find((i) => i.uploadId === uploadId) ?? null,
+    queryKey: ['staff-queue', 'item', uploadId],
+    queryFn: () => reviewApi.item(uploadId),
+    retry: (failureCount, error) => {
+      if (error instanceof ApiError && error.status === 404) return false;
+      return failureCount < 1;
+    },
   });
 }
 

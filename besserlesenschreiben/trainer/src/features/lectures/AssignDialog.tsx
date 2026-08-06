@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ApiError } from '@/lib/api';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useStudents } from '@/features/students/useStudents';
 import { useLectureMutations } from './useLectures';
 
@@ -14,8 +15,18 @@ export function AssignDialog({ lectureId, onClose }: { lectureId: string; onClos
   const { assign } = useLectureMutations(lectureId);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [result, setResult] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+
+  // The directory is paged at 50 — drain every page so the picker really is the whole directory
+  // (a truncated picker would silently hide students past the first page).
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = students;
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const all = students.data?.pages.flatMap((p) => p.items) ?? [];
+  const needle = search.trim().toLowerCase();
+  const shown = needle ? all.filter((s) => s.name.toLowerCase().includes(needle)) : all;
   const toggle = (id: string) =>
     setSelected((prev) => {
       const next = new Set(prev);
@@ -48,8 +59,21 @@ export function AssignDialog({ lectureId, onClose }: { lectureId: string; onClos
         ) : all.length === 0 ? (
           <p className="py-8 text-center text-ink-soft">Noch keine Schüler.</p>
         ) : (
+          <>
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Nach Name suchen …"
+              aria-label="Schüler suchen"
+              className="mb-3"
+            />
+            {isFetchingNextPage && <p className="mb-2 text-xs text-ink-soft">Lädt weitere Schüler …</p>}
+            {shown.length === 0 ? (
+              <p className="mb-4 py-6 text-center text-sm text-ink-soft">Kein Schüler mit diesem Namen.</p>
+            ) : (
           <ul className="mb-4 max-h-80 divide-y divide-line overflow-y-auto rounded-card ring-1 ring-line">
-            {all.map((s) => (
+            {shown.map((s) => (
               <li key={s.profileId}>
                 <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition hover:bg-black/[0.02]">
                   <input
@@ -64,6 +88,8 @@ export function AssignDialog({ lectureId, onClose }: { lectureId: string; onClos
               </li>
             ))}
           </ul>
+            )}
+          </>
         )}
 
         {result && (

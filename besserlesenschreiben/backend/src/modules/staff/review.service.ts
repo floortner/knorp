@@ -81,6 +81,15 @@ function queueQuery(
 
 const MAX_LIMIT = 50;
 
+// The includes every queue-item mapping needs (list + single fetch share the shape).
+const QUEUE_INCLUDE = {
+  profile: { select: { name: true, unlockedUnit: true } },
+  // Latest review's student-visible comment — surfaced on historical rows only.
+  reviews: { orderBy: { createdAt: 'desc' }, take: 1, select: { notes: true } },
+} satisfies Prisma.HomeworkUploadInclude;
+
+type QueueRow = Prisma.HomeworkUploadGetPayload<{ include: typeof QUEUE_INCLUDE }>;
+
 /**
  * Homework review queue + authoritative apply (ARCHITECTURE §11, SPEC §10). The trainer's verdict is
  * authoritative: only `reviewed_analysis` ever mutates the learning profile. Queue rows carry the
@@ -122,11 +131,7 @@ export class ReviewService {
         orderBy,
         take: take + 1, // one extra to know if there's a next page
         ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-        include: {
-          profile: { select: { name: true, unlockedUnit: true } },
-          // Latest review's student-visible comment — surfaced on historical rows only.
-          reviews: { orderBy: { createdAt: 'desc' }, take: 1, select: { notes: true } },
-        },
+        include: QUEUE_INCLUDE,
       }),
       this.prisma.homeworkUpload.count({ where }),
     ]);
@@ -144,30 +149,56 @@ export class ReviewService {
     });
 
     const items: QueueItem[] = await Promise.all(
-      valid.map(async ({ row, analysis }) => {
-        const reviewed = homeworkAnalysisSchema.safeParse(row.reviewedAnalysis);
-        return {
-          uploadId: row.id,
-          profileId: row.profileId,
-          name: row.profile.name,
-          gradeBand: `Einheit ${row.profile.unlockedUnit}`,
-          skillTags: analysis.suggestedFocus,
-          imageUrl: await this.storage.signedHomeworkReadUrl(row.imageKey, this.claimTtlMs / 1000),
-          llmAnalysis: analysis,
-          createdAt: row.createdAt.toISOString(),
-          // In Prüfung by ANOTHER trainer (live lease). Own claims stay actionable (re-openable).
-          claimed: row.claimedBy != null && row.claimedBy !== trainerId &&
-            row.claimedUntil != null && row.claimedUntil > now,
-          decision: row.reviewDecision ?? null,
-          reviewedAt: row.reviewedAt ? row.reviewedAt.toISOString() : null,
-          reviewedAnalysis: reviewed.success ? reviewed.data : null,
-          notes: row.reviews?.[0]?.notes ?? null,
-        };
-      }),
+      valid.map(({ row, analysis }) => this.toItem(row, analysis, trainerId, now)),
     );
 
     const nextCursor = rows.length > take ? page[page.length - 1].id : null;
     return { items, nextCursor, total };
+  }
+
+  /**
+   * One review item by id — the direct fetch behind the /review/:uploadId and /history/:uploadId deep
+   * links (the list is paged, so scanning it stops resolving past MAX_LIMIT items). An unparseable
+   * draft is a 404, mirroring the queue's skip-and-log behaviour.
+   */
+  async item(trainerId: string, uploadId: string): Promise<QueueItem> {
+    const row = await this.prisma.homeworkUpload.findUnique({
+      where: { id: uploadId },
+      include: QUEUE_INCLUDE,
+    });
+    if (!row) throw new ApiException(404, 'NOT_FOUND', 'Hausübung nicht gefunden.');
+    const parsed = homeworkAnalysisSchema.safeParse(row.llmAnalysis);
+    if (!parsed.success) {
+      this.logger.warn({ event: 'review.draft_unparseable', uploadId: row.id }, 'bad draft on direct fetch');
+      throw new ApiException(404, 'NOT_FOUND', 'Hausübung nicht gefunden.');
+    }
+    return this.toItem(row, parsed.data, trainerId, new Date());
+  }
+
+  private async toItem(
+    row: QueueRow,
+    analysis: HomeworkAnalysis,
+    trainerId: string,
+    now: Date,
+  ): Promise<QueueItem> {
+    const reviewed = homeworkAnalysisSchema.safeParse(row.reviewedAnalysis);
+    return {
+      uploadId: row.id,
+      profileId: row.profileId,
+      name: row.profile.name,
+      gradeBand: `Einheit ${row.profile.unlockedUnit}`,
+      skillTags: analysis.suggestedFocus,
+      imageUrl: await this.storage.signedHomeworkReadUrl(row.imageKey, this.claimTtlMs / 1000),
+      llmAnalysis: analysis,
+      createdAt: row.createdAt.toISOString(),
+      // In Prüfung by ANOTHER trainer (live lease). Own claims stay actionable (re-openable).
+      claimed: row.claimedBy != null && row.claimedBy !== trainerId &&
+        row.claimedUntil != null && row.claimedUntil > now,
+      decision: row.reviewDecision ?? null,
+      reviewedAt: row.reviewedAt ? row.reviewedAt.toISOString() : null,
+      reviewedAnalysis: reviewed.success ? reviewed.data : null,
+      notes: row.reviews?.[0]?.notes ?? null,
+    };
   }
 
   /** Soft-lock an item so two trainers don't grade it twice. 409 if another holds a live lease. */

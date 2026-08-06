@@ -117,6 +117,11 @@ export function ProfileScreen() {
       <p className="mt-4 text-xs text-ink-soft">
         E-Mail und Rolle werden administrativ vergeben. Bei Änderungswünschen wende dich an die Administration.
       </p>
+
+      {/* Build stamp, injected by vite.config.ts (ARCHITECTURE §7 — mirrored by backend /health). */}
+      {import.meta.env.VITE_APP_VERSION && (
+        <p className="mt-6 text-center text-xs text-ink-soft/70">Version {import.meta.env.VITE_APP_VERSION}</p>
+      )}
     </section>
   );
 }

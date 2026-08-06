@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { ApiZodResponse } from '../../common/zod-openapi';
 import {
+  studentAssignmentListSchema,
   studentDetailSchema,
   studentPageSchema,
   studentSessionDetailSchema,
@@ -11,6 +12,7 @@ import {
 import { StaffAuthGuard } from '../../common/guards/staff-auth.guard';
 import { StudentActivityService } from './student-activity.service';
 import { StaffProgressService } from './staff-progress.service';
+import { LecturesService } from './lectures.service';
 
 /**
  * Learner directory + per-student activity (ROADMAP §H1.3 + §H3.1) — ALL trainers (known-trainer
@@ -27,6 +29,7 @@ export class StaffStudentsController {
   constructor(
     private readonly activity: StudentActivityService,
     private readonly progress: StaffProgressService,
+    private readonly lectures: LecturesService,
   ) {}
 
   @Get()
@@ -40,6 +43,13 @@ export class StaffStudentsController {
   @ApiZodResponse(studentDetailSchema)
   detail(@Param('profileId') profileId: string) {
     return this.progress.forStudent(profileId);
+  }
+
+  /** The student's assignments (incl. OPEN ones the session timeline can't show) — "Zuweisungen" section. */
+  @Get(':profileId/assignments')
+  @ApiZodResponse(studentAssignmentListSchema)
+  assignments(@Param('profileId') profileId: string) {
+    return this.lectures.studentAssignments(profileId);
   }
 
   @Get(':profileId/sessions')

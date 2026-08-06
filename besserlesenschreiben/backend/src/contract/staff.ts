@@ -70,7 +70,9 @@ export const queueItemSchema = z.object({
 export const queuePageSchema = z.object({
   items: z.array(queueItemSchema),
   nextCursor: z.string().nullable(),
-  total: z.number().int(), // count of open (unclaimed/lease-expired) pending-review items — drives the nav badge
+  // Count of ALL items matching the filter (for 'open': every pending_review row, incl. live-claimed
+  // ones — the queue deliberately shows work in progress). Drives the nav badge.
+  total: z.number().int(),
 });
 
 export const claimResponseSchema = z.object({
@@ -290,6 +292,25 @@ export const lectureAssignmentSchema = z.object({
 
 export const lectureAssignmentListSchema = z.object({
   items: z.array(lectureAssignmentSchema),
+});
+
+// Per-STUDENT view of the same assignment rollup, keyed by lecture — the learner detail's
+// "Zuweisungen" section. An OPEN assignment is visible here before any session exists (the session
+// timeline can only show played ones).
+export const studentAssignmentSchema = z.object({
+  assignmentId: z.string(),
+  lectureId: z.string(), // the pinned version row — links to /lectures/:lectureId
+  title: z.string(),
+  version: z.number().int(),
+  status: assignmentStatusEnum,
+  assignedAt: z.string(),
+  sessionId: z.string().nullable(), // links to the session drill-down once started
+  completedAt: z.string().nullable(),
+  correctPct: z.number().int().nullable(),
+});
+
+export const studentAssignmentListSchema = z.object({
+  items: z.array(studentAssignmentSchema),
 });
 
 // Lexeme foundation curation was dropped along with the Vokaltraining content set — the word-list

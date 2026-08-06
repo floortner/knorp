@@ -2184,6 +2184,207 @@
         ]
       }
     },
+    "/api/v1/staff/queue/{uploadId}": {
+      "get": {
+        "operationId": "StaffController_queueItem",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "uploadId": {
+                      "type": "string"
+                    },
+                    "profileId": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "gradeBand": {
+                      "type": "string"
+                    },
+                    "skillTags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "imageUrl": {
+                      "type": "string"
+                    },
+                    "llmAnalysis": {
+                      "type": "object",
+                      "properties": {
+                        "topic": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "exerciseType": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "items": {
+                          "maxItems": 50,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "prompt": {
+                                "type": "string",
+                                "maxLength": 2000
+                              },
+                              "childAnswer": {
+                                "type": "string",
+                                "maxLength": 2000
+                              },
+                              "correct": {
+                                "type": "boolean"
+                              },
+                              "errorType": {
+                                "nullable": true,
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              }
+                            },
+                            "required": [
+                              "prompt",
+                              "childAnswer",
+                              "correct"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "suggestedFocus": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          }
+                        }
+                      },
+                      "required": [
+                        "topic",
+                        "exerciseType",
+                        "items",
+                        "suggestedFocus"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "claimed": {
+                      "type": "boolean"
+                    },
+                    "decision": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "reviewedAt": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "reviewedAnalysis": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "topic": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "exerciseType": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "items": {
+                          "maxItems": 50,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "prompt": {
+                                "type": "string",
+                                "maxLength": 2000
+                              },
+                              "childAnswer": {
+                                "type": "string",
+                                "maxLength": 2000
+                              },
+                              "correct": {
+                                "type": "boolean"
+                              },
+                              "errorType": {
+                                "nullable": true,
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              }
+                            },
+                            "required": [
+                              "prompt",
+                              "childAnswer",
+                              "correct"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "suggestedFocus": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          }
+                        }
+                      },
+                      "required": [
+                        "topic",
+                        "exerciseType",
+                        "items",
+                        "suggestedFocus"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "notes": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uploadId",
+                    "profileId",
+                    "name",
+                    "gradeBand",
+                    "skillTags",
+                    "imageUrl",
+                    "llmAnalysis",
+                    "createdAt",
+                    "claimed",
+                    "decision",
+                    "reviewedAt",
+                    "reviewedAnalysis",
+                    "notes"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
     "/api/v1/staff/queue/{uploadId}/progress": {
       "get": {
         "operationId": "StaffController_queueProgress",
@@ -3235,6 +3436,92 @@
                     "activity",
                     "profileId",
                     "name"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff"
+        ]
+      }
+    },
+    "/api/v1/staff/students/{profileId}/assignments": {
+      "get": {
+        "operationId": "StaffStudentsController_assignments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "assignmentId": {
+                            "type": "string"
+                          },
+                          "lectureId": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "started",
+                              "completed"
+                            ]
+                          },
+                          "assignedAt": {
+                            "type": "string"
+                          },
+                          "sessionId": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "completedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "correctPct": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "assignmentId",
+                          "lectureId",
+                          "title",
+                          "version",
+                          "status",
+                          "assignedAt",
+                          "sessionId",
+                          "completedAt",
+                          "correctPct"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
                   ],
                   "additionalProperties": false
                 }

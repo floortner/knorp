@@ -65,14 +65,20 @@ export class StudentActivityService {
   async directory(limit: number, cursor?: string) {
     const take = Math.min(Math.max(limit, 1), MAX_LIMIT);
     const now = new Date();
+    // Only students of ACTIVE family accounts (product decision 2026-08-06): a pending account's
+    // student isn't teachable yet and a deactivated one shouldn't receive assignments — keeping them
+    // out of the directory keeps them out of the assign picker too. Detail routes stay reachable via
+    // old links; this filters discovery, not history.
+    const where = { account: { status: 'active' } } as const;
     const [rows, total] = await Promise.all([
       this.prisma.profile.findMany({
+        where,
         orderBy: [{ name: 'asc' }, { id: 'asc' }], // secondary id key → stable cursor paging on name ties
         take: take + 1, // one extra to know if there's a next page
         ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
         select: { id: true, name: true, unlockedUnit: true, streakDays: true, lastActive: true },
       }),
-      this.prisma.profile.count(),
+      this.prisma.profile.count({ where }),
     ]);
     const page = rows.slice(0, take);
     const ids = page.map((p) => p.id);

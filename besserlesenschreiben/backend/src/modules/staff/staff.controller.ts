@@ -8,6 +8,7 @@ import { ApiZodBody, ApiZodResponse } from '../../common/zod-openapi';
 import { okSchema } from '../../contract/models';
 import {
   claimResponseSchema,
+  queueItemSchema,
   queuePageSchema,
   queueProgressSchema,
   reviewSubmitResponseSchema,
@@ -100,6 +101,13 @@ export class StaffController {
     const n = limit ? Number.parseInt(limit, 10) : 50;
     const filter: QueueFilter = status === 'done' || status === 'all' ? status : 'open';
     return this.review.queue(trainer.id, Number.isFinite(n) ? n : 50, cursor, filter);
+  }
+
+  /** One review item — direct fetch for the /review/:id and /history/:id deep links (list is paged). */
+  @Get('queue/:uploadId')
+  @ApiZodResponse(queueItemSchema)
+  queueItem(@CurrentTrainer() trainer: AuthTrainer, @Param('uploadId') uploadId: string) {
+    return this.review.item(trainer.id, uploadId);
   }
 
   /**

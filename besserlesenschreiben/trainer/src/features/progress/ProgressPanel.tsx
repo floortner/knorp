@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
-import { decisionTone } from '@/lib/decision';
+import { decisionLabel, decisionTone, statusLabel } from '@/lib/decision';
 import { deDate as de } from '@/lib/dates';
 import type { ProfileProgress } from '@/lib/contract';
 
@@ -52,9 +53,16 @@ export function ProgressPanel({ data }: { data: ProgressData }) {
             {activity.homework.map((h) => (
               <li key={h.uploadId} className="flex items-center gap-2 text-xs">
                 <span className="w-20 shrink-0 text-ink-soft">{de(h.createdAt)}</span>
-                <span className="text-ink">{h.status}</span>
+                <span className="text-ink">{statusLabel(h.status)}</span>
                 {h.decision && (
-                  <span className={cn('rounded-full px-1.5 py-0.5', decisionTone(h.decision))}>{h.decision}</span>
+                  <span className={cn('rounded-full px-1.5 py-0.5', decisionTone(h.decision))}>
+                    {decisionLabel(h.decision)}
+                  </span>
+                )}
+                {h.decision && (
+                  <Link to={`/history/${encodeURIComponent(h.uploadId)}`} className="text-teal-dark hover:underline">
+                    ansehen
+                  </Link>
                 )}
               </li>
             ))}

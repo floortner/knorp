@@ -11,3 +11,10 @@ export const ASSIGNMENT_LABEL: Record<AssignmentStatus, string> = {
   started: 'Begonnen',
   completed: 'Erledigt',
 };
+
+/** Matching tint classes, shared by the lecture outcomes table and the student's Zuweisungen list. */
+export const ASSIGNMENT_TONE: Record<AssignmentStatus, string> = {
+  open: 'bg-black/[0.04] text-ink-soft',
+  started: 'bg-teal-tint text-teal-dark',
+  completed: 'bg-good-tint text-good',
+};

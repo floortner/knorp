@@ -5,7 +5,7 @@ import { deDate } from '@/lib/dates';
 import { decisionLabel, decisionTone } from '@/lib/decision';
 import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { AnalysisEditor } from './AnalysisEditor';
-import { useHistoryItem } from './useReview';
+import { useReviewItem } from './useReview';
 
 /**
  * Read-only detail of a DECIDED review (audit convenience): the homework photo, the authoritative
@@ -14,7 +14,7 @@ import { useHistoryItem } from './useReview';
  */
 export function HistoryScreen() {
   const { uploadId = '' } = useParams();
-  const { data: item, isPending, isError } = useHistoryItem(uploadId);
+  const { data: item, isPending, isError } = useReviewItem(uploadId);
 
   if (isPending) return <p className="py-16 text-center text-ink-soft">Lädt …</p>;
   if (isError || !item || !item.decision) {
@@ -37,7 +37,11 @@ export function HistoryScreen() {
       </Link>
 
       <div className="mb-3 flex flex-wrap items-baseline gap-x-3">
-        <h1 className="text-lg font-semibold text-ink">{item.name}</h1>
+        <h1 className="text-lg font-semibold text-ink">
+          <Link to={`/students/${encodeURIComponent(item.profileId)}`} className="hover:underline">
+            {item.name}
+          </Link>
+        </h1>
         <span className="text-sm text-ink-soft">{item.gradeBand}</span>
         <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', decisionTone(item.decision))}>
           {decisionLabel(item.decision)}

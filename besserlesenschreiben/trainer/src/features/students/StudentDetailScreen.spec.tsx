@@ -8,7 +8,7 @@ import { studentsApi } from '@/lib/endpoints';
 import { StudentDetailScreen } from './StudentDetailScreen';
 
 vi.mock('@/lib/endpoints', () => ({
-  studentsApi: { list: vi.fn(), detail: vi.fn(), sessions: vi.fn(), session: vi.fn() },
+  studentsApi: { list: vi.fn(), detail: vi.fn(), sessions: vi.fn(), session: vi.fn(), assignments: vi.fn() },
 }));
 
 const detail: StudentDetail = {
@@ -77,7 +77,10 @@ function renderDetail() {
   );
 }
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(studentsApi.assignments).mockResolvedValue({ items: [] });
+});
 
 describe('StudentDetailScreen', () => {
   it('renders the progress header and the day-grouped timeline with calm abandoned + homework rows', async () => {
@@ -89,8 +92,9 @@ describe('StudentDetailScreen', () => {
     });
     renderDetail();
     expect(await screen.findByText('Mia Muster')).toBeInTheDocument();
-    // completed row: answered/total + accuracy + duration
-    expect(await screen.findByText(/5\/5 Aufgaben · 83% richtig · 7 Min\./)).toBeInTheDocument();
+    // completed row: answered/total + accuracy + ACTIVE time (Σ timeMs — never wall clock, which
+    // would count a parked tab as practice)
+    expect(await screen.findByText(/5\/5 Aufgaben · 83% richtig · 1 Min\. aktiv/)).toBeInTheDocument();
     // abandoned row: neutral factual marker, partial progress — no duration
     expect(screen.getByText('nicht abgeschlossen')).toBeInTheDocument();
     expect(screen.getByText(/2\/5 Aufgaben$/)).toBeInTheDocument();
@@ -111,8 +115,33 @@ describe('StudentDetailScreen', () => {
     });
     renderDetail();
     await screen.findByText('Mia Muster');
-    expect(await screen.findByText(/5\/5 Aufgaben · 7 Min\./)).toBeInTheDocument();
+    expect(await screen.findByText(/5\/5 Aufgaben · 1 Min\. aktiv/)).toBeInTheDocument();
     expect(screen.queryByText(/0% richtig/)).not.toBeInTheDocument();
+  });
+
+  it('lists assignments incl. never-started OPEN ones the timeline cannot show', async () => {
+    vi.mocked(studentsApi.detail).mockResolvedValue(detail);
+    vi.mocked(studentsApi.sessions).mockResolvedValue({ items: [], nextCursor: null, total: 0 });
+    vi.mocked(studentsApi.assignments).mockResolvedValue({
+      items: [
+        {
+          assignmentId: 'a1',
+          lectureId: 'l1',
+          title: 'Dehnungs-h',
+          version: 2,
+          status: 'open',
+          assignedAt: '2026-01-05T09:00:00.000Z',
+          sessionId: null,
+          completedAt: null,
+          correctPct: null,
+        },
+      ],
+    });
+    renderDetail();
+    await screen.findByText('Mia Muster');
+    expect(await screen.findByText('Dehnungs-h')).toBeInTheDocument();
+    expect(screen.getByText('Offen')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Dehnungs-h' })).toHaveAttribute('href', '/lectures/l1');
   });
 
   it('re-queries server-side when a source filter chip is selected', async () => {
