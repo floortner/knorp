@@ -5,9 +5,10 @@ import { cn } from '@/lib/cn';
 import { FilterChips } from '@/components/ui/filter-chips';
 import { Button } from '@/components/ui/button';
 import { ProgressPanel } from '@/features/progress/ProgressPanel';
-import { deTime, dayHeading } from '@/lib/dates';
-import type { SessionSource, StudentSession } from '@/lib/contract';
-import { useStudent, useStudentSessions } from './useStudents';
+import { deDate, deTime, dayHeading } from '@/lib/dates';
+import type { SessionSource, StudentAssignment, StudentSession } from '@/lib/contract';
+import { ASSIGNMENT_LABEL, ASSIGNMENT_TONE } from '@/features/lectures/labels';
+import { useStudent, useStudentAssignments, useStudentSessions } from './useStudents';
 import { SOURCE_LABEL } from './labels';
 
 type SourceFilter = SessionSource | 'all';
@@ -35,13 +36,16 @@ function sessionSummary(s: StudentSession): string {
   if (!s.completedAt) return items; // in progress / abandoned — no accuracy or duration yet
   // A completed session with no attempts has correctPct null: show items, not a misleading "0% richtig".
   const accuracy = s.correctPct !== null ? ` · ${s.correctPct}% richtig` : '';
-  return `${items}${accuracy} · ${durationLabel(s.startedAt, s.completedAt)}`;
+  return `${items}${accuracy} · ${activeLabel(s.activeMs)}`;
 }
 
-/** Wall-clock duration for a completed session, floored at "< 1 Min.". */
-function durationLabel(startedAt: string, completedAt: string): string {
-  const mins = Math.round((new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 60_000);
-  return mins < 1 ? '< 1 Min.' : `${mins} Min.`;
+/**
+ * Engagement time (Σ attempt.timeMs), matching the session drill-down's "aktive Zeit" — NOT wall
+ * clock, which would count a parked tab as an hour of practice.
+ */
+function activeLabel(activeMs: number): string {
+  const mins = Math.round(activeMs / 60_000);
+  return mins < 1 ? '< 1 Min. aktiv' : `${mins} Min. aktiv`;
 }
 
 /**
@@ -53,6 +57,7 @@ export function StudentDetailScreen() {
   const { profileId = '' } = useParams();
   const [filter, setFilter] = useState<SourceFilter>('all');
   const student = useStudent(profileId);
+  const assignments = useStudentAssignments(profileId);
   const sessions = useStudentSessions(profileId, filter === 'all' ? undefined : filter);
   const items = sessions.data?.pages.flatMap((p) => p.items) ?? [];
 
@@ -85,6 +90,24 @@ export function StudentDetailScreen() {
           <div className="mb-6 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line">
             <ProgressPanel data={student.data} />
           </div>
+
+          {/* All assignments incl. never-started OPEN ones — the timeline below only shows played sessions. */}
+          <h2 className="mb-2 font-semibold text-ink">Zuweisungen</h2>
+          {assignments.isPending ? (
+            <p className="mb-6 text-sm text-ink-soft">Lädt …</p>
+          ) : assignments.isError ? (
+            <p className="mb-6 text-sm text-danger">Zuweisungen konnten nicht geladen werden.</p>
+          ) : assignments.data.items.length === 0 ? (
+            <p className="mb-6 text-sm text-ink-soft">Keine Zuweisungen.</p>
+          ) : (
+            <ul className="mb-6 divide-y divide-line overflow-hidden rounded-card bg-surface shadow-sm ring-1 ring-line">
+              {assignments.data.items.map((a) => (
+                <li key={a.assignmentId}>
+                  <AssignmentRow profileId={profileId} assignment={a} />
+                </li>
+              ))}
+            </ul>
+          )}
 
           <h2 className="mb-2 font-semibold text-ink">Aktivität</h2>
           <FilterChips value={filter} onChange={setFilter} options={FILTERS} label="Nach Quelle filtern" />
@@ -125,6 +148,36 @@ export function StudentDetailScreen() {
         </>
       )}
     </section>
+  );
+}
+
+function AssignmentRow({ profileId, assignment: a }: { profileId: string; assignment: StudentAssignment }) {
+  const outcome =
+    a.status === 'completed' && a.correctPct !== null ? ` · ${a.correctPct}% richtig` : '';
+  return (
+    <div className="flex items-center gap-4 px-5 py-3">
+      <div className="min-w-0 flex-1">
+        <Link to={`/lectures/${encodeURIComponent(a.lectureId)}`} className="font-medium text-ink hover:underline">
+          {a.title}
+        </Link>
+        <p className="text-sm text-ink-soft">
+          Version {a.version} · zugewiesen am {deDate(a.assignedAt)}
+          {outcome}
+        </p>
+      </div>
+      <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold', ASSIGNMENT_TONE[a.status])}>
+        {ASSIGNMENT_LABEL[a.status]}
+      </span>
+      {a.sessionId && (
+        <Link
+          to={`/students/${encodeURIComponent(profileId)}/sessions/${encodeURIComponent(a.sessionId)}`}
+          aria-label="Zur Sitzung"
+          className="shrink-0 text-ink-soft transition hover:text-ink"
+        >
+          <ArrowRight className="size-4" aria-hidden />
+        </Link>
+      )}
+    </div>
   );
 }
 

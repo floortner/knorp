@@ -22,6 +22,14 @@ export function useStudent(profileId: string) {
   });
 }
 
+/** The student's assignments — incl. never-started OPEN ones the session timeline can't show. */
+export function useStudentAssignments(profileId: string) {
+  return useQuery({
+    queryKey: ['staff-student-assignments', profileId],
+    queryFn: () => studentsApi.assignments(profileId),
+  });
+}
+
 /** Session history for the activity timeline; optional source filter re-queries server-side. */
 export function useStudentSessions(profileId: string, source?: SessionSource) {
   return useInfiniteQuery({

@@ -227,25 +227,29 @@ index.html  vite.config.ts  package.json  package-lock.json  .env.example  AGENT
 ```
 src/
   main.tsx  App.tsx        # providers + routes: /login, /login/code, /queue, /review/:uploadId,
-                           # /lectures, /students, /users, /profile
+                           # /history/:uploadId, /lectures, /lectures/:lectureId, /students,
+                           # /students/:profileId, /students/:profileId/sessions/:sessionId,
+                           # /users, /profile
   index.css               # neutral staff @theme tokens (teal accent, slate surface) — no PWA, no mascots
   app/AppLayout.tsx       # top bar: (b) brand + trainer name, nav with live count badges, logout
   lib/
     api.ts                # transport only over the STAFF routes — staff cookie, error-envelope → ApiError
     api.gen.ts            # GENERATED from the backend OpenAPI (`npm run gen:api`), committed, never edited
     contract.ts           # ergonomic aliases over the generated `operations` (no hand-authored shapes)
-    endpoints.ts          # typed wrappers: staffAuthApi, reviewApi, usersApi
+    endpoints.ts          # typed wrappers: staffAuthApi, reviewApi, studentsApi, lecturesApi, usersApi
   features/
     auth/                 # StaffAuthProvider, /staff/me probe, RequireStaff guard, login + code screens
     queue/                # review list (Offen | Erledigt | Alle) — rows by student name (§H1.3)
-    review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor)
-    students/             # learner directory + activity timeline + session drill-down (§H1.3/§H3)
+    review/               # image + LLM draft SIDE BY SIDE; approve | correct | reject (+ AnalysisEditor);
+                          #   read-only history detail for decided items
+    students/             # learner directory + assignments + activity timeline + session drill-down (§H1.3/§H3)
     lectures/             # teaching console: content-library browse + assign + outcome table (§H1/§I3;
                           #   lectures are authored in repo-root content/, never here)
     users/                # ADMIN: account approval / deactivate / delete + per-student progress
+    profile/              # the trainer's OWN profile (rename self; email/role admin-provisioned)
     progress/             # shared learner-progress panel (summary · skills · activity)
-  components/ui/          # button, input, select, textarea, modal, filter-chips
-index.html  vite.config.ts  package.json  .env.example  README.md  AGENTS.md
+  components/ui/          # button, input, select, textarea, modal, filter-chips, image-lightbox
+index.html  vite.config.ts  package.json  .env.example  README.md  AGENTS.md  SPEC.md
 ```
 The trainer portal is **transport + UI only** — every decision (queue ordering, authoritative apply, who may
 review) is enforced by the backend `staff/` module. It ships to ~3 internal staff, never to families, and
@@ -520,7 +524,9 @@ restore from the off-platform dumps) rather than the loss of every family's data
   every trainer action (claim, approve, correct, reject) is **audit-logged** with the staff id and upload id
   (identifiers + outcome, never image/answer content — §6); (d) consent copy at upload states that a homework
   photo is reviewed by a trained professional to tailor lessons; (e) raw images expire on the §7 lifecycle
-  regardless of review state. An admin can revoke a trainer; queue claims are released on revoke.
+  regardless of review state. A trainer is revoked by flipping their status (seed/DB — a self-serve
+  admin surface for this is deferred); the staff guard re-checks status per request, so revocation is
+  immediate, and any live queue claim simply expires with its short lease (no explicit release step).
 - **Minors' data:** primary region **Frankfurt (eu-central-1)** keeps data at rest in the EU; DR backups stay
   within the EU (eu-west-1). Explicit parent consent for homework images; short retention via the S3 lifecycle;
   the logging rules in §6 are part of this commitment. **LLM data-flow (decided):**

@@ -40,9 +40,12 @@ describe('StudentsScreen', () => {
     vi.mocked(studentsApi.list).mockResolvedValue({ items: [mia], nextCursor: null, total: 1 });
     renderStudents();
     expect(await screen.findByText(/Mia Muster/)).toBeInTheDocument();
+    expect(screen.getByText(/1 Schüler/)).toBeInTheDocument(); // directory count from `total`
     expect(screen.getByText(/Einheit 3/)).toBeInTheDocument();
     expect(screen.getByText(/vowel_length 40%/)).toBeInTheDocument();
-    expect(screen.getByText(/Sitzungen \(7 T\.\): 2/)).toBeInTheDocument();
+    // Every contracted teaser field is rendered — 7d/30d sessions, streak, total attempts.
+    expect(screen.getByText(/Sitzungen: 2 \(7 T\.\) · 5 \(30 T\.\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Serie 4 Tage · 42 Aufgaben/)).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/students/p1');
   });
 

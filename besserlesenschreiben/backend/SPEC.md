@@ -412,9 +412,14 @@ GET  /staff/queue           ?status=&limit=&cursor=  -> {items:[{uploadId, profi
                                                         #   verdict reviewedAnalysis+notes for the read-only
                                                         #   detail) | all. decision/reviewedAt/reviewedAnalysis/
                                                         #   notes are null while open.
+GET  /staff/queue/{uploadId}                         -> one item (same shape as the list rows)
+                                                        # direct fetch behind the portal's /review and
+                                                        #   /history deep links (the list is paged)
 GET  /staff/queue/{uploadId}/progress                -> learner progress for the upload (all trainers):
                                                         {profileId, name, summary, skills, activity}
 POST /staff/queue/{uploadId}/claim                   -> {uploadId, claimedUntil}   # soft-lock; 409 if held by another
+POST /staff/queue/{uploadId}/release                 -> {ok}   # drop the caller's OWN claim when leaving
+                                                        #   without a verdict; idempotent no-op otherwise
 POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
                                  reviewedAnalysis?, notes?}
                                                      -> {status}   # authoritative; applies on approved|corrected
@@ -434,8 +439,17 @@ GET /staff/students                 ?limit=&cursor=  -> {items:[{profileId, name
                                                          lastActive, sessions7d, sessions30d,
                                                          totalAttempts, weakestSkills[≤3]}],
                                                         nextCursor, total}   # name-ordered
+                                                        # ACTIVE family accounts only (decision
+                                                        #   2026-08-06): pending/deactivated students
+                                                        #   stay out of the directory AND the assign
+                                                        #   picker; detail routes remain reachable
 GET /staff/students/{profileId}                      -> {profileId, name, summary, skills, activity}
                                                         # the learner-detail header (= ProgressPanel payload)
+GET /staff/students/{profileId}/assignments          -> {items:[{assignmentId, lectureId, title, version,
+                                                         status, assignedAt, sessionId, completedAt,
+                                                         correctPct}]}   # newest-first; the only surface
+                                                        #   where an OPEN (never-started) assignment is
+                                                        #   visible on the student's page
 GET /staff/students/{profileId}/sessions ?limit=&cursor=&source=
                                                      -> {items:[{sessionId, source: bank|llm|homework|assigned,
                                                          startedAt, completedAt, abandoned, itemsTotal,

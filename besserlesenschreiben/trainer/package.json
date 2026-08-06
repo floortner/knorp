@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Internal staff portal for professional homework review — besserlesenschreiben (-review)",
+  "description": "Internal staff portal for professional homework review — besserlesenschreiben (-trainer)",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

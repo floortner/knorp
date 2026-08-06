@@ -12,12 +12,14 @@ import type {
   LectureAssignmentList,
   LectureDetail,
   LecturePage,
+  QueueItem,
   QueuePage,
   QueueProgress,
   ReviewSubmitBody,
   ReviewSubmitResponse,
   SessionSource,
   StaffMe,
+  StudentAssignmentList,
   StudentDetail,
   StudentPage,
   StudentSessionDetail,
@@ -27,8 +29,8 @@ import type {
 
 /**
  * Typed endpoint wrappers over the transport client for the STAFF realm (`../backend/SPEC.md §6`).
- * Request/response types come from `./contract` (provisional — regenerate via `npm run gen:api` once
- * the backend publishes `/staff/*`).
+ * Request/response types come from `./contract` — ergonomic aliases over the generated `api.gen.ts`
+ * (regenerate with `npm run gen:api` after any backend contract change; CI gates the drift).
  */
 
 export const staffAuthApi = {
@@ -59,6 +61,9 @@ export const reviewApi = {
     const qs = q.toString();
     return apiFetch<QueuePage>(`/staff/queue${qs ? `?${qs}` : ''}`);
   },
+
+  /** One review item by id — direct fetch for the /review and /history deep links (list is paged). */
+  item: (uploadId: string) => apiFetch<QueueItem>(`/staff/queue/${encodeURIComponent(uploadId)}`),
 
   /** Soft-lock an item so two trainers don't grade it twice (409 if already held). */
   claim: (uploadId: string) =>
@@ -99,6 +104,10 @@ export const studentsApi = {
   /** The learner-detail header — same progress payload ProgressPanel renders, plus identity. */
   detail: (profileId: string) =>
     apiFetch<StudentDetail>(`/staff/students/${encodeURIComponent(profileId)}`),
+
+  /** The student's assignments, newest-first — incl. OPEN ones the session timeline can't show. */
+  assignments: (profileId: string) =>
+    apiFetch<StudentAssignmentList>(`/staff/students/${encodeURIComponent(profileId)}/assignments`),
 
   /** Session history, newest-first; optional source filter (bank | llm | homework). */
   sessions: (profileId: string, params: { limit?: number; cursor?: string; source?: SessionSource } = {}) => {

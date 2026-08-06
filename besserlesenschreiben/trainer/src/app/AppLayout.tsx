@@ -41,7 +41,8 @@ export function AppLayout() {
                 <ClipboardCheck className="size-4" aria-hidden /> Chats
                 <NavBadge count={openRequests} />
               </NavLink>
-              {/* Teaching console (§H1): lecture authoring + assignment — ALL trainers. */}
+              {/* Teaching console (§H1/§I3): browse + assign the content library — ALL trainers.
+                  Lectures are authored in content/, never here (§H2 editor cancelled). */}
               <NavLink to="/lectures" className={navClass}>
                 <BookOpen className="size-4" aria-hidden /> Lektionen
               </NavLink>

@@ -170,6 +170,51 @@ export class LecturesService {
     };
   }
 
+  /**
+   * All assignments for ONE student, newest-first — the learner detail's "Zuweisungen" section. This
+   * is the only surface where an OPEN (never-started) assignment is visible on the student's page;
+   * the session timeline can only show played ones. Keyed by lecture (title + pinned version).
+   */
+  async studentAssignments(profileId: string) {
+    const profile = await this.prisma.profile.findUnique({ where: { id: profileId }, select: { id: true } });
+    if (!profile) throw new ApiException(404, 'NOT_FOUND', 'Profil nicht gefunden.');
+    const rows = await this.prisma.assignment.findMany({
+      where: { profileId },
+      orderBy: [{ assignedAt: 'desc' }, { id: 'desc' }],
+      include: {
+        lecture: { select: { id: true, title: true, version: true } },
+        session: { select: { id: true, source: true, itemIds: true, createdAt: true, completedAt: true } },
+      },
+    });
+    const attempts = await this.prisma.attempt.findMany({
+      where: { sessionId: { in: rows.flatMap((r) => (r.session ? [r.session.id] : [])) } },
+      select: { sessionId: true, itemId: true, isCorrect: true, timeMs: true },
+    });
+    const bySession = new Map<string, typeof attempts>();
+    for (const a of attempts) {
+      const list = bySession.get(a.sessionId) ?? [];
+      list.push(a);
+      bySession.set(a.sessionId, list);
+    }
+
+    return {
+      items: rows.map((r) => {
+        const rollup = r.session ? sessionRollup(r.session, bySession.get(r.session.id) ?? []) : null;
+        return {
+          assignmentId: r.id,
+          lectureId: r.lecture.id,
+          title: r.lecture.title,
+          version: r.lecture.version,
+          status: r.completedAt ? ('completed' as const) : r.sessionId ? ('started' as const) : ('open' as const),
+          assignedAt: r.assignedAt.toISOString(),
+          sessionId: r.sessionId,
+          completedAt: r.completedAt ? r.completedAt.toISOString() : null,
+          correctPct: rollup?.correctPct ?? null,
+        };
+      }),
+    };
+  }
+
   /** Withdraw an uncompleted assignment (trainer mistake-recovery); completed ones are immutable. */
   async withdraw(lectureId: string, assignmentId: string): Promise<{ ok: true }> {
     const lecture = await this.byId(lectureId);

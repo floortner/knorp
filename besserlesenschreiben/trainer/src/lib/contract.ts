@@ -37,7 +37,12 @@ export type AccountStatus = AdminUser['status'];
 /** Learner progress. Per account (admin only); per upload / per student (all trainers, with name). */
 export type UserProgress = ResponseOf<operations['StaffUsersController_accountProgress']>;
 export type QueueProgress = ResponseOf<operations['StaffController_queueProgress']>;
-export type ProfileProgress = UserProgress['profiles'][number];
+/**
+ * The progress payload ProgressPanel renders. Anchored to the ALL-TRAINER student-detail operation
+ * (not the admin one) on purpose: if the admin payload ever gains account fields, this type — and the
+ * panel shown to every trainer — must not silently widen with it.
+ */
+export type ProfileProgress = ResponseOf<operations['StaffStudentsController_detail']>;
 
 /** Learner directory + per-student activity (all trainers; ROADMAP §H1.3 + §H3.1). */
 export type StudentPage = ResponseOf<operations['StaffStudentsController_list']>;
@@ -48,9 +53,10 @@ export type StudentSession = StudentSessionPage['items'][number];
 export type SessionSource = StudentSession['source'];
 export type StudentSessionDetail = ResponseOf<operations['StaffStudentsController_session']>;
 export type StudentAttempt = StudentSessionDetail['attempts'][number];
+export type StudentAssignmentList = ResponseOf<operations['StaffStudentsController_assignments']>;
+export type StudentAssignment = StudentAssignmentList['items'][number];
 
-
-/** Staff-authored lectures + assignments (all trainers; ROADMAP §H1). */
+/** Content-library lectures + assignments (all trainers; ROADMAP §H1/§I3 — authored in content/, not here). */
 export type LecturePage = ResponseOf<operations['StaffLecturesController_list']>;
 export type LectureListItem = LecturePage['items'][number];
 export type LectureStatus = LectureListItem['status'];

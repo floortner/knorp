@@ -10,3 +10,12 @@ export function decisionLabel(decision: string): string {
   if (decision === 'rejected') return 'Abgelehnt';
   return 'Korrigiert';
 }
+
+/** Homework pipeline status → German label (raw enum values must never reach the UI). */
+export function statusLabel(status: string): string {
+  if (status === 'pending_analysis') return 'Wird analysiert';
+  if (status === 'pending_review') return 'Wartet auf Prüfung';
+  if (status === 'reviewed') return 'Geprüft';
+  if (status === 'rejected') return 'Abgelehnt';
+  return status;
+}

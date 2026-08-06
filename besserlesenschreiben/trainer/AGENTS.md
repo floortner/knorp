@@ -1,8 +1,8 @@
 # AGENTS.md — trainer portal (`-trainer`)
 
 Instructions for AI coding agents (Claude Code) working in this folder. Read this **first**, then
-`../ARCHITECTURE.md` (§1a + §11 especially), then `../backend/SPEC.md` §6 (staff routes) + §10. On any
-conflict, `../ARCHITECTURE.md` wins.
+`../ARCHITECTURE.md` (§1a + §11 especially), then `./SPEC.md` (this app's contract + acceptance
+checks), then `../backend/SPEC.md` §6 (staff routes) + §10. On any conflict, `../ARCHITECTURE.md` wins.
 
 ## What this is
 The **internal staff portal** — professional homework review plus the trainer's **learner directory and
@@ -78,9 +78,11 @@ job. Comfortable tap targets for tablet are welcome.
   lecture versions; results link into the session drill-down). Rows show `Version {n}` +
   Content-Bibliothek provenance. Keys: `['staff-lectures'…]` / `['staff-lecture', id]` /
   `['staff-lecture-assignments', id]`.
-- **Schüler** (all trainers, §H1.3/§H3): learner directory (`/students`) → per-student detail with the
-  progress header + day-grouped activity timeline (filter by source) → question-by-question session
-  drill-down (`/students/:profileId/sessions/:sessionId`).
+- **Schüler** (all trainers, §H1.3/§H3): learner directory (`/students`; ACTIVE family accounts only —
+  pending/deactivated students stay out of the directory and the assign picker) → per-student detail
+  with the progress header, the **Zuweisungen** list (incl. never-started OPEN assignments), and the
+  day-grouped activity timeline (filter by source; durations are `activeMs` engagement time, never wall
+  clock) → question-by-question session drill-down (`/students/:profileId/sessions/:sessionId`).
 - ADMIN surface: **Nutzer** (approve/deactivate/delete + per-student learner progress + email search).
 Identity note: the ADMIN user administration shows real parent emails by design; trainer surfaces never do.
 

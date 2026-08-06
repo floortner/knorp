@@ -1,23 +1,27 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { setApiHandlers } from '@/lib/api';
 
 /**
  * Wires the transport client's cross-cutting status handler to the router (ARCHITECTURE §5).
- * Rendered once inside the router. 401/SESSION_EXPIRED → go to /login once (the errored /staff/me
- * probe already flips auth state to anon, so no explicit logout call is needed).
+ * Rendered once inside the router. 401/SESSION_EXPIRED → clear auth AND go to /login once (AGENTS).
+ * Dropping the cached me-probe matters when the 401 came from another call: the probe's staleTime
+ * would otherwise keep the SPA "authenticated" with the cached identity for minutes.
  */
 export function ApiErrorBridge() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
   useEffect(() => {
     setApiHandlers({
       onUnauthorized: () => {
+        qc.removeQueries({ queryKey: ['staff-me'] });
         if (window.location.pathname !== '/login') navigate('/login', { replace: true });
       },
     });
     return () => setApiHandlers({});
-  }, [navigate]);
+  }, [navigate, qc]);
 
   return null;
 }

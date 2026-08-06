@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import type { HomeworkAnalysis, QueuePage } from '@/lib/contract';
 import { ApiError } from '@/lib/api';
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { AnalysisEditor } from './AnalysisEditor';
-import { useClaim, useQueueItem, useSubmitReview } from './useReview';
+import { useClaim, useReviewItem, useSubmitReview } from './useReview';
 
 /**
  * The review screen — two-pane LANDSCAPE (homework image | editable analysis), the core staff task
@@ -27,7 +27,7 @@ export function ReviewScreen() {
 function ReviewItem({ uploadId }: { uploadId: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { data: item, isPending, isError } = useQueueItem(uploadId);
+  const { data: item, isPending, isError } = useReviewItem(uploadId);
   const claim = useClaim();
   const submit = useSubmitReview(uploadId);
   const [draft, setDraft] = useState<HomeworkAnalysis | null>(null);
@@ -39,9 +39,10 @@ function ReviewItem({ uploadId }: { uploadId: string }) {
   // Another trainer holds a live lease (claim 409) → read-only: no edits, no verdict from here.
   const claimConflict = claim.error instanceof ApiError && claim.error.status === 409;
 
-  // Claim the item + seed the editable draft once the item is known.
+  // Claim the item + seed the editable draft once the item is known. The direct fetch also returns
+  // DECIDED items (history) — never claim those; the render below routes them to the read-only detail.
   useEffect(() => {
-    if (item && draft === null) {
+    if (item && item.decision === null && draft === null) {
       setDraft(structuredClone(item.llmAnalysis));
       claim.mutate(uploadId);
     }
@@ -84,11 +85,27 @@ function ReviewItem({ uploadId }: { uploadId: string }) {
       </div>
     );
   }
+  // Deep link to an already-decided item: not reviewable — hand over to the read-only detail.
+  if (item.decision !== null) {
+    return (
+      <div className="py-16 text-center text-ink-soft">
+        <p>Diese Hausübung wurde bereits geprüft.</p>
+        <Link
+          to={`/history/${encodeURIComponent(item.uploadId)}`}
+          className="mt-2 inline-block text-teal-dark hover:underline"
+        >
+          Zur erledigten Anfrage
+        </Link>
+      </div>
+    );
+  }
 
   /** After a verdict, jump straight to the next pickable open item (queue-tool flow); else the queue. */
   function goNext() {
-    const page = qc.getQueryData<QueuePage>(['staff-queue', 'open']);
-    const next = page?.items.find((i) => i.uploadId !== uploadId && !i.claimed);
+    const cached = qc.getQueryData<InfiniteData<QueuePage>>(['staff-queue', 'list', 'open']);
+    const next = cached?.pages
+      .flatMap((p) => p.items)
+      .find((i) => i.uploadId !== uploadId && !i.claimed && i.decision === null);
     navigate(next ? `/review/${encodeURIComponent(next.uploadId)}` : '/queue', { replace: true });
   }
 
@@ -120,7 +137,11 @@ function ReviewItem({ uploadId }: { uploadId: string }) {
       </Link>
 
       <div className="mb-3 flex flex-wrap items-baseline gap-x-3">
-        <h1 className="text-lg font-semibold text-ink">{item.name}</h1>
+        <h1 className="text-lg font-semibold text-ink">
+          <Link to={`/students/${encodeURIComponent(item.profileId)}`} className="hover:underline">
+            {item.name}
+          </Link>
+        </h1>
         <span className="text-sm text-ink-soft">{item.gradeBand}</span>
         {claimConflict && (
           <span className="rounded bg-amber-tint px-2 py-0.5 text-xs font-medium text-amber">

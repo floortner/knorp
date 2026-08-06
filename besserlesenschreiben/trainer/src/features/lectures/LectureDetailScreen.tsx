@@ -9,7 +9,7 @@ import { FilterChips } from '@/components/ui/filter-chips';
 import type { AssignmentStatus, LectureAssignment } from '@/lib/contract';
 import { useLecture, useLectureAssignments, useLectureMutations } from './useLectures';
 import { AssignDialog } from './AssignDialog';
-import { ASSIGNMENT_LABEL, STATUS_LABEL } from './labels';
+import { ASSIGNMENT_LABEL, ASSIGNMENT_TONE, STATUS_LABEL } from './labels';
 
 type AssignmentFilter = AssignmentStatus | 'all';
 
@@ -19,12 +19,6 @@ const FILTERS: { value: AssignmentFilter; label: string }[] = [
   { value: 'started', label: 'Begonnen' },
   { value: 'completed', label: 'Erledigt' },
 ];
-
-const STATUS_TONE: Record<AssignmentStatus, string> = {
-  open: 'bg-black/[0.04] text-ink-soft',
-  started: 'bg-teal-tint text-teal-dark',
-  completed: 'bg-good-tint text-good',
-};
 
 /**
  * One lecture from the content library (ROADMAP §H1/§I3): the Merksatz + items read-only (exactly
@@ -171,7 +165,7 @@ function AssignmentRow({
             ` · ${a.itemsAnswered}/${a.itemsTotal} Aufgaben${a.correctPct !== null ? ` · ${a.correctPct}% richtig` : ''}`}
         </p>
       </div>
-      <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold', STATUS_TONE[a.status])}>
+      <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold', ASSIGNMENT_TONE[a.status])}>
         {ASSIGNMENT_LABEL[a.status]}
       </span>
       {a.status === 'completed' && a.sessionId ? (

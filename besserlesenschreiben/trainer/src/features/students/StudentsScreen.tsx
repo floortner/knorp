@@ -30,6 +30,9 @@ export function StudentsScreen() {
         </div>
       ) : (
         <>
+          <p className="mb-2 text-sm text-ink-soft">
+            {data?.pages[0]?.total ?? students.length} Schüler
+          </p>
           <ul className="divide-y divide-line overflow-hidden rounded-card bg-surface shadow-sm ring-1 ring-line">
             {students.map((s) => (
               <li key={s.profileId}>
@@ -78,7 +81,12 @@ function StudentRow({ student }: { student: StudentListItem }) {
       </div>
       <div className="hidden shrink-0 text-right text-xs text-ink-soft sm:block">
         <p>Zuletzt aktiv {deDate(student.lastActive)}</p>
-        <p>Sitzungen (7 T.): {student.sessions7d}</p>
+        <p>
+          Sitzungen: {student.sessions7d} (7 T.) · {student.sessions30d} (30 T.)
+        </p>
+        <p>
+          Serie {student.streakDays} {student.streakDays === 1 ? 'Tag' : 'Tage'} · {student.totalAttempts} Aufgaben
+        </p>
       </div>
       <ArrowRight className="size-4 shrink-0 text-ink-soft" aria-hidden />
     </Link>

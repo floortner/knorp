@@ -49,6 +49,7 @@ jobs:
           cache-dependency-path: besserlesenschreiben/frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npx tsc -b
       - run: npm run build
       - run: npm test
       # Contract gate: the committed generated types must match the committed OpenAPI.
@@ -71,6 +72,7 @@ jobs:
           cache-dependency-path: besserlesenschreiben/trainer/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npx tsc -b
       - run: npm run build
       - run: npm test
       # Contract gate: the committed generated types must match the committed OpenAPI (/staff/* shipped).
