@@ -5,7 +5,8 @@ pro Lektion in `lectures/`. Was hier auf dem `main`-Branch liegt, wird beim näc
 automatisch in die App übernommen. Die Trainerinnen und Trainer weisen die Lektionen im
 Trainer-Portal einzelnen Schülern zu — geschrieben werden sie hier.
 
-Daneben liegt `linguist-contrib/`: der **Austauschordner mit dem Linguistik-Team**. Jede Lieferung
+Daneben liegt `linguist-contrib/`: der **Austauschordner zwischen der Inhalts-Seite (Angelika) und
+Engineering**. Jede Lieferung
 bekommt einen eigenen Unterordner (`iteration-1/` = der Developer-Handoff `lernapp3-opus.md` mit den
 `BLS_*.html`-Kapitelplänen, die nächste Lieferung dann `iteration-2/` usw.); Engineerings
 Rückmeldungen (`RUECKMELDUNG-ENGINEERING.md`) und erwartete Antworten wie `fertigkeiten.md` liegen
@@ -14,12 +15,15 @@ was als Lektionsdatei in `lectures/` liegt.
 
 ## Eine Lektion anlegen
 
-1. Kopiere die Vorlage `lectures/_vorlage.md` zu `lectures/<name>.md`.
+1. Der einfachste Weg: in Claude Code den Befehl `/neue-lektion` verwenden — Claude kopiert die
+   Vorlage `lectures/_vorlage.md`, füllt das Frontmatter aus und prüft. (Von Hand geht es genauso:
+   die Vorlage zu `lectures/<name>.md` kopieren.)
 2. Der **Dateiname ist der dauerhafte Name (Slug)** der Lektion: nur Kleinbuchstaben `a–z`,
    Ziffern und Bindestriche, z. B. `dehnungs-h-entdecken.md`. **Nachträglich nicht umbenennen** —
    der Name verbindet die Lektion mit der Lernstatistik der Schüler.
 3. Fülle den `---`-Block (das „Frontmatter") aus — Referenz siehe unten.
-4. Erstelle einen Pull Request (oder bearbeite direkt auf GitHub). Die automatische Prüfung
+4. Gib die Änderung mit `/abgeben` als Pull Request ab (Branch `content/<kurzbeschreibung>`,
+   deutsche Beschreibung — nie direkt auf `main`). Die automatische Prüfung
    („CI") kontrolliert jede Datei und meldet Fehler auf Deutsch direkt am PR.
 5. Nach dem Merge ist die Lektion beim nächsten Deploy in der App.
 

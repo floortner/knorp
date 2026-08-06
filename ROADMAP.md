@@ -12,10 +12,12 @@ Everything through the beta deployment is **done and live** (HISTORY.md): backen
 trainer portal on real HTTPS domains, €50/mo all-in budget, full ★ AI enabled with beta caps. The
 teaching console (§H1/§H3) and the content pipeline (§I) shipped 2026-07-25/26.
 
-**Now:** the linguists own the critical path. Their §F export landed 2026-07-27
+**Now:** the content side owns the critical path. The §F export landed 2026-07-27
 (`content/linguist-contrib/iteration-1/`); engineering's Rückmeldung went back
-(`content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`) — **next move is theirs**, above all the
-skill-tag taxonomy (see §F).
+(`content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`). Since 2026-08-06 the content side is
+**one linguist — Angelika — authoring in-repo via Claude Code** (HISTORY.md pivot log): the open
+answers, above all the skill-tag taxonomy, are expected to be drafted in her Claude sessions with
+her pedagogical sign-off (see §F).
 
 **Then, in rough order:** §F implementation as the answers land (word-list schema → taxonomy →
 training types → sequence → lecture prompt) · **D5/D6** (badges, weekly parent email) once real
@@ -89,7 +91,7 @@ D1–D4 + D7 shipped (HISTORY.md §D).
 training types (replacing the single `placeholder` scaffold), a unit/sequence catalogue, and the
 LLM lecture-generation prompt — on top of the skeleton kept from the Vokaltraining program (auth,
 homework review, chat, staff portal, AWS deploy, telemetry, FSRS, the contract pipeline). The
-linguists' material lands as **markdown files in `content/`** (§I): contract-touching steps (2, 3,
+linguist's material lands as **markdown files in `content/`** (§I): contract-touching steps (2, 3,
 6) are unchanged; content/curation steps (4, 5, 7) should be read through the §I lens — unit/bank
 content may also live in the content library (open design question), and a staff curation surface
 is likely never needed.
@@ -102,9 +104,10 @@ is likely never needed.
 > SortIntoBuckets/DragAndOrder/PairMatching/CatchFalling), keeps the app brand + Nepo/Stella buddy
 > choice, ignores the export's own SQL model, and contains a capacity model (built prototypes ≈ 1/3
 > of a 6–9-month training run, full export ≈ 2/3) plus a **generator proposal** (annotated word
-> pool × type templates) to close the rest. **Blocked on the linguists' answers** — above all the
-> skill-tag taxonomy (expected as `content/linguist-contrib/fertigkeiten.md`; deliberately NOT
-> drafted by engineering), plus item material for the "zu bauen" exercises, the per-item
+> pool × type templates) to close the rest. **Blocked on the content side's answers** — above all
+> the skill-tag taxonomy (expected as `content/linguist-contrib/fertigkeiten.md`; under the
+> 2026-08-06 solo model drafted in-repo in Angelika's Claude sessions — engineering still must not
+> substitute for her pedagogical sign-off), plus item material for the "zu bauen" exercises, the per-item
 > wrong-feedback fields, Kugel/☆ artwork, and the fate of Kapitel 2–6 / custom one-offs.
 
 > **Re-creation reference.** The complete working Vokaltraining implementation (the `Lexeme` model,
@@ -123,10 +126,10 @@ roll-up; the `LlmService` forced-tool/Zod-revalidate path — all keyed on *opaq
 **Sequence** (each step ends green — drift gates + golden tests catch mistakes):
 1. **Word-list schema.** Re-add a `Lexeme`-equivalent model (migration). Which linguistic facts to
    keep vs. FRESCH-specific columns; re-derive the base list fresh vs. restore the corpus
-   extraction. **Proposed direction (Rückmeldung, pending linguist reaction): the generator
+   extraction. **Proposed direction (Rückmeldung, pending Angelika's reaction): the generator
    approach** — an LLM-annotated ~1,000-word pool, cross-checked by the rules that are already
-   algorithms (the Dehnungs-h decision tree), disagreements routed to trainer review; linguists
-   sign off the annotation schema + spot-check rather than authoring items.
+   algorithms (the Dehnungs-h decision tree), disagreements routed to trainer review; Angelika
+   signs off the annotation schema + spot-checks rather than authoring items.
 2. **Skill-tag taxonomy** (`src/contract/skills.ts`) — replace `SKILL_TAGS = ['placeholder']`.
    This is the **spine**: FSRS scheduling, digest roll-up, LLM targeting. Arrives as
    `content/linguist-contrib/fertigkeiten.md` (two tables: Kennung/description/chapter +
@@ -137,7 +140,7 @@ roll-up; the `LlmService` forced-tool/Zod-revalidate path — all keyed on *opaq
 4. **Sequence** (`sessions/units.catalog.ts`) — populate `UNIT_CATALOG` (currently `[]`) +
    per-unit Merksätze + theme colors. Mirror in `frontend/fixtures/units.example.json`.
 5. **Content ingest.** Port the built prototype exercises from `iteration-1/` into `content/`
-   lectures (engineering ports, linguists review by PR); new items authored by the linguists in
+   lectures (engineering ports, Angelika reviews by PR); new items authored by Angelika in
    the extended format. If the generator direction is confirmed, restore/rewrite
    `gen-items-from-lexemes.ts` against the annotated pool.
 6. **Lecture-generation prompt** (`sessions.service.ts` `LLM_SYSTEM`/`FEW_SHOT`) — rewrite
@@ -148,7 +151,7 @@ roll-up; the `LlmService` forced-tool/Zod-revalidate path — all keyed on *opaq
 
 **Cross-cutting §F design notes:** the content schema should carry a **printable** notion before
 audio-dependent types land (§H4 depends on it); per-item feedback fields
-(`feedbackRichtig`/`feedbackFalsch`/`vorgeloest`) join the frontmatter schema pending linguist
+(`feedbackRichtig`/`feedbackFalsch`/`vorgeloest`) join the frontmatter schema pending Angelika's
 confirmation.
 
 **Docs to re-true when this lands:** `backend/SPEC.md` §2/§3/§8, `frontend/SPEC.md` §3, both
@@ -220,14 +223,16 @@ even though §I built exactly the durable anchors for it. §J adds the content-i
 channel back to the authors.
 
 **Why now-ish:** at the target scale (≈10+ exercise types × ≈200 lectures × generated lectures ×
-detailed telemetry), content improvement cannot run on trainer anecdotes. The linguists' only
+detailed telemetry), content improvement cannot run on trainer anecdotes. The content author's only
 feedback today is CI validation — whether a file is well-formed, never how it performs.
 
-**Channel decision (settled 2026-07-27): one shared analytics read model, two consumers.**
-Trainers get a portal screen (they're in the staff realm anyway); the linguists get an **anonymized
-aggregate report exported into the repo** — they stay outside both auth realms (not under the staff
-DPA), and the repo is already their interface: the deploy pipeline is their write API, the §J4
-report becomes their read API.
+**Channel decision (settled 2026-07-27; re-weigh J4's priority at build time): one shared analytics
+read model, two consumers.** Trainers get a portal screen (J3); the content-authoring role gets an
+**anonymized aggregate report exported into the repo** (J4) — repo access sits outside the staff
+DPA, and the repo is already the authoring interface: the deploy pipeline is the write API, the §J4
+report the read API. Note (2026-08-06): Angelika, the one current author, is also a trainer and can
+read J3 directly — J4 is therefore less urgent than when it was the authors' only channel, but its
+privacy rule is unchanged (authoring must never require staff access; ARCHITECTURE §1a).
 
 **J1 — digest hardening (build when §F's taxonomy lands; independent of J2–J4):** the digest is
 the main prompt-size risk under a real taxonomy — its attempt fetch is uncapped (14-day window, no
@@ -253,8 +258,9 @@ list. German copy, lucide icons only, no emoji.
 generated report in the repo (proposed `content/stats.md`; committed via PR or published as a CI
 artifact — decide at build time). **Privacy rule (hard): content-indexed aggregates only** —
 counts, percentages, average times per lecture/exercise/type — with the J2 minimum-N floor; never
-a student name, profileId, or any per-student row. Linguists are outside the staff DPA; this report
-must stay safe to read by anyone with repo access.
+a student name, profileId, or any per-student row. Repo access sits outside the staff DPA; this
+report must stay safe to read by anyone with repo access (the rule holds even though the current
+author is also a trainer — see the channel note above).
 
 **J5 — telemetry v2 (small additive capture improvements; each lands with its natural trigger):**
 1. **Robust `time_ms` (build anytime — a correctness fix, not a feature):** the timer runs from

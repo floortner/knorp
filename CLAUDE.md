@@ -83,9 +83,10 @@ Real user journeys over family frontend + backend, deterministic and offline: `A
 **CI (`.github/workflows/ci.yml`):** per-project jobs run `lint · typecheck · test · build` plus the **contract-drift gates** — `npm run openapi:export` then `git diff --exit-code openapi.json` (backend), and `npm run gen:api` then `git diff --exit-code api.gen.ts` (frontend/trainer). Regenerate and commit these whenever a Zod contract changes or CI fails red.
 
 Other root dirs: `content/` — the **lecture content library** (ROADMAP §I): one markdown+YAML-frontmatter
-file per lecture in `content/lectures/`, authored by the linguist group via GitHub PRs, single source of truth
+file per lecture in `content/lectures/`, authored by our linguist Angelika in-repo via Claude Code
+(PR-gated — see "Content-only sessions" above), single source of truth
 for all lectures (`content/README.md` is the German authoring guide; validated by the CI `content` job).
-`content/linguist-contrib/` is the exchange folder with the linguist team — deliveries grouped per iteration
+`content/linguist-contrib/` is the exchange folder between the content side and engineering — deliveries grouped per iteration
 (`iteration-1/` = the §F developer handoff `lernapp3-opus.md` + `BLS_*.html` chapter plans), with engineering's
 Rückmeldungen and expected answers (e.g. `fertigkeiten.md`) at the folder root; **never imported into the app**
 (the importer reads only `content/lectures/`);
@@ -139,8 +140,10 @@ Homework photos are uploaded by the family but validated by an **internal staff 
 ### Build status & roadmap
 The forward plan lives in the repo-root **`ROADMAP.md`**; shipped detail + the **pivot log** in
 **`HISTORY.md`**. In short: the app is **live** on real HTTPS domains (beta, €50/mo budget); **next** is
-**§F** — the content-set rebuild, externally driven by the linguists (their export + engineering's
-Rückmeldung are in `content/linguist-contrib/`; blocked on their answers, above all the skill taxonomy) —
+**§F** — the content-set rebuild, driven by the content side (the iteration-1 export + engineering's
+Rückmeldung are in `content/linguist-contrib/`; blocked on the open answers, above all the skill
+taxonomy — since 2026-08-06 expected to be drafted in-repo in Angelika's Claude sessions with her
+sign-off) —
 **then** D5/D6 (badges, weekly parent email). **Product decision — the app is FREE, including the AI
 features; access is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred**
 and not built: no entitlement/credits/`402` anywhere, no billing tables; `★` means "AI-backed /

@@ -61,13 +61,18 @@ and the JWTs carry a different `aud`/role so a guard can never confuse them.
 - The trainer's verdict is **authoritative** and **replaces the parent-confirm step** for homework
   (§10). Review is **asynchronous**: it never blocks a student mid-lesson; it shapes the *next* generated
   lecture.
-- **A third authoring population exists OUTSIDE both auth realms (2026-07-26, ROADMAP §I): the
-  linguists.** They author all lecture content as markdown files in the repo's `content/` directory via
-  GitHub (web editor / PRs) — the **deploy pipeline is their "write API"** (CI validation → merge →
-  versioned import, §7). They hold no app credential in either realm and never see student data; the
-  trainer portal consumes their lectures read-only (browse + assign + outcomes — it does not author).
-  Their **read channel** is the planned anonymized content-stats report exported into the repo
-  (§12, ROADMAP §J4) — content-indexed aggregates only, never per-student data.
+- **Content authoring is a third ROLE, not a realm (2026-07-26 ROADMAP §I; solo model 2026-08-06,
+  HISTORY.md pivot log).** All lecture content is authored as markdown files in the repo's `content/`
+  directory — currently by our one linguist, **Angelika** (non-technical), working in-repo via
+  Claude Code sessions under `content/CLAUDE.md` (`/neue-lektion`, `/abgeben`) — and the **deploy
+  pipeline is the role's "write API"** (PR → CI validation → merge → versioned import, §7). The
+  authoring path requires **no app credential in either realm** and must never depend on staff
+  access. (Angelika *additionally* holds a trainer account — as a trainer she sees student data
+  under the known-trainer model above; the authoring role itself never does.) The trainer portal
+  consumes the lectures read-only (browse + assign + outcomes — it does not author). The authoring
+  role's **read channel** is the planned anonymized content-stats report exported into the repo
+  (§12, ROADMAP §J4) — content-indexed aggregates only, never per-student data, because repo access
+  sits outside the staff DPA.
 
 ### 1b. Family access = approval, not payment
 
@@ -590,8 +595,8 @@ homework photo's LLM analysis is **never** applied on its own. A vetted **intern
 former parent-confirm step. The flow is **asynchronous** — the student is never blocked.
 
 **Teaching-console extension (§H/§I):** the portal is not review-only — and it does not author either.
-Lectures (Merksatz + solvability-gated exercises) are written by the **linguists** as markdown in the
-repo's `content/` directory and
+Lectures (Merksatz + solvability-gated exercises) are written by the **linguist (Angelika)** as
+markdown in the repo's `content/` directory (Claude Code sessions → PRs, §1a) and
 imported versioned at deploy (§I2, `item_bank` rows with `generated_by='content'`). Trainers **browse**
 the library and **assign** lectures to specific students; the assignment pins the lecture version it
 was created against and appears on `/lernen` as a personal offer ("Übung von {Trainer}", never a
@@ -678,9 +683,10 @@ rows) — precisely so telemetry can answer *"which lecture/exercise underperfor
 and did v2 beat v1?"*. §J builds one shared content-analytics read model (per item lineage /
 exercise type / slug / version: attempts, first-try correct %, avg time, retry + abandon rates, with
 a **minimum-N floor** baked in) and two consumers: a trainer-portal „Content-Qualität" screen, and
-an **anonymized stats report exported into the repo** for the linguists — who sit outside both auth
-realms (§1a) and must only ever see content-indexed aggregates, never a name, profileId, or
-per-student row.
+an **anonymized stats report exported into the repo** for the content-authoring role (§1a). Repo
+access sits outside the staff DPA, so the report may only ever contain content-indexed aggregates —
+never a name, profileId, or per-student row. (Angelika, also a trainer, can additionally read the
+portal screen; the repo report is the authoring-role channel and must stay safe on its own.)
 
 **Scaling invariants (hold these as types/lectures/telemetry grow):**
 - **Two durable keys, nothing else.** Skill tags (`contract/skills.ts`, guarded by
