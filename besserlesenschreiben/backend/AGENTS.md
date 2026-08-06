@@ -8,7 +8,7 @@ The API service for an adaptive German literacy tutor for students (ages 8-14). 
 Pure HTTP/JSON service — it serves no HTML. The frontend (`../frontend`) is the only client.
 
 ## Stack (pinned lines — see ARCHITECTURE §2 for the table)
-Node 24 LTS · TypeScript 5.x · NestJS 11 (Fastify adapter) · Zod 4 (+ `nestjs-zod`) · `@nestjs/swagger` ·
+Node 24 LTS · TypeScript 5.x · NestJS 11 (Fastify adapter) · Zod 4 (local `ZodDto`, no `nestjs-zod`) · `@nestjs/swagger` ·
 Prisma 7 (+ `@prisma/adapter-pg`, Prisma Migrate) · PostgreSQL 17 · `@aws-sdk/client-s3` +
 `@aws-sdk/s3-request-presigner` · `@anthropic-ai/sdk` · `ts-fsrs` · `nestjs-pino` · Vitest.
 Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleFormat = "cjs"` for NestJS.
@@ -41,8 +41,9 @@ in-memory security state. Follow them as written there. Backend-specific:
 - **Controllers handle HTTP only.** Per-resource folders under `modules/` hold a controller + service + Zod DTOs.
   Heavy domain logic (session generation, fsrs, digest, vision) lives in `services/` as **plain injectables
   with no HTTP/controller concerns** (the dtctl transport-purity lesson).
-- **Validation = Zod** via `nestjs-zod` (`createZodDto`); the same Zod schemas drive Claude structured output
-  (`zodOutputFormat` + `messages.parse`) so the digest/homework JSON stays typed end-to-end.
+- **Validation = Zod** via the local `ZodDto` factory (`src/common/zod-dto.ts`; `nestjs-zod` was replaced —
+  its `@nest-zod/z` breaks under Zod 4). The same Zod schemas drive Claude structured output (a forced tool
+  over the Zod-derived JSON Schema, re-validated + one re-ask) so the digest/homework JSON stays typed end-to-end.
 - Session generation: **the database decides *what* to drill (deterministic, free); the LLM only generates new
   content + conversation** (SPEC §8). Most sessions must make zero LLM calls.
 - Homework analysis must **not** mutate the learning profile before a **staff trainer** approves. Vision writes

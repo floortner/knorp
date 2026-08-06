@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { randomUUID } from 'node:crypto';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -10,8 +11,8 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 // NOTE: we validate with a minimal local ZodDto + ZodValidationPipe instead of nestjs-zod (whose
 // @nest-zod/z installs a global Zod-3 error map that crashes under Zod 4 — see src/common/zod-dto.ts).
-// Trade-off: request/response bodies currently render as bare schemas in OpenAPI. Add per-DTO schema
-// metadata (or a Zod↔OpenAPI bridge) before the frontend generates its types from the spec.
+// The Zod↔OpenAPI bridge lives in src/common/zod-openapi.ts (ApiZodBody/ApiZodResponse): it puts the
+// real schemas into openapi.json, which both SPAs generate their types from (CI drift-gates it).
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -19,7 +20,10 @@ async function bootstrap(): Promise<void> {
     // trustProxy: in prod the app sits behind nginx (TLS termination) — derive the client IP from
     // X-Forwarded-For so per-IP rate limiting sees the real caller, not 127.0.0.1 (which would hand every
     // request the loopback exemption below). Harmless in dev/e2e: no XFF header → req.ip stays the socket IP.
-    new FastifyAdapter({ trustProxy: true }),
+    // Request ids: Fastify's default is a per-process counter (req-1, req-2 — repeats after every restart)
+    // and it honours a client-supplied `request-id` header. Support correlation needs opaque, unique,
+    // server-minted ids (ARCHITECTURE §5) — so mint a UUID and ignore the client header.
+    new FastifyAdapter({ trustProxy: true, genReqId: () => randomUUID(), requestIdHeader: false }),
     // Disable Nest's built-in JSON body parser so we can register one that tolerates an empty body
     // (see below); multipart is registered separately via @fastify/multipart.
     { bufferLogs: true, bodyParser: false },
@@ -46,9 +50,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new AllExceptionsFilter());
   // CORS (ARCHITECTURE §4): production allows ONLY the configured origins — credentialed CORS must never
   // reflect arbitrary origins. Dev/test stay permissive so localhost ports work without ceremony.
-  // REVIEWER_ORIGIN is the deprecated pre-rename alias of TRAINER_ORIGIN — drop it once the infra
-  // apply that writes TRAINER_ORIGIN has run everywhere.
-  const allowedOrigins = [process.env.WEB_ORIGIN, process.env.TRAINER_ORIGIN, process.env.REVIEWER_ORIGIN]
+  const allowedOrigins = [process.env.WEB_ORIGIN, process.env.TRAINER_ORIGIN]
     .flatMap((v) => (v ?? '').split(','))
     .map((s) => s.trim())
     .filter(Boolean);

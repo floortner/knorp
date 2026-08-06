@@ -4,7 +4,7 @@ import type { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertProfileOwned } from '../../common/ownership';
 import { ApiException } from '../../common/exceptions/api-exception';
-import { startOfAppDay } from '../../common/dates';
+import { secondsUntilNextAppDay, startOfAppDay } from '../../common/dates';
 import { LlmService } from '../../services/llm/llm.service';
 import type { LlmMessage } from '../../services/llm/llm.types';
 import { StorageService } from '../../services/storage/storage.service';
@@ -152,6 +152,8 @@ export class ChatService {
         429,
         'RATE_LIMITED',
         'Angelika braucht jetzt eine kleine Pause. Morgen könnt ihr weiterschreiben!',
+        undefined,
+        secondsUntilNextAppDay(new Date()),
       );
     }
 

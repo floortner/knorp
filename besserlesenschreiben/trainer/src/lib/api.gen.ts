@@ -212,22 +212,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/digest/{profileId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["DigestController_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/attempts": {
         parameters: {
             query?: never;
@@ -733,7 +717,14 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "ok";
+                        version: string;
+                        commit: string;
+                    };
+                };
             };
         };
     };
@@ -1138,27 +1129,6 @@ export interface operations {
                             starsToNext: number;
                         };
                         allUnitsComplete: boolean;
-                    };
-                };
-            };
-        };
-    };
-    DigestController_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        markdown: string;
                     };
                 };
             };

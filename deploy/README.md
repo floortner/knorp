@@ -22,14 +22,12 @@ These run on the beta EC2 box (provisioned by `../infra`). The GitHub Actions `a
 - Real secrets set in SSM (`infra/README.md` step 2); SES production access + verified domain (Terraform-managed DKIM).
 
 ## Backups (once)
-`release.sh` already installs the root-owned backup script (`/usr/local/sbin/blsb-backup.sh`) and the
-`blsb-backup.{service,timer}` units on every deploy — you only supply the config and enable the timer:
+`release.sh` installs the root-owned backup script (`/usr/local/sbin/blsb-backup.sh`) and the
+`blsb-backup.{service,timer}` units on every deploy, and **auto-enables the timer as soon as
+`/etc/blsb/backup.env` exists** (until then every deploy warns). `age` and `rclone` are installed by
+cloud-init at provision time (a box provisioned before that: run the two installs from
+`infra/cloud-init.sh.tftpl` by hand). You only supply the config:
 ```bash
-# age (static arm64 binary) and rclone
-curl -fsSL https://github.com/FiloSottile/age/releases/latest/download/age-*-linux-arm64.tar.gz | tar xz
-sudo install age/age age/age-keygen /usr/local/bin/
-curl -fsSL https://rclone.org/install.sh | sudo bash
-
 # generate the keypair OFF the box; put ONLY the public recipient on the box
 age-keygen -o backup-key.txt          # keep this private key off-platform!
 sudo tee /etc/blsb/backup.env >/dev/null <<'EOF'
@@ -41,7 +39,8 @@ EOF
 sudo chmod 600 /etc/blsb/backup.env
 rclone config                         # add the "r2" (or b2) remote
 
-sudo systemctl daemon-reload && sudo systemctl enable --now blsb-backup.timer
+# The next deploy enables the timer automatically; to start immediately:
+sudo systemctl enable --now blsb-backup.timer
 sudo systemctl start blsb-backup.service   # test run
 ```
 **Make the backups survive an incident (security review P2-7):** use a **write-only** rclone token

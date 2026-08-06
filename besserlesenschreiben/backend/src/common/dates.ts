@@ -53,6 +53,15 @@ export function daysAgo(now: Date, n: number): Date {
   return new Date(now.getTime() - n * DAY_MS);
 }
 
+/**
+ * Seconds from `now` until the next APP_TZ midnight — the Retry-After for the daily ★ caps.
+ * (+1h before re-flooring absorbs DST-length days: 23h/25h days both land inside the next day.)
+ */
+export function secondsUntilNextAppDay(now: Date): number {
+  const next = startOfAppDay(new Date(startOfAppDay(now).getTime() + DAY_MS + 60 * 60 * 1000));
+  return Math.max(1, Math.ceil((next.getTime() - now.getTime()) / 1000));
+}
+
 /** Whole civil-day difference `b − a` in APP_TZ (e.g. yesterday→today = 1); DST-safe. */
 export function appDayDiff(a: Date, b: Date): number {
   const pa = appParts(a);

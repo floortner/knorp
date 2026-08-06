@@ -1,17 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { exerciseSchema, solvableExerciseSchema, EXERCISE_TYPES } from './exercise';
 import { unitSchema } from './models';
 
 /**
- * Drift gate: the golden frontend fixtures must satisfy the backend contract schemas that publish the
+ * Drift gate: the golden fixtures must satisfy the backend contract schemas that publish the
  * OpenAPI. If the contract and the fixtures diverge, this fails before the frontend types do.
+ *
+ * The backend owns its OWN committed copy (backend/fixtures/) so it stays independently buildable
+ * after the repo split (CLAUDE.md); while the monorepo lasts, a second gate below pins the frontend's
+ * copies byte-identical so the two projects test against the same goldens.
  *
  * The item_bank.seed.json solvability gate was dropped along with the seed content itself — re-add once
  * new content is seeded.
  */
-const fixtures = join(__dirname, '..', '..', '..', 'frontend', 'fixtures');
+const fixtures = join(__dirname, '..', '..', 'fixtures');
+const frontendFixtures = join(__dirname, '..', '..', '..', 'frontend', 'fixtures');
+const FIXTURE_NAMES = ['session.example.json', 'session-assigned.example.json', 'units.example.json'];
 
 function load(name: string): Record<string, unknown> {
   return JSON.parse(readFileSync(join(fixtures, name), 'utf-8')) as Record<string, unknown>;
@@ -63,6 +69,16 @@ describe('contract ↔ golden fixtures', () => {
       if (!parsed.success) {
         throw new Error(`unit: ${parsed.error.message}`);
       }
+    }
+  });
+
+  // Monorepo-only: both projects must test against the SAME goldens. Skipped automatically once the
+  // repo split removes the sibling checkout (the backend copy then stands alone).
+  it.skipIf(!existsSync(frontendFixtures))('backend and frontend fixture copies are byte-identical', () => {
+    for (const name of FIXTURE_NAMES) {
+      expect(readFileSync(join(fixtures, name), 'utf-8'), name).toBe(
+        readFileSync(join(frontendFixtures, name), 'utf-8'),
+      );
     }
   });
 });

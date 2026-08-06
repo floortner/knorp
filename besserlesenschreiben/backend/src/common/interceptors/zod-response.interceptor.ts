@@ -8,7 +8,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { map, type Observable } from 'rxjs';
-import type { ZodType } from 'zod';
+import { ZodObject, type ZodType } from 'zod';
 import { ZOD_RESPONSE_KEY } from '../zod-openapi';
 import type { Env } from '../../config/env';
 
@@ -18,7 +18,8 @@ import type { Env } from '../../config/env';
  *
  * Validation runs on the JSON-roundtripped body (Dates → ISO strings) to match the real wire shape,
  * and returns the parsed value (unknown keys stripped → wire == contract). On a mismatch: throw in
- * non-prod (fail loud in dev/CI), log + pass the body through in prod (never break a live response).
+ * non-prod (fail loud in dev/CI); in prod log AND strip to the schema's declared top-level keys —
+ * never break a live response, but never ship undeclared fields either (CLAUDE.md "logs+strips").
  */
 @Injectable()
 export class ZodResponseInterceptor implements NestInterceptor {
@@ -47,7 +48,16 @@ export class ZodResponseInterceptor implements NestInterceptor {
           'response failed its published contract',
         );
         if (strict) throw new Error('Response contract mismatch');
-        return body; // prod: log but don't break the live response
+        // prod: don't break the live response — but don't pass undeclared fields through either.
+        // Best effort: an object contract keeps only its declared top-level keys; anything else
+        // (array/scalar contracts) passes through as-is.
+        if (schema instanceof ZodObject && wire !== null && typeof wire === 'object' && !Array.isArray(wire)) {
+          const known = new Set(Object.keys(schema.shape));
+          return Object.fromEntries(
+            Object.entries(wire as Record<string, unknown>).filter(([key]) => known.has(key)),
+          );
+        }
+        return wire;
       }),
     );
   }

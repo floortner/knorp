@@ -183,7 +183,7 @@ forward hook (PR #54); kind streaks + weekly Streak-Joker (PRs #52/#53); `/liga`
 
 **Architecture:** one EC2 `t4g.small` running `node dist/main.js` under systemd, self-hosted
 Postgres on the same box, nginx + Let's Encrypt terminating TLS for `api.<domain>`, S3 blob bucket
-via IAM instance role; both frontends on S3 + CloudFront (`app.` / `review.`), ACM in us-east-1;
+via IAM instance role; both frontends on S3 + CloudFront (`app.` / `trainer.`, pre-rename `review.`), ACM in us-east-1;
 one Route-53 domain so the `SameSite=Lax` cookie flows subdomain↔subdomain. Secrets in SSM
 Parameter Store, rendered to a root-only systemd `EnvironmentFile` at deploy. Deploys from GitHub
 Actions via **OIDC → scoped IAM role → SSM Run Command** (no static keys, no SSH). All Terraform
@@ -195,11 +195,14 @@ bootstrap (`infra/cloud-init.sh.tftpl`, `deploy/` — Node 24, Postgres, nginx, 
 `blsb-api.service`) · GitHub Actions deploy (`deploy.yml`, manual `workflow_dispatch` only; api
 job via SSM → `release.sh` with pre-traffic `migrate deploy`; web job build + `s3 sync` +
 invalidate) · prod config in `infra/ssm.tf` (SES email, beta caps `LLM_SESSIONS_PER_DAY=3` /
-`CHAT_MESSAGES_PER_DAY=20`, `LLM_RESIDENCY_ACK`) · off-platform backup (`deploy/backup.sh` daily
-`pg_dump` → `age`-encrypt → non-AWS remote via rclone, 7d+4w retention) · full ★ AI on, watched.
+`CHAT_MESSAGES_PER_DAY=20`, `LLM_RESIDENCY_ACK`) · off-platform backup **scaffolding** (`deploy/backup.sh` daily
+`pg_dump` → `age`-encrypt → non-AWS remote via rclone; tools installed by cloud-init and the timer
+auto-enabled at deploy once the operator supplies `/etc/blsb/backup.env` + the rclone remote —
+retention via provider lifecycle rules, not the earlier 7d+4w scheme) · full ★ AI on, watched.
 
-**Observability:** OTel chosen, collector build-out deferred; round 1 ships a free uptime ping on
-`/api/v1/health`.
+**Observability:** OTel chosen, collector build-out deferred. (The round-1 "free uptime ping on
+`/api/v1/health`" was never wired up in-repo — external checks and CloudWatch alarms remain the open
+P3 item in ROADMAP §G.)
 
 ## §G — Security review (P1/P2/P3-batch-1 DONE)
 

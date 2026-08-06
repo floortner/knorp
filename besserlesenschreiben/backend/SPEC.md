@@ -11,12 +11,15 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
 ## 1. Stack & principles
 
 - **Language/framework:** Node.js 24 LTS + TypeScript + **NestJS 11** (Fastify adapter). **Zod** schemas
-  (via `nestjs-zod`) for all request/response DTOs; `@nestjs/swagger` emits the OpenAPI the frontend types from.
+  (via the local `ZodDto` factory in `src/common/zod-dto.ts` — `nestjs-zod` was replaced, its bundled
+  `@nest-zod/z` breaks under Zod 4) for all request/response DTOs; `@nestjs/swagger` emits the OpenAPI the frontend types from.
 - **DB:** PostgreSQL 17 via **Prisma 7** (`prisma/schema.prisma` is the model truth). Migrations with **Prisma Migrate**.
 - **Object storage:** **Amazon S3** (per-user prefixes, short-lived **presigned** URLs) via `@aws-sdk/client-s3`.
 - **Auth:** passwordless email code → JWT session token. No PIN/parent elevation — destructive actions are ownership-checked and double-confirmed in the UI (§4).
-- **LLM:** `@anthropic-ai/sdk` (session generation, chat, homework vision); structured JSON via `zodOutputFormat` +
-  `messages.parse` reuses the same Zod schemas. Model string configurable via env. See `../ARCHITECTURE.md` §8 for
+- **LLM:** `@anthropic-ai/sdk` (session generation, chat, homework vision); structured JSON via a **forced
+  tool** over the Zod-derived JSON Schema, re-validated against the same Zod schema with one corrective
+  re-ask (`services/llm`). EU inference residency pinned (`inference_geo: "eu"`; the response's
+  `usage.inference_geo` is logged as the audit trail). Model string configurable via env. See `../ARCHITECTURE.md` §8 for
   the LLM data-flow decision (Anthropic-direct, `inference_geo: "eu"`).
 - **TTS:** deferred — Web-Speech fallback in the client (§9).
 - **Payments:** none — the app is **free** (billing deferred; ARCHITECTURE §9).
@@ -305,7 +308,7 @@ Prefix derived from the authenticated profile — **never** from client input.
 
 ```
 users/{account_id}/{profile_id}/
-  digest.md                  # derived performance digest (§6 /digest)
+  digest.md                  # derived performance digest (internal, LLM-facing — no HTTP route)
   homework/{uuid}.webp       # uploaded photo (EXIF stripped, transcoded — ARCHITECTURE §10)
 ```
 
@@ -367,7 +370,6 @@ POST /sessions/{id}/complete                         -> 200 {starsAwarded, strea
 ```
 GET /progress/{profileId}   -> {streakDays, jokerAvailable, stars, weeklyActivity:[7], monthlyHeatmap,
                                 league:{tier, starsWeek, starsToNext}, skillBreakdown:[...]}   # mechanics: §8a
-GET /digest/{profileId}     -> {markdown}   # regenerated from attempt table on demand (§ below)
 ```
 
 ### Chat (trainer)
@@ -519,8 +521,10 @@ POST /profiles/{id}/reset-chat  -> {ok}   # destructive; wipes the whole chat: m
 Ownership of `{id}` is asserted against the JWT account (missing/foreign → 404). No PIN/elevation —
 the family UI fronts both with a two-step confirmation (frontend SPEC §8).
 
-### Digest generation (`GET /digest`)
-Regenerate `digest.md` from the `attempt` table (last ~14 days), write to storage, return markdown.
+### Digest generation (internal — no HTTP route)
+`digest.md` is regenerated from the `attempt` table (last ~14 days), written to storage, and consumed
+by LLM-session generation and chat. The former `GET /digest/{profileId}` route was removed 2026-08-06:
+its only consumer was the Eltern-Bereich (removed 2026-07-22) and no client ever called it again.
 This is the **LLM-facing view** — compact, not raw rows. Target format:
 
 ```markdown
@@ -572,13 +576,16 @@ drill and *with which real words*; Claude only writes the teaching intro and the
 0. **Gate.** Per-profile daily cap `LLM_SESSIONS_PER_DAY` (default 5, counted over today's `source='llm'`
    sessions) → `429 RATE_LIMITED` when exceeded.
 1. **WHAT to drill (`focus`).** The union of three DB signals, deduplicated:
-   - **weak skills** from recent `attempt` rows (`weakSkills()` — low accuracy / slow / self-corrected),
+   - **weak skills** from recent `attempt` rows (`weakSkills()` — low accuracy / slow; retries feed in
+     via the FSRS ratings, not this rollup),
    - **FSRS-due** skills (`review_state.due ≤ now`),
    - the **professionally-reviewed** homework focus — `reviewed_analysis.suggestedFocus` from the last 5
      `status='reviewed'` uploads (never the raw LLM draft).
 2. **Calibration band.** `gradeBand(unlockedUnit)` → `{ label (Klassenstufe text), difficulty 1–3 }`.
-3. **Behavioural context.** `digest.md` (§6) — per-skill accuracy, **response time** (`time_ms`), **retries**
-   (`attempt_no`), recent trend. Slow-but-correct and hesitation are weak signals, not just errors. Best-effort.
+3. **Behavioural context.** `digest.md` — per-skill accuracy, **response time** (`time_ms`), wrong-answer
+   examples, FSRS-due skills. **Retries** (`attempt_no`) shape it indirectly: they set the FSRS rating
+   (fsrs.service `ratingFor`), which drives the due-skills list — the digest has no retry column itself.
+   Slow-but-correct and hesitation are weak signals, not just errors. Best-effort.
 4. **Prompt + structured output.** `LLM_SYSTEM` + a user message (Klassenstufe + Förderschwerpunkte +
    Lernstand digest) → `llm.extract(generatedSessionSchema, …)`, so every exercise is Zod-validated and
    solvable end-to-end. `LLM_SYSTEM` targets only the single `placeholder` type until §F rebuilds the
@@ -593,7 +600,7 @@ flowchart TD
   R[review_state<br/>FSRS-due] --> F
   H[homework_upload<br/>reviewed suggestedFocus] --> F
   U[profile.unlockedUnit] --> GB[gradeBand<br/>label · difficulty]
-  F --> D[digest.md<br/>accuracy · time_ms · attempt_no]
+  F --> D[digest.md<br/>accuracy · time_ms · FSRS-due]
   GB --> P[prompt: LLM_SYSTEM +<br/>Klassenstufe · Förderschwerpunkte · Lernstand]
   D --> P
   P --> C{{Claude<br/>generatedSessionSchema}}
@@ -709,11 +716,13 @@ The authoritative list is `src/config/env.ts` (`.env.example` documents every va
 ```
 NODE_ENV= PORT=
 DATABASE_URL=                    # Prisma connection string (Postgres)
-JWT_SECRET=                      # family realm (aud:"family")
+JWT_SECRET=                      # family realm signing key (no aud claim; realm isolation = distinct keys)
 STAFF_JWT_SECRET=                # staff realm (aud:"staff") — DISTINCT from JWT_SECRET (boot-enforced)
 WEB_ORIGIN=                      # family SPA origin(s), CORS allowlist — REQUIRED in production
 TRAINER_ORIGIN=                  # staff portal origin, CORS allowlist — separate from WEB_ORIGIN
 PUBLIC_API_URL=                  # public base URL of this API (capability URLs for the local image store)
+HOST=                            # bind address override; empty → 127.0.0.1 in prod (nginx-only), else 0.0.0.0
+GIT_COMMIT=                      # build stamp surfaced by /health (deploy sets it); empty → 'dev'
 STAFF_ADMIN_EMAILS=              # comma-separated admin bootstrap (seeded as active admin trainers)
 HOMEWORK_REVIEW_CLAIM_TTL=       # queue soft-lock lease, e.g. 900 (seconds)
 ANTHROPIC_API_KEY=
@@ -723,9 +732,13 @@ LLM_RESIDENCY_ACK=               # required in prod when a key is set (EU reside
 LLM_SESSIONS_PER_DAY= CHAT_MESSAGES_PER_DAY=   # per-profile daily caps on ★ ops (defaults 5 / 60)
 AWS_S3_BUCKET= AWS_REGION=       # object storage; auth via the IAM instance role, not keys in env
 STORAGE_LOCAL_DIR=               # dev-only local filesystem store; unused when AWS_S3_BUCKET is set
-EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev) | resend (prod) | capture (tests only)
+EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev only — boot-blocked in prod) |
+                                 #   ses (prod, IAM role) | resend (alt prod) | capture (tests only)
 SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_TRAINER_EMAIL=   # dev-only seeded logins (never in production)
+CONTENT_DIR=                     # scripts only: content:import source; empty → the repo's content/
 ```
+Deploy-level (SSM/scripts, not read by the app itself): `API_FQDN`, `LETSENCRYPT_EMAIL` — consumed by
+`deploy/release.sh` for nginx/certbot; documented in `infra/README.md`.
 
 ## 12. Acceptance checks
 - `user_id` never read from request body/path; only from JWT. (grep the codebase.)

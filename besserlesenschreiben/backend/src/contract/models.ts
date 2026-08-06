@@ -9,6 +9,13 @@ import { homeworkAnalysisSchema } from './staff';
 
 export const okSchema = z.object({ ok: z.literal(true) });
 
+// ── Health (infra probe; ARCHITECTURE §7 — version+commit mirror the SPAs' Profil stamps) ───────
+export const healthSchema = z.object({
+  status: z.literal('ok'),
+  version: z.string(),
+  commit: z.string(),
+});
+
 // ── Auth ─────────────────────────────────────────────────────────────────────
 // The session JWT is delivered ONLY as an httpOnly cookie (set by the controller) — never in the body, so
 // no long-lived credential is ever exposed to page JavaScript (security review P1-4).
@@ -128,7 +135,7 @@ export const progressSchema = z.object({
   ),
 });
 
-export const digestSchema = z.object({ markdown: z.string() });
+// (digestSchema removed with the GET /digest route — digest.md is internal, LLM-facing only.)
 
 // ── Homework status (shared with chat below) ───────────────────────────────────
 export const homeworkStatusEnum = z.enum(['pending_analysis', 'pending_review', 'reviewed', 'rejected']);

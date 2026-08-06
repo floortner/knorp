@@ -59,10 +59,12 @@ export class LlmService {
         ];
         continue;
       }
-      // Never persist off-contract content.
-      throw new ApiException(502, 'PROVIDER_UNAVAILABLE', 'KI-Antwort hatte ein unerwartetes Format.');
+      // Never persist off-contract content. 503 (not 502) on purpose: the family app's ✨ card
+      // falls back to a bank session on exactly `503 PROVIDER_UNAVAILABLE` (frontend SPEC §2), and
+      // "the model twice returned an unusable batch" deserves the same graceful path as "no model".
+      throw new ApiException(503, 'PROVIDER_UNAVAILABLE', 'KI-Antwort hatte ein unerwartetes Format.');
     }
     // Unreachable (the loop returns or throws), but satisfies the type checker.
-    throw new ApiException(502, 'PROVIDER_UNAVAILABLE', 'KI-Antwort hatte ein unerwartetes Format.');
+    throw new ApiException(503, 'PROVIDER_UNAVAILABLE', 'KI-Antwort hatte ein unerwartetes Format.');
   }
 }

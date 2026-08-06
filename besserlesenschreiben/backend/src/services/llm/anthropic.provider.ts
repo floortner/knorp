@@ -18,12 +18,17 @@ export interface LlmUsage {
  * idiomatic Claude way to get typed JSON. The SDK is lazy-imported so the stub path needs nothing installed
  * at runtime. We never log prompts, student answers, or image bytes (CLAUDE.md §6) — identifiers + outcomes only.
  *
- * Notes for current models (Sonnet 5 / Opus 4.8): `temperature`/`top_p`/`top_k` are rejected (400) — we send
- * none and steer via the prompt. Sonnet 5 runs **adaptive thinking by default** when `thinking` is omitted;
+ * Notes for the pinned models (Sonnet 4.6 / Opus 4.8 — see config/env.ts): `temperature`/`top_p`/`top_k` are rejected (400) — we send
+ * none and steer via the prompt. Newer Sonnet models run **adaptive thinking by default** when `thinking` is omitted;
  * thinking tokens count against `max_tokens`, so an omitted field can silently eat the chat/vision budget and
- * truncate replies — we disable it explicitly (short, simple structured tasks; latency matters for kids).
+ * truncate replies — we disable it explicitly (short, simple structured tasks; latency matters for students).
  * Homework vision uses a stronger `visionModel`.
  */
+// EU inference residency (ARCHITECTURE §8, minors' data): a direct top-level Messages-API parameter,
+// supported on Sonnet 4.6 / Opus 4.6 and later — which covers both pinned models. The response's
+// usage.inference_geo reports where inference actually ran; we log it per call.
+const INFERENCE_GEO = 'eu';
+
 export class AnthropicLlmProvider implements LlmProvider {
   readonly name = 'anthropic';
   readonly live = true;
@@ -73,7 +78,8 @@ export class AnthropicLlmProvider implements LlmProvider {
       cacheReadTokens: u.cache_read_input_tokens ?? 0,
       cacheWriteTokens: u.cache_creation_input_tokens ?? 0,
     };
-    this.logger.log({ event: 'llm.usage', ...usage }, 'anthropic usage');
+    // inference_geo on usage reports where inference actually ran — the residency audit trail.
+    this.logger.log({ event: 'llm.usage', ...usage, geo: (u as { inference_geo?: string }).inference_geo }, 'anthropic usage');
     this.opts.onUsage?.(usage);
   }
 
@@ -90,6 +96,7 @@ export class AnthropicLlmProvider implements LlmProvider {
         model: this.opts.model,
         max_tokens: req.maxTokens ?? 1024,
         thinking: { type: 'disabled' },
+        inference_geo: INFERENCE_GEO,
         ...(req.system ? { system: this.systemBlocks(req.system) } : {}),
         messages: req.messages.map((m) => ({ role: m.role, content: m.text })),
       });
@@ -128,6 +135,7 @@ export class AnthropicLlmProvider implements LlmProvider {
         model: req.image ? this.opts.visionModel : this.opts.model,
         max_tokens: req.maxTokens ?? 4096,
         thinking: { type: 'disabled' },
+        inference_geo: INFERENCE_GEO,
         ...(req.system ? { system: this.systemBlocks(req.system) } : {}),
         // NOT strict: strict tool mode rejects several keywords this contract needs (maxItems from
         // z.array().length, oneOf from the discriminated union, tuple `items`) and hard-caps
@@ -147,7 +155,8 @@ export class AnthropicLlmProvider implements LlmProvider {
       this.logUsage('extract', req.image ? this.opts.visionModel : this.opts.model, res);
       const toolUse = (res.content as Array<{ type: string; input?: unknown }>).find((b) => b.type === 'tool_use');
       if (!toolUse) {
-        throw new ApiException(502, 'PROVIDER_UNAVAILABLE', 'KI lieferte kein strukturiertes Ergebnis.');
+        // 503 like every other PROVIDER_UNAVAILABLE — the family app's bank-session fallback keys on it.
+        throw new ApiException(503, 'PROVIDER_UNAVAILABLE', 'KI lieferte kein strukturiertes Ergebnis.');
       }
       return toolUse.input;
     } catch (err) {

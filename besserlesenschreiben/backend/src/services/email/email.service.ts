@@ -10,7 +10,7 @@ type Provider = (typeof SUPPORTED)[number];
  * Login-code delivery (SPEC §4). Providers:
  *   - `console` — DEV ONLY: prints the code to stdout (no email server needed). Must never be
  *     selected in production: printing the code/email is exactly what ARCHITECTURE §6 forbids.
- *   - `ses`     — production (default): Amazon SES v2, auth via the default AWS credential chain (the
+ *   - `ses`     — the production provider: Amazon SES v2, auth via the default AWS credential chain (the
  *     IAM instance role — no API key in env/SSM). Requires EMAIL_FROM on a verified SES identity.
  *   - `resend`  — alternative production provider: Resend REST API (needs EMAIL_KEY + EMAIL_FROM).
  *   - `capture` — E2E-TEST ONLY: holds the last code per address in memory (never logged) so a
@@ -56,6 +56,12 @@ export class EmailService {
     // on. Local dev uses `console`; the E2E harness sets NODE_ENV=test.
     if (this.provider === 'capture' && config.get('NODE_ENV', { infer: true }) !== 'test') {
       throw new Error("EMAIL_PROVIDER='capture' is only permitted under NODE_ENV=test (E2E).");
+    }
+    // Same fail-closed stance for `console`: it prints the address AND the login code to stdout
+    // (rule 6 violation in a real environment). It is also the schema default — so a production
+    // process with a missing/typoed EMAIL_PROVIDER must refuse to boot rather than log codes.
+    if (this.provider === 'console' && config.get('NODE_ENV', { infer: true }) === 'production') {
+      throw new Error("EMAIL_PROVIDER='console' is not permitted in production — set 'ses' (or 'resend').");
     }
   }
 

@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
-import { DigestController } from './digest.controller';
 import { DigestService } from '../../services/digest/digest.service';
 
 /**
- * Digest feature module. The controller is HTTP-only; the domain logic lives in
- * `services/digest`. DigestService is exported so chat / LLM-session generation can reuse the
- * compact `digest.md` view at their milestones.
+ * Digest module — INTERNAL only since 2026-08-06. The `GET /digest/{profileId}` route was removed:
+ * its only consumer was the Eltern-Bereich, gone since 2026-07-22 (HISTORY.md), and no SPA ever
+ * called it again. DigestService stays exported — LLM-session generation renders `digest.md`
+ * through it (sessions.service).
  */
 @Module({
-  controllers: [DigestController],
   providers: [DigestService],
   exports: [DigestService],
 })

@@ -1,7 +1,7 @@
 /**
  * scripts/seed-e2e.ts — E2E test fixtures (idempotent). NEVER run against a real database.
  *
- *   npm run seed:e2e   (needs DATABASE_URL; item-bank comes from `npm run seed` separately)
+ *   npm run seed:e2e   (needs DATABASE_URL; exercise content arrives via `npm run content:import`, not the seed)
  *
  * Creates the identities the Playwright suite logs in as:
  *   - one ACTIVE family account PER browser project (accounts start `pending`; only `active` ones get
