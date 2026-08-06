@@ -16,6 +16,15 @@ The seed script lives in the backend: `besserlesenschreiben/backend/prisma/seed.
 
 Currently one **monorepo** for fast cross-cutting iteration; the subprojects are independently buildable/deployable and split into the `-api`/`-web`/`-trainer` repos before launch (ARCHITECTURE §1).
 
+## Content-only sessions (Angelika)
+
+The lecture library `content/` is authored by our one linguist, **Angelika** — non-technical, works
+directly in this repo with Claude Code. When a session is purely about content (lectures,
+`linguist-contrib/` — typically Angelika as the user), follow **`content/CLAUDE.md`** instead of the
+developer guidance below: answer in German, touch nothing outside `content/`, run no dev
+servers/code generation, and hand off via the `/neue-lektion` and `/abgeben` workflow (PR-based,
+Flo reviews).
+
 ## Read order before touching any code
 
 1. **`<subproject>/AGENTS.md`** — the short, authoritative guide for the subproject you're working in (read this first)
