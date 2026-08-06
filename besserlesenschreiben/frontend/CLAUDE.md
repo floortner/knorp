@@ -14,9 +14,10 @@ reports what happened. No lesson logic lives here.
   are **obsolete** — the current `Exercise` contract lives in `SPEC.md` §3 and the built renderers, not in
   the prototype. **Recreate** looks in the real stack (React + TS + Tailwind + shadcn) — do **not** paste
   the prototype's HTML/inline styles into the app.
-- **`fixtures/`** — golden example API payloads (`session.example.json`, `units.example.json`). Until §F
-  lands the new content set these hold a single stand-in `placeholder` exercise and an empty units array.
-  Build renderers and snapshot tests against these.
+- **`fixtures/`** — golden example API payloads (`session.example.json`, `session-assigned.example.json`,
+  `units.example.json`). Until §F lands the new content set these hold stand-in `placeholder` exercises
+  and an empty units array. Build renderers and snapshot tests against these — the golden snapshots live
+  in `src/features/exercises/golden.spec.tsx`.
 - **`docs/screens/`** — a screenshot of each screen, as a quick visual index.
 - **`monster-pets/`** — SVG mascot characters (Nepo, Stella, and others) in four emotional states each
   (`froehlich`, `traurig`, `cool`, `ueberrascht`).
@@ -32,8 +33,8 @@ spine — see `SPEC.md` §4. Telemetry plumbing was built before the renderers �
 ## Prototype vs spec (what to copy vs build fresh)
 
 - **In the prototype** (recreate the look/interactions): login + code entry, onboarding, `/lernen` home,
-  feedback/confetti, `/liga`, `/profil`, `/chat`, a11y toggles. (The prototype's parent PIN gate is
-  obsolete — reset/chat-delete live in `/profil` behind a two-step confirmation.)
+  feedback/confetti, `/liga` (shipped as `/erfolge`), `/profil`, `/chat`, a11y toggles. (The prototype's
+  parent PIN gate is obsolete — reset/chat-delete live in `/profil` behind a two-step confirmation.)
 - **Spec-only, NOT in the prototype** (build from `SPEC.md` — match the brand and the existing renderer
   patterns): the exercise type(s) in the current `Exercise` contract (the prototype shows only the legacy
   set); the ✨ **generated-lecture entry** on `/lernen` + the lesson **intro card** (§2) and the **homework

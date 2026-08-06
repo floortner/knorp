@@ -29,16 +29,17 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (student
 /login            email entry → 4-digit code entry → (session-expired state)
 /onboarding       welcome (buddy intro) → choose buddy (8 Lernbuddies, Nepo default) → choose weekly goal
 /app
-  ├ /lernen       home: greeting, unit cards (title/subtitle/status), ✨ generated-lecture card,
-  │               "Übung von {Trainer}" assignment cards (content-library lectures assigned by a
-  │               trainer, §H1/§I — an offer, never a push; personal via the known-trainer name),
-  │               reward strip, START
+  ├ /lernen       home: greeting, weekly goal ring, unit cards (title/subtitle/status, each with its
+  │               own start), ✨ generated-lecture card, "Übung von {Trainer}" assignment cards
+  │               (content-library lectures assigned by a trainer, §H1/§I — an offer, never a push;
+  │               personal via the known-trainer name)
   │   └ /lesson   exercise runner (one renderer per contract type — §3), feedback, confetti on complete; sessions
   │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!") —
   │               bank sessions carry the unit's Merksatz, generated lectures their own intro
   ├ /erfolge      achievement standing (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
   ├ /profil       editable name, buddy picker, "aktiv seit", streak, stars, Ton toggle, login email,
-  │               Verwaltung: reset progress + delete chat (destructive, two-step confirmation — §8)
+  │               Verwaltung: reset progress + delete chat (destructive, two-step confirmation — §8),
+  │               Abmelden, build-version stamp (ARCHITECTURE §7)
   └ /chat         message thread with trainer Angelika + input; 📷 homework upload — the photo shows as
   │               a chat message, the review status/verdict comes back as trainer bubbles (§9)
 ```
@@ -106,7 +107,9 @@ postAttempt({
 });
 ```
 
-- Fire-and-forget via a TanStack Query mutation; queue + retry on offline (PWA).
+- Fire-and-forget via the telemetry queue (`src/lib/telemetry.ts`): a localStorage-backed FIFO that
+  replays on the `online` event (48h retention, capped, drops non-retryable 4xx). Not a TanStack
+  mutation and not Workbox background sync — the queue is app-level so it survives reloads.
 - `attemptNo` increments on each retry of the same item before it's correct.
 - Do **not** block the UI on the network — optimistic, background-synced.
 
@@ -122,7 +125,8 @@ postAttempt({
 
 ## 6. Accessibility & settings
 
-Driven by `profile.settings` (from `GET /profiles/{id}`, edited via `PATCH /profiles/{id}/settings`):
+Driven by the profile's settings (read from the `GET /me` probe — `GET /profiles/{id}` exists but the
+app doesn't use it; edited via `PATCH /profiles/{id}/settings`):
 - `dyslexicFont` → currently toggles **extra letter/word spacing** on the (already dyslexia-friendly)
   Atkinson Hyperlegible body font. Shipping the actual **OpenDyslexic** face is a follow-up; until then the
   setting is spacing-only (don't relabel it as a font swap in the UI).
@@ -130,27 +134,34 @@ Driven by `profile.settings` (from `GET /profiles/{id}`, edited via `PATCH /prof
 - `soundOn` → master audio toggle.
 - High contrast, large tap targets, keyboard operability throughout (students + assistive use).
 
+> **Known gap:** `/profil` currently edits only name/buddy/`soundOn`. `dyslexicFont` and `fontScale`
+> are applied at runtime (`features/settings/a11y.tsx`) but have **no editing UI yet** — tracked as a
+> ROADMAP backlog item, not silently dropped.
+
 ---
 
 ## 7. API client & data flow
 
 Single typed `api.ts` wrapping `fetch`, base URL from `VITE_API_BASE`, `credentials:'include'` so the
-backend's **httpOnly session cookie** rides along (auth is derived from a `/me` probe — no token in JS;
-`setAuthToken`/Bearer remains only for API clients/tests). **Mirror the backend contract exactly**
-(`../backend/SPEC.md` §6). Endpoints consumed:
+backend's **httpOnly session cookie** rides along (auth is derived from a `/me` probe — no token in
+JS, no Bearer header anywhere). **Mirror the backend contract exactly** (`../backend/SPEC.md` §6).
+Endpoints consumed:
 
 ```
-POST /auth/request-code        POST /auth/verify
+POST /auth/request-code        POST /auth/verify          POST /auth/logout
 GET  /me                       POST /profiles            PATCH /profiles/{id}/settings
 GET  /units                    POST /sessions            POST /attempts        POST /sessions/{id}/complete
-GET  /progress/{id}            GET  /digest/{id}
+GET  /progress/{id}            GET  /assignments          # open staff-assigned lectures (§H1)
 GET  /chat/{id}                POST /chat/{id}            # history messages may carry imageUrl (homework bubbles)
 POST /homework                 GET  /homework/{id}        # no /confirm — staff trainer is the human gate (§9)
 POST /profiles/{id}/reset      POST /profiles/{id}/reset-chat                  # destructive — §8
 ```
 
-TanStack Query keys: `['me']`, `['units']`, `['session', id]`, `['progress', profileId]`, `['chat', profileId]`.
-Invalidate `['me']` (stars/streak) + `['progress']` + `['units']` after `/sessions/{id}/complete`.
+TanStack Query keys: `['me']`, `['units']`, `['session', id]`, `['progress', profileId]`,
+`['chat', profileId]`, `['assignments', profileId]` (the assignments query alone opts back into
+`refetchOnWindowFocus` so a fresh assignment appears when the student returns to the app).
+Invalidate `['me']` (stars/streak) + `['progress']` + `['units']` + `['assignments']` after
+`/sessions/{id}/complete`.
 
 **Types are generated, never hand-written.** `src/lib/api.gen.ts` is produced from the backend OpenAPI via
 `npm run gen:api` (`openapi-typescript`) and **committed**; CI re-runs it and fails on any diff (the contract
@@ -202,16 +213,20 @@ draft and has **no confirm/edit UI** (the trainer portal `-trainer` owns that, a
 
 ## 10. Env & build
 ```
-VITE_API_BASE=        # backend URL
-VITE_PWA=true
+VITE_API_BASE=        # backend URL (required for production builds)
 ```
+- `VITE_APP_VERSION` is **not** an env var — it's injected at build by `vite.config.ts` (`define`)
+  as `<package version>+<commit>`; deploy sets `GIT_COMMIT`, local builds read the git HEAD.
 - PWA manifest: app name, the prototype's "b" mark icon (teal #27A99B), maskable icons, standalone display.
+- PWA updates are **prompt-to-update**: `UpdatePrompt.tsx` shows "Neue Version verfügbar – neu laden?"
+  in the shell, suppressed while a lesson is running; the SW never activates silently.
 - Mobile-first responsive; test at 390px and tablet widths.
 
 ## 11. Acceptance checks
 - Every answered item produces exactly one `/attempts` call with a sane `timeMs`.
 - App renders every exercise type in the current contract (currently just `placeholder`) from
   backend-served JSON with no hardcoded lesson data.
-- `dyslexicFont` + `fontScale` visibly change rendering; `soundOn` mutes all audio.
+- `dyslexicFont` + `fontScale` visibly change rendering (editing UI is a known gap — §6); `soundOn`
+  mutes all audio.
 - No price/paywall/buy control exists anywhere in the app.
 - Works installed as a PWA; attempts queue and sync after an offline blip.

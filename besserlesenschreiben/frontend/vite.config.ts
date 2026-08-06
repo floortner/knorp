@@ -1,12 +1,28 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath, URL } from 'node:url';
+import { execSync } from 'node:child_process';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import pkg from './package.json';
+
+// Build stamp shown in the Profil tab (ARCHITECTURE §7; mirrors backend /health version+commit).
+// Deploy sets GIT_COMMIT; local builds fall back to the working tree's HEAD, then 'dev'.
+const commit = (() => {
+  if (process.env.GIT_COMMIT) return process.env.GIT_COMMIT.slice(0, 7);
+  try {
+    return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch {
+    return 'dev';
+  }
+})();
 
 // PWA: prompt-to-update (never silent reload mid-lesson — ARCHITECTURE / CLAUDE.md).
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(`${pkg.version}+${commit}`),
+  },
   plugins: [
     react(),
     tailwindcss(),

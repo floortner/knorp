@@ -10,5 +10,9 @@ export function useAssignments(profileId: string | undefined) {
     queryKey: ['assignments', profileId],
     queryFn: () => coreApi.assignments(profileId!),
     enabled: Boolean(profileId),
+    // Overrides the app-wide `refetchOnWindowFocus: false` (main.tsx): a trainer assigns while the
+    // student has the app open/backgrounded, and the card should appear when they come back to it —
+    // without polling. Focus/visibility is the only extra trigger; there is still no interval.
+    refetchOnWindowFocus: true,
   });
 }

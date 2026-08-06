@@ -334,7 +334,7 @@ POST /auth/logout                                    -> 200 {ok:true}           
 GET   /me                                            -> {account, profiles:[...]}
 POST  /profiles             {name, buddy, goal}      -> 201 {profile}    # onboarding (resource created)
 GET   /profiles/{id}                                 -> {profile, settings, stars, streak}
-PATCH /profiles/{id}/settings {soundOn?,dyslexicFont?,fontScale?,goal?,buddy?} -> {profile}
+PATCH /profiles/{id}/settings {name?,soundOn?,dyslexicFont?,fontScale?,goal?,buddy?} -> {profile}
 ```
 
 ### Units, sessions, attempts  (the core loop)

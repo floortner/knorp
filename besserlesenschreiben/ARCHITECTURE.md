@@ -204,18 +204,19 @@ package.json  package-lock.json  tsconfig.json  eslint.config.mjs  .env.example 
 ### Frontend `-web`
 ```
 src/
-  main.tsx  App.tsx
+  main.tsx  App.tsx       # QueryClient config lives inline in main.tsx
   lib/
     api.ts                # typed fetch client — mirrors backend/SPEC.md §6 EXACTLY
-    queryClient.ts        # TanStack Query config
-    telemetry.ts          # attempt timing + emit (frontend SPEC §4)
-  app/                    # shell, routing, tabs (lernen | liga | profil | chat)
+    api.gen.ts            # generated from the backend OpenAPI (npm run gen:api), committed
+    types.ts              # ergonomic aliases over api.gen.ts — the Exercise union lives here
+    telemetry.ts          # attempt timing + emit + offline queue (frontend SPEC §4)
+  app/                    # shell, routing, update prompt, tabs (lernen | erfolge | chat | profil)
   features/
-    exercises/            # the Exercise union type (a single `placeholder` scaffold until §F lands the
+    exercises/            # renderers + scaffolding (a single `placeholder` type until §F lands the
                           # new types) + audio.ts (audio_url playback + Web Speech fallback)
-    auth/  lessons/  progress/  profile/   # homework upload lives in the Chat tab; no billing/ — the app is free
-  components/ui/          # shadcn components
-  hooks/  styles/theme.css (@theme tokens)
+    assignments/  auth/  lessons/  onboarding/  profile/  progress/  sessions/  settings/  units/
+                          # homework upload lives in the Chat tab; no billing/ — the app is free
+  components/ui/          # shadcn components (@theme tokens live in index.css)
 public/                   # PWA icons (SVG), manifest, brand svgs (nepo.svg)
 monster-pets/             # served mascot SVGs (base + moods/poses), symlinked into public/monster-pets
                           #   (master source art + catalog live at repo-root assets/ — see § Media)
@@ -468,7 +469,9 @@ restore from the off-platform dumps) rather than the loss of every family's data
   mid-lesson). On new SW detected → let the current exercise finish, then a gentle "Neue Version verfügbar –
   neu laden?" in the shell, never interrupting a student's answer. App shell precached → installable
   and offline-capable.
-- **Offline:** the attempt queue (frontend SPEC §4) flushes on reconnect via Workbox background sync.
+- **Offline:** the attempt queue (frontend SPEC §4) is an app-level localStorage FIFO in
+  `lib/telemetry.ts` that flushes on the `online` event (not Workbox background sync — the queue
+  survives reloads and stays inspectable). Workbox handles static precache + read-only API caching.
 
 ### Versioning & releases
 - **SemVer per repo.** Version + commit injected at build (`VITE_APP_VERSION` / backend `version`) and shown

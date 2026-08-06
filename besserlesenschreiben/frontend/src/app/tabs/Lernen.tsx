@@ -150,8 +150,8 @@ export function Lernen() {
           {errorMessage(createSession.error)}
         </p>
       )}
-      {/* (The "Belohnung: Pixel" teaser card was removed — Pixel is freely selectable in the Profil
-          buddy picker now, so "earn Pixel by finishing all units" no longer made sense.) */}
+      {/* (The "Belohnung: Pixel" teaser card was removed — reward pets stay out of the UI until the
+          D5 badges milestone brings the earn mechanic; see REWARD_PETS in lib/constants.ts.) */}
     </div>
   );
 }

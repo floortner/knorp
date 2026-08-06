@@ -21,8 +21,9 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 ## Golden rules (do not violate)
 1. **Mirror the backend contract exactly.** `src/lib/api.gen.ts` is **generated from the backend OpenAPI**
    (`npm run gen:api`, `openapi-typescript`) and committed — **never hand-edit it**. Change the backend Zod
-   schema, re-export `openapi.json`, then regenerate. CI fails on any drift. `features/exercises/types.ts` and
-   `lib/api.ts` (the hand-written transport wrapper) must stay in lockstep with `../backend/SPEC.md §6`.
+   schema, re-export `openapi.json`, then regenerate. CI fails on any drift. `lib/types.ts` (the ergonomic
+   aliases over the generated types — this is where `Exercise` lives) and `lib/api.ts` (the hand-written
+   transport wrapper) must stay in lockstep with `../backend/SPEC.md §6`.
 2. **`lib/api.ts` is transport only** — no JSX, no UI. Components never hand-roll fetch or error parsing.
 3. **Every answered item emits exactly one `/attempts` call** with a real `timeMs` (start timer on item mount,
    stop on answer). Fire-and-forget; queue + retry offline; never block the student's UI on the network (SPEC §4).
@@ -39,7 +40,8 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 ## Conventions
 - Mobile-first: design at ~390px, scale up. The student user needs big targets and calm feedback.
 - TanStack Query for ALL server state; keys `['me']`,`['units']`,`['session',id]`,`['progress',pid]`,
-  `['chat',pid]`. Invalidate `['me']`+`['progress']`+`['units']` after `/sessions/{id}/complete`.
+  `['chat',pid]`,`['assignments',pid]`. Invalidate `['me']`+`['progress']`+`['units']`+`['assignments']`
+  after `/sessions/{id}/complete`.
 - Auth: the backend's **httpOnly session cookie** is the source of truth (`credentials:'include'`); auth state
   is derived from a `/me` probe — never put a token in localStorage/JS.
 - Wrap risky subtrees in the `ErrorBoundary` (whole app + the `LessonRunner`); a renderer throw must never

@@ -118,15 +118,15 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 
 ### Frontend structure
 - `docs/knorp.html` — **interactive design prototype**; visual source of truth for the shell, screens and brand. Its exercise interactions document a legacy type set — the current exercise types live in `frontend/SPEC.md §3`. Recreate looks in React/Tailwind/shadcn — do not copy the prototype's HTML or inline styles.
-- `fixtures/` — committed golden JSON payloads (`session.example.json`, `units.example.json`). Until §F lands the new content set these hold a single stand-in `placeholder` exercise and an empty units array. Build renderers and snapshot tests against these.
+- `fixtures/` — committed golden JSON payloads (`session.example.json`, `session-assigned.example.json`, `units.example.json`). Until §F lands the new content set these hold stand-in `placeholder` exercises and an empty units array. Build renderers and snapshot tests against these.
 - `src/lib/api.gen.ts` — types **generated** from backend OpenAPI (`npm run gen:api`), committed, never hand-edited
 - `src/lib/api.ts` — typed fetch client, **transport only** (no JSX), built on `api.gen.ts` types
-- `src/features/exercises/types.ts` — the `Exercise` discriminated union (a single `placeholder` stand-in type until §F)
+- `src/lib/types.ts` — ergonomic aliases over the generated types; the `Exercise` discriminated union lives here (a single `placeholder` stand-in type until §F)
 - `src/features/exercises/` — the exercise renderers + reusable scaffolding (`ExerciseCard`/`ChoiceTile`/`useAnswer`/`SingleChoiceExercise`)
 - `src/features/exercises/audio.ts` — `audioUrl` playback + Web Speech API fallback
 - `src/lib/telemetry.ts` — attempt timing + fire-and-forget emit
 
-`features/exercises/types.ts` and `lib/api.ts` **must stay in lockstep with the backend contract**. A change to either is a contract change — re-export `openapi.json`, regenerate `api.gen.ts` via `npm run gen:api`, and update golden tests.
+`lib/types.ts` and `lib/api.ts` **must stay in lockstep with the backend contract**. A change to either is a contract change — re-export `openapi.json`, regenerate `api.gen.ts` via `npm run gen:api`, and update golden tests.
 
 ### Session generation (two paths)
 - **Bank session (default, free):** deterministic — queries `attempt` table for weak/due skills via FSRS (`ts-fsrs`), selects from `item_bank`. Zero LLM calls.
