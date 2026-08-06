@@ -388,6 +388,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/staff/queue/{uploadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffController_queueItem"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/staff/queue/{uploadId}/progress": {
         parameters: {
             query?: never;
@@ -556,6 +572,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["StaffStudentsController_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/students/{profileId}/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffStudentsController_assignments"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1529,6 +1561,59 @@ export interface operations {
             };
         };
     };
+    StaffController_queueItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        uploadId: string;
+                        profileId: string;
+                        name: string;
+                        gradeBand: string;
+                        skillTags: string[];
+                        imageUrl: string;
+                        llmAnalysis: {
+                            topic: string;
+                            exerciseType: string;
+                            items: {
+                                prompt: string;
+                                childAnswer: string;
+                                correct: boolean;
+                                errorType?: string | null;
+                            }[];
+                            suggestedFocus: string[];
+                        };
+                        createdAt: string;
+                        claimed: boolean;
+                        decision: string | null;
+                        reviewedAt: string | null;
+                        reviewedAnalysis: {
+                            topic: string;
+                            exerciseType: string;
+                            items: {
+                                prompt: string;
+                                childAnswer: string;
+                                correct: boolean;
+                                errorType?: string | null;
+                            }[];
+                            suggestedFocus: string[];
+                        } | null;
+                        notes: string | null;
+                    };
+                };
+            };
+        };
+    };
     StaffController_queueProgress: {
         parameters: {
             query?: never;
@@ -1899,6 +1984,38 @@ export interface operations {
                         };
                         profileId: string;
                         name: string;
+                    };
+                };
+            };
+        };
+    };
+    StaffStudentsController_assignments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            assignmentId: string;
+                            lectureId: string;
+                            title: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "open" | "started" | "completed";
+                            assignedAt: string;
+                            sessionId: string | null;
+                            completedAt: string | null;
+                            correctPct: number | null;
+                        }[];
                     };
                 };
             };
