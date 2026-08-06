@@ -37,6 +37,14 @@ the current system.
   gated by staff approval of the account (ARCHITECTURE §1b). The dormant
   `entitlement`/`credits_ledger`/`processed_webhook` tables were dropped — re-add by migration if
   metering is ever introduced (ARCHITECTURE §9).
+- **2026-08-06 — linguist team → solo in-repo authoring (Angelika):** content authoring moved from
+  "linguist group delivers via GitHub web editor/PRs" to **one linguist, Angelika** (non-technical,
+  also a trainer), writing lectures directly in the repo with Claude Code under `content/CLAUDE.md`
+  (`/neue-lektion` + `/abgeben`, German-only sessions, `content/`-scoped; `.claude/settings.json`
+  allowlist). `main` is branch-protected (PR + review, Flo merges). §F deliverables (above all
+  `fertigkeiten.md`) are now expected to be Claude-drafted in her sessions with her pedagogical
+  sign-off. Authoring stays a role outside the auth realms (ARCHITECTURE §1a) — her trainer account
+  is separate from the authoring path.
 
 ---
 

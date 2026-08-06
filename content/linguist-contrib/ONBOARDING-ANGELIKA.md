@@ -6,8 +6,8 @@ Prüfung und Abgabe; Flo prüft am Ende jede Änderung, bevor sie in die App kom
 
 ## Vorbereitung (Flo, vorab)
 
-- [ ] Setup-PR mergen (`content/CLAUDE.md`, Slash-Befehle `/neue-lektion` + `/abgeben`,
-      Berechtigungs-Voreinstellungen) — liegt Stand 06.08. noch uncommitted im Arbeitsverzeichnis.
+- [x] Setup gemerged (PR #99, 06.08.): `content/CLAUDE.md`, Slash-Befehle `/neue-lektion` +
+      `/abgeben`, Berechtigungs-Voreinstellungen.
 - [ ] GitHub-Konto von Angelika erfragen bzw. anlegen lassen; als Collaborator einladen:
       Repo → Settings → Collaborators → Add people → Rolle **Write**.
       (Schutz von `main` ist schon aktiv: sie kann nur über Pull Requests liefern, Flo merged.)
@@ -28,8 +28,10 @@ GitHub-Kommandozeile `gh` (einmal `gh auth login`), das Repo einmal klonen, und 
 1. Repo in Claude Code öffnen; Angelika schreibt einfach auf Deutsch, was sie möchte.
 2. Einmal den ganzen Weg gehen: `/neue-lektion` → Ergebnis gemeinsam lesen →
    `/abgeben` → Flo merged den Pull Request → Lektion nach dem nächsten Deploy in der App zeigen.
-3. Kontrollieren: Claude antwortet auf Deutsch und fasst nur `content/` an.
-   Falls nicht: Claude Code direkt im Ordner `content/` starten.
+3. Kontrollieren: Claude antwortet auf Deutsch und fasst nur `content/` an. Falls nicht: die
+   Sitzung neu beginnen und als erste Nachricht schreiben: „Wir arbeiten nur an den Lektionen
+   in content/“. (Claude Code immer im Repo-Stammverzeichnis starten, nicht im Unterordner
+   `content/` — sonst schlägt der Prüfbefehl fehl.)
 4. Merksatz für den Alltag: **„Schreib auf Deutsch, was du willst; Claude macht die Technik;
    am Ende `/abgeben` — Flo bekommt es zum Prüfen.“**
 

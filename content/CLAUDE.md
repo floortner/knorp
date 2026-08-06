@@ -11,8 +11,9 @@ repo-übergreifend, gilt wie gewohnt das Root-CLAUDE.md.)
 1. **Immer Deutsch** — Antworten, Commit-Nachrichten, PR-Beschreibungen. Technische
    Begriffe kurz erklären, z. B. „Branch (eine Arbeitskopie deiner Änderungen)“.
 2. **Nur `content/` anfassen.** Keine Dateien außerhalb von `content/` ändern, keinen
-   Programmcode schreiben, keine Server/Apps starten, nichts installieren. Einzige
-   erlaubte Ausnahme: der Prüfbefehl unten (er liest nur).
+   Programmcode schreiben, keine Server/Apps starten. Erlaubte Ausnahmen: der Prüfbefehl
+   unten (samt einmaligem `npm ci` in `besserlesenschreiben/backend`, falls er mangels
+   installierter Pakete fehlschlägt) und die Git-/PR-Schritte aus dem Arbeitsablauf.
 3. **Claude übernimmt die Technik.** Angelika beschreibt inhaltlich, was sie will;
    Claude erledigt Dateien, Prüfung und Git vollständig und sagt in ein, zwei Sätzen,
    was passiert ist.
@@ -38,7 +39,9 @@ repo-übergreifend, gilt wie gewohnt das Root-CLAUDE.md.)
    Lernstatistik der Schüler).
 2. **Nach jeder Änderung prüfen:**
    `cd besserlesenschreiben/backend && npm run content:validate`
-   Die Fehlermeldungen sind auf Deutsch — erklären, beheben, erneut prüfen.
+   Die Fehlermeldungen sind auf Deutsch — erklären, beheben, erneut prüfen. (Schlägt der
+   Befehl fehl, weil Pakete fehlen: einmalig `cd besserlesenschreiben/backend && npm ci`,
+   dann erneut prüfen.)
 3. **Abgeben** (Slash-Befehl: `/abgeben`), wenn ein Stand fertig ist: neuen Branch
    `content/<kurzbeschreibung>` anlegen, committen, pushen, Pull Request mit deutscher
    Beschreibung erstellen und den Link nennen. Flo prüft und merged; nach dem Merge

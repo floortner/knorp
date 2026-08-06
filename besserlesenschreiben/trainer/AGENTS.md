@@ -72,7 +72,7 @@ job. Comfortable tap targets for tablet are welcome.
   (**Profil** nav tab → `/profile`: rename self, see login email/role/access date; audit trail deferred
   to the OTel build-out).
 - **Lektionen** (all trainers, §H1/§I3): the teaching console — browse the content library (lectures
-  are authored as markdown in repo-root `content/` by the linguists and imported at deploy; the portal
+  are authored as markdown in repo-root `content/` by the linguist (Angelika) and imported at deploy; the portal
   never authors), assign to students (picker = the learner directory; drafts are visible but
   unassignable), and see the per-student outcome table (Offen | Begonnen | Erledigt, spanning all
   lecture versions; results link into the session drill-down). Rows show `Version {n}` +
