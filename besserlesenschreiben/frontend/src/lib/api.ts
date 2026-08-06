@@ -1,8 +1,9 @@
 /**
- * Transport-only API client (AGENTS golden rule 2: no JSX, no UI here). Wraps `fetch`, attaches the
- * bearer token, and normalises the backend's single error envelope `{error:{code,message,...}}`
- * (ARCHITECTURE §5) into a thrown `ApiError`. Endpoint wrappers live in `endpoints.ts`; their request/
- * response types mirror `../backend/SPEC.md §6` and will be regenerated via `npm run gen:api`.
+ * Transport-only API client (AGENTS golden rule 2: no JSX, no UI here). Wraps `fetch` — auth rides on
+ * the httpOnly session cookie via `credentials:'include'`, never a Bearer header — and normalises the
+ * backend's single error envelope `{error:{code,message,...}}` (ARCHITECTURE §5) into a thrown
+ * `ApiError`. Endpoint wrappers live in `endpoints.ts`; their request/response types come from the
+ * generated `api.gen.ts` (`npm run gen:api`).
  */
 
 // A production build MUST be given its API origin — never ship an artifact that silently talks to

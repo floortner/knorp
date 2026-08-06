@@ -111,6 +111,14 @@ export function Profil() {
         </div>
       </section>
 
+      {/* Settings PATCHes must not fail silently — one shared alert for name/buddy/Ton saves
+          (mirrors the DangerAction error handling; react-query clears it on the next attempt). */}
+      {settings.isError && (
+        <p role="alert" className="rounded-card bg-orange/10 px-4 py-3 text-sm font-medium text-orange-dark">
+          {errorMessage(settings.error)}
+        </p>
+      )}
+
       {/* Buddy picker — the student's companion is theirs to choose. */}
       <section>
         <h2 className="mb-3 font-display font-bold text-ink">Dein Lernfreund</h2>
@@ -198,6 +206,11 @@ export function Profil() {
           Abmelden
         </Button>
       </section>
+
+      {/* Build stamp, injected by vite.config.ts (ARCHITECTURE §7 — mirrored by backend /health). */}
+      {import.meta.env.VITE_APP_VERSION && (
+        <p className="text-center text-xs text-ink-soft/70">Version {import.meta.env.VITE_APP_VERSION}</p>
+      )}
     </div>
   );
 }

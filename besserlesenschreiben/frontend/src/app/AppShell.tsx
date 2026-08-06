@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { A11yProvider } from '@/features/settings/a11y';
 import { BottomNav } from './BottomNav';
+import { UpdatePrompt } from './UpdatePrompt';
 
 /** App frame for the student tabs: a centered mobile column with the bottom tab bar. */
 export function AppShell() {
@@ -10,6 +11,7 @@ export function AppShell() {
         <main className="flex-1 px-5 pb-24 pt-6">
           <Outlet />
         </main>
+        <UpdatePrompt />
         <BottomNav />
       </div>
     </A11yProvider>

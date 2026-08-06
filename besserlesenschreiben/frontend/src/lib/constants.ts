@@ -15,9 +15,10 @@ export const BUDDIES = [
 ] as const;
 
 /**
- * REWARD pets — earned by completing tasks, NOT freely selectable (shown locked in the Profil picker;
- * the backend buddy enum rejects them). The earn mechanic lands with the D5 badges milestone. Pets have
- * a base figure + `jubel`/`schlaf` POSES (no emotional states), so they render via their base asset.
+ * REWARD pets — earned by completing tasks, NOT freely selectable (the backend buddy enum rejects
+ * them) and not yet shown anywhere in the UI: the earn mechanic and their locked-picker slots land
+ * with the D5 badges milestone. Pets have a base figure + `jubel`/`schlaf` POSES (no emotional
+ * states), so they render via their base asset.
  */
 export const REWARD_PETS = [
   { id: 'bo', name: 'Bo' },
