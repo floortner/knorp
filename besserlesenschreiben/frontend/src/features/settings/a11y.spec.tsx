@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { setPrefersDark } from '@/test/setup';
 import type { Me } from '@/lib/types';
 
 const me: Me = {
@@ -8,7 +9,7 @@ const me: Me = {
   profiles: [
     {
       id: 'p1', name: 'Mia', buddy: 'nepo', goalPerWeek: 5, soundOn: false,
-      dyslexicFont: true, fontScale: 1.5, stars: 0, streakDays: 0, jokerAvailable: true, unlockedUnit: 1,
+      dyslexicFont: true, fontScale: 1.5, appearance: 'auto', stars: 0, streakDays: 0, jokerAvailable: true, unlockedUnit: 1,
       createdAt: '2026-01-01T00:00:00Z',
     },
   ],
@@ -38,5 +39,27 @@ describe('A11yProvider', () => {
     await waitFor(() => expect(document.documentElement.style.fontSize).toBe('150%'));
     expect(document.documentElement.dataset.dyslexic).toBe('true');
     await waitFor(() => expect(getByTestId('sound').textContent).toBe('false'));
+  });
+
+  it("resolves appearance 'dark' to the dark theme and mirrors the mode", async () => {
+    me.profiles[0].appearance = 'dark';
+    renderProvider();
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
+    expect(localStorage.getItem('blsb.appearance')).toBe('dark');
+  });
+
+  it("resolves appearance 'light' to the light theme", async () => {
+    me.profiles[0].appearance = 'light';
+    renderProvider();
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'));
+  });
+
+  it("follows the OS preference while 'auto', including live changes", async () => {
+    me.profiles[0].appearance = 'auto';
+    setPrefersDark(true);
+    renderProvider();
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
+    setPrefersDark(false); // OS flips while the app is open
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'));
   });
 });

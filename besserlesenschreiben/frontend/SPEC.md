@@ -132,11 +132,21 @@ app doesn't use it; edited via `PATCH /profiles/{id}/settings`):
   setting is spacing-only (don't relabel it as a font swap in the UI).
 - `fontScale` → root font-size multiplier.
 - `soundOn` → master audio toggle.
+- `appearance` → night mode: `'auto' | 'light' | 'dark'` (default `auto` = follow the OS
+  `prefers-color-scheme`), edited on `/profil` ("Aussehen": Hell / Dunkel / Automatisch).
+  **Mechanism** (`features/settings/theme.ts` + `A11yProvider`): the *mode* is persisted on the
+  profile and mirrored to `localStorage['blsb.appearance']`; the DOM only carries the *resolved*
+  theme as `html[data-theme='light'|'dark']`, which `index.css` maps to a dark override block over
+  the `@theme` color tokens (see the semantic tokens: surface/hairline/wash/track/gold/*-text).
+  An inline **boot script in `index.html`** resolves the mirror pre-paint (no light flash; also
+  themes the pre-auth screens, which render outside `A11yProvider`), and while `auto` a
+  `matchMedia` listener follows live OS changes. The `theme-color` meta is updated at runtime; the
+  PWA manifest splash stays brand-light (W3C manifest has no dark variant — accepted).
 - High contrast, large tap targets, keyboard operability throughout (students + assistive use).
 
-> **Known gap:** `/profil` currently edits only name/buddy/`soundOn`. `dyslexicFont` and `fontScale`
-> are applied at runtime (`features/settings/a11y.tsx`) but have **no editing UI yet** — tracked as a
-> ROADMAP backlog item, not silently dropped.
+> **Known gap:** `/profil` currently edits only name/buddy/`soundOn`/`appearance`. `dyslexicFont`
+> and `fontScale` are applied at runtime (`features/settings/a11y.tsx`) but have **no editing UI
+> yet** — tracked as a ROADMAP backlog item, not silently dropped.
 
 ---
 
@@ -228,5 +238,7 @@ VITE_API_BASE=        # backend URL (required for production builds)
   backend-served JSON with no hardcoded lesson data.
 - `dyslexicFont` + `fontScale` visibly change rendering (editing UI is a known gap — §6); `soundOn`
   mutes all audio.
+- `appearance` switches the whole app light/dark (incl. pre-auth screens via the boot script);
+  `Automatisch` follows a live OS scheme change without reload.
 - No price/paywall/buy control exists anywhere in the app.
 - Works installed as a PWA; attempts queue and sync after an offline blip.

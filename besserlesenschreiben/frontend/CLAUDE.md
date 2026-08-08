@@ -46,6 +46,12 @@ spine — see `SPEC.md` §4. Telemetry plumbing was built before the renderers �
 ## Brand quick-reference
 
 - Primary teal **#27A99B**, accent orange **#F0915F**, warm canvas **#FCF7EF**, ink **#27403C**.
+- **Colors are tokens, never literals** (`src/index.css` `@theme`): surfaces use `bg-surface` (not
+  `bg-white`), card edges `ring-hairline(-strong)`, hover washes `bg-wash`, progress/switch tracks
+  `bg-track(-strong)`, star gold `text-gold(-text)`, and teal/orange **as text** use
+  `text-teal-text` / `text-orange-text` (`teal-dark`/`orange-dark` are hover *backgrounds* only).
+  Night mode (SPEC §6) redefines these vars under `html[data-theme='dark']` — a hardcoded
+  `bg-white`/hex breaks it.
 - Per-unit theme colors live in `fixtures/units.example.json` (`theme.iconBg` / `theme.iconColor`).
 - Fonts: **Atkinson Hyperlegible** (body) + **Bricolage Grotesque** (display).
 - Mobile-first at ~390px, large tap targets, calm feedback.

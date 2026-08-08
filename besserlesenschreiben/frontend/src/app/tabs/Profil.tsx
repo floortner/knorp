@@ -9,10 +9,18 @@ import { coreApi } from '@/lib/endpoints';
 import { errorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { RadioRow } from '@/components/ui/radio-row';
+import { applyTheme, prefersDark, rememberAppearance, resolveTheme, type Appearance } from '@/features/settings/theme';
 import { cn } from '@/lib/cn';
 
 // Tap the big buddy → it reacts, cycling through its emotional states (then back to neutral).
 const REACTIONS: BuddyState[] = ['froehlich', 'ueberrascht', 'cool'];
+
+const APPEARANCE_OPTIONS: readonly { value: Appearance; label: string }[] = [
+  { value: 'light', label: 'Hell' },
+  { value: 'dark', label: 'Dunkel' },
+  { value: 'auto', label: 'Automatisch' },
+];
 
 export function Profil() {
   const { logout } = useAuth();
@@ -46,7 +54,7 @@ export function Profil() {
   return (
     <div className="space-y-6">
       {/* Header — tap the buddy and it reacts */}
-      <section className="flex items-center gap-4 rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+      <section className="flex items-center gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
         <button
           type="button"
           aria-label="Dein Lernfreund reagiert"
@@ -69,14 +77,14 @@ export function Profil() {
                 autoFocus
                 aria-label="Name"
                 disabled={settings.isPending}
-                className="min-w-0 flex-1 rounded-lg bg-canvas px-2 py-1 font-display text-xl font-bold text-ink ring-1 ring-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60"
+                className="min-w-0 flex-1 rounded-lg bg-canvas px-2 py-1 font-display text-xl font-bold text-ink ring-1 ring-hairline-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60"
               />
               <button
                 type="button"
                 aria-label="Name speichern"
                 disabled={!nameDraft.trim() || settings.isPending}
                 onClick={saveName}
-                className="shrink-0 rounded-full p-1.5 text-teal-dark hover:bg-teal/10 disabled:opacity-40"
+                className="shrink-0 rounded-full p-1.5 text-teal-text hover:bg-teal/10 disabled:opacity-40"
               >
                 <Check className="h-5 w-5" aria-hidden />
               </button>
@@ -85,7 +93,7 @@ export function Profil() {
                 aria-label="Abbrechen"
                 disabled={settings.isPending}
                 onClick={() => setEditingName(false)}
-                className="shrink-0 rounded-full p-1.5 text-ink-soft hover:bg-black/5"
+                className="shrink-0 rounded-full p-1.5 text-ink-soft hover:bg-wash"
               >
                 <X className="h-5 w-5" aria-hidden />
               </button>
@@ -97,7 +105,7 @@ export function Profil() {
                 type="button"
                 aria-label="Namen ändern"
                 onClick={startEditName}
-                className="shrink-0 rounded-full p-1.5 text-ink-soft hover:bg-black/5"
+                className="shrink-0 rounded-full p-1.5 text-ink-soft hover:bg-wash"
               >
                 <Pencil className="h-4 w-4" aria-hidden />
               </button>
@@ -106,7 +114,7 @@ export function Profil() {
           <p className="text-sm text-ink-soft">aktiv seit {activeSince}</p>
           <div className="mt-1 flex gap-3 text-sm font-semibold text-ink">
             <span className="flex items-center gap-1"><Flame className="h-4 w-4 text-orange" />{profile.streakDays}</span>
-            <span className="flex items-center gap-1"><Star className="h-4 w-4 text-amber-400" />{profile.stars}</span>
+            <span className="flex items-center gap-1"><Star className="h-4 w-4 text-gold" />{profile.stars}</span>
           </div>
         </div>
       </section>
@@ -114,7 +122,7 @@ export function Profil() {
       {/* Settings PATCHes must not fail silently — one shared alert for name/buddy/Ton saves
           (mirrors the DangerAction error handling; react-query clears it on the next attempt). */}
       {settings.isError && (
-        <p role="alert" className="rounded-card bg-orange/10 px-4 py-3 text-sm font-medium text-orange-dark">
+        <p role="alert" className="rounded-card bg-orange/10 px-4 py-3 text-sm font-medium text-orange-text">
           {errorMessage(settings.error)}
         </p>
       )}
@@ -139,12 +147,12 @@ export function Profil() {
                   }
                 }}
                 className={cn(
-                  'flex flex-col items-center gap-1 rounded-card bg-white p-2 shadow-sm ring-1 transition-transform active:scale-95',
-                  selected ? 'ring-2 ring-teal' : 'ring-black/5',
+                  'flex flex-col items-center gap-1 rounded-card bg-surface p-2 shadow-sm ring-1 transition-transform active:scale-95',
+                  selected ? 'ring-2 ring-teal' : 'ring-hairline',
                 )}
               >
                 <img src={buddyStateSrc(b.id, selected ? 'froehlich' : 'cool')} alt="" className="h-12 w-12" />
-                <span className={cn('text-xs font-medium', selected ? 'text-teal-dark' : 'text-ink-soft')}>{b.name}</span>
+                <span className={cn('text-xs font-medium', selected ? 'text-teal-text' : 'text-ink-soft')}>{b.name}</span>
               </button>
             );
           })}
@@ -162,6 +170,31 @@ export function Profil() {
             onChange={(soundOn) => settings.mutate({ soundOn })}
           />
         </Row>
+        {/* Night mode. Local-first: theme + mirror flip immediately, the PATCH follows; on error
+            the visual state reverts to the server truth (shared settings alert shows the message). */}
+        <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
+          <p className="mb-3 font-medium text-ink">Aussehen</p>
+          <RadioRow
+            label="Aussehen"
+            value={profile.appearance}
+            options={APPEARANCE_OPTIONS}
+            disabled={settings.isPending}
+            onChange={(appearance) => {
+              if (appearance === profile.appearance) return;
+              rememberAppearance(appearance);
+              applyTheme(resolveTheme(appearance, prefersDark()));
+              settings.mutate(
+                { appearance },
+                {
+                  onError: () => {
+                    rememberAppearance(profile.appearance);
+                    applyTheme(resolveTheme(profile.appearance, prefersDark()));
+                  },
+                },
+              );
+            }}
+          />
+        </div>
         {me?.account.email && (
           <Row label="Anmelde-E-Mail">
             <span className="min-w-0 truncate text-sm text-ink-soft">{me.account.email}</span>
@@ -254,14 +287,14 @@ function DangerAction({
   const run = () => mutation.mutate(undefined, { onSuccess: cancel });
 
   return (
-    <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
       <p className="font-semibold text-ink">{title}</p>
       <p className="mt-1 text-sm text-ink-soft">{description}</p>
 
       {step === 'idle' && (
         <Button
           variant="ghost"
-          className="mt-3 w-full text-orange-dark hover:bg-orange/10"
+          className="mt-3 w-full text-orange-text hover:bg-orange/10"
           onClick={() => setStep('confirm')}
         >
           <Icon className="h-4 w-4" aria-hidden /> {actionLabel}
@@ -270,7 +303,7 @@ function DangerAction({
 
       {step !== 'idle' && (
         <div className="mt-3 space-y-2">
-          <p className="text-sm font-semibold text-orange-dark">
+          <p className="text-sm font-semibold text-orange-text">
             {step === 'confirm' ? confirmQuestion : FINAL_QUESTION}
           </p>
           <div className="flex gap-2">
@@ -295,7 +328,7 @@ function DangerAction({
             )}
           </div>
           {mutation.isError && (
-            <p role="alert" className="text-sm text-orange-dark">
+            <p role="alert" className="text-sm text-orange-text">
               {errorMessage(mutation.error)}
             </p>
           )}
@@ -307,7 +340,7 @@ function DangerAction({
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <div className="flex items-center justify-between gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
       <span className="font-medium text-ink">{label}</span>
       {children}
     </div>

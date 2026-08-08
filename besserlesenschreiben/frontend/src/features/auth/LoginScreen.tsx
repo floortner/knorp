@@ -73,7 +73,7 @@ export function LoginScreen() {
               aria-label="E-Mail-Adresse"
             />
             {requestCode.isError && (
-              <p role="alert" className="px-1 text-sm text-orange-dark">
+              <p role="alert" className="px-1 text-sm text-orange-text">
                 {errorMessage(requestCode.error)}
               </p>
             )}

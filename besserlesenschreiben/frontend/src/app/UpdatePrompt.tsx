@@ -26,7 +26,7 @@ export function UpdatePrompt() {
   return (
     <div
       role="status"
-      className="fixed inset-x-0 bottom-20 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-card bg-white px-4 py-3 shadow-lg ring-1 ring-black/10"
+      className="fixed inset-x-0 bottom-20 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-card bg-surface px-4 py-3 shadow-lg ring-1 ring-hairline-strong"
     >
       <p className="text-sm font-medium text-ink">Neue Version verfügbar – neu laden?</p>
       <div className="flex shrink-0 gap-1">

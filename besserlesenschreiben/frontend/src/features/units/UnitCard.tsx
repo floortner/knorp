@@ -21,7 +21,7 @@ export function UnitCard({
     <article
       className={cn(
         'flex items-center gap-4 rounded-card p-4 shadow-sm ring-1 transition',
-        isCurrent ? 'bg-white ring-orange/40' : 'bg-white/60 ring-black/5',
+        isCurrent ? 'bg-surface ring-orange/40' : 'bg-surface/60 ring-hairline',
         isLocked && 'opacity-60',
       )}
     >
@@ -39,7 +39,7 @@ export function UnitCard({
         </p>
         {isCurrent && (
           <div className="mt-2 flex items-center gap-2">
-            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/[0.06]">
+            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-track">
               <span className="block h-full w-0 bg-teal" />
             </span>
             <span className="text-xs text-ink-soft/70">0 / {unit.itemCount} Übungen</span>
@@ -52,7 +52,7 @@ export function UnitCard({
           {starting ? '…' : 'Üben'} <ArrowRight className="h-4 w-4" aria-hidden />
         </Button>
       ) : (
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-ink-soft/60">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-wash text-ink-soft/60">
           {isLocked ? <Lock className="h-4 w-4" aria-hidden /> : <Check className="h-4 w-4 text-teal" aria-hidden />}
         </span>
       )}

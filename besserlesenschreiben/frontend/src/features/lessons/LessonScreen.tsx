@@ -25,7 +25,7 @@ export function LessonScreen() {
           type="button"
           onClick={() => navigate('/app/lernen')}
           aria-label="Lektion verlassen"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-ink-soft shadow-sm ring-1 ring-black/5"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-surface text-ink-soft shadow-sm ring-1 ring-hairline"
         >
           <X className="h-5 w-5" aria-hidden />
         </button>

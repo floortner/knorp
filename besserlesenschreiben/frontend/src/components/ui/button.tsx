@@ -9,8 +9,8 @@ const button = cva(
       variant: {
         primary: 'bg-orange text-white shadow-sm hover:bg-orange-dark',
         teal: 'bg-teal text-white shadow-sm hover:bg-teal-dark',
-        ghost: 'bg-white text-ink shadow-sm ring-1 ring-black/5 hover:bg-black/[0.02]',
-        link: 'text-teal-dark hover:underline',
+        ghost: 'bg-surface text-ink shadow-sm ring-1 ring-hairline hover:bg-wash',
+        link: 'text-teal-text hover:underline',
       },
       size: {
         md: 'h-11 px-5 text-base',

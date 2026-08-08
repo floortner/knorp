@@ -22,11 +22,12 @@ export function Switch({
       onClick={() => onChange(!checked)}
       className={cn(
         'relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50',
-        checked ? 'bg-teal' : 'bg-black/15',
+        checked ? 'bg-teal' : 'bg-track-strong',
       )}
     >
       <span
         className={cn(
+          // Knob stays literal white: it sits on the saturated teal/track fill in every theme.
           'absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform',
           checked ? 'translate-x-5' : 'translate-x-0',
         )}

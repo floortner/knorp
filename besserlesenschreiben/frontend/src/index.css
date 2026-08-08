@@ -16,6 +16,20 @@
   --color-orange: #f0915f;
   --color-orange-dark: #e07a45;
 
+  /* Semantic tokens (dark-mode overrides in html[data-theme='dark'] below).
+     teal-dark/orange-dark are BACKGROUND-only (hover fills); the *-text twins exist because the
+     same hue needs a lighter variant to stay readable as text on dark surfaces. */
+  --color-surface: #ffffff;
+  --color-teal-text: #1e8275;
+  --color-orange-text: #e07a45;
+  --color-gold: #fbbf24;
+  --color-gold-text: #d97706;
+  --color-hairline: rgb(0 0 0 / 0.05);
+  --color-hairline-strong: rgb(0 0 0 / 0.1);
+  --color-wash: rgb(0 0 0 / 0.04);
+  --color-track: rgb(0 0 0 / 0.06);
+  --color-track-strong: rgb(0 0 0 / 0.15);
+
   --font-body: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
 
@@ -25,7 +39,35 @@
 :root {
   font-family: var(--font-body);
   color: var(--color-ink);
+  color-scheme: light;
   /* fontScale (a11y, SPEC §6) is applied at runtime by A11yProvider via html { font-size: N% }. */
+
+  /* Decorative blob hues (auth screens) — not @theme, no utilities wanted. */
+  --blob-teal: rgba(39, 169, 155, 0.12);
+  --blob-orange: rgba(240, 145, 95, 0.12);
+}
+
+/* Night mode (SPEC §6): `data-theme` carries the RESOLVED theme — set pre-paint by the index.html
+   boot script, then by A11yProvider from the profile's `appearance` (auto follows the OS). The
+   overrides re-point the @theme vars; every token-based utility follows. Dark is warm — derived
+   from the ink hue, not blue-black; brand teal/orange fills keep light-mode parity. */
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --color-canvas: #151d1b;
+  --color-surface: #1e2a26;
+  --color-ink: #ece7db;
+  --color-ink-soft: #a9b8b1;
+  --color-teal-tint: #20342f;
+  --color-teal-text: #7cd4c6;
+  --color-orange-text: #f5a370;
+  --color-gold-text: #fbbf24;
+  --color-hairline: rgb(255 255 255 / 0.1);
+  --color-hairline-strong: rgb(255 255 255 / 0.16);
+  --color-wash: rgb(255 255 255 / 0.06);
+  --color-track: rgb(255 255 255 / 0.12);
+  --color-track-strong: rgb(255 255 255 / 0.25);
+  --blob-teal: rgba(39, 169, 155, 0.18);
+  --blob-orange: rgba(240, 145, 95, 0.18);
 }
 
 /* dyslexicFont (a11y, SPEC §6): A11yProvider toggles this flag. Atkinson Hyperlegible is already
@@ -45,6 +87,6 @@ body {
 /* Soft decorative blobs used on the auth screens (match the prototype's calm corners). */
 .bg-blobs {
   background-image:
-    radial-gradient(40rem 40rem at 110% -10%, rgba(39, 169, 155, 0.12), transparent 60%),
-    radial-gradient(32rem 32rem at -10% 110%, rgba(240, 145, 95, 0.12), transparent 60%);
+    radial-gradient(40rem 40rem at 110% -10%, var(--blob-teal), transparent 60%),
+    radial-gradient(32rem 32rem at -10% 110%, var(--blob-orange), transparent 60%);
 }

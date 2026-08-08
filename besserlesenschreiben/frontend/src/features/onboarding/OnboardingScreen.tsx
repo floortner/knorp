@@ -41,7 +41,7 @@ export function OnboardingScreen() {
           {Array.from({ length: STEPS }, (_, i) => (
             <span
               key={i}
-              className={cn('h-1.5 rounded-full transition-all', i <= step ? 'w-6 bg-teal' : 'w-3 bg-black/10')}
+              className={cn('h-1.5 rounded-full transition-all', i <= step ? 'w-6 bg-teal' : 'w-3 bg-hairline-strong')}
             />
           ))}
         </div>
@@ -61,7 +61,7 @@ export function OnboardingScreen() {
       </div>
 
       {createProfile.isError && (
-        <p role="alert" className="mb-3 text-center text-sm text-orange-dark">
+        <p role="alert" className="mb-3 text-center text-sm text-orange-text">
           {errorMessage(createProfile.error)}
         </p>
       )}
@@ -139,8 +139,8 @@ function ChooseBuddy({
               onClick={() => onBuddy(b.id)}
               aria-pressed={selected}
               className={cn(
-                'flex flex-col items-center gap-2 rounded-card bg-white p-3 shadow-sm ring-1 transition',
-                selected ? 'ring-2 ring-teal' : 'ring-black/5',
+                'flex flex-col items-center gap-2 rounded-card bg-surface p-3 shadow-sm ring-1 transition',
+                selected ? 'ring-2 ring-teal' : 'ring-hairline',
               )}
             >
               <img src={buddySrc(b.id)} alt="" className="h-14" />
@@ -169,8 +169,8 @@ function ChooseGoal({ goal, onGoal }: { goal: number; onGoal: (g: number) => voi
               onClick={() => onGoal(g.value)}
               aria-pressed={selected}
               className={cn(
-                'flex w-full items-center justify-between rounded-card bg-white p-4 text-left shadow-sm ring-1 transition',
-                selected ? 'ring-2 ring-teal' : 'ring-black/5',
+                'flex w-full items-center justify-between rounded-card bg-surface p-4 text-left shadow-sm ring-1 transition',
+                selected ? 'ring-2 ring-teal' : 'ring-hairline',
               )}
             >
               <span className="font-display font-bold text-ink">{g.label}</span>

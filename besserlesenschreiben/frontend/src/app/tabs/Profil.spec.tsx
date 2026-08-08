@@ -9,7 +9,7 @@ import { AuthProvider } from '@/features/auth/AuthProvider';
 const me: Me = {
   account: { id: 'a1', email: 'm@test.de' },
   profiles: [
-    { id: 'p1', name: 'Mia', buddy: 'nepo', goalPerWeek: 5, soundOn: true, dyslexicFont: false, fontScale: 1, stars: 240, streakDays: 3, jokerAvailable: true, unlockedUnit: 1, createdAt: '2026-01-01T00:00:00Z' },
+    { id: 'p1', name: 'Mia', buddy: 'nepo', goalPerWeek: 5, soundOn: true, dyslexicFont: false, fontScale: 1, appearance: 'auto', stars: 240, streakDays: 3, jokerAvailable: true, unlockedUnit: 1, createdAt: '2026-01-01T00:00:00Z' },
   ],
 };
 const progress: Progress = {
@@ -91,6 +91,18 @@ describe('Profil', () => {
     renderProfil();
     await user.click(await screen.findByRole('switch', { name: 'Ton an/aus' }));
     expect(updateSettings).toHaveBeenCalledWith('p1', { soundOn: false });
+  });
+
+  it('offers the Aussehen choice; picking Dunkel applies the theme and PATCHes { appearance }', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    const group = await screen.findByRole('radiogroup', { name: 'Aussehen' });
+    expect(group).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Automatisch' })).toHaveAttribute('aria-checked', 'true');
+    await user.click(screen.getByRole('radio', { name: 'Dunkel' }));
+    expect(updateSettings).toHaveBeenCalledWith('p1', { appearance: 'dark' });
+    expect(document.documentElement.dataset.theme).toBe('dark'); // local-first apply, no round-trip wait
+    expect(localStorage.getItem('blsb.appearance')).toBe('dark');
   });
 
   it('offers the 8 buddies; picking one PATCHes the profile', async () => {

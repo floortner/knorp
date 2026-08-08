@@ -41,8 +41,8 @@ export function LessonComplete({
         </p>
 
         {result && (
-          <div className="flex items-center justify-center gap-2 rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <Star className="h-6 w-6 text-amber-400" aria-hidden />
+          <div className="flex items-center justify-center gap-2 rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
+            <Star className="h-6 w-6 text-gold" aria-hidden />
             <span className="font-display text-xl font-bold text-ink">+{result.starsAwarded} Sterne</span>
           </div>
         )}
@@ -66,12 +66,12 @@ export function LessonComplete({
 
       {result && (
         <div className="w-full max-w-xs space-y-3">
-          <div className="flex items-center justify-center gap-2 rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <Star className="h-6 w-6 text-amber-400" aria-hidden />
+          <div className="flex items-center justify-center gap-2 rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
+            <Star className="h-6 w-6 text-gold" aria-hidden />
             <span className="font-display text-xl font-bold text-ink">+{result.starsAwarded} Sterne</span>
           </div>
           {result.jokerConsumed && (
-            <p className="text-sm font-medium text-amber-600">◆ Joker eingesetzt – Streak gerettet!</p>
+            <p className="text-sm font-medium text-gold-text">◆ Joker eingesetzt – Streak gerettet!</p>
           )}
           <p className="text-ink-soft">
             {result.streakDays > 0

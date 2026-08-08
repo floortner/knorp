@@ -19,7 +19,7 @@ export function WeekStrip({ activity }: { activity?: number[] }) {
               aria-label={done ? `${day}: geübt` : undefined}
               className={cn(
                 'flex h-7 w-7 items-center justify-center rounded-full',
-                done ? 'bg-teal text-white' : isToday ? 'bg-orange ring-2 ring-orange/30' : 'bg-black/[0.06]',
+                done ? 'bg-teal text-white' : isToday ? 'bg-orange ring-2 ring-orange/30' : 'bg-track',
               )}
             >
               {done && <Check className="h-4 w-4" strokeWidth={3} aria-hidden />}

@@ -118,7 +118,7 @@ export function Chat() {
         ))}
         {(send.isPending || upload.isPending) && (
           <div className="flex justify-start">
-            <div className="rounded-2xl rounded-bl-sm bg-white px-4 py-2 text-ink-soft shadow-sm ring-1 ring-black/5">
+            <div className="rounded-2xl rounded-bl-sm bg-surface px-4 py-2 text-ink-soft shadow-sm ring-1 ring-hairline">
               {upload.isPending ? 'Foto wird hochgeladen …' : 'Angelika schreibt …'}
             </div>
           </div>
@@ -127,7 +127,7 @@ export function Chat() {
       </div>
 
       {upload.isError && (
-        <p role="alert" className="pb-2 text-center text-sm text-orange-dark">
+        <p role="alert" className="pb-2 text-center text-sm text-orange-text">
           {errorMessage(upload.error)}
         </p>
       )}
@@ -158,7 +158,7 @@ export function Chat() {
           placeholder="Nachricht an Angelika …"
           aria-label="Nachricht"
           maxLength={1000}
-          className="flex-1 rounded-2xl bg-white px-4 py-3 text-ink shadow-sm ring-1 ring-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60"
+          className="flex-1 rounded-2xl bg-surface px-4 py-3 text-ink shadow-sm ring-1 ring-hairline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60"
         />
         <Button type="submit" size="md" aria-label="Senden" disabled={!draft.trim() || send.isPending}>
           <Send className="h-5 w-5" aria-hidden />
@@ -174,7 +174,7 @@ function Bubble({ message }: { message: ChatMessage }) {
       <div
         className={cn(
           'max-w-[80%] rounded-2xl shadow-sm',
-          message.me ? 'rounded-br-sm bg-teal text-white' : 'rounded-bl-sm bg-white text-ink ring-1 ring-black/5',
+          message.me ? 'rounded-br-sm bg-teal text-white' : 'rounded-bl-sm bg-surface text-ink ring-1 ring-hairline',
           message.imageUrl ? 'overflow-hidden p-1' : 'whitespace-pre-wrap px-4 py-2',
         )}
       >

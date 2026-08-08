@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ZodDto } from '../../common/zod-dto';
+import { appearanceSchema } from '../../contract/models';
 
 // Freely selectable learn buddies (frontend/public/monster-pets/ — 4 emotional states each).
 // bo/echo/inky/pixel are REWARD pets — earned via tasks (D5), never freely selectable, so they are
@@ -23,6 +24,7 @@ export const updateSettingsSchema = z.object({
   soundOn: z.boolean().optional(),
   dyslexicFont: z.boolean().optional(),
   fontScale: z.number().min(0.8).max(2).optional(),
+  appearance: appearanceSchema.optional(),
   goal: z.number().int().min(1).max(14).optional(),
   buddy: buddy.optional(),
 });

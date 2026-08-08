@@ -21,7 +21,7 @@ export function Erfolge() {
         ) : (
           <WarmRestart />
         )}
-        <Stat icon={<Star className="h-5 w-5 text-amber-400" />} value={p.stars} label="Sterne gesamt" />
+        <Stat icon={<Star className="h-5 w-5 text-gold" />} value={p.stars} label="Sterne gesamt" />
       </div>
       <WeekBars weekly={p.weeklyActivity} />
       <Heatmap days={p.monthlyHeatmap} />
@@ -31,7 +31,7 @@ export function Erfolge() {
 
 function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
   return (
-    <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
       <div className="flex items-center gap-2">
         {icon}
         <span className="font-display text-2xl font-bold text-ink">{value}</span>
@@ -43,17 +43,17 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; la
 
 function StreakStat({ streakDays, jokerAvailable }: { streakDays: number; jokerAvailable: boolean }) {
   return (
-    <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
       <div className="flex items-center gap-2">
         <Flame className="h-5 w-5 text-orange" aria-hidden />
         <span className="font-display text-2xl font-bold text-ink">{streakDays}</span>
         {jokerAvailable && (
-          <span className="text-amber-400" aria-hidden title="Joker verfügbar">◆</span>
+          <span className="text-gold" aria-hidden title="Joker verfügbar">◆</span>
         )}
       </div>
       <p className="mt-1 text-sm text-ink-soft">Tage in Folge</p>
       {jokerAvailable && (
-        <p className="mt-1 text-xs text-amber-600">1 Joker verfügbar</p>
+        <p className="mt-1 text-xs text-gold-text">1 Joker verfügbar</p>
       )}
     </div>
   );
@@ -62,7 +62,7 @@ function StreakStat({ streakDays, jokerAvailable }: { streakDays: number; jokerA
 function WarmRestart() {
   return (
     <div className="rounded-card bg-teal-tint/60 p-4">
-      <p className="font-display text-lg font-bold text-teal-dark">🌱</p>
+      <p className="font-display text-lg font-bold text-teal-text">🌱</p>
       <p className="mt-1 text-sm font-medium text-ink">Heute neu starten!</p>
     </div>
   );

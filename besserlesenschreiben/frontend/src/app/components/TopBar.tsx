@@ -23,7 +23,7 @@ export function TopBar({
         {streakDays > 0 && (
           <StreakPill streakDays={streakDays} jokerAvailable={jokerAvailable} />
         )}
-        <Pill icon={<Star className="h-4 w-4 text-amber-400" aria-hidden />} value={stars} label="Sterne" />
+        <Pill icon={<Star className="h-4 w-4 text-gold" aria-hidden />} value={stars} label="Sterne" />
       </div>
     </header>
   );
@@ -32,13 +32,13 @@ export function TopBar({
 function StreakPill({ streakDays, jokerAvailable }: { streakDays: number; jokerAvailable: boolean }) {
   return (
     <span
-      className="flex items-center gap-1 rounded-full bg-white px-3 py-1 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5"
+      className="flex items-center gap-1 rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink shadow-sm ring-1 ring-hairline"
       aria-label={`${streakDays} Tage in Folge${jokerAvailable ? ', Joker verfügbar' : ''}`}
     >
       <Flame className="h-4 w-4 text-orange" aria-hidden />
       {streakDays}
       {jokerAvailable && (
-        <span className="text-amber-400" aria-hidden title="Joker verfügbar">◆</span>
+        <span className="text-gold" aria-hidden title="Joker verfügbar">◆</span>
       )}
     </span>
   );
@@ -47,7 +47,7 @@ function StreakPill({ streakDays, jokerAvailable }: { streakDays: number; jokerA
 function Pill({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
   return (
     <span
-      className="flex items-center gap-1 rounded-full bg-white px-3 py-1 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5"
+      className="flex items-center gap-1 rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink shadow-sm ring-1 ring-hairline"
       aria-label={`${value} ${label}`}
     >
       {icon}
