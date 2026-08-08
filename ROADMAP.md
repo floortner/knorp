@@ -76,10 +76,36 @@ D1–D4 + D7 shipped (HISTORY.md §D).
 5. **Badges (OPEN).** The SVG policy reserves them and `review_state` already knows mastery:
    "Silben-Meister", 7-Tage-Serie, unit badges, shown in `/profil`. Medium effort (small backend
    addition).
-6. **Weekly parent email (OPEN — highest leverage for the target audience).** Retention at this age
-   runs through the parent. `digest.md` already computes everything — a Friday "Mia hat 3× geübt,
-   stark bei Silben, als Nächstes: Dehnungs-h" via the existing email service turns parents into
-   the reminder system, without pushing notifications at a student.
+6. **Weekly parent email (highest leverage for the target audience) — DESIGNED 2026-08-08, build
+   when §F's content is live** (the skill lines need a real taxonomy; pre-§F only the activity
+   lines would carry meaning). Retention at this age runs through the parent: a Friday
+   "Mia hat 3× geübt, stark bei Silben, als Nächstes: Dehnungs-h" turns parents into the reminder
+   system, without pushing notifications at a student. Settled design (groundwork in this repo's
+   2026-08-08 session; evidence rules from `content/academia/DUOLINGO_ROADMAP.md` §C.1):
+   - **Data spans three read models**, not just the digest: progress `weeklyActivity` (geübt-days
+     vs `goalPerWeek`, **same nonzero-days definition as the app's GoalCard** — else email and app
+     contradict), the digest skill rollup, and the FSRS due list. Own renderer
+     (`parent-digest.render.ts`) over `buildDigestData(windowDays=7)` — never
+     `DigestService.generate()` (would overwrite the 14-day LLM-digest cache) and **never the LLM**
+     (the student's name stays off third-party processors; the LLM digest omits it on purpose,
+     the parent email wants it).
+   - **Trigger — the system's FIRST real scheduled job** (the login-code "cleanup job" is actually
+     an opportunistic in-request sweep): systemd oneshot timer per the `blsb-backup.timer`
+     precedent (Friday afternoon Berlin, `Persistent=true`), standalone Node entrypoint, wired in
+     `release.sh`; plus a **sent-ledger table** (unique account × ISO week) so catch-up/restart
+     can't double-send (durable-rows house rule; multi-instance-safe later).
+   - **One email per account** (section per student profile), `status='active'` accounts only.
+   - **Content rules:** geübt-days/sessions never minutes; objective per-skill data (self-report
+     is systematically wrong); calm non-shaming empty-week variant; rotate framing templates
+     (~2-email cooldown); German copy, "Schüler" never "Kind".
+   - **Opt-out (first non-transactional email):** `account.weeklyEmail` column + one-click
+     unsubscribe via signed capability link (image-token precedent) + `List-Unsubscribe` header —
+     the link is the UI (no parent surface exists since the Eltern-Bereich removal).
+   - **Email service:** refactor `sendLoginCode` onto a private `send({to,subject,text,html})`;
+     new SES identity `post@` for non-auth mail (`infra/ssm.tf` + identity; login codes keep
+     `login@`); operator: SES production-access request if still sandboxed. Logging: identifiers +
+     outcomes only — never the recipient or the rendered body (it is re-identifying performance
+     data). SPEC/ARCHITECTURE updates ride along in the build PR.
 8. **Spoken praise variety (later — needs Polly).** Audio reward beats visual for pre-readers.
 
 Smaller noted gaps from the 2026-08-06 frontend consistency audit:
