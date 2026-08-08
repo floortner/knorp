@@ -9,10 +9,18 @@ import { coreApi } from '@/lib/endpoints';
 import { errorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { RadioRow } from '@/components/ui/radio-row';
+import { applyTheme, prefersDark, rememberAppearance, resolveTheme, type Appearance } from '@/features/settings/theme';
 import { cn } from '@/lib/cn';
 
 // Tap the big buddy → it reacts, cycling through its emotional states (then back to neutral).
 const REACTIONS: BuddyState[] = ['froehlich', 'ueberrascht', 'cool'];
+
+const APPEARANCE_OPTIONS: readonly { value: Appearance; label: string }[] = [
+  { value: 'light', label: 'Hell' },
+  { value: 'dark', label: 'Dunkel' },
+  { value: 'auto', label: 'Automatisch' },
+];
 
 export function Profil() {
   const { logout } = useAuth();
@@ -162,6 +170,31 @@ export function Profil() {
             onChange={(soundOn) => settings.mutate({ soundOn })}
           />
         </Row>
+        {/* Night mode. Local-first: theme + mirror flip immediately, the PATCH follows; on error
+            the visual state reverts to the server truth (shared settings alert shows the message). */}
+        <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
+          <p className="mb-3 font-medium text-ink">Aussehen</p>
+          <RadioRow
+            label="Aussehen"
+            value={profile.appearance}
+            options={APPEARANCE_OPTIONS}
+            disabled={settings.isPending}
+            onChange={(appearance) => {
+              if (appearance === profile.appearance) return;
+              rememberAppearance(appearance);
+              applyTheme(resolveTheme(appearance, prefersDark()));
+              settings.mutate(
+                { appearance },
+                {
+                  onError: () => {
+                    rememberAppearance(profile.appearance);
+                    applyTheme(resolveTheme(profile.appearance, prefersDark()));
+                  },
+                },
+              );
+            }}
+          />
+        </div>
         {me?.account.email && (
           <Row label="Anmelde-E-Mail">
             <span className="min-w-0 truncate text-sm text-ink-soft">{me.account.email}</span>
