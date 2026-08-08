@@ -1,0 +1,4 @@
+{
+  "_comment": "Golden example /units payload. The Vokaltraining 7-unit sequence was dropped along with its word lists and training types — the unit catalogue is empty until the new sequence is designed (mirrors backend units.catalog.ts).",
+  "units": []
+}

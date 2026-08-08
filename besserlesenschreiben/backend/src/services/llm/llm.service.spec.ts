@@ -66,10 +66,12 @@ describe('LlmService', () => {
     expect(retryMessages.at(-1).text).toMatch(/ungültig/i);
   });
 
-  it('rejects an off-contract reply with 502 after the retry also fails (never returns junk)', async () => {
+  // 503 (not 502) on purpose: the family app's ✨ card falls back to a bank session on exactly
+  // 503 PROVIDER_UNAVAILABLE — a twice-unusable batch deserves the same graceful path as "no model".
+  it('rejects an off-contract reply with 503 after the retry also fails (never returns junk)', async () => {
     const extractRaw = vi.fn(async () => ({ topic: 'x' /* always missing score */ }));
     const svc = new LlmService(fakeProvider({ extractRaw }));
-    expect(await statusOf(svc.extract(schema, 'analysis', { messages: [] }))).toBe(502);
+    expect(await statusOf(svc.extract(schema, 'analysis', { messages: [] }))).toBe(503);
     expect(extractRaw).toHaveBeenCalledTimes(2);
   });
 });

@@ -5,7 +5,7 @@ import type { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 import { assertProfileOwned } from '../../common/ownership';
-import { daysAgo, startOfAppDay, startOfAppWeek } from '../../common/dates';
+import { daysAgo, secondsUntilNextAppDay, startOfAppDay, startOfAppWeek } from '../../common/dates';
 import { STARS_PER_SESSION, isJokerAvailable, leagueFor, nextStreak, type League } from '../progress/gamification';
 import { LlmService } from '../../services/llm/llm.service';
 import { DigestService } from '../../services/digest/digest.service';
@@ -179,6 +179,8 @@ export class SessionsService {
         429,
         'RATE_LIMITED',
         'Nepo hat für heute genug neue Übungen gezaubert. Morgen gibt es wieder frische!',
+        undefined,
+        secondsUntilNextAppDay(now),
       );
     }
 

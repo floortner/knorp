@@ -74,8 +74,14 @@ install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-backup.service" /etc/sy
 install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-backup.timer"   /etc/systemd/system/blsb-backup.timer
 systemctl daemon-reload
 systemctl enable blsb-api
-# Note: the backup timer is enabled by the operator once /etc/blsb/backup.env exists (see deploy/README.md)
-# — installing the units here just guarantees the root-owned ExecStart path is always current.
+# Backups: config-gated auto-enable. Once the operator has created /etc/blsb/backup.env (keypair +
+# rclone remote — deploy/README.md "Backups"), every deploy re-asserts the timer; a fresh box without
+# the config still deploys cleanly, but says so loudly instead of silently never backing up.
+if [ -f /etc/blsb/backup.env ]; then
+  systemctl enable --now blsb-backup.timer
+else
+  echo "WARN: /etc/blsb/backup.env missing — backup timer NOT enabled (see deploy/README.md 'Backups')." >&2
+fi
 
 # 6. nginx site + TLS. Render the template ONLY on first deploy — after that certbot OWNS the file
 # (it rewrites it with the :443 server + redirect); re-rendering would clobber TLS. (Exactly that bug

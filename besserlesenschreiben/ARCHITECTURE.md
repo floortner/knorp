@@ -42,7 +42,8 @@ media handling**), **this document wins**.
 ### 1a. Actors & identities — two disjoint auth realms
 
 The system has **two completely separate identity realms**; a credential in one is never valid in the other,
-and the JWTs carry a different `aud`/role so a guard can never confuse them.
+enforced by **distinct signing keys** (boot-asserted `STAFF_JWT_SECRET` ≠ `JWT_SECRET`); staff tokens
+additionally carry `aud:"staff"`, which the family guard explicitly rejects as defence-in-depth.
 
 | Realm | Who | Surface | Auth | Sees |
 |---|---|---|---|---|
@@ -129,7 +130,7 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 | Runtime | Node.js (Active LTS "Krypton") | **24.x LTS** |
 | Language | TypeScript | 5.x (6.0 emerging) |
 | Web framework | NestJS (Fastify adapter) | **11.x** |
-| Validation / DTOs | Zod (+ `nestjs-zod`) | **4.x** |
+| Validation / DTOs | Zod (local `ZodDto` factory — no `nestjs-zod`) | **4.x** |
 | OpenAPI | `@nestjs/swagger` (feeds frontend type-gen) | current |
 | ORM | Prisma (+ `@prisma/adapter-pg`) | **7.x** |
 | Migrations | Prisma Migrate | (Prisma 7) |
@@ -137,7 +138,7 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 | Logging | `nestjs-pino` (pino, structured JSON) | current |
 | Database | PostgreSQL | **17** (18 fine) |
 | Object storage SDK | `@aws-sdk/client-s3` (+ `@aws-sdk/s3-request-presigner`) — per-user prefixes, presigned URLs | v3 |
-| LLM | `@anthropic-ai/sdk` (structured output via `zodOutputFormat`) | current |
+| LLM | `@anthropic-ai/sdk` (structured output via a forced tool over Zod-derived JSON Schema) | current |
 | Scheduling | `ts-fsrs` (SM-2 fallback) | current |
 | Tests | Vitest (Jest = Nest default alternative) | current |
 | Lint / format / types | ESLint + Prettier · `tsc` | — |
@@ -150,7 +151,7 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 
 **Backend-language decision (deliberate, revisitable):** **TypeScript/NestJS** is chosen for **one language
 across both repos** — shared types, shared tooling, one mental model for a solo dev, and the ability to reuse
-the same **Zod** schemas for API validation *and* Claude structured outputs (`zodOutputFormat`). NestJS gives
+the same **Zod** schemas for API validation *and* Claude structured outputs (forced-tool JSON Schema). NestJS gives
 FastAPI-equivalent batteries (DI, validation pipes, auto-OpenAPI via `@nestjs/swagger`) and mirrors the clean
 controller/service layering this doc already assumes. **Python/FastAPI** was the alternative and remains the
 stronger pick *if* the AI/ML side grew heavy (richer data tooling, `fsrs`); the trade accepted here is a
@@ -175,29 +176,33 @@ src/
   config/                 # @nestjs/config + Zod-validated env schema
   prisma/
     prisma.service.ts     # PrismaClient lifecycle (OnModuleInit/Destroy)
+  contract/               # the Zod contract source: exercise.ts · models.ts · skills.ts · staff.ts
   common/
-    guards/               # JwtAuthGuard (family) · StaffAuthGuard (staff, §1a) + admin-role check
+    guards/               # JwtAuthGuard (family) · StaffAuthGuard + StaffAdminGuard (staff, §1a)
     filters/              # all-exceptions filter → the §5 error envelope
-    interceptors/         # requestId + logging
-    security/             # JWT, argon2 hashing, rate limiting
+    interceptors/         # ZodResponseInterceptor (2xx bodies validated against the published schema)
+    decorators/  exceptions/  pipes/   # CurrentAccount/CurrentTrainer · ApiException · ZodValidationPipe
+  content/                # the §I content pipeline: loader · validate · import-plan (used by scripts/)
   modules/                # one folder per resource: controller (HTTP) + service + Zod DTOs
     auth/  profiles/  sessions/  attempts/  progress/
-    chat/  homework/  assignments/
+    chat/  homework/  assignments/  digest/ (internal module, no route)  health/
     staff/                # STAFF realm (§1a): trainer auth, review queue + authoritative apply,
                           #   lectures browse/assign, learner activity, admin user administration
-  services/               # DOMAIN logic only — plain injectables, NO controllers/HTTP here (dtctl lesson)
-    digest/               # derived markdown performance digest
+  services/               # DOMAIN logic only — plain injectables (two documented exceptions carry a
+                          #   tiny controller: storage/ local image endpoint · email/ e2e code readback)
+    digest/               # derived markdown performance digest (internal, LLM-facing)
     fsrs/                 # scheduling (ts-fsrs)
     llm/                  # provider abstraction (Anthropic-direct + dev stub), structured output
     storage/              # S3 presigned URLs / local-FS dev store (+ local image endpoint)
     email/                # login-code delivery (console | ses | resend | capture)
+fixtures/                 # the backend's committed copy of the golden session/units fixtures
 prisma/
   schema.prisma           # the model truth (account, profile, item_bank, lecture, attempt, …);
                            # the word-list model is a §F slot (HISTORY.md pivot log)
   seed.ts                 # idempotent loader: staff admins + dev accounts
 scripts/
   export-openapi.ts  seed-e2e.ts  llm-smoke.ts  content-validate.ts  content-import.ts
-test/                     # Vitest; incl. golden snapshots for digest.md + Exercise JSON
+# Tests are colocated *.spec.ts under src/ (incl. the digest.md golden + the Exercise-JSON fixture gate)
 package.json  package-lock.json  tsconfig.json  eslint.config.mjs  .env.example  AGENTS.md
 ```
 
@@ -313,7 +318,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
   CI drift gate: re-run gen:api && git diff --exit-code  →  red on any drift
   ```
 
-  The same Zod schemas drive Claude structured output (`zodOutputFormat`), so Exercise JSON stays typed
+  The same Zod schemas drive Claude structured output (a forced tool over their JSON Schema), so Exercise JSON stays typed
   end-to-end. Changing a request/response shape means editing the Zod schema, then re-running both
   generators and committing the result.
 - **Responses are validated at runtime, not just documented.** A global `ZodResponseInterceptor` re-`parse`s
@@ -345,17 +350,18 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 | 401 | `UNAUTHENTICATED` / `SESSION_EXPIRED` | route to `/login`, show "Sitzung abgelaufen" |
 | 403 | `FORBIDDEN` | generic "not allowed" |
 | 422 | `VALIDATION_ERROR` | field-level messages from `details[]` |
-| 429 | `RATE_LIMITED` | back off using `Retry-After`; soft message |
-| 404 | `NOT_FOUND` | — |
-| 409 | `CONFLICT` | — |
-| 503 | `PROVIDER_UNAVAILABLE` | AI provider down; retry later |
+| 429 | `RATE_LIMITED` | back off using `Retry-After` (set by the IP limiter AND app-thrown caps); soft message |
+| 403 | `ACCOUNT_INACTIVE` | deactivated/deleted account — treat like a 401, route to `/login` |
+| 404 | `NOT_FOUND` / `NO_ITEMS` | `NO_ITEMS` = bank empty for the unit (pre-§F state) |
+| 409 | `CONFLICT` / `ALREADY_COMPLETED` / `LECTURE_NOT_PUBLISHED` | — |
+| 503 | `PROVIDER_UNAVAILABLE` | AI unavailable OR twice-unusable output; family app falls back to a bank session |
 | 500 | `INTERNAL` | generic apology + `requestId`; nothing technical |
 
 **Backend rules**
 - All exceptions funnel through the all-exceptions filter in `common/filters/` that emits the envelope above. No raw stack
   traces, ORM errors, or provider errors ever reach the client — they're logged with the `requestId` and
   replaced by `INTERNAL`.
-- Zod validation failures (via `nestjs-zod`) are reshaped into `VALIDATION_ERROR` with a `details[]` array (field + issue).
+- Zod validation failures (via the local `ZodValidationPipe`) are reshaped into `VALIDATION_ERROR` with a `details[]` array (field + issue).
 - **Never leak** which emails exist (`/auth/request-code` always `200`), or any other
   account-enumeration signal.
 - Expensive AI ops wrap provider failures: on an Anthropic error, return `503 PROVIDER_UNAVAILABLE`.
@@ -526,7 +532,9 @@ restore from the off-platform dumps) rather than the loss of every family's data
   photo is reviewed by a trained professional to tailor lessons; (e) raw images expire on the §7 lifecycle
   regardless of review state. A trainer is revoked by flipping their status (seed/DB — a self-serve
   admin surface for this is deferred); the staff guard re-checks status per request, so revocation is
-  immediate, and any live queue claim simply expires with its short lease (no explicit release step).
+  immediate, and any live queue claim simply expires with its short lease. (Trainers leaving a review
+  without a verdict do release explicitly — `POST /staff/queue/{id}/release`; revocation just doesn't
+  need it.)
 - **Minors' data:** primary region **Frankfurt (eu-central-1)** keeps data at rest in the EU; DR backups stay
   within the EU (eu-west-1). Explicit parent consent for homework images; short retention via the S3 lifecycle;
   the logging rules in §6 are part of this commitment. **LLM data-flow (decided):**

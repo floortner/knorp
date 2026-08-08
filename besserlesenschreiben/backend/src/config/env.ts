@@ -19,9 +19,10 @@ export const envSchema = z.object({
   WEB_ORIGIN: z.string().default(''),
   // Trainer-Portal origin for CORS (credentials on). Empty → permissive (dev/test only).
   TRAINER_ORIGIN: z.string().default(''),
-  // DEPRECATED alias for TRAINER_ORIGIN (pre-rename SSM/env may still set it); remove once the
-  // infra apply that writes TRAINER_ORIGIN has run everywhere.
-  REVIEWER_ORIGIN: z.string().default(''),
+  // Bind address override for main.ts. Empty → 127.0.0.1 in production (nginx-only), else 0.0.0.0.
+  HOST: z.string().default(''),
+  // Build stamp surfaced by /health (deploy sets it — ARCHITECTURE §7). Empty → 'dev'.
+  GIT_COMMIT: z.string().default(''),
   // Public base URL of this API incl. the /api/v1 prefix. Used to build capability URLs the browser loads
   // directly — e.g. serving homework images from the filesystem store (no S3). Empty →
   // http://localhost:${PORT}/api/v1 (dev default).

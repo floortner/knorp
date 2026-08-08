@@ -130,9 +130,11 @@ The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend 
 
 ### Session generation (two paths)
 - **Bank session (default, free):** deterministic — queries `attempt` table for weak/due skills via FSRS (`ts-fsrs`), selects from `item_bank`. Zero LLM calls.
-- **LLM session (★ gated):** lectures generated on the fly — loads `digest.md` (derived from answers, **response times** `time_ms`, and **retries** `attempt_no`) plus any **professionally-reviewed** homework focus → prompts Claude → validates against Zod schemas → inserts into `item_bank` (`generated_by='llm'`) → returns session.
+- **LLM session (★ gated):** lectures generated on the fly — loads `digest.md` (derived from answers and **response times** `time_ms`; **retries** `attempt_no` reach the model indirectly, via the FSRS ratings that drive the digest's due-skills list) plus any **professionally-reviewed** homework focus → prompts Claude → validates against Zod schemas → inserts into `item_bank` (`generated_by='llm'`) → returns session.
 
 The database decides *what* to drill — informed by telemetry **and the staff-validated homework focus**; the LLM only generates *new content and conversation*.
+
+> **Pre-§F caveat:** until the content redesign seeds unit items, the bank is empty — `POST /sessions {source:'bank'}` returns `404 NO_ITEMS`, and the ✨ card's 503→bank fallback is dormant (ROADMAP §F acknowledges this; don't debug it as a regression).
 
 ### Homework review (professional-in-the-loop)
 Homework photos are uploaded by the family but validated by an **internal staff trainer**, not the parent (ARCHITECTURE §11, backend SPEC §10). Vision produces a **draft** (`homework_upload.llm_analysis`) that is **never applied on its own**; a trainer approves/corrects/rejects in the staff portal, and only the **authoritative** `reviewed_analysis` mutates `attempt`/`review_state` and feeds the next lecture. Review is **async** (the student is never blocked); the queue shows the student's **name** + image + draft + skill tags + grade band (known-trainer model, rule 10) — never parent email/chat/billing. There is no parent-confirm step.
@@ -169,7 +171,7 @@ working copy; on any doubt, ARCHITECTURE wins.)
 
 - **Terminology:** the app's users are **students** (ages 8–14) — never "child/children" in docs, comments, or UI copy (German copy: "Schüler"). One legacy wire key keeps the old name for data compatibility: `childAnswer` in stored homework-analysis JSON. (`chat_message.role` was migrated to `'student'`; the read path still tolerates legacy `'child'` rows.)
 - **Wire format:** camelCase JSON on the wire; snake_case DB columns. Prisma `@map`/`@@map` bridges them.
-- **Validation:** Zod via `nestjs-zod` (`createZodDto`). The same Zod schemas drive Claude structured output (`zodOutputFormat` + `messages.parse`) so Exercise JSON stays typed end-to-end.
+- **Validation:** Zod via the local `ZodDto` factory + `ZodValidationPipe` (`src/common/zod-dto.ts` — replaced `nestjs-zod`, whose bundled `@nest-zod/z` breaks under Zod 4). The same Zod schemas drive Claude structured output (a **forced tool** whose `input_schema` is the Zod-derived JSON Schema, re-validated with `schema.safeParse` + one corrective re-ask — `services/llm`) so Exercise JSON stays typed end-to-end.
 - **Contract pipeline:** Zod schemas (`backend/src/contract/*`) → committed `backend/openapi.json` (`npm run openapi:export`) → committed `frontend/src/lib/api.gen.ts` (`npm run gen:api`), with a CI drift gate. Never hand-edit `api.gen.ts`. A global `ZodResponseInterceptor` also validates every 2xx response against its schema at runtime (dev throws, prod logs+strips).
 - **Auth:** session JWT (30-day) in an **httpOnly, Secure, SameSite cookie** (`/auth/verify` sets it, `/auth/logout` clears it); the SPA holds no token in JS and derives auth from a `/me` probe. No in-memory security state in prod — lockout counters (e.g. login-code attempts) are durable DB columns.
 - **API versioning:** all routes under `/api/v1`. Breaking changes → `/api/v2`, never edit in place. Additive changes stay in v1.

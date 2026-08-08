@@ -1,0 +1,20 @@
+{
+  "_comment": "Golden example session payload — the Vokaltraining content set (14 exercise types) was dropped along with its word lists and sequence; training types are being redesigned from scratch. One `placeholder` exercise keeps the contract pipeline and golden-snapshot tests wired end-to-end. Drift-gated against the backend contract by backend/src/contract/contract.spec.ts.",
+  "sessionId": "ses_example_0001",
+  "profileId": "prof_example_0001",
+  "unit": 1,
+  "generatedAt": "2026-07-01T12:00:00.000Z",
+  "items": [
+    {
+      "id": "ex_placeholder_001",
+      "type": "placeholder",
+      "prompt": "Was passt?",
+      "options": ["Apfel", "Birne", "Kirsche"],
+      "answer": "Apfel",
+      "praise": "Super!",
+      "audioUrl": null,
+      "syllableAudio": null,
+      "skillTags": ["placeholder"]
+    }
+  ]
+}

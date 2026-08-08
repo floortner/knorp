@@ -7,13 +7,13 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import type { ApiErrorDetail } from '../exceptions/api-exception';
+import { ApiException, type ApiErrorDetail } from '../exceptions/api-exception';
 
-/** Default code per HTTP status when an exception doesn't carry an explicit one (ARCHITECTURE §5). */
+/** Default code per HTTP status when an exception doesn't carry an explicit one (ARCHITECTURE §5).
+ *  (No 402 mapping — the app is free; nothing may emit INSUFFICIENT_CREDITS. ARCHITECTURE §9.) */
 const STATUS_CODE: Record<number, string> = {
   400: 'BAD_REQUEST',
   401: 'UNAUTHENTICATED',
-  402: 'INSUFFICIENT_CREDITS',
   403: 'FORBIDDEN',
   404: 'NOT_FOUND',
   409: 'CONFLICT',
@@ -89,6 +89,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       code = 'INTERNAL';
       message = 'Etwas ist schiefgelaufen.';
       details = undefined;
+    }
+
+    // App-thrown 429s carry Retry-After so clients can back off precisely (ARCHITECTURE §5; the
+    // IP-level limiter sets its own). Default 60s when the throw site didn't specify.
+    if (status === 429) {
+      const retryAfter = exception instanceof ApiException ? (exception.retryAfterSeconds ?? 60) : 60;
+      void res.header('Retry-After', String(retryAfter));
     }
 
     void res

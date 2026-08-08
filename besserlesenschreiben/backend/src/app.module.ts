@@ -36,6 +36,16 @@ import { HealthController } from './modules/health/health.controller';
             level: isProd ? 'info' : 'debug',
             transport: isProd ? undefined : { target: 'pino-pretty', options: { singleLine: true } },
             redact: ['req.headers.authorization', 'req.headers.cookie'],
+            serializers: {
+              // Security rule 6: the default req serializer logs the FULL url incl. the query string,
+              // which can carry a parent email (/staff/users?q=…) or a capability token (?token=…).
+              // Log method + path only; headers never enter the log object at all this way.
+              req: (req: { id: unknown; method: string; url: string }) => ({
+                id: req.id,
+                method: req.method,
+                url: String(req.url).split('?')[0],
+              }),
+            },
           },
         };
       },

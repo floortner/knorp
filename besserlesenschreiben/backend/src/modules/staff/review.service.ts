@@ -233,10 +233,13 @@ export class ReviewService {
    * harmless no-op. Idempotent.
    */
   async release(trainerId: string, uploadId: string): Promise<{ ok: true }> {
-    await this.prisma.homeworkUpload.updateMany({
+    const res = await this.prisma.homeworkUpload.updateMany({
       where: { id: uploadId, claimedBy: trainerId, status: 'pending_review' },
       data: { claimedBy: null, claimedUntil: null },
     });
+    // Audit-log like every other trainer action (ARCHITECTURE §8) — but only real releases, not the
+    // fire-and-forget no-ops after a submit/takeover.
+    if (res.count > 0) this.logger.log({ event: 'review.released', trainerId, uploadId }, 'released');
     return { ok: true };
   }
 

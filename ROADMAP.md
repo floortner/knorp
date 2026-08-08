@@ -179,8 +179,17 @@ Full review in `SECURITY_REVIEW.md`; tracking issue **#81**. P1, P2, and P3 batc
   6. GitHub deploy approval gate (environment protection + OIDC `sub` scoped to
      `environment:beta`) and SHA-pin third-party actions.
 - **Operator actions (not code):** `terraform validate`/`plan` + staging CSP smoke-test before
-  apply; provision a write-only backup token + `HEALTHCHECK_URL`; re-verify the dormant P2-4
+  apply; provision a write-only backup token + `HEALTHCHECK_URL` (cloud-init installs age/rclone;
+  the deploy auto-enables the timer once `/etc/blsb/backup.env` exists); re-verify the dormant P2-4
   taxonomy filter once `SKILL_TAGS` is populated in §F. (All in #81.)
+
+**Data-retention decision (2026-08-06):** user and telemetry data in the DB — accounts, profiles,
+sessions/attempts (incl. transcribed homework answers in `attempt.given` and the
+`llm_analysis`/`reviewed_analysis` JSON), chat, FSRS state — is **retained indefinitely**; deletion
+happens **on request via the admin** (`DELETE /staff/users/{id}` erases all DB rows + the account's
+blobs — shipped), plus the family-side self-service resets (progress/chat). Raw homework **images**
+keep the short S3 lifecycle (currently 90 days; P3 item 4 above scopes the rule to the homework
+prefix so other blobs aren't swept). Backups inherit the provider's lifecycle rules.
 
 ### H. Lectures + student tracking — the trainer portal as teaching console
 
