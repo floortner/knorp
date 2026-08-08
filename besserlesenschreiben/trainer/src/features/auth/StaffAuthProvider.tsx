@@ -33,13 +33,15 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
-      isAuthenticated: !signedOut && me.isSuccess,
+      // The probe resolves 401 to `null` data (useStaffMe), so "authenticated" is data-truthiness,
+      // not isSuccess — a settled anonymous probe is a successful query with null data.
+      isAuthenticated: !signedOut && !!me.data,
       isResolving: !signedOut && me.isPending,
       trainer: signedOut ? null : (me.data ?? null),
       login,
       logout,
     }),
-    [signedOut, me.isSuccess, me.isPending, me.data, login, logout],
+    [signedOut, me.isPending, me.data, login, logout],
   );
 
   return <StaffAuthContext.Provider value={value}>{children}</StaffAuthContext.Provider>;
