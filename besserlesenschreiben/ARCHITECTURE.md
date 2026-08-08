@@ -260,7 +260,8 @@ The trainer portal is **transport + UI only** — every decision (queue ordering
 review) is enforced by the backend `staff/` module. It ships to ~3 internal staff, never to families, and
 authenticates on the disjoint **staff** realm (§1a). **Form factor: desktop/tablet, landscape two-pane** (image
 | LLM draft) — **not** mobile-first; skip phone layouts (that's the family app's job, §11). Types are generated
-from the backend's published `/staff/*` OpenAPI (`npm run gen:api`) and drift-gated in CI.
+from the backend's **full** published OpenAPI (`npm run gen:api`; the portal calls only `/staff/*`, but any
+contract change — family routes included — requires the regen) and drift-gated in CI.
 
 `features/exercises/types.ts` (the `Exercise` discriminated union) and `lib/api.ts` are the two files that
 **must** stay in lockstep with the backend contract. Treat a change to either as a contract change (§4).
@@ -312,7 +313,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
   openapi.json   (committed)                 # exported via `npm run openapi:export`
      │  openapi-typescript
      ▼
-  api.gen.ts     (committed, frontend)       # generated via `npm run gen:api` — NEVER hand-edit
+  api.gen.ts     (committed, frontend + trainer)  # generated via `npm run gen:api` in EACH SPA — NEVER hand-edit
      │
      ▼
   CI drift gate: re-run gen:api && git diff --exit-code  →  red on any drift

@@ -54,7 +54,7 @@ in-memory security state. Follow them as written there. Backend-specific:
 - Install: `npm ci`   ·   Run: `npm run start:dev`
 - Test: `npm test` (Vitest; include **golden** tests for `digest.md` and the `Exercise` JSON shapes)
 - Lint/type: `npm run lint` (ESLint) · `npx tsc --noEmit`
-- Contract: `npm run openapi:export` (regenerate `openapi.json`) → then `npm run gen:api` in `../frontend`; commit both.
+- Contract: `npm run openapi:export` (regenerate `openapi.json`) → then `npm run gen:api` in `../frontend` **and** `../trainer`; commit all three.
 - DB: `npx prisma migrate dev` (local) / `npx prisma migrate deploy` (CI) · `npx prisma generate`
 - Seed: `npm run seed` (`prisma db seed` → `prisma/seed.ts`)
 - Content: `npm run content:validate` (lint the `content/` lecture library, German errors) ·

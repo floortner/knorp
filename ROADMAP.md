@@ -64,7 +64,9 @@ pipeline (Web-Speech fallback for now; target Amazon Polly) · full-prod hardeni
      reorder/grid/typed-input types; the `derive.ts` case is where the convention lives. For
      typed-input types decide whether to capture the pre-correction answer (`givenFirst` — §J5;
      raw keystrokes stay off-limits on principle).
-   - **Trainer:** none — exercise types don't surface in the staff portal.
+   - **Trainer:** no UI work — exercise types don't surface in the staff portal — but its
+     `api.gen.ts` types the backend's **full** OpenAPI, so every contract change still needs
+     `npm run gen:api` in `trainer/` too (the drift gate fails red otherwise; bitten 2026-08-08).
 
 ### D. Frontend engagement & retention
 
