@@ -55,6 +55,7 @@ model Profile {
   soundOn      Boolean  @default(true) @map("sound_on")
   dyslexicFont Boolean  @default(false) @map("dyslexic_font")
   fontScale    Decimal  @default(1.0) @map("font_scale") @db.Decimal(3, 2)
+  appearance   String   @default("auto") // 'auto' | 'light' | 'dark' (z.enum in the contract)
   // gamification & progression state
   stars        Int      @default(0)
   streakDays   Int      @default(0) @map("streak_days")

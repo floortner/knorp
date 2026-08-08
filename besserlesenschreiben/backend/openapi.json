@@ -239,6 +239,14 @@
                           "fontScale": {
                             "type": "number"
                           },
+                          "appearance": {
+                            "type": "string",
+                            "enum": [
+                              "auto",
+                              "light",
+                              "dark"
+                            ]
+                          },
                           "stars": {
                             "type": "integer",
                             "minimum": -9007199254740991,
@@ -269,6 +277,7 @@
                           "soundOn",
                           "dyslexicFont",
                           "fontScale",
+                          "appearance",
                           "stars",
                           "streakDays",
                           "jokerAvailable",
@@ -375,6 +384,14 @@
                         "fontScale": {
                           "type": "number"
                         },
+                        "appearance": {
+                          "type": "string",
+                          "enum": [
+                            "auto",
+                            "light",
+                            "dark"
+                          ]
+                        },
                         "stars": {
                           "type": "integer",
                           "minimum": -9007199254740991,
@@ -405,6 +422,7 @@
                         "soundOn",
                         "dyslexicFont",
                         "fontScale",
+                        "appearance",
                         "stars",
                         "streakDays",
                         "jokerAvailable",
@@ -471,6 +489,14 @@
                         "fontScale": {
                           "type": "number"
                         },
+                        "appearance": {
+                          "type": "string",
+                          "enum": [
+                            "auto",
+                            "light",
+                            "dark"
+                          ]
+                        },
                         "stars": {
                           "type": "integer",
                           "minimum": -9007199254740991,
@@ -501,6 +527,7 @@
                         "soundOn",
                         "dyslexicFont",
                         "fontScale",
+                        "appearance",
                         "stars",
                         "streakDays",
                         "jokerAvailable",
@@ -521,6 +548,14 @@
                         "fontScale": {
                           "type": "number"
                         },
+                        "appearance": {
+                          "type": "string",
+                          "enum": [
+                            "auto",
+                            "light",
+                            "dark"
+                          ]
+                        },
                         "goalPerWeek": {
                           "type": "integer",
                           "minimum": -9007199254740991,
@@ -534,6 +569,7 @@
                         "soundOn",
                         "dyslexicFont",
                         "fontScale",
+                        "appearance",
                         "goalPerWeek",
                         "buddy"
                       ],
@@ -599,6 +635,14 @@
                     "minimum": 0.8,
                     "maximum": 2
                   },
+                  "appearance": {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "light",
+                      "dark"
+                    ]
+                  },
                   "goal": {
                     "type": "integer",
                     "minimum": 1,
@@ -656,6 +700,14 @@
                         "fontScale": {
                           "type": "number"
                         },
+                        "appearance": {
+                          "type": "string",
+                          "enum": [
+                            "auto",
+                            "light",
+                            "dark"
+                          ]
+                        },
                         "stars": {
                           "type": "integer",
                           "minimum": -9007199254740991,
@@ -686,6 +738,7 @@
                         "soundOn",
                         "dyslexicFont",
                         "fontScale",
+                        "appearance",
                         "stars",
                         "streakDays",
                         "jokerAvailable",

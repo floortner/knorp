@@ -22,6 +22,9 @@ export const healthSchema = z.object({
 export const verifyResponseSchema = z.object({ isNewAccount: z.boolean() });
 
 // ── Profiles ───────────────────────────────────────────────────────────────────
+// Night mode (frontend SPEC §6): 'auto' follows the OS prefers-color-scheme; resolved client-side.
+export const appearanceSchema = z.enum(['auto', 'light', 'dark']);
+
 export const profileSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -30,6 +33,7 @@ export const profileSchema = z.object({
   soundOn: z.boolean(),
   dyslexicFont: z.boolean(),
   fontScale: z.number(),
+  appearance: appearanceSchema,
   stars: z.number().int(),
   streakDays: z.number().int(),
   jokerAvailable: z.boolean(),
@@ -48,6 +52,7 @@ export const profileDetailSchema = z.object({
     soundOn: z.boolean(),
     dyslexicFont: z.boolean(),
     fontScale: z.number(),
+    appearance: appearanceSchema,
     goalPerWeek: z.number().int(),
     buddy: z.string(),
   }),

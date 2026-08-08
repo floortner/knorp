@@ -835,6 +835,8 @@ export interface operations {
                             soundOn: boolean;
                             dyslexicFont: boolean;
                             fontScale: number;
+                            /** @enum {string} */
+                            appearance: "auto" | "light" | "dark";
                             stars: number;
                             streakDays: number;
                             jokerAvailable: boolean;
@@ -878,6 +880,8 @@ export interface operations {
                             soundOn: boolean;
                             dyslexicFont: boolean;
                             fontScale: number;
+                            /** @enum {string} */
+                            appearance: "auto" | "light" | "dark";
                             stars: number;
                             streakDays: number;
                             jokerAvailable: boolean;
@@ -912,6 +916,8 @@ export interface operations {
                             soundOn: boolean;
                             dyslexicFont: boolean;
                             fontScale: number;
+                            /** @enum {string} */
+                            appearance: "auto" | "light" | "dark";
                             stars: number;
                             streakDays: number;
                             jokerAvailable: boolean;
@@ -922,6 +928,8 @@ export interface operations {
                             soundOn: boolean;
                             dyslexicFont: boolean;
                             fontScale: number;
+                            /** @enum {string} */
+                            appearance: "auto" | "light" | "dark";
                             goalPerWeek: number;
                             buddy: string;
                         };
@@ -946,6 +954,8 @@ export interface operations {
                     soundOn?: boolean;
                     dyslexicFont?: boolean;
                     fontScale?: number;
+                    /** @enum {string} */
+                    appearance?: "auto" | "light" | "dark";
                     goal?: number;
                     /** @enum {string} */
                     buddy?: "nepo" | "stella" | "charly" | "jax" | "junior" | "li" | "bruno" | "greta";
@@ -967,6 +977,8 @@ export interface operations {
                             soundOn: boolean;
                             dyslexicFont: boolean;
                             fontScale: number;
+                            /** @enum {string} */
+                            appearance: "auto" | "light" | "dark";
                             stars: number;
                             streakDays: number;
                             jokerAvailable: boolean;
