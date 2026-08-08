@@ -33,3 +33,5 @@ content/lectures/erste-lektion.md
 
 # Vite dep-optimizer caches (never commit build caches)
 **/.vite/
+
+content/academia/duolingo/pdf**
