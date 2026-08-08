@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Flame, Pencil, RotateCcw, Star, Trash2, X, type LucideIcon } from 'lucide-react';
 import { useActiveProfile, useMe } from '@/features/profile/useMe';
 import { useUpdateSettings } from '@/features/profile/useUpdateSettings';
-import { BUDDIES, buddySrc, buddyStateSrc, type BuddyState } from '@/lib/constants';
+import { BUDDIES, GOALS, buddySrc, buddyStateSrc, type BuddyState } from '@/lib/constants';
 import { useAuth } from '@/features/auth/auth-context';
 import { coreApi } from '@/lib/endpoints';
 import { errorMessage } from '@/lib/api';
@@ -21,6 +21,15 @@ const APPEARANCE_OPTIONS: readonly { value: Appearance; label: string }[] = [
   { value: 'dark', label: 'Dunkel' },
   { value: 'auto', label: 'Automatisch' },
 ];
+
+// String values because RadioRow keys on strings; parsed back to numbers in the PATCH.
+const FONT_SCALE_OPTIONS = [
+  { value: '1', label: 'Normal' },
+  { value: '1.25', label: 'Groß' },
+  { value: '1.5', label: 'Sehr groß' },
+] as const;
+
+const GOAL_OPTIONS = GOALS.map((g) => ({ value: String(g.value), label: g.label }));
 
 export function Profil() {
   const { logout } = useAuth();
@@ -193,6 +202,37 @@ export function Profil() {
                 },
               );
             }}
+          />
+        </div>
+        {/* Schriftgröße (a11y, SPEC §6) — the editing UI cut in 1.6 returns as presets over fontScale. */}
+        <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
+          <p className="mb-3 font-medium text-ink">Schriftgröße</p>
+          <RadioRow
+            label="Schriftgröße"
+            value={String(profile.fontScale)}
+            options={FONT_SCALE_OPTIONS}
+            disabled={settings.isPending}
+            onChange={(v) => settings.mutate({ fontScale: Number(v) })}
+          />
+        </div>
+        {/* dyslexicFont is spacing-only today (SPEC §6) — the label says spacing, not a font swap. */}
+        <Row label="Extra Abstand beim Lesen">
+          <Switch
+            label="Extra Abstand an/aus"
+            checked={profile.dyslexicFont}
+            disabled={settings.isPending}
+            onChange={(dyslexicFont) => settings.mutate({ dyslexicFont })}
+          />
+        </Row>
+        {/* Weekly goal — onboarding promises "Du kannst das später jederzeit ändern"; now it's true. */}
+        <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
+          <p className="mb-3 font-medium text-ink">Wochenziel</p>
+          <RadioRow
+            label="Wochenziel"
+            value={String(profile.goalPerWeek)}
+            options={GOAL_OPTIONS}
+            disabled={settings.isPending}
+            onChange={(v) => settings.mutate({ goal: Number(v) })}
           />
         </div>
         {me?.account.email && (

@@ -21,7 +21,10 @@ export function speak(ex: Exercise, soundOn: boolean): void {
     if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return;
     const u = new SpeechSynthesisUtterance(wordOf(ex));
     u.lang = 'de-DE';
-    u.rate = 0.85;
+    // Clear-speech evidence (DUOLINGO_ROADMAP §C.2): slower, well-articulated speech is what makes
+    // recognition work for weak readers — semantic context can't compensate for fast audio. 0.75 is
+    // a deliberate step toward clear-speech rate without tipping into a condescending register.
+    u.rate = 0.75;
     synth.cancel();
     synth.speak(u);
   } catch {

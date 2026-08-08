@@ -49,3 +49,10 @@ export function buddyStateSrc(buddy: string, state: BuddyState): string {
   if (PET_IDS.has(buddy)) return `/monster-pets/${buddy}.svg`;
   return `/monster-pets/nepo-${state}.svg`;
 }
+
+/** Weekly practice-goal presets — shared by onboarding (first pick) and /profil (editing). */
+export const GOALS = [
+  { value: 3, label: '3× pro Woche', hint: 'locker' },
+  { value: 5, label: '5× pro Woche', hint: 'normal' },
+  { value: 7, label: '7× pro Woche', hint: 'sportlich' },
+] as const;

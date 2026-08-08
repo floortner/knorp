@@ -121,7 +121,8 @@ postAttempt({
 ## 5. Voice playback
 
 - If `ex.audioUrl` present → play it (`syllableAudio[i]` is the slot for future syllable-wise playback).
-- Else fall back to **Web Speech API** (`SpeechSynthesisUtterance`, `lang='de-DE'`, `rate≈0.85`) — same as prototype.
+- Else fall back to **Web Speech API** (`SpeechSynthesisUtterance`, `lang='de-DE'`, `rate≈0.75` —
+  clear-speech evidence, `content/academia/DUOLINGO_ROADMAP.md` §C.2).
 - Respect `settings.soundOn`. Gate audio init behind first user gesture (mobile autoplay rules).
 
 ---
@@ -147,9 +148,10 @@ app doesn't use it; edited via `PATCH /profiles/{id}/settings`):
   PWA manifest splash stays brand-light (W3C manifest has no dark variant — accepted).
 - High contrast, large tap targets, keyboard operability throughout (students + assistive use).
 
-> **Known gap:** `/profil` currently edits only name/buddy/`soundOn`/`appearance`. `dyslexicFont`
-> and `fontScale` are applied at runtime (`features/settings/a11y.tsx`) but have **no editing UI
-> yet** — tracked as a ROADMAP backlog item, not silently dropped.
+`/profil` edits every profile setting: name, buddy, `soundOn`, `appearance`, `fontScale`
+("Schriftgröße" presets Normal/Groß/Sehr groß = 1.0/1.25/1.5), `dyslexicFont` ("Extra Abstand
+beim Lesen" — spacing-only wording, see above), and `goal` ("Wochenziel", same presets as
+onboarding — `lib/constants.ts GOALS`).
 
 ---
 
@@ -239,8 +241,8 @@ VITE_API_BASE=        # backend URL (required for production builds)
 - Every answered item produces exactly one `/attempts` call with a sane `timeMs`.
 - App renders every exercise type in the current contract (currently just `placeholder`) from
   backend-served JSON with no hardcoded lesson data.
-- `dyslexicFont` + `fontScale` visibly change rendering (editing UI is a known gap — §6); `soundOn`
-  mutes all audio.
+- `dyslexicFont` + `fontScale` visibly change rendering and are editable on `/profil` (§6);
+  `soundOn` mutes all audio.
 - `appearance` switches the whole app light/dark (incl. pre-auth screens via the boot script);
   `Automatisch` follows a live OS scheme change without reload.
 - No price/paywall/buy control exists anywhere in the app.
