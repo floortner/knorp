@@ -13,9 +13,9 @@ const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 export function AchievementCard({ league }: { league: League }) {
   const next = NEXT_TIER[league.tier];
   return (
-    <div className="rounded-card bg-white p-5 text-center shadow-sm ring-1 ring-black/5">
+    <div className="rounded-card bg-surface p-5 text-center shadow-sm ring-1 ring-hairline">
       <p className="text-sm text-ink-soft">Dein Fortschritt</p>
-      <p className="mt-1 font-display text-2xl font-bold text-amber-500">
+      <p className="mt-1 font-display text-2xl font-bold text-gold-text">
         {TIER_LABEL[league.tier] ?? league.tier}-Stufe
       </p>
       <p className="mt-2 text-sm text-ink-soft">
@@ -30,13 +30,13 @@ export function AchievementCard({ league }: { league: League }) {
 export function WeekBars({ weekly }: { weekly: number[] }) {
   const max = Math.max(1, ...weekly);
   return (
-    <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
       <p className="mb-3 text-sm font-semibold text-ink">Diese Woche</p>
       <div className="flex items-end justify-between gap-2" style={{ height: 88 }}>
         {weekly.map((count, i) => (
           <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1">
             <span
-              className={cn('w-full rounded-md', count > 0 ? 'bg-teal' : 'bg-black/[0.06]')}
+              className={cn('w-full rounded-md', count > 0 ? 'bg-teal' : 'bg-track')}
               style={{ height: `${Math.max(6, (count / max) * 64)}px` }}
               title={`${count}`}
             />
@@ -51,7 +51,7 @@ export function WeekBars({ weekly }: { weekly: number[] }) {
 /** 30-day activity heatmap (oldest first). */
 export function Heatmap({ days }: { days: Progress['monthlyHeatmap'] }) {
   return (
-    <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
       <p className="mb-3 text-sm font-semibold text-ink">Letzte 30 Tage</p>
       <div className="grid grid-cols-10 gap-1.5">
         {days.map((d) => (
@@ -67,7 +67,7 @@ export function Heatmap({ days }: { days: Progress['monthlyHeatmap'] }) {
 }
 
 function heatColor(count: number): string {
-  if (count <= 0) return 'bg-black/[0.06]';
+  if (count <= 0) return 'bg-track';
   if (count <= 2) return 'bg-teal/30';
   if (count <= 4) return 'bg-teal/60';
   return 'bg-teal';
@@ -81,16 +81,16 @@ export function SkillBreakdown({ skills }: { skills: Skill[] }) {
   return (
     <div className="space-y-3">
       {skills.map((s) => (
-        <div key={s.skill} className="rounded-card bg-white p-3 shadow-sm ring-1 ring-black/5">
+        <div key={s.skill} className="rounded-card bg-surface p-3 shadow-sm ring-1 ring-hairline">
           <div className="flex items-center justify-between gap-2">
             <span className="truncate font-medium text-ink">{s.skill}</span>
             <span className="flex items-center gap-2 text-sm text-ink-soft">
-              {s.due && <span className="rounded-full bg-orange/15 px-2 py-0.5 text-xs text-orange-dark">fällig</span>}
+              {s.due && <span className="rounded-full bg-orange/15 px-2 py-0.5 text-xs text-orange-text">fällig</span>}
               {s.correctPct}%
             </span>
           </div>
           <div className="mt-2 flex items-center gap-2">
-            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/[0.06]">
+            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-track">
               <span className="block h-full rounded-full bg-teal" style={{ width: `${s.correctPct}%` }} />
             </span>
             <span className="text-xs text-ink-soft/70">{s.attempts}×</span>

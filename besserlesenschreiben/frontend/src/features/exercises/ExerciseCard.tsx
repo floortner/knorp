@@ -23,8 +23,8 @@ export function ExerciseCard({
       <div>{children}</div>
 
       <div className="min-h-12 text-center" aria-live="polite">
-        {status === 'correct' && <p className="font-display font-bold text-teal-dark">{praise}</p>}
-        {status === 'wrong' && <p className="font-display font-semibold text-orange-dark">Nochmal versuchen 💪</p>}
+        {status === 'correct' && <p className="font-display font-bold text-teal-text">{praise}</p>}
+        {status === 'wrong' && <p className="font-display font-semibold text-orange-text">Nochmal versuchen 💪</p>}
       </div>
     </section>
   );
@@ -51,9 +51,9 @@ export function ChoiceTile({
       className={cn(
         'flex min-h-14 items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-bold shadow-sm ring-1 transition active:scale-[0.98] disabled:active:scale-100',
         state === 'correct' && 'bg-teal text-white ring-teal',
-        state === 'wrong' && 'bg-orange/15 text-orange-dark ring-orange/40',
-        state === 'selected' && 'bg-teal-tint text-teal-dark ring-teal',
-        (!state || state === 'idle') && 'bg-white text-ink ring-black/5 hover:bg-black/[0.02]',
+        state === 'wrong' && 'bg-orange/15 text-orange-text ring-orange/40',
+        state === 'selected' && 'bg-teal-tint text-teal-text ring-teal',
+        (!state || state === 'idle') && 'bg-surface text-ink ring-hairline hover:bg-wash',
       )}
     >
       {label}

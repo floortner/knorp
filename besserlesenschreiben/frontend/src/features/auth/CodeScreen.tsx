@@ -89,7 +89,7 @@ export function CodeScreen() {
               maxLength={1}
               aria-label={`Ziffer ${i + 1}`}
               className={cn(
-                'h-16 w-14 rounded-2xl bg-white text-center font-display text-3xl font-bold text-ink shadow-sm ring-1 ring-black/5',
+                'h-16 w-14 rounded-2xl bg-surface text-center font-display text-3xl font-bold text-ink shadow-sm ring-1 ring-hairline',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60',
               )}
             />
@@ -97,7 +97,7 @@ export function CodeScreen() {
         </div>
 
         {verify.isError && (
-          <p role="alert" className="mt-4 text-center text-sm text-orange-dark">
+          <p role="alert" className="mt-4 text-center text-sm text-orange-text">
             {errorMessage(verify.error)}
           </p>
         )}

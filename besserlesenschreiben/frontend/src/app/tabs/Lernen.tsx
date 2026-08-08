@@ -115,7 +115,7 @@ export function Lernen() {
         type="button"
         onClick={startLecture}
         disabled={createSession.isPending}
-        className="flex w-full items-center gap-3 rounded-card bg-white p-4 text-left shadow-sm ring-1 ring-teal/30 transition active:scale-[0.99] disabled:opacity-70"
+        className="flex w-full items-center gap-3 rounded-card bg-surface p-4 text-left shadow-sm ring-1 ring-teal/30 transition active:scale-[0.99] disabled:opacity-70"
       >
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-tint text-2xl" aria-hidden>
           ✨
@@ -146,7 +146,7 @@ export function Lernen() {
       )}
 
       {createSession.isError && (
-        <p role="alert" className="text-center text-sm text-orange-dark">
+        <p role="alert" className="text-center text-sm text-orange-text">
           {errorMessage(createSession.error)}
         </p>
       )}
@@ -180,7 +180,7 @@ function AssignmentCard({
       type="button"
       onClick={() => onStart(assignment.assignmentId)}
       disabled={disabled}
-      className="flex w-full items-center gap-3 rounded-card bg-white p-4 text-left shadow-sm ring-1 ring-orange/40 transition active:scale-[0.99] disabled:opacity-70"
+      className="flex w-full items-center gap-3 rounded-card bg-surface p-4 text-left shadow-sm ring-1 ring-orange/40 transition active:scale-[0.99] disabled:opacity-70"
     >
       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange/15 text-2xl" aria-hidden>
         💌
@@ -213,7 +213,7 @@ function GoalCard({
   activity: Progress['weeklyActivity'] | undefined;
 }) {
   return (
-    <div className="rounded-card bg-white p-4 shadow-sm ring-1 ring-black/5 space-y-3">
+    <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline space-y-3">
       <div className="flex items-center gap-4">
         <GoalRing done={activeDays} total={goalPerWeek} />
         <div>
@@ -238,21 +238,21 @@ function GoalRing({ done, total }: { done: number; total: number }) {
   const complete = done >= total && total > 0;
   return (
     <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden>
-      <circle cx="26" cy="26" r={r} fill="none" stroke="#E5E7EB" strokeWidth="5" />
+      <circle cx="26" cy="26" r={r} fill="none" stroke="var(--color-hairline-strong)" strokeWidth="5" />
       {done > 0 && (
         <circle
           cx="26"
           cy="26"
           r={r}
           fill="none"
-          stroke={complete ? '#27A99B' : '#F0915F'}
+          stroke={complete ? 'var(--color-teal)' : 'var(--color-orange)'}
           strokeWidth="5"
           strokeDasharray={`${dash} ${circ}`}
           strokeLinecap="round"
           transform="rotate(-90 26 26)"
         />
       )}
-      <text x="26" y="31" textAnchor="middle" fontSize="12" fontWeight="700" fill="#27403C">
+      <text x="26" y="31" textAnchor="middle" fontSize="12" fontWeight="700" fill="var(--color-ink)">
         {done}/{total}
       </text>
     </svg>

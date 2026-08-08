@@ -16,6 +16,20 @@
   --color-orange: #f0915f;
   --color-orange-dark: #e07a45;
 
+  /* Semantic tokens (dark-mode overrides in html[data-theme='dark'] below).
+     teal-dark/orange-dark are BACKGROUND-only (hover fills); the *-text twins exist because the
+     same hue needs a lighter variant to stay readable as text on dark surfaces. */
+  --color-surface: #ffffff;
+  --color-teal-text: #1e8275;
+  --color-orange-text: #e07a45;
+  --color-gold: #fbbf24;
+  --color-gold-text: #d97706;
+  --color-hairline: rgb(0 0 0 / 0.05);
+  --color-hairline-strong: rgb(0 0 0 / 0.1);
+  --color-wash: rgb(0 0 0 / 0.04);
+  --color-track: rgb(0 0 0 / 0.06);
+  --color-track-strong: rgb(0 0 0 / 0.15);
+
   --font-body: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
 
@@ -26,6 +40,10 @@
   font-family: var(--font-body);
   color: var(--color-ink);
   /* fontScale (a11y, SPEC §6) is applied at runtime by A11yProvider via html { font-size: N% }. */
+
+  /* Decorative blob hues (auth screens) — not @theme, no utilities wanted. */
+  --blob-teal: rgba(39, 169, 155, 0.12);
+  --blob-orange: rgba(240, 145, 95, 0.12);
 }
 
 /* dyslexicFont (a11y, SPEC §6): A11yProvider toggles this flag. Atkinson Hyperlegible is already
@@ -45,6 +63,6 @@ body {
 /* Soft decorative blobs used on the auth screens (match the prototype's calm corners). */
 .bg-blobs {
   background-image:
-    radial-gradient(40rem 40rem at 110% -10%, rgba(39, 169, 155, 0.12), transparent 60%),
-    radial-gradient(32rem 32rem at -10% 110%, rgba(240, 145, 95, 0.12), transparent 60%);
+    radial-gradient(40rem 40rem at 110% -10%, var(--blob-teal), transparent 60%),
+    radial-gradient(32rem 32rem at -10% 110%, var(--blob-orange), transparent 60%);
 }

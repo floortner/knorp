@@ -115,7 +115,7 @@ function IntroCard({ text, onStart }: { text: string; onStart: () => void }) {
 function ProgressBar({ index, total }: { index: number; total: number }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="h-2 flex-1 overflow-hidden rounded-full bg-black/[0.06]">
+      <span className="h-2 flex-1 overflow-hidden rounded-full bg-track">
         <span
           className="block h-full rounded-full bg-teal transition-all"
           style={{ width: `${(index / total) * 100}%` }}
