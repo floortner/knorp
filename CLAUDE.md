@@ -69,7 +69,7 @@ npm run gen:api                 # regenerate api.ts types from backend OpenAPI (
 ```
 
 ### Trainer (`besserlesenschreiben/trainer/`)
-Same commands as the frontend (`npm install` · `npm run dev` on **:5174** · `build` · `test` · `gen:api`), typed from the backend's `/staff/*` OpenAPI. Internal staff portal — desktop/tablet, no PWA.
+Same commands as the frontend (`npm install` · `npm run dev` on **:5174** · `build` · `test` · `gen:api`), typed from the backend's **full** OpenAPI (it calls only `/staff/*`, but ANY contract change needs its `gen:api` regen — the drift gate covers every route). Internal staff portal — desktop/tablet, no PWA.
 
 ### End-to-end (`e2e/`, repo root — its own npm project)
 ```bash
@@ -172,7 +172,7 @@ working copy; on any doubt, ARCHITECTURE wins.)
 - **Terminology:** the app's users are **students** (ages 8–14) — never "child/children" in docs, comments, or UI copy (German copy: "Schüler"). One legacy wire key keeps the old name for data compatibility: `childAnswer` in stored homework-analysis JSON. (`chat_message.role` was migrated to `'student'`; the read path still tolerates legacy `'child'` rows.)
 - **Wire format:** camelCase JSON on the wire; snake_case DB columns. Prisma `@map`/`@@map` bridges them.
 - **Validation:** Zod via the local `ZodDto` factory + `ZodValidationPipe` (`src/common/zod-dto.ts` — replaced `nestjs-zod`, whose bundled `@nest-zod/z` breaks under Zod 4). The same Zod schemas drive Claude structured output (a **forced tool** whose `input_schema` is the Zod-derived JSON Schema, re-validated with `schema.safeParse` + one corrective re-ask — `services/llm`) so Exercise JSON stays typed end-to-end.
-- **Contract pipeline:** Zod schemas (`backend/src/contract/*`) → committed `backend/openapi.json` (`npm run openapi:export`) → committed `frontend/src/lib/api.gen.ts` (`npm run gen:api`), with a CI drift gate. Never hand-edit `api.gen.ts`. A global `ZodResponseInterceptor` also validates every 2xx response against its schema at runtime (dev throws, prod logs+strips).
+- **Contract pipeline:** Zod schemas (`backend/src/contract/*`) → committed `backend/openapi.json` (`npm run openapi:export`) → committed `api.gen.ts` in **both** SPAs (`npm run gen:api` in `frontend/` AND `trainer/` — each types the full OpenAPI), with CI drift gates. Never hand-edit `api.gen.ts`. A global `ZodResponseInterceptor` also validates every 2xx response against its schema at runtime (dev throws, prod logs+strips).
 - **Auth:** session JWT (30-day) in an **httpOnly, Secure, SameSite cookie** (`/auth/verify` sets it, `/auth/logout` clears it); the SPA holds no token in JS and derives auth from a `/me` probe. No in-memory security state in prod — lockout counters (e.g. login-code attempts) are durable DB columns.
 - **API versioning:** all routes under `/api/v1`. Breaking changes → `/api/v2`, never edit in place. Additive changes stay in v1.
 - **Golden tests:** `digest.md` format (LLM-facing) and `Exercise` JSON (client-facing) are pinned with golden files. Any change to these contract outputs must update the golden files intentionally.

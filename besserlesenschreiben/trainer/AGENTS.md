@@ -38,9 +38,11 @@ job. Comfortable tap targets for tablet are welcome.
 ## Golden rules (do not violate)
 1. **`lib/api.ts` is transport only** — no JSX, no UI. Screens never hand-roll `fetch` or error parsing.
 2. **Contract types are GENERATED, never hand-authored.** `lib/api.gen.ts` comes from the backend's
-   published `/staff/*` OpenAPI via `npm run gen:api` (committed; CI drift-gates it) — never edit it.
+   **full** published OpenAPI via `npm run gen:api` (committed; CI drift-gates it) — never edit it.
+   The portal only *calls* `/staff/*`, but the generated file covers every route, so **any** backend
+   contract change (family routes included) requires a regen here or the drift gate fails red.
    `lib/contract.ts` only re-exports ergonomic aliases over the generated `operations` (the `-web`
-   `lib/types.ts` pattern). After any backend staff-contract change: re-export `openapi.json`, run
+   `lib/types.ts` pattern). After any backend contract change: re-export `openapi.json`, run
    `gen:api`, commit both. Keep the exported type names stable.
 3. **The trainer verdict is authoritative; the LLM output is a draft.** The UI seeds the editor from
    `llmAnalysis` and submits the (possibly corrected) copy as `reviewedAnalysis`. `approved` = unchanged,
