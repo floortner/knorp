@@ -3,17 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { errorMessage } from '@/lib/api';
 import type { Buddy } from '@/lib/endpoints';
-import { BUDDIES, buddySrc } from '@/lib/constants';
+import { BUDDIES, GOALS, buddySrc } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/cn';
 import { useCreateProfile } from './useCreateProfile';
-
-const GOALS = [
-  { value: 3, label: '3× pro Woche', hint: 'locker' },
-  { value: 5, label: '5× pro Woche', hint: 'normal' },
-  { value: 7, label: '7× pro Woche', hint: 'sportlich' },
-];
 
 const STEPS = 3;
 

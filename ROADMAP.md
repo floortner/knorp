@@ -82,11 +82,9 @@ D1–D4 + D7 shipped (HISTORY.md §D).
    the reminder system, without pushing notifications at a student.
 8. **Spoken praise variety (later — needs Polly).** Audio reward beats visual for pre-readers.
 
-Smaller noted gaps from the 2026-08-06 frontend consistency audit (each needs a small `/profil`
-surface; backend support already exists):
-- **A11y settings UI.** `dyslexicFont` + `fontScale` are applied at runtime but have no editing UI
-  (frontend SPEC §6 known-gap note) — the controls were cut in milestone 1.6 and never returned.
-- **Weekly goal editing.** `goal` is set once in onboarding and never editable again.
+Smaller noted gaps from the 2026-08-06 frontend consistency audit:
+- ✅ **A11y settings UI** + ✅ **weekly goal editing** — shipped 2026-08-08 (`/profil`
+  Einstellungen: Schriftgröße presets, "Extra Abstand" toggle, Wochenziel; frontend SPEC §6).
 - **Second student profile.** The API is plural but the app hardcodes `profiles[0]` — a family with
   two students can't reach the second profile (needs a switcher + product decision).
 

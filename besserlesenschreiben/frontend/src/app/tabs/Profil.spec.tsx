@@ -93,6 +93,33 @@ describe('Profil', () => {
     expect(updateSettings).toHaveBeenCalledWith('p1', { soundOn: false });
   });
 
+  it('edits the font scale via presets and PATCHes { fontScale }', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    const group = await screen.findByRole('radiogroup', { name: 'Schriftgröße' });
+    expect(group).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Normal' })).toHaveAttribute('aria-checked', 'true');
+    await user.click(screen.getByRole('radio', { name: 'Groß' }));
+    expect(updateSettings).toHaveBeenCalledWith('p1', { fontScale: 1.25 });
+  });
+
+  it('toggles the extra-spacing (dyslexicFont) setting via PATCH', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    await user.click(await screen.findByRole('switch', { name: 'Extra Abstand an/aus' }));
+    expect(updateSettings).toHaveBeenCalledWith('p1', { dyslexicFont: true });
+  });
+
+  it('edits the weekly goal and PATCHes { goal }', async () => {
+    const user = userEvent.setup();
+    renderProfil();
+    const group = await screen.findByRole('radiogroup', { name: 'Wochenziel' });
+    expect(group).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '5× pro Woche' })).toHaveAttribute('aria-checked', 'true');
+    await user.click(screen.getByRole('radio', { name: '3× pro Woche' }));
+    expect(updateSettings).toHaveBeenCalledWith('p1', { goal: 3 });
+  });
+
   it('offers the Aussehen choice; picking Dunkel applies the theme and PATCHes { appearance }', async () => {
     const user = userEvent.setup();
     renderProfil();
