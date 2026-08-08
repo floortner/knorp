@@ -238,6 +238,16 @@ ordinary telemetry; trainers see names + learning data, account identity stays a
 
 *(H2 authoring was cancelled — pivot log. H4 paper channel is a parked option — ROADMAP §H.)*
 
+## §J5.1 — Robust `time_ms` (DONE 2026-08-08)
+
+`timeMs` measures the student, not the interruption: the frontend attempt timer
+(`features/exercises/active-timer.ts`, used by `LessonRunner`) counts only **visible** time —
+paused via the Page Visibility API while the tab is backgrounded or the phone locked. Backend
+aggregations read `time_ms` **winsorized** at 60s (`src/common/time-ms.ts`): the weak-skill
+heuristic (`session-select.ts weakSkills`) and the digest's „Ø Zeit"; raw values stay untouched in
+`attempt` rows (drill-downs show the truth, aggregates read it robustly). §J2's analytics must go
+through the same helper when it lands.
+
 ## §I — Content pipeline (DONE 2026-07-26)
 
 Lectures are markdown + YAML frontmatter files in repo-root `content/lectures/<slug>.md` — the

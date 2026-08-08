@@ -84,8 +84,11 @@ and the `ExerciseCard`/`ChoiceTile`/`useAnswer` scaffolding are the reusable bas
 **This is the product's spine.** Every renderer must time and report each answer.
 
 ```ts
-// start a timer when the item mounts/becomes visible
-const startedAt = performance.now();
+// start a timer when the item mounts/becomes visible — it counts only VISIBLE time (§J5.1):
+// createActiveTimer() (features/exercises/active-timer.ts) pauses on visibilitychange, so a
+// backgrounded tab or locked phone never inflates timeMs (backend aggregations winsorize too)
+const timer = createActiveTimer();
+timer.restart();
 
 // Derive prompt + expected per type (see features/exercises/derive.ts — pure and total over the union).
 // The backend stores both columns NOT NULL, so never emit undefined. Currently: placeholder → prompt =

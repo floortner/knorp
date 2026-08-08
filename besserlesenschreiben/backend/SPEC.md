@@ -577,8 +577,9 @@ drill and *with which real words*; Claude only writes the teaching intro and the
 0. **Gate.** Per-profile daily cap `LLM_SESSIONS_PER_DAY` (default 5, counted over today's `source='llm'`
    sessions) → `429 RATE_LIMITED` when exceeded.
 1. **WHAT to drill (`focus`).** The union of three DB signals, deduplicated:
-   - **weak skills** from recent `attempt` rows (`weakSkills()` — low accuracy / slow; retries feed in
-     via the FSRS ratings, not this rollup),
+   - **weak skills** from recent `attempt` rows (`weakSkills()` — low accuracy / slow; `time_ms` is
+     read **winsorized** at 60s (`common/time-ms.ts`, §J5.1) so one backgrounded-tab outlier can't
+     flag a skill; retries feed in via the FSRS ratings, not this rollup),
    - **FSRS-due** skills (`review_state.due ≤ now`),
    - the **professionally-reviewed** homework focus — `reviewed_analysis.suggestedFocus` from the last 5
      `status='reviewed'` uploads (never the raw LLM draft).

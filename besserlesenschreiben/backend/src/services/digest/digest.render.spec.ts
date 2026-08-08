@@ -61,6 +61,15 @@ describe('digest', () => {
     expect(skills[2]).toMatchObject({ correctPct: 100, trend: 'flat' });
   });
 
+  it('winsorizes Ø time — a backgrounded-tab outlier is capped at 60s (§J5.1)', () => {
+    const attempts = [
+      at(1, ['vowel_length'], true, 2_000, 'p', 'e', 'e'),
+      at(1, ['vowel_length'], true, 1_800_000, 'p', 'e', 'e'), // 30-min "dinner break"
+    ];
+    const { skills } = buildDigestData(PROFILE, attempts, [], [], NOW, 14);
+    expect(skills[0].avgMs).toBe(31_000); // (2s + capped 60s) / 2 — not ~15 minutes
+  });
+
   it('groups repeated mistakes with a count, most frequent first', () => {
     const { recentWrong } = buildDigestData(PROFILE, ATTEMPTS, DUE, ASSIGNED, NOW, 14);
     expect(recentWrong).toEqual([

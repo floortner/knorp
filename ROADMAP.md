@@ -282,11 +282,8 @@ report must stay safe to read by anyone with repo access (the rule holds even th
 author is also a trainer — see the channel note above).
 
 **J5 — telemetry v2 (small additive capture improvements; each lands with its natural trigger):**
-1. **Robust `time_ms` (build anytime — a correctness fix, not a feature):** the timer runs from
-   item mount to answer, so a backgrounded tab or a dinner break inflates it unboundedly — and the
-   weak-skill heuristic (>15 s avg) and the digest's „Ø Zeit" read it as "slow at this skill".
-   Pause the timer via the Page Visibility API in the frontend, and winsorize (cap ~60 s) in every
-   aggregation (`session-select.ts weakSkills`, digest, J2).
+1. ✅ **Robust `time_ms`** — DONE 2026-08-08 → HISTORY.md §J5.1 (visible-time timer +
+   winsorized aggregations; J2 must reuse `common/time-ms.ts` when it lands).
 2. **`audio_plays` on `attempt` (lands with the audio/TTS work):** "played the audio 4× before
    answering" is a stronger reading-difficulty signal than time for this audience. Trivial additive
    column + one counter in the exercise scaffolding.

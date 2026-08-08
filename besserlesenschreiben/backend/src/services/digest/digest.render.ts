@@ -5,6 +5,8 @@
  * number formatting) so the golden file only changes when the contract intentionally changes.
  */
 
+import { winsorizeMs } from '../../common/time-ms';
+
 const DAY_MS = 86_400_000;
 const TREND_THRESHOLD = 5; // ±percentage points of correct-rate to count as a real trend
 const MAX_RECENT_WRONG = 8;
@@ -84,7 +86,7 @@ export function buildDigestData(
     for (const tag of a.skillTags) {
       const s = agg.get(tag) ?? { n: 0, correct: 0, time: 0, oldN: 0, oldCorrect: 0, newN: 0, newCorrect: 0 };
       s.n += 1;
-      s.time += a.timeMs;
+      s.time += winsorizeMs(a.timeMs); // §J5.1: „Ø Zeit" reads robustly, not raw
       if (a.isCorrect) s.correct += 1;
       const recent = a.createdAt.getTime() >= midpoint;
       if (recent) {

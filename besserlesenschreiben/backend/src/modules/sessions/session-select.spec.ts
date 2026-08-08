@@ -32,6 +32,24 @@ describe('weakSkills', () => {
     const weak = weakSkills([sig(['word_raster'], true, 20_000), sig(['word_raster'], true, 18_000)]);
     expect(weak.has('word_raster')).toBe(true);
   });
+
+  it('one backgrounded-tab outlier does not flag an otherwise-fast skill (§J5.1 winsorize)', () => {
+    // 4×2s + one "dinner break" (30 min). Raw mean would be ~6 min → flagged; capped at 60s it is
+    // (4·2s + 60s)/5 = 13.6s → below the 15s threshold.
+    const weak = weakSkills([
+      sig(['vowel_length'], true, 2_000),
+      sig(['vowel_length'], true, 2_000),
+      sig(['vowel_length'], true, 2_000),
+      sig(['vowel_length'], true, 2_000),
+      sig(['vowel_length'], true, 1_800_000),
+    ]);
+    expect(weak.has('vowel_length')).toBe(false);
+  });
+
+  it('consistently slow answers still flag even under the cap', () => {
+    const weak = weakSkills([sig(['word_raster'], true, 90_000), sig(['word_raster'], true, 70_000)]);
+    expect(weak.has('word_raster')).toBe(true); // both clamp to 60s — mean 60s > 15s
+  });
 });
 
 describe('selectBankItems', () => {
