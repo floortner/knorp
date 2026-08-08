@@ -118,7 +118,8 @@ postAttempt({
 ## 5. Voice playback
 
 - If `ex.audioUrl` present → play it (`syllableAudio[i]` is the slot for future syllable-wise playback).
-- Else fall back to **Web Speech API** (`SpeechSynthesisUtterance`, `lang='de-DE'`, `rate≈0.85`) — same as prototype.
+- Else fall back to **Web Speech API** (`SpeechSynthesisUtterance`, `lang='de-DE'`, `rate≈0.75` —
+  clear-speech evidence, `content/academia/DUOLINGO_ROADMAP.md` §C.2).
 - Respect `settings.soundOn`. Gate audio init behind first user gesture (mobile autoplay rules).
 
 ---
