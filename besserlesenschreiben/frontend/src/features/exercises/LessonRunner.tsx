@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SessionResponse } from '@/lib/types';
 import { recordAttempt } from '@/lib/telemetry';
+import { createActiveTimer, type ActiveTimer } from './active-timer';
 import { useSoundOn } from '@/features/settings/a11y';
 import { useCompleteSession } from '@/features/sessions/useCompleteSession';
 import { useActiveProfile } from '@/features/profile/useMe';
@@ -25,13 +26,23 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
   // Generated lectures open with a short teaching card (session.intro); bank sessions have none.
   const [showIntro, setShowIntro] = useState(Boolean(session.intro));
   const attemptNo = useRef(1);
-  const startedAt = useRef(0);
+  // Visible-time timer (§J5.1): pauses while the tab is hidden so timeMs measures the student,
+  // not the interruption. Created lazily (StrictMode-safe) and disposed on unmount.
+  const timerRef = useRef<ActiveTimer | null>(null);
+  const timer = () => (timerRef.current ??= createActiveTimer());
+  useEffect(() => {
+    const t = timer();
+    return () => {
+      t.dispose();
+      timerRef.current = null;
+    };
+  }, []);
 
   const ex = items[index];
 
   // Restart the timer + attempt counter whenever a new item becomes visible.
   useEffect(() => {
-    startedAt.current = performance.now();
+    timer().restart();
     attemptNo.current = 1;
   }, [index]);
 
@@ -52,7 +63,7 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
         onStart={() => {
           // The first exercise becomes visible NOW — restart its timer so timeMs never
           // includes intro-reading time (telemetry invariant, SPEC §4).
-          startedAt.current = performance.now();
+          timer().restart();
           attemptNo.current = 1;
           setShowIntro(false);
         }}
@@ -70,7 +81,7 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
       expected,
       given,
       isCorrect,
-      timeMs: Math.max(0, Math.round(performance.now() - startedAt.current)),
+      timeMs: timer().elapsedMs(),
       attemptNo: attemptNo.current,
       skillTags: ex.skillTags,
     });

@@ -1,4 +1,5 @@
 import type { ItemBankModel } from '../../generated/prisma/models';
+import { winsorizeMs } from '../../common/time-ms';
 
 /** Default number of items per bank session. */
 export const DEFAULT_SESSION_SIZE = 8;
@@ -27,7 +28,7 @@ export function weakSkills(attempts: readonly AttemptSignal[]): Set<string> {
       const cur = agg.get(tag) ?? { n: 0, correct: 0, time: 0 };
       cur.n += 1;
       if (a.isCorrect) cur.correct += 1;
-      cur.time += a.timeMs;
+      cur.time += winsorizeMs(a.timeMs); // §J5.1: one backgrounded-tab outlier must not flag a skill slow
       agg.set(tag, cur);
     }
   }
