@@ -23,7 +23,7 @@ locals {
     EMAIL_PROVIDER         = "ses"
     EMAIL_FROM             = "besserlesenschreiben <login@${var.domain}>"
     STAFF_ADMIN_EMAILS     = join(",", length(var.staff_admin_emails) > 0 ? var.staff_admin_emails : [var.owner_email])
-    ANTHROPIC_MODEL        = "claude-sonnet-4-6"
+    ANTHROPIC_MODEL        = "claude-sonnet-5"
     ANTHROPIC_VISION_MODEL = "claude-opus-4-8"
     LLM_RESIDENCY_ACK      = "true"
     # Inference-routing region — blank omits the `inference_geo` parameter. Set to "eu" ONLY once EU

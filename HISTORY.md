@@ -80,7 +80,7 @@ since removed with the PIN); `apiFetch` per-request `token`; `sessionCompleteSch
    tool whose `input_schema` is the JSON Schema of the caller's `src/contract` Zod schema,
    re-validated (incl. per-type **solvability**) with a one-shot re-ask on a contract miss;
    EU-residency gate before prod; canned/stub path when `ANTHROPIC_API_KEY` is unset. Model policy:
-   `ANTHROPIC_MODEL` = `claude-sonnet-4-6` (generation/chat), `ANTHROPIC_VISION_MODEL` =
+   `ANTHROPIC_MODEL` = `claude-sonnet-5` (generation/chat, upgraded 2026-08-09), `ANTHROPIC_VISION_MODEL` =
    `claude-opus-4-8` (homework OCR); no `temperature`/`top_p`/`top_k`; stable system prompts sent
    as cacheable blocks.
 6. ✅ **Chat** (free ★).
