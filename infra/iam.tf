@@ -22,8 +22,10 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
 data "aws_iam_policy_document" "instance" {
   # Homework/session/digest blobs live under users/{account}/{profile}/… — object ops scoped to that prefix.
   statement {
-    sid       = "BlobObjects"
-    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    sid = "BlobObjects"
+    # PutObjectTagging is needed to tag homework uploads `class=homework` inline on upload, which the
+    # bucket lifecycle rule expires by (security review P3).
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:PutObjectTagging", "s3:DeleteObject"]
     resources = ["${aws_s3_bucket.blob.arn}/users/*"]
   }
   statement {

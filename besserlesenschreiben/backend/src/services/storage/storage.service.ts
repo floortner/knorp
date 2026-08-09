@@ -35,7 +35,10 @@ export class StorageService {
     this.region = config.get('AWS_REGION', { infer: true });
     this.useS3 = this.bucket.length > 0;
     this.localRoot = config.get('STORAGE_LOCAL_DIR', { infer: true }) || join(tmpdir(), 'blsb-dev-blob');
-    this.imageSecret = config.get('STAFF_JWT_SECRET', { infer: true });
+    // Prefer a dedicated key; fall back to the staff key when unset (dev-only path — prod uses S3
+    // presigning, so this token is never minted there). Avoids cross-purpose key reuse (security review P3).
+    this.imageSecret =
+      config.get('IMAGE_TOKEN_SECRET', { infer: true }) || config.get('STAFF_JWT_SECRET', { infer: true });
     this.publicApiBase =
       config.get('PUBLIC_API_URL', { infer: true }) ||
       `http://localhost:${config.get('PORT', { infer: true })}/api/v1`;
@@ -79,6 +82,10 @@ export class StorageService {
   /**
    * Write binary content (e.g. a transcoded homework WebP) under the caller's prefix and return the full
    * storage key (stored on the row; never the raw path/URL). Ids come from the JWT (security §2).
+   *
+   * `tags` become S3 object tags (no-op on the local FS store). The S3 lifecycle rule expires by tag
+   * (`class=homework`) rather than by the `users/` prefix, so it targets homework photos precisely and
+   * never the regenerable per-user artifacts (e.g. digest.md) under the same prefix (security review P3).
    */
   async writeUserBinary(
     accountId: string,
@@ -86,12 +93,18 @@ export class StorageService {
     name: string,
     content: Buffer,
     contentType: string,
+    tags?: Record<string, string>,
   ): Promise<string> {
     const key = this.keyFor(accountId, profileId, name);
     if (this.useS3) {
       const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+      const tagging = tags
+        ? Object.entries(tags)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+            .join('&')
+        : undefined;
       await (await this.s3()).send(
-        new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: content, ContentType: contentType }),
+        new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: content, ContentType: contentType, Tagging: tagging }),
       );
     } else {
       const path = join(this.localRoot, key);

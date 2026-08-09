@@ -50,6 +50,7 @@ export class StaffAuthService {
 
   /** Always returns {ok:true} (no staff-enumeration). A code is sent only to an active trainer. */
   async requestCode(email: string): Promise<{ ok: true }> {
+    email = email.trim().toLowerCase(); // normalise so casing/whitespace can't miss a seeded trainer (P3)
     const trainer = await this.prisma.trainer.findUnique({ where: { email } });
     if (trainer && trainer.status === 'active') {
       // Throttle: at most one code email per address per minute. A still-fresh code blocks a re-send
@@ -73,6 +74,7 @@ export class StaffAuthService {
   }
 
   async verify(email: string, code: string): Promise<{ token: string; me: StaffMe }> {
+    email = email.trim().toLowerCase(); // must match the normalisation in requestCode (P3)
     const login = await this.prisma.staffLoginCode.findFirst({
       where: { email, consumedAt: null },
       orderBy: { createdAt: 'desc' },

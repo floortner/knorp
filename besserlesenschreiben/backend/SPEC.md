@@ -76,7 +76,7 @@ login_code(
   id          uuid pk,
   account_id  uuid fk -> account,       -- null-able: created on first request by email
   email       text not null,
-  code_hash   text not null,            -- hash the 4-digit code too
+  code_hash   text not null,            -- hash the 6-digit code too
   expires_at  timestamptz not null,     -- ~10 min
   consumed_at timestamptz,
   attempts    int default 0             -- rate-limit verify
@@ -286,7 +286,7 @@ assignment(
 **Login flow (approval-gated — ARCHITECTURE §1b)**
 1. `POST /auth/request-code {email}` → look up the account:
    - **unknown email** → create a `pending` account and **send no code** (still return `200` — no enumeration). The account now appears in the staff admin queue for approval. The family UI shows a clear "we'll review and email you soon — not instantly" state (it does **not** advance to code entry).
-   - **`active`** → generate a 4-digit code, store `code_hash` + 10-min expiry, email it (per-email resend throttle as in the staff flow). Always `200`.
+   - **`active`** → generate a 6-digit code, store `code_hash` + 10-min expiry, email it (per-email resend throttle as in the staff flow). Always `200`.
    - **`pending` / `deactivated`** → send nothing, `200`.
 2. `POST /auth/verify {email, code}` → check hash + expiry, increment `attempts`, **lock after 5 fails**. Only an `active` account can verify. On success issue the JWT (`sub=account_id`, `exp`) + set the session cookie.
 3. Approval/deactivation/deletion are performed by a **staff admin** (§6 Staff — user administration); on approval the account flips to `active` and its first code is released by email.

@@ -121,7 +121,16 @@ export class HomeworkService implements OnModuleInit, OnModuleDestroy {
       throw new ApiException(422, 'VALIDATION_ERROR', 'Das Bild konnte nicht verarbeitet werden.');
     }
 
-    const key = await this.storage.writeUserBinary(accountId, profileId, `homework/${randomUUID()}.webp`, webp, 'image/webp');
+    // Tag as homework so the S3 lifecycle rule can expire raw photos by tag (not by the shared users/
+    // prefix, which would also catch the regenerable digest) — security review P3.
+    const key = await this.storage.writeUserBinary(
+      accountId,
+      profileId,
+      `homework/${randomUUID()}.webp`,
+      webp,
+      'image/webp',
+      { class: 'homework' },
+    );
     const row = await this.prisma.homeworkUpload.create({
       data: { profileId, imageKey: key, status: 'pending_analysis' },
       select: { id: true },

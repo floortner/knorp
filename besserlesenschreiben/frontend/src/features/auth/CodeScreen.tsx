@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/cn';
 
-const LEN = 4;
+const LEN = 6; // login code length — must match the backend (auth.dto.ts `^\d{6}$`)
 
 export function CodeScreen() {
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ export function CodeScreen() {
 
       <h1 className="font-display text-2xl font-bold text-ink">Code eingeben</h1>
       <p className="mt-3 max-w-xs text-center text-ink-soft">
-        Wir haben einen 4-stelligen Code an <span className="font-semibold text-ink">{email}</span> geschickt.
+        Wir haben einen 6-stelligen Code an <span className="font-semibold text-ink">{email}</span> geschickt.
       </p>
 
       <form
