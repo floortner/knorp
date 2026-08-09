@@ -28,6 +28,7 @@ export class AuthService {
    * admin approves before the first code is released); `pending`/`deactivated` accounts get nothing.
    */
   async requestCode(email: string): Promise<{ ok: true }> {
+    email = email.trim().toLowerCase(); // normalise so casing/whitespace can't fork accounts (P3, matches seed.ts)
     const account = await this.prisma.account.findUnique({ where: { email } });
 
     if (!account) {
@@ -59,7 +60,7 @@ export class AuthService {
     // Housekeeping: expired codes are dead rows — sweep them opportunistically on each new issue
     // (no cron needed; the table stays tiny).
     await this.prisma.loginCode.deleteMany({ where: { expiresAt: { lt: new Date() } } });
-    const code = String(randomInt(1000, 10000)); // 4-digit
+    const code = String(randomInt(100000, 1000000)); // 6-digit (100000–999999; no leading-zero loss), matches staff
     await this.prisma.loginCode.create({
       data: {
         email,
@@ -77,6 +78,7 @@ export class AuthService {
     email: string,
     code: string,
   ): Promise<{ token: string; isNewAccount: boolean }> {
+    email = email.trim().toLowerCase(); // must match the normalisation in requestCode (P3)
     const login = await this.prisma.loginCode.findFirst({
       where: { email, consumedAt: null },
       orderBy: { createdAt: 'desc' },

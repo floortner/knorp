@@ -13,6 +13,10 @@ export const envSchema = z.object({
   // Staff realm (ARCHITECTURE §1a) — a DISTINCT signing key from JWT_SECRET so a credential in one realm
   // is never valid in the other. Required: the two realms must never share a key.
   STAFF_JWT_SECRET: z.string().min(8),
+  // Dedicated HMAC key for the filesystem-store homework-image capability tokens (dev/no-S3 only; prod
+  // uses S3 presigned URLs, so this path is never hit there). Optional — falls back to STAFF_JWT_SECRET
+  // when unset — so setting it just removes the cross-purpose key reuse (security review P3). Min 8.
+  IMAGE_TOKEN_SECRET: z.string().min(8).optional(),
   // CORS allowlist (credentials on), comma-separated. In production at least one origin MUST be set —
   // main.ts refuses to boot with a wide-open credentialed CORS (ARCHITECTURE §4). Empty → permissive
   // (dev/test only).

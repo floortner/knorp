@@ -54,9 +54,9 @@ describe('CodeScreen', () => {
     const user = userEvent.setup();
     verify.mockResolvedValue({ isNewAccount: false });
     const { login } = renderAt('kid@home.de');
-    await typeCode(user, '1234');
+    await typeCode(user, '123456');
     await user.click(screen.getByRole('button', { name: 'Anmelden' }));
-    expect(verify).toHaveBeenCalledWith('kid@home.de', '1234');
+    expect(verify).toHaveBeenCalledWith('kid@home.de', '123456');
     expect(login).toHaveBeenCalledOnce();
     expect(await screen.findByTestId('loc')).toHaveTextContent('/app/lernen');
   });
@@ -65,7 +65,7 @@ describe('CodeScreen', () => {
     const user = userEvent.setup();
     verify.mockResolvedValue({ isNewAccount: true });
     renderAt('new@home.de');
-    await typeCode(user, '5678');
+    await typeCode(user, '567890');
     await user.click(screen.getByRole('button', { name: 'Anmelden' }));
     expect(await screen.findByTestId('loc')).toHaveTextContent('/onboarding');
   });

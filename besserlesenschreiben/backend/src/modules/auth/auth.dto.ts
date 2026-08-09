@@ -10,6 +10,6 @@ export class RequestCodeDto extends ZodDto(
 export class VerifyDto extends ZodDto(
   z.object({
     email: z.email(),
-    code: z.string().regex(/^\d{4}$/, 'Code must be 4 digits'),
+    code: z.string().regex(/^\d{6}$/, 'Code must be 6 digits'),
   }),
 ) {}

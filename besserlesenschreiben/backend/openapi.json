@@ -113,7 +113,7 @@
                   },
                   "code": {
                     "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "pattern": "^\\d{6}$"
                   }
                 },
                 "required": [

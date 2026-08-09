@@ -31,8 +31,14 @@ resource "aws_s3_bucket_lifecycle_configuration" "blob" {
   rule {
     id     = "expire-raw-homework"
     status = "Enabled"
+    # Target homework photos by OBJECT TAG, not the shared `users/` prefix (security review P3): the app
+    # tags each uploaded WebP `class=homework`, so this rule can't silently expire the regenerable
+    # per-user artifacts (e.g. digest.md) that live under the same prefix.
     filter {
-      prefix = "users/"
+      tag {
+        key   = "class"
+        value = "homework"
+      }
     }
     # Applies to homework uploads; tighten/relax to match your retention decision.
     expiration {
