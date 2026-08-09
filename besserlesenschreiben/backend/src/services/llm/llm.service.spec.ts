@@ -99,4 +99,10 @@ describe('createLlmProvider (selection + EU-residency gate)', () => {
   it('key + prod + ack → anthropic', () => {
     expect(createLlmProvider({ ...base, apiKey: 'k', isProd: true, residencyAck: true })).toBeInstanceOf(AnthropicLlmProvider);
   });
+  it('inferenceGeo passes through when set and normalises blank to undefined (param omitted)', () => {
+    const withGeo = createLlmProvider({ ...base, apiKey: 'k', isProd: false, residencyAck: false, inferenceGeo: 'eu' });
+    expect((withGeo as unknown as { opts: { inferenceGeo?: string } }).opts.inferenceGeo).toBe('eu');
+    const blank = createLlmProvider({ ...base, apiKey: 'k', isProd: false, residencyAck: false, inferenceGeo: '' });
+    expect((blank as unknown as { opts: { inferenceGeo?: string } }).opts.inferenceGeo).toBeUndefined();
+  });
 });

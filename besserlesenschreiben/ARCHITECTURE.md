@@ -540,8 +540,11 @@ restore from the off-platform dumps) rather than the loss of every family's data
   within the EU (eu-west-1). Explicit parent consent for homework images; short retention via the S3 lifecycle;
   the logging rules in §6 are part of this commitment. **LLM data-flow (decided):**
   1. **Anthropic API direct (chosen).** Simplest path and always the newest models. For EU inference
-     residency, pin `inference_geo: "eu"` on supported models (Sonnet 4.6+). It's an external seam: keep a
-     **DPA**, send the *digest* (not raw student identifiers) where possible, and document the data flow.
+     residency, set `INFERENCE_GEO=eu` (→ `inference_geo` on every call) **once EU routing is enabled
+     on the Anthropic org** — the allowed values are an org capability, and without it `eu` 400s every
+     call (bitten 2026-08-09; the env default omits the parameter until the org supports it). It's an
+     external seam: keep a **DPA**, send the *digest* (not raw student identifiers) where possible, and
+     document the data flow.
   2. **Claude via Bedrock or Vertex AI (EU regions).** Fallback escape hatches only if a strictly
      cloud-internal data boundary is ever required — at the cost of feature lag (no same-day models,
      missing platform features) and a heavier integration.

@@ -24,11 +24,6 @@ export interface LlmUsage {
  * truncate replies — we disable it explicitly (short, simple structured tasks; latency matters for students).
  * Homework vision uses a stronger `visionModel`.
  */
-// EU inference residency (ARCHITECTURE §8, minors' data): a direct top-level Messages-API parameter,
-// supported on Sonnet 4.6 / Opus 4.6 and later — which covers both pinned models. The response's
-// usage.inference_geo reports where inference actually ran; we log it per call.
-const INFERENCE_GEO = 'eu';
-
 export class AnthropicLlmProvider implements LlmProvider {
   readonly name = 'anthropic';
   readonly live = true;
@@ -40,10 +35,23 @@ export class AnthropicLlmProvider implements LlmProvider {
       apiKey: string;
       model: string;
       visionModel: string;
+      /**
+       * Inference-routing region (ARCHITECTURE §8, minors' data) — the `inference_geo` top-level
+       * Messages-API parameter. Env-gated (INFERENCE_GEO), NOT hardcoded: the allowed values are an
+       * org capability, and an org without EU routing 400s on 'eu' (which silently killed every LLM
+       * call as a redacted 503 — 2026-08-09). Undefined omits the parameter entirely; the response's
+       * usage.inference_geo is still logged per call as the audit trail.
+       */
+      inferenceGeo?: string;
       /** Optional per-call usage tap (token counts only) — used by the cutover smoke script. */
       onUsage?: (u: LlmUsage) => void;
     },
   ) {}
+
+  /** `inference_geo` spread-fragment — empty when unset so the parameter never hits the wire. */
+  private geo(): Record<string, string> {
+    return this.opts.inferenceGeo ? { inference_geo: this.opts.inferenceGeo } : {};
+  }
 
   private client(): Promise<any> {
     return (this.clientPromise ??= (async () => {
@@ -96,7 +104,7 @@ export class AnthropicLlmProvider implements LlmProvider {
         model: this.opts.model,
         max_tokens: req.maxTokens ?? 1024,
         thinking: { type: 'disabled' },
-        inference_geo: INFERENCE_GEO,
+        ...this.geo(),
         ...(req.system ? { system: this.systemBlocks(req.system) } : {}),
         messages: req.messages.map((m) => ({ role: m.role, content: m.text })),
       });
@@ -135,7 +143,7 @@ export class AnthropicLlmProvider implements LlmProvider {
         model: req.image ? this.opts.visionModel : this.opts.model,
         max_tokens: req.maxTokens ?? 4096,
         thinking: { type: 'disabled' },
-        inference_geo: INFERENCE_GEO,
+        ...this.geo(),
         ...(req.system ? { system: this.systemBlocks(req.system) } : {}),
         // NOT strict: strict tool mode rejects several keywords this contract needs (maxItems from
         // z.array().length, oneOf from the discriminated union, tuple `items`) and hard-caps
