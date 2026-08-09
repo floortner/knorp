@@ -29,7 +29,10 @@ in-memory security state. Follow them as written there. Backend-specific:
 1. **The API is the contract.** Every route under `/api/v1`; breaking changes go to `/api/v2`, never edit
    in place. After any request/response shape change: edit the Zod schema in `src/contract/*`, then run
    `npm run openapi:export` (regenerates the committed `openapi.json`) and `npm run gen:api` in
-   `../frontend` **and** `../trainer`, and commit all three. CI fails on drift. Annotate responses with
+   `../frontend` **and** `../trainer`, and commit all three. CI fails on drift. A **constraint-only**
+   change (a length, pattern, or enum bound that doesn't alter the TS types) leaves `api.gen.ts`
+   unchanged and the drift gate green — grep both SPAs for hardcoded mirrors of the old constraint
+   (the 6-digit login code broke `CodeScreen`'s hardcoded `LEN = 4` exactly this way). Annotate responses with
    `ApiZodResponse`/`ApiZodCreatedResponse` so the global `ZodResponseInterceptor` validates them at
    runtime (dev throws, prod logs+strips).
 2. **Durable security state.** Lockout counters / rate-limit windows live in the DB (e.g. login-code
