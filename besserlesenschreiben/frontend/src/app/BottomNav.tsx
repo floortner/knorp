@@ -23,13 +23,25 @@ export function BottomNav() {
               to={to}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition-colors',
-                  isActive ? 'text-teal-text' : 'text-ink-soft/70',
+                  'flex flex-col items-center gap-0.5 py-2 text-[11px] transition-colors',
+                  isActive ? 'font-bold text-teal-text' : 'font-semibold text-ink-soft/60',
                 )
               }
             >
-              <Icon className="h-6 w-6" aria-hidden />
-              {label}
+              {({ isActive }) => (
+                <>
+                  {/* Mirrors RadioRow's selected style (bg-teal-tint + ring-teal) — one "selected" look app-wide. */}
+                  <span
+                    className={cn(
+                      'rounded-full px-4 py-1 transition-colors',
+                      isActive && 'bg-teal-tint ring-2 ring-teal',
+                    )}
+                  >
+                    <Icon className="h-6 w-6" aria-hidden />
+                  </span>
+                  {label}
+                </>
+              )}
             </NavLink>
           </li>
         ))}

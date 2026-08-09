@@ -180,7 +180,7 @@ describe('Profil', () => {
   it('resets progress only after BOTH confirmation steps', async () => {
     const user = userEvent.setup();
     renderProfil();
-    await user.click(await screen.findByRole('button', { name: /Zurücksetzen/ }));
+    await user.click(await screen.findByRole('button', { name: 'Lernfortschritt zurücksetzen' }));
     expect(screen.getByText('Wirklich zurücksetzen?')).toBeInTheDocument();
     expect(resetProgress).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Weiter' }));
@@ -194,12 +194,12 @@ describe('Profil', () => {
     const user = userEvent.setup();
     resetProgress.mockRejectedValueOnce(new Error('offline'));
     renderProfil();
-    await user.click(await screen.findByRole('button', { name: /Zurücksetzen/ }));
+    await user.click(await screen.findByRole('button', { name: 'Lernfortschritt zurücksetzen' }));
     await user.click(screen.getByRole('button', { name: 'Weiter' }));
     await user.click(screen.getByRole('button', { name: 'Ja, endgültig zurücksetzen' }));
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
-    await user.click(screen.getByRole('button', { name: /Zurücksetzen/ }));
+    await user.click(screen.getByRole('button', { name: 'Lernfortschritt zurücksetzen' }));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 

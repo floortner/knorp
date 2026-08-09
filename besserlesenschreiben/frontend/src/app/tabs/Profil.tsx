@@ -247,9 +247,8 @@ export function Profil() {
         <h2 className="font-display font-bold text-ink">Verwaltung</h2>
         <DangerAction
           icon={RotateCcw}
-          title="Lernfortschritt zurücksetzen"
-          description="Löscht alle Versuche, Übungsplan und Sterne. Name und Einstellungen bleiben erhalten."
-          actionLabel="Zurücksetzen"
+          description="Löscht Versuche, Übungsplan und Sterne. Name und Einstellungen bleiben erhalten."
+          actionLabel="Lernfortschritt zurücksetzen"
           confirmQuestion="Wirklich zurücksetzen?"
           finalLabel="Ja, endgültig zurücksetzen"
           pendingLabel="Wird zurückgesetzt…"
@@ -262,8 +261,7 @@ export function Profil() {
         />
         <DangerAction
           icon={Trash2}
-          title="Chat löschen"
-          description="Löscht den gesamten Chat mit dem Lerntrainer – Nachrichten, Rückmeldungen und alle hochgeladenen Fotos der Hausübungen. Lernfortschritt und Einstellungen bleiben erhalten."
+          description="Löscht alle Nachrichten und hochgeladenen Fotos im Chat. Der Lernfortschritt bleibt erhalten."
           actionLabel="Chat löschen"
           confirmQuestion="Wirklich den ganzen Chat löschen?"
           finalLabel="Ja, endgültig löschen"
@@ -298,7 +296,6 @@ const FINAL_QUESTION = 'Bist du ganz sicher? Das kann nicht rückgängig gemacht
  */
 function DangerAction({
   icon: Icon,
-  title,
   description,
   actionLabel,
   confirmQuestion,
@@ -308,7 +305,6 @@ function DangerAction({
   onSuccess,
 }: {
   icon: LucideIcon;
-  title: string;
   description: string;
   actionLabel: string;
   confirmQuestion: string;
@@ -328,8 +324,7 @@ function DangerAction({
 
   return (
     <div className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-hairline">
-      <p className="font-semibold text-ink">{title}</p>
-      <p className="mt-1 text-sm text-ink-soft">{description}</p>
+      <p className="text-sm text-ink-soft">{description}</p>
 
       {step === 'idle' && (
         <Button
