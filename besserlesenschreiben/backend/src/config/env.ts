@@ -68,7 +68,8 @@ export const envSchema = z.object({
   // logged per call as the audit trail either way.
   INFERENCE_GEO: z.enum(['eu', 'us', 'global']).or(z.literal('')).default(''),
   // Per-profile daily caps on cost-bearing ★ ops (the app is free — approval gates WHO, these gate HOW
-  // MUCH). Counted from existing rows (session/chat_message), UTC day. Over cap → friendly 429.
+  // MUCH). Counted from existing rows (session/chat_message) per app day (Europe/Berlin,
+  // startOfAppDay). Over cap → friendly 429.
   LLM_SESSIONS_PER_DAY: z.coerce.number().int().positive().default(5),
   CHAT_MESSAGES_PER_DAY: z.coerce.number().int().positive().default(60),
   // Object storage: set AWS_S3_BUCKET to use S3 (auth via the default AWS credential chain — an IAM role

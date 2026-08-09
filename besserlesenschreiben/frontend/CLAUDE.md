@@ -12,7 +12,8 @@ reports what happened. No lesson logic lives here.
 - **`docs/knorp.html`** — the interactive design prototype. Visual source of truth for the **shell, screens
   and brand** (login, onboarding, tabs, feedback). Its parent area/PIN gate and its exercise interactions
   are **obsolete** — the current `Exercise` contract lives in `SPEC.md` §3 and the built renderers, not in
-  the prototype. **Recreate** looks in the real stack (React + TS + Tailwind + shadcn) — do **not** paste
+  the prototype. **Recreate** looks in the real stack (React + TS + Tailwind + the in-repo
+  `components/ui` primitives — shadcn-style, no Radix dependency) — do **not** paste
   the prototype's HTML/inline styles into the app.
 - **`fixtures/`** — golden example API payloads (`session.example.json`, `session-assigned.example.json`,
   `units.example.json`). Until §F lands the new content set these hold stand-in `placeholder` exercises
@@ -70,15 +71,15 @@ machine), `SingleChoiceExercise`, and `ExerciseView.tsx`'s type dispatch. The co
 back via `ExerciseView.tsx`'s dispatch as new training types are designed (ROADMAP.md §C2 has the playbook).
 
 State machine per item: `idle → correct | wrong`. On correct: chime + speak the answer + show `praise`,
-advance. On wrong: buzz + "Nochmal versuchen", allow retry (increment `attemptNo`). Confetti on session
-complete.
+advance. On wrong: buzz + "Nochmal versuchen", allow retry (increment `attemptNo`). Confetti/fanfare
+fire only on the all-units-complete reward screen, not on every session complete.
 
 ## Suggested first prompt for Claude Code
 
 > Read `CLAUDE.md`, then `AGENTS.md`, then `../ARCHITECTURE.md`, then `SPEC.md`. Open `docs/knorp.html` to see
 > the target design and interactions. We're building the first milestone in `../../ROADMAP.md`: app shell + routing +
 > bottom tab nav + `lib/api.ts` + the email-code auth screens. **Recreate** the prototype's look in React +
-> TypeScript + Tailwind + shadcn/ui — do not paste the prototype HTML. Render against `fixtures/` where
+> TypeScript + Tailwind + the in-repo ui primitives — do not paste the prototype HTML. Render against `fixtures/` where
 > relevant. Stop after the shell so we can review.
 
 Drive it milestone by milestone (`../../ROADMAP.md`). Build the telemetry pipeline first, then the

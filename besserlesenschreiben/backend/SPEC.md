@@ -80,7 +80,8 @@ login_code(
   code_hash   text not null,            -- hash the 6-digit code too
   expires_at  timestamptz not null,     -- ~10 min
   consumed_at timestamptz,
-  attempts    int default 0             -- rate-limit verify
+  attempts    int default 0,            -- rate-limit verify
+  created_at  timestamptz default now() -- load-bearing: drives the 60 s per-email resend throttle
 )
 
 -- PROFILE (a student)
@@ -99,6 +100,7 @@ profile(
   stars         int default 0,
   streak_days   int default 0,
   last_active   date,
+  joker_used_week date,                 -- ISO-week marker: the weekly streak-freeze Joker (§8a); null = available
   unlocked_unit int default 1,          -- highest unit unlocked; drives /units status (reset by /profiles/:id/reset)
   created_at    timestamptz default now()
 )
@@ -131,7 +133,7 @@ item_bank(
 session(
   id           uuid pk,
   profile_id   uuid fk -> profile,
-  unit         int,
+  unit         int,                     -- nullable: assigned sessions carry no unit
   item_ids     uuid[] not null,         -- the items served, in order
   source       text not null,           -- 'bank' | 'llm' | 'homework' | 'assigned'
   created_at   timestamptz default now(),
@@ -173,6 +175,7 @@ review_state(
   lapses         int default 0,
   elapsed_days   int default 0,
   scheduled_days int default 0,
+  learning_steps int default 0,         -- ts-fsrs step index; persisted so mid-learning isn't reset
   due            timestamptz,
   last_review    timestamptz,
   unique(profile_id, skill_tag)
@@ -185,7 +188,7 @@ homework_upload(
   image_key         text not null,            -- S3 key under user prefix (EXIF-stripped WebP)
   status            text default 'pending_analysis',
                     -- pending_analysis | pending_review | reviewed | rejected
-  llm_analysis      jsonb,                     -- DRAFT vision output (§9) — NEVER applied on its own
+  llm_analysis      jsonb,                     -- DRAFT vision output (§10) — NEVER applied on its own
   reviewed_analysis jsonb,                     -- AUTHORITATIVE; only this mutates the learning profile
   trainer_id       uuid fk -> trainer,       -- who actioned it (null until reviewed)
   review_decision   text,                      -- 'approved' | 'corrected' | 'rejected'
@@ -226,7 +229,9 @@ homework_review(
   llm_analysis      jsonb not null,            -- snapshot of the draft shown to the trainer
   reviewed_analysis jsonb,                     -- the verdict (null when rejected)
   agreed_with_llm   boolean not null,          -- false ⇒ the trainer changed something (LLM-quality signal)
-  notes             text,                      -- optional trainer note (QA only; never student-identifying)
+  notes             text,                      -- optional trainer note — STUDENT-VISIBLE: rendered into
+                                               --   the family chat status bubble (contract/staff.ts);
+                                               --   write it for the student, not as internal QA
   created_at        timestamptz default now()
 )
 
@@ -270,8 +275,8 @@ assignment(
   profile_id   uuid fk -> profile (cascade),
   assigned_by  uuid fk -> trainer,
   assigned_at  timestamptz default now(),
-  session_id   uuid fk -> session null,  -- latest play-through; restart overwrites; SetNull on session
-                                         --   delete (profile reset) — completed_at stays as the record
+  session_id   uuid fk -> session null,  -- latest play-through (UNIQUE); restart overwrites; SetNull on
+                                         --   session delete (profile reset) — completed_at stays as the record
   completed_at timestamptz null,         -- set by POST /sessions/{id}/complete on the linked session
   unique (lecture_id, profile_id)        -- idempotent assign (skipDuplicates)
 )
@@ -323,7 +328,7 @@ Postgres holds metadata + pointers; S3 holds markdown + media. Reads via presign
 
 ## 6. API contract  *(shared boundary with frontend)*
 
-All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*`. `★` = AI-backed / cost-bearing op — **free** today (no credit gating; billing deferred, ARCHITECTURE §9); the marker only flags what *could* be metered later.
+All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*` and three further `@Public()` routes: `GET /health` (deploy probe), `GET /storage/homework-image` (HMAC-capability image route used by the dev/no-S3 storage backend), and `GET /test/last-login-code` (exists only with `EMAIL_PROVIDER=capture` — e2e). `★` = AI-backed / cost-bearing op — **free** today (no credit gating; billing deferred, ARCHITECTURE §9); the marker only flags what *could* be metered later.
 
 This contract is **generated, not hand-written**: Zod schemas in `src/contract/*` → `openapi.json` (`npm run openapi:export`) → frontend `api.gen.ts` (`npm run gen:api`), with a CI drift gate. Every 2xx response is also validated at runtime against its Zod schema by a global `ZodResponseInterceptor` (dev: throws on mismatch; prod: logs + strips), so the documented shape can't drift from the served one.
 
@@ -344,8 +349,9 @@ PATCH /profiles/{id}/settings {name?,soundOn?,dyslexicFont?,fontScale?,appearanc
 
 ### Units, sessions, attempts  (the core loop)
 ```
-GET  /units                                          -> [{unit, title, subtitle, focus,
+GET  /units                 ?profileId=              -> [{unit, title, subtitle, focus,
                             exerciseTypes, itemCount, status, theme:{iconBg, iconColor}}]
+                            # status is per-profile (locked|current|done) when profileId is given
 POST /sessions              {profileId, unit?, source?, assignmentId?}
                                                      -> 201 {sessionId, profileId, unit?,
                             generatedAt, intro?, items:[Exercise]}             # ★ if source='llm'
@@ -366,7 +372,8 @@ POST /sessions/{id}/complete                         -> 200 {starsAwarded, strea
   `locked | current | done`. The golden shapes are `../frontend/fixtures/units.example.json` and
   `session.example.json`.
 - `Exercise` shape is per-type — see `../frontend/SPEC.md` §3 / backend §8. Backend serves it; frontend renders it.
-- `/attempts` is high-frequency; keep it a thin fast insert. Mirror to `attempts.jsonl` async.
+- `/attempts` is high-frequency; keep it a thin fast insert (the once-planned async `attempts.jsonl`
+  mirror is **not** written — §5).
 
 ### Progress
 ```
@@ -376,17 +383,19 @@ GET /progress/{profileId}   -> {streakDays, jokerAvailable, stars, weeklyActivit
 
 ### Chat (trainer)
 ```
-GET  /chat/{profileId}                               -> {messages:[{me:bool, text, ts, imageUrl?}]}
-POST /chat/{profileId}      {text}                   -> {reply:{me:false, text}}   # ★ LLM
+GET  /chat/{profileId}                               -> {messages:[{me:bool, text, ts, imageUrl?,
+                                                          homeworkStatus?}]}
+POST /chat/{profileId}      {text}                   -> {reply:{me:false, text, ts}}   # ★ LLM
 ```
 - History also surfaces the profile's recent homework uploads as durable chat bubbles: the student's photo
   (`imageUrl` = a short-lived presigned read URL of the family's OWN image) plus a trainer status line
-  reflecting the current review status — drawn from the authoritative `reviewedAnalysis`, never the LLM
-  draft. Display-only: homework never enters the LLM chat context.
+  reflecting the current review status (`homeworkStatus` on the bubble drives the client's "neue
+  Übungen" CTA) — drawn from the authoritative `reviewedAnalysis`, never the LLM draft. Display-only:
+  homework never enters the LLM chat context.
 
 ### Homework (family realm)
 ```
-POST /homework             (multipart: image, profileId)  -> {uploadId, status:'pending_analysis'}   # ★
+POST /homework             (multipart: image, profileId)  -> 201 {uploadId, status:'pending_analysis'}   # ★
 GET  /homework/{id}        -> {status, reviewedAnalysis?}    # family sees the AUTHORITATIVE result only,
                                                              # and only once status='reviewed' (never the raw LLM draft)
 ```
@@ -398,7 +407,8 @@ GET  /homework/{id}        -> {status, reviewedAnalysis?}    # family sees the A
 ### Staff — homework review (STAFF realm only; `aud:"staff"` cookie, `StaffAuthGuard` — never a family JWT)
 ```
 POST /staff/auth/request-code  {email}               -> 200 (always; no staff-enumeration)
-POST /staff/auth/verify        {email, code}         -> sets httpOnly staff cookie
+POST /staff/auth/verify        {email, code}         -> {trainerId, name, role, email, createdAt}
+                                                        + sets httpOnly staff cookie
 POST /staff/auth/logout                              -> clears staff cookie
 GET  /staff/me                                       -> {trainerId, name, role, email, createdAt}
                                                         # the caller's OWN staff identity (profile page)
@@ -433,7 +443,7 @@ POST /staff/reviews/{uploadId}  {decision:'approved'|'corrected'|'rejected',
 - `claim` leases the item (`claimed_until`) so two trainers don't grade it twice; the lease auto-expires.
 - On `approved`/`corrected` the backend writes derived `attempt` rows + adjusts `review_state` from
   `reviewed_analysis`, sets `status='reviewed'`, and records a `homework_review` row (with `agreed_with_llm`).
-  On `rejected` nothing mutates; the image is left to the §7 retention sweep.
+  On `rejected` nothing mutates; the image is left to the S3 lifecycle retention sweep (ARCHITECTURE §7).
 
 ### Staff — learner directory + activity (STAFF realm, all trainers; ROADMAP §H1.3 + §H3.1)
 The trainer's read model over the existing `session`/`attempt` telemetry — no new tables. Students appear
@@ -527,10 +537,11 @@ the family UI fronts both with a two-step confirmation (frontend SPEC §8).
 `digest.md` is regenerated from the `attempt` table (last ~14 days), written to storage, and consumed
 by LLM-session generation and chat. The former `GET /digest/{profileId}` route was removed 2026-08-06:
 its only consumer was the Eltern-Bereich (removed 2026-07-22) and no client ever called it again.
-This is the **LLM-facing view** — compact, not raw rows. Target format:
+This is the **LLM-facing view** — compact, not raw rows. Format (pinned by the golden test
+`digest.golden.md` — change only intentionally, in lockstep):
 
 ```markdown
-# Lernprofil: {name} · Buddy {buddy} · Ziel {goal}×/Woche · Schrift: {a11y}
+# Lernprofil · Buddy {buddy} · Ziel {goal}×/Woche · Schrift: {a11y}
 
 ## Letzte 14 Tage
 | Skill | Versuche | Richtig % | Ø Zeit | Trend |
@@ -543,9 +554,16 @@ This is the **LLM-facing view** — compact, not raw rows. Target format:
 ## Fällig laut FSRS
 - {skill}: {example items}
 
+## Zugewiesene Übungen
+- "{lecture title}" ({skill tags}) — erledigt {pct}% richtig | offen
+
 ## Präferenzen
-- Ton: an/aus · Buddy: {buddy} · Schwierigkeitswunsch: ...
+- Ton: an/aus · Buddy: {buddy} · Schrift: {a11y}
 ```
+
+The header deliberately carries **no student name** — the digest goes to the third-party LLM
+processor and keeps this minor's PII out (`digest.render.ts`); the buddy id stands in as the
+personalization hook.
 
 ---
 
@@ -692,6 +710,9 @@ Polly neural `de-DE`), cache in S3, set `audio_url`. Verify voices/pricing at bu
      {"prompt":"...","childAnswer":"...","correct":true,"errorType":"vowel_length"}],
     "suggestedFocus":["vowel_length","dehnung_h"]}   // skill tags from src/contract/skills.ts
    ```
+   (Tag examples are aspirational: pre-§F `SKILL_TAGS = ['placeholder']`, and the taxonomy filter on
+   reviewed focus tags is auto-disabled while that's the case — applied tags are free strings,
+   trimmed/bounded only. The filter re-arms when §F populates the taxonomy — ROADMAP §G item 4.)
 3. Store the JSON as `llm_analysis` (a **DRAFT — never applied on its own**), `status='pending_review'`, and
    enqueue it on the shared staff review queue.
 4. **Human-in-the-loop = STAFF TRAINER (mandatory, authoritative).** Student handwriting OCR is unreliable, so a
@@ -707,9 +728,10 @@ Polly neural `de-DE`), cache in S3, set `audio_url`. Verify voices/pricing at bu
 draft + skill tags + grade band — never a parent email, chat, or billing (ARCHITECTURE §1a). `imageUrl`
 is a per-upload short-lived presigned URL.
 
-**Data-protection (minors):** parent-consented at upload (copy states a trained professional reviews the
-photo), short retention on raw images regardless of review state, EU data residency where the provider offers
-it, every trainer action audit-logged (ids + outcome, never content — ARCHITECTURE §6). Bake in now.
+**Data-protection (minors):** parent-consented at upload (the explicit consent copy naming the
+trained professional is a **known gap** in the family app — frontend SPEC §9), short retention on raw
+images regardless of review state, EU data residency where the provider offers it, every trainer
+action audit-logged (ids + outcome, never content — ARCHITECTURE §6). Bake in now.
 
 ---
 
@@ -736,6 +758,7 @@ INFERENCE_GEO=                   # optional inference_geo (eu|us|global); blank 
 LLM_SESSIONS_PER_DAY= CHAT_MESSAGES_PER_DAY=   # per-profile daily caps on ★ ops (defaults 5 / 60)
 AWS_S3_BUCKET= AWS_REGION=       # object storage; auth via the IAM instance role, not keys in env
 STORAGE_LOCAL_DIR=               # dev-only local filesystem store; unused when AWS_S3_BUCKET is set
+IMAGE_TOKEN_SECRET=              # HMAC key for the local store's capability URLs (GET /storage/homework-image)
 EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev only — boot-blocked in prod) |
                                  #   ses (prod, IAM role) | resend (alt prod) | capture (tests only)
 SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_TRAINER_EMAIL=   # dev-only seeded logins (never in production)
@@ -751,8 +774,10 @@ Deploy-level (SSM/scripts, not read by the app itself): `API_FQDN`, `LETSENCRYPT
 - A bank session is generated with **zero** LLM calls.
 - A generated exercise that fails `solvableExerciseSchema` (answer not among options, unknown skill tag, …)
   is never persisted to `item_bank` and never reaches a student.
-- ★ ops are free but capped per profile per day (`LLM_SESSIONS_PER_DAY`, `CHAT_MESSAGES_PER_DAY`); over cap
-  returns a friendly `429 RATE_LIMITED`, and no model call or row write happens.
+- ★ session/chat ops are free but capped per profile per day (`LLM_SESSIONS_PER_DAY`,
+  `CHAT_MESSAGES_PER_DAY`); over cap returns a friendly `429 RATE_LIMITED`, and no model call or row
+  write happens. (`POST /homework` carries the ★ marker but has **no daily cap** today — mime/size
+  validation only; the mandatory human review is the natural throttle.)
 - Homework analysis cannot mutate `review_state` before a **staff trainer** verdict (`llm_analysis` is a
   draft; only `reviewed_analysis` applies). There is no parent-confirm path.
 - A staff (`aud:"staff"`) cookie is rejected on every family route, and a family JWT is rejected on every

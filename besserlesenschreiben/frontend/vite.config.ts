@@ -8,7 +8,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json';
 
 // Build stamp shown in the Profil tab (ARCHITECTURE §7; mirrors backend /health version+commit).
-// Deploy sets GIT_COMMIT; local builds fall back to the working tree's HEAD, then 'dev'.
+// GIT_COMMIT is an optional override (the deploy workflow does NOT set it); builds normally
+// resolve the working tree's HEAD, then fall back to 'dev'.
 const commit = (() => {
   if (process.env.GIT_COMMIT) return process.env.GIT_COMMIT.slice(0, 7);
   try {

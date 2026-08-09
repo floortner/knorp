@@ -76,8 +76,8 @@ npm test                     # Vitest
 npm run gen:api              # regenerate types from backend OpenAPI (committed; CI drift-gates it)
 ```
 
-> **Status: shipped.** Wired to the live backend `staff/` module; types are generated from the published
-> `/staff/*` OpenAPI (`lib/api.gen.ts`, committed) and aliased in `lib/contract.ts`; CI fails on drift, same
+> **Status: shipped.** Wired to the live backend `staff/` module; types are generated from the backend's
+> **full** published OpenAPI (`lib/api.gen.ts`, committed) and aliased in `lib/contract.ts`; CI fails on drift, same
 > as the family app. Beyond review, the portal carries the teaching console (**Lektionen** + **Schüler**,
 > all trainers) and the ADMIN surface **Nutzer** (account lifecycle + per-student learner progress).
 
