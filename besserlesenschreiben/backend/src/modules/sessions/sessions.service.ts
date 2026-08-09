@@ -9,7 +9,7 @@ import { daysAgo, secondsUntilNextAppDay, startOfAppDay, startOfAppWeek } from '
 import { STARS_PER_SESSION, isJokerAvailable, leagueFor, nextStreak, type League } from '../progress/gamification';
 import { LlmService } from '../../services/llm/llm.service';
 import { DigestService } from '../../services/digest/digest.service';
-import { solvableExerciseSchema } from '../../contract/exercise';
+import { servableExerciseWhere, solvableExerciseSchema } from '../../contract/exercise';
 import { SKILL_TAGS } from '../../contract/skills';
 import { homeworkAnalysisSchema } from '../../contract/staff';
 import { Prisma } from '../../generated/prisma/client';
@@ -77,7 +77,11 @@ export class SessionsService {
       : await this.prisma.profile.findFirst({ where: { accountId }, orderBy: { createdAt: 'asc' } });
     const unlocked = profile?.unlockedUnit ?? 1;
 
-    const counts = await this.prisma.itemBank.groupBy({ by: ['unit'], _count: { _all: true } });
+    const counts = await this.prisma.itemBank.groupBy({
+      by: ['unit'],
+      where: servableExerciseWhere, // unit cards must not count items the contract can't serve
+      _count: { _all: true },
+    });
     const countByUnit = new Map(counts.map((c) => [c.unit, c._count._all]));
 
     return UNIT_CATALOG.map((u) => ({
@@ -103,7 +107,7 @@ export class SessionsService {
       throw new ApiException(403, 'UNIT_LOCKED', 'Diese Einheit ist noch gesperrt.');
     }
 
-    const items = await this.prisma.itemBank.findMany({ where: { unit } });
+    const items = await this.prisma.itemBank.findMany({ where: { unit, ...servableExerciseWhere } });
     if (items.length === 0) {
       throw new ApiException(404, 'NO_ITEMS', 'Für diese Einheit gibt es noch keine Übungen.');
     }
@@ -126,7 +130,7 @@ export class SessionsService {
     // The selector already ranks purely on skillTags/difficulty/id, so no change there.
     const generated = priority.size
       ? await this.prisma.itemBank.findMany({
-          where: { unit: LLM_ITEM_UNIT, generatedBy: 'llm', skillTags: { hasSome: [...priority] } },
+          where: { unit: LLM_ITEM_UNIT, generatedBy: 'llm', skillTags: { hasSome: [...priority] }, ...servableExerciseWhere },
           orderBy: { createdAt: 'desc' },
           take: 20,
         })
@@ -287,7 +291,11 @@ export class SessionsService {
       throw new ApiException(409, 'ALREADY_COMPLETED', 'Diese Übung ist schon erledigt.');
     }
 
-    const rows = await this.prisma.itemBank.findMany({ where: { id: { in: assignment.lecture.itemIds } } });
+    // servable filter: a pinned lecture version can reference items whose type was since retired —
+    // play the servable subset rather than 500 on the response contract (NO_ITEMS if none remain).
+    const rows = await this.prisma.itemBank.findMany({
+      where: { id: { in: assignment.lecture.itemIds }, ...servableExerciseWhere },
+    });
     const byId = new Map(rows.map((i) => [i.id, i]));
     const ordered = assignment.lecture.itemIds.flatMap((id) => byId.get(id) ?? []);
     if (ordered.length === 0) {

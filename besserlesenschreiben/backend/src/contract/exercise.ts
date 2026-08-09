@@ -44,3 +44,11 @@ export const solvableExerciseSchema = exerciseSchema.superRefine((ex, ctx) => {
 
 /** The exercise type discriminants, for tests/iteration. */
 export const EXERCISE_TYPES = ['placeholder'] as const;
+
+/**
+ * Prisma where-fragment: only `item_bank` rows the CURRENT contract can serve. Every read that can
+ * put an item on the wire must include it — rows with retired types survive in existing databases
+ * (the 2026-07-13 Vokaltraining drop left the old 14-type rows behind in dev DBs, 500ing bank
+ * sessions), and §F will rename/retire types against live data again.
+ */
+export const servableExerciseWhere = { exerciseType: { in: [...EXERCISE_TYPES] } };

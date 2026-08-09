@@ -81,4 +81,13 @@ describe('SessionsService.createBank — blending generated (unit 0) items', () 
     expect(findManyCalls.some((w) => w.unit === 0)).toBe(false);
     expect(findManyCalls).toHaveLength(1);
   });
+
+  it('every item query filters to servable exercise types (retired-type rows must never reach a session)', async () => {
+    const { svc, findManyCalls } = setup({ weak: true, generated: [] });
+    await svc.createBank('a1', { profileId: 'p1' });
+    expect(findManyCalls.length).toBeGreaterThan(0);
+    for (const where of findManyCalls) {
+      expect(where.exerciseType).toEqual({ in: ['placeholder'] });
+    }
+  });
 });
