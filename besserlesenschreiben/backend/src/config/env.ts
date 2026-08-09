@@ -50,10 +50,11 @@ export const envSchema = z.object({
   DEV_TRAINER_EMAIL: z.string().default(''),
   // later milestones (optional for now)
   ANTHROPIC_API_KEY: z.string().default(''),
-  // Default generation/chat model. Sonnet 4.6 = the best speed/intelligence balance for structured tasks
-  // at a fraction of Opus pricing — the right default for a free app. (temperature/top_p/top_k are rejected
-  // on current models; steer via the prompt + output effort instead.)
-  ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
+  // Default generation/chat model. Sonnet 5 = the best speed/intelligence balance for structured tasks
+  // at a fraction of Opus pricing — the right default for a free app. Note its tokenizer counts ~30%
+  // more tokens for the same text than Sonnet 4.6 (per-token price unchanged — watch the budget logs).
+  // (temperature/top_p/top_k are rejected on current models; steer via the prompt instead.)
+  ANTHROPIC_MODEL: z.string().default('claude-sonnet-5'),
   // Homework vision uses a stronger model — student handwriting OCR is accuracy-critical and the draft is
   // the trainer's starting point.
   ANTHROPIC_VISION_MODEL: z.string().default('claude-opus-4-8'),
