@@ -4,6 +4,7 @@ import { assertProfileOwned } from '../../common/ownership';
 import { daysAgo } from '../../common/dates';
 import { StorageService } from '../storage/storage.service';
 import { buildDigestData, renderDigest, type AssignedRow, type DueRow } from './digest.render';
+import { servableExerciseWhere } from '../../contract/exercise';
 
 const WINDOW_DAYS = 14;
 const DUE_EXAMPLE_ITEMS = 3;
@@ -109,7 +110,7 @@ export class DigestService {
   /** A few example words from the item bank that drill a skill, for the "Fällig" section. */
   private async examplesFor(skillTag: string): Promise<string[]> {
     const items = await this.prisma.itemBank.findMany({
-      where: { skillTags: { has: skillTag } },
+      where: { skillTags: { has: skillTag }, ...servableExerciseWhere },
       select: { payload: true },
       take: DUE_EXAMPLE_ITEMS,
       orderBy: { difficulty: 'asc' },

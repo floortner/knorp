@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApiException } from '../../common/exceptions/api-exception';
 import { toExercise } from '../sessions/exercise.mapper';
+import { servableExerciseWhere } from '../../contract/exercise';
 import type { Prisma } from '../../generated/prisma/client';
 import { sessionRollup } from './student-activity.service';
 
@@ -76,7 +77,10 @@ export class LecturesService {
 
   async detail(lectureId: string) {
     const lecture = await this.byId(lectureId);
-    const rows = await this.prisma.itemBank.findMany({ where: { id: { in: lecture.itemIds } } });
+    // servable filter: old pinned versions may reference retired types — preview what can be played.
+    const rows = await this.prisma.itemBank.findMany({
+      where: { id: { in: lecture.itemIds }, ...servableExerciseWhere },
+    });
     const byId = new Map(rows.map((i) => [i.id, i]));
     const counts = await this.assignmentCountsFor([lecture]);
     return {
