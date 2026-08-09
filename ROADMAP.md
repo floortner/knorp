@@ -30,7 +30,10 @@ real content produces telemetry, J5 remainder with its natural triggers (J5.1 sh
 
 **Parked options:** §H4 (paper delivery channel — designed, build on demand).
 **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9) · TTS
-pipeline (Web-Speech fallback for now; target Amazon Polly) · full-prod hardening
+narration (Web-Speech fallback for now; **provider decided 2026-08-09: ElevenLabs** — full
+implementation plan parked in `docs/tts-narration-plan.md`, deliberately waiting on §F: training
+types + lectures must exist to know where narration is needed and which voices fit) · full-prod
+hardening
 (multi-instance/ALB, managed RDS + DR, OTel collector build-out, staff MFA — ARCHITECTURE §7).
 
 ---
@@ -109,7 +112,8 @@ D1–D4 + D7 shipped (HISTORY.md §D).
      `login@`); operator: SES production-access request if still sandboxed. Logging: identifiers +
      outcomes only — never the recipient or the rendered body (it is re-identifying performance
      data). SPEC/ARCHITECTURE updates ride along in the build PR.
-8. **Spoken praise variety (later — needs Polly).** Audio reward beats visual for pre-readers.
+8. **Spoken praise variety (later — needs the TTS pipeline, `docs/tts-narration-plan.md`; requires
+   a fixed praise pool, not per-item free text).** Audio reward beats visual for pre-readers.
 
 Smaller noted gaps from the 2026-08-06 frontend consistency audit:
 - ✅ **A11y settings UI** + ✅ **weekly goal editing** — shipped 2026-08-08 (`/profil`
