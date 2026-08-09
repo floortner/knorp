@@ -28,8 +28,7 @@ designed, see §D) once real content is live · **C2** is *how* new exercise typ
 **§J** rides alongside — J1 (digest hardening) with §F's taxonomy, J2–J4 (content analytics) once
 real content produces telemetry, J5 remainder with its natural triggers (J5.1 shipped).
 
-**Parked options:** §H4 (paper delivery channel — designed, build on demand) · §D6 (weekly
-parent email — designed 2026-08-08, build when §F content is live).
+**Parked options:** §H4 (paper delivery channel — designed, build on demand).
 **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9) · TTS
 pipeline (Web-Speech fallback for now; target Amazon Polly) · full-prod hardening
 (multi-instance/ALB, managed RDS + DR, OTel collector build-out, staff MFA — ARCHITECTURE §7).
