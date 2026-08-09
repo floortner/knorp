@@ -15,7 +15,7 @@ type Provider = (typeof SUPPORTED)[number];
  *   - `resend`  — alternative production provider: Resend REST API (needs EMAIL_KEY + EMAIL_FROM).
  *   - `capture` — E2E-TEST ONLY: holds the last code per address in memory (never logged) so a
  *     Playwright test can read it back via the gated `/test/last-login-code` route. Both the family
- *     4-digit and staff 6-digit codes flow through here, so it covers both realms' logins. Permitted
+ *     family and staff 6-digit codes flow through here, so it covers both realms' logins. Permitted
  *     ONLY under `NODE_ENV=test` (rejected at boot otherwise), so it can't be enabled in dev/staging/prod.
  *
  * A selected-but-misconfigured provider FAILS LOUDLY at boot (missing key/from) rather than silently

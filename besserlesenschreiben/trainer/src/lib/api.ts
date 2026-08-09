@@ -6,7 +6,7 @@
  * The staff session JWT lives in an httpOnly cookie on the disjoint staff realm (ARCHITECTURE §1a) —
  * the SPA holds no token in JS and derives auth from a `/staff/me` probe. Endpoint wrappers live in
  * `endpoints.ts`; their types come from `contract.ts` — ergonomic aliases over the generated
- * `api.gen.ts` (`npm run gen:api` against the backend's published /staff OpenAPI; CI gates the drift).
+ * `api.gen.ts` (`npm run gen:api` against the backend's FULL published OpenAPI; CI gates the drift).
  */
 
 // A production build MUST be given its API origin — never ship an artifact that silently talks to

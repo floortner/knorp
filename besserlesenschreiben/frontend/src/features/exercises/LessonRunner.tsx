@@ -5,6 +5,7 @@ import { createActiveTimer, type ActiveTimer } from './active-timer';
 import { useSoundOn } from '@/features/settings/a11y';
 import { useCompleteSession } from '@/features/sessions/useCompleteSession';
 import { useActiveProfile } from '@/features/profile/useMe';
+import { buddySrc } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { ExerciseView } from './ExerciseView';
 import { LessonComplete } from './LessonComplete';
@@ -23,7 +24,8 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
   const items = session.items;
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
-  // Generated lectures open with a short teaching card (session.intro); bank sessions have none.
+  // Sessions may open with a short teaching card (session.intro) — bank sessions carry the
+  // unit's Merksatz, generated lectures their own intro; shown whenever the field is present.
   const [showIntro, setShowIntro] = useState(Boolean(session.intro));
   const attemptNo = useRef(1);
   // Visible-time timer (§J5.1): pauses while the tab is hidden so timeMs measures the student,
@@ -50,7 +52,7 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
     <LessonComplete
       result={complete.data}
       pending={complete.isPending}
-      // Backend-authoritative (SPEC §12): no more hardcoded unit count on the client.
+      // Backend-authoritative (SPEC §11 acceptance): no hardcoded unit count on the client.
       allUnitsComplete={complete.data?.allUnitsComplete ?? false}
       buddy={profile?.buddy}
     />
@@ -60,6 +62,7 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
     return (
       <IntroCard
         text={session.intro}
+        buddy={profile?.buddy}
         onStart={() => {
           // The first exercise becomes visible NOW — restart its timer so timeMs never
           // includes intro-reading time (telemetry invariant, SPEC §4).
@@ -109,10 +112,10 @@ export function LessonRunner({ session }: { session: SessionResponse }) {
 }
 
 /** The lecture's teaching moment: mascot + Merksatz, dismissed by the student when ready. */
-function IntroCard({ text, onStart }: { text: string; onStart: () => void }) {
+function IntroCard({ text, buddy, onStart }: { text: string; buddy?: string; onStart: () => void }) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 py-8 text-center">
-      <img src="/nepo.svg" alt="" className="h-24 w-24" />
+      <img src={buddySrc(buddy ?? 'nepo')} alt="" className="h-24 w-24" />
       <div className="max-w-sm rounded-card bg-teal-tint/70 p-5">
         <p className="font-display text-lg font-bold text-ink">{text}</p>
       </div>

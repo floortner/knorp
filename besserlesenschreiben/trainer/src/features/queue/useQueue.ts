@@ -7,8 +7,8 @@ const PAGE_SIZE = 50;
 
 /**
  * The review pipeline as an infinite, cursor-paged list ("Mehr laden"). Rows carry the student name (known-trainer §H1.3).
- * Keyed under ['staff-queue', 'list', …] — distinct from the PLAIN page the review screen caches at
- * ['staff-queue', 'open'] (different data shape); the shared 'staff-queue' prefix still invalidates both.
+ * Keyed under ['staff-queue', 'list', …] — distinct from the single item the review screen caches at
+ * ['staff-queue', 'item', id] (different data shape); the shared 'staff-queue' prefix still invalidates both.
  */
 export function useQueue(status: QueueFilter = 'open') {
   return useInfiniteQuery({

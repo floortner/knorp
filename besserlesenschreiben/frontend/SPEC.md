@@ -12,7 +12,9 @@ separately in Claude Design; this spec defines structure, data flow, and the API
 ## 1. Stack
 
 - **Vite + React 19 + TypeScript** SPA (deliberately *not* Next.js — strict front/back separation; this is a client only). See `../ARCHITECTURE.md` §2 for pinned versions.
-- **Tailwind CSS + shadcn/ui** for UI (responsive, mobile-first, accessible, components owned in-repo).
+- **Tailwind CSS + shadcn-style components owned in-repo** for UI (responsive, mobile-first,
+  accessible). The `src/components/ui/*` primitives are hand-rolled (cva + Tailwind) — no Radix/shadcn
+  dependency is installed.
 - **TanStack Query** for ALL server state (auth, profile, units, sessions, attempts, progress, chat).
 - **React Router** for navigation.
 - **PWA** (`vite-plugin-pwa`) — installable to the phone home screen, app-like.
@@ -26,18 +28,24 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (student
 ## 2. Screen map (ported from prototype `knorp.html`)
 
 ```
-/login            email entry → 4-digit code entry → (session-expired state)
+/login            email entry → 6-digit code entry (`/login/code`); an expired session silently
+                  redirects here (ApiErrorBridge — no dedicated expired state)
 /onboarding       welcome (buddy intro) → choose buddy (8 Lernbuddies, Nepo default) → choose weekly goal
 /app
-  ├ /lernen       home: greeting, weekly goal ring, unit cards (title/subtitle/status, each with its
-  │               own start), ✨ generated-lecture card, "Übung von {Trainer}" assignment cards
-  │               (content-library lectures assigned by a trainer, §H1/§I — an offer, never a push;
-  │               personal via the known-trainer name)
-  │   └ /lesson   exercise runner (one renderer per contract type — §3), feedback, confetti on complete; sessions
+  ├ /lernen       home: greeting, weekly goal ring, buddy card (mood-dependent message, `BuddyCard`),
+  │               unit cards (title/subtitle/status, each with its own start), ✨ generated-lecture
+  │               card, "Übung von {Trainer}" assignment cards (content-library lectures assigned by
+  │               a trainer, §H1/§I — an offer, never a push; personal via the known-trainer name)
+  │   └ /lesson   exercise runner (one renderer per contract type — §3), feedback; confetti + fanfare
+  │               only when ALL units are complete, a plain reward screen otherwise; sessions
   │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!") —
   │               bank sessions carry the unit's Merksatz, generated lectures their own intro
-  ├ /erfolge      achievement standing (Silber→Gold), stars this week, stars-to-next, weekly bars, monthly heatmap, streak
-  ├ /profil       editable name, buddy picker, "aktiv seit", streak, stars, Ton toggle, login email,
+  ├ /erfolge      achievement standing (Silber→Gold), stars this week, stars-to-next, weekly bars,
+  │               monthly heatmap, streak + Joker status ("1 Joker verfügbar" — the weekly streak
+  │               freeze; the TopBar streak pill shows ◆ while it's unused, and the lesson-complete
+  │               screen says "Streak gerettet!" when one is consumed)
+  ├ /profil       editable name, buddy picker, "aktiv seit", streak, stars, login email, settings —
+  │               Ton, Aussehen (night mode), Schriftgröße, Extra Abstand beim Lesen, Wochenziel (§6) —
   │               Verwaltung: reset progress + delete chat (destructive, two-step confirmation — §8),
   │               Abmelden, build-version stamp (ARCHITECTURE §7)
   └ /chat         message thread with trainer Angelika + input; 📷 homework upload — the photo shows as
@@ -70,11 +78,13 @@ type Exercise =
   | { type:'placeholder'; id; prompt:string; options:string[]; answer:string; praise } // single-choice stand-in
 ```
 
-Each carries optional `audioUrl` (and `syllableAudio?`) for pre-generated voice, plus `skillTags`.
+Each carries `audioUrl` (required key, nullable — `null` until the TTS pipeline lands) and the
+optional `syllableAudio?` slot for pre-generated voice, plus `skillTags` (required).
 
 **Interaction pattern:** `placeholder` renders via the generic `SingleChoiceExercise` — tap one option →
 correct/wrong. States: `idle | correct | wrong`. On correct: chime + speak the answer + `praise`, advance.
-On wrong: buzz + "Nochmal versuchen", allow retry. Confetti/fanfare on session complete. This state machine
+On wrong: buzz + "Nochmal versuchen", allow retry. On session complete a reward screen shows stars/
+streak/league; confetti + fanfare fire only on the all-units-complete variant. This state machine
 and the `ExerciseCard`/`ChoiceTile`/`useAnswer` scaffolding are the reusable base for the §F training types.
 
 ---
@@ -104,9 +114,9 @@ postAttempt({
   expected,
   given: String(chosen),
   isCorrect,
-  timeMs: Math.round(performance.now() - startedAt),
-  attemptNo,             // increment on retry of same item
-  skillTags: ex.skillTags ?? [],
+  timeMs: timer.elapsedMs(),  // visible time only — see createActiveTimer above
+  attemptNo,                  // increment on retry of same item
+  skillTags: ex.skillTags,    // required in the contract — no fallback needed
 });
 ```
 
@@ -172,9 +182,11 @@ POST /homework                 GET  /homework/{id}        # no /confirm — staf
 POST /profiles/{id}/reset      POST /profiles/{id}/reset-chat                  # destructive — §8
 ```
 
-TanStack Query keys: `['me']`, `['units']`, `['session', id]`, `['progress', profileId]`,
-`['chat', profileId]`, `['assignments', profileId]` (the assignments query alone opts back into
-`refetchOnWindowFocus` so a fresh assignment appears when the student returns to the app).
+TanStack Query keys: `['me']`, `['units', profileId]`, `['progress', profileId]`,
+`['chat', profileId]`, `['homework', uploadId]`, `['assignments', profileId]` (the assignments query
+alone opts back into `refetchOnWindowFocus` so a fresh assignment appears when the student returns
+to the app). Sessions are **not** a query — `POST /sessions` is a mutation
+(`useCreateSession`) whose response is handed to the runner via router state.
 Invalidate `['me']` (stars/streak) + `['progress']` + `['units']` + `['assignments']` after
 `/sessions/{id}/complete`.
 
@@ -212,9 +224,10 @@ and `../backend/SPEC.md` §10. This `-web` app **uploads and tracks status only*
 draft and has **no confirm/edit UI** (the trainer portal `-trainer` owns that, and is not part of this repo).
 
 1. The 📷 button next to the chat input opens the camera/picker → `POST /homework` (multipart). The photo
-   appears as a chat message (the backend serves it back as a durable bubble in `/chat` history). Consent
-   copy states the photo is reviewed by a trained professional ("eine Fachkraft") to tailor lessons.
-2. `GET /homework/{id}` is polled (with backoff) while in review; the trainer's status bubble reflects
+   appears as a chat message (the backend serves it back as a durable bubble in `/chat` history). The
+   current copy only says "lade ein Foto deiner Hausübung hoch" — explicit consent wording naming the
+   trained professional ("eine Fachkraft") is a **known gap, not yet shipped**.
+2. `GET /homework/{id}` is polled at a fixed 20 s interval while in review; the trainer's status bubble reflects
    `pending_analysis` / `pending_review` → `reviewed` / `rejected`. Never display a draft state.
 3. On `reviewed`, the status bubble carries the **authoritative** result (topic + suggested focus from
    `reviewedAnalysis`) — read-only, no accept/reject.
@@ -231,10 +244,15 @@ draft and has **no confirm/edit UI** (the trainer portal `-trainer` owns that, a
 VITE_API_BASE=        # backend URL (required for production builds)
 ```
 - `VITE_APP_VERSION` is **not** an env var — it's injected at build by `vite.config.ts` (`define`)
-  as `<package version>+<commit>`; deploy sets `GIT_COMMIT`, local builds read the git HEAD.
+  as `<package version>+<commit>`; the commit resolves via `git rev-parse --short HEAD` (a
+  `GIT_COMMIT` env override exists but the deploy workflow does not set it — CI checkouts resolve
+  HEAD like local builds).
 - PWA manifest: app name, the prototype's "b" mark icon (teal #27A99B), maskable icons, standalone display.
 - PWA updates are **prompt-to-update**: `UpdatePrompt.tsx` shows "Neue Version verfügbar – neu laden?"
   in the shell, suppressed while a lesson is running; the SW never activates silently.
+- Runtime caching (`vite.config.ts` Workbox config): **NetworkFirst** for `GET /units` and
+  `GET /progress` (3 s network timeout, 1-day/64-entry cache) so the home screen renders through an
+  offline blip; **`GET /me` is deliberately never cached** (auth probe — security review P2-1).
 - Mobile-first responsive; test at 390px and tablet widths.
 
 ## 11. Acceptance checks

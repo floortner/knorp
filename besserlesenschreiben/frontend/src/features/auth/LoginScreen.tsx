@@ -58,7 +58,7 @@ export function LoginScreen() {
       ) : (
         <>
           <p className="mt-8 max-w-xs text-center text-lg text-ink-soft">
-            Gib deine E-Mail ein – wir schicken dir einen 4-stelligen Code zum Anmelden. Kein Passwort nötig.
+            Gib deine E-Mail ein – wir schicken dir einen 6-stelligen Code zum Anmelden. Kein Passwort nötig.
           </p>
 
           <form onSubmit={onSubmit} className="mt-6 w-full max-w-sm space-y-3">

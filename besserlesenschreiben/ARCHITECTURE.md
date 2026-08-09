@@ -350,6 +350,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 |---|---|---|
 | 401 | `UNAUTHENTICATED` / `SESSION_EXPIRED` | route to `/login`, show "Sitzung abgelaufen" |
 | 403 | `FORBIDDEN` | generic "not allowed" |
+| 403 | `UNIT_LOCKED` | unit not yet unlocked for this profile — send the student back to `/lernen` |
 | 422 | `VALIDATION_ERROR` | field-level messages from `details[]` |
 | 429 | `RATE_LIMITED` | back off using `Retry-After` (set by the IP limiter AND app-thrown caps); soft message |
 | 403 | `ACCOUNT_INACTIVE` | deactivated/deleted account — treat like a 401, route to `/login` |
@@ -397,7 +398,7 @@ wrapper over `console` (optionally shipping warn/error to Sentry).
 
 **NEVER log (this is an app for minors — treat it as the hard line):**
 - The contents of exercises a student answered, their answers, or homework image contents / OCR text.
-- Email addresses, the 4-digit login code, JWTs, cookies, presigned storage URLs.
+- Email addresses, the 6-digit login code, JWTs, cookies, presigned storage URLs.
 - Full request/response bodies. Payment tokens or provider secrets.
 - Any field that, combined, re-identifies a specific student's performance.
 

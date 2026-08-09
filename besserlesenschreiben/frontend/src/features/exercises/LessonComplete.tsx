@@ -37,7 +37,7 @@ export function LessonComplete({
         <img src="/monster-pets/pixel-jubel.svg" alt="Pixel" className="h-32 animate-bounce" />
         <h1 className="font-display text-3xl font-bold text-ink">Du hast alles geschafft!</h1>
         <p className="max-w-xs text-ink-soft">
-          Alle 7 Einheiten abgeschlossen — das ist unglaublich! Pixel ist so stolz auf dich! 🌟
+          Alle Einheiten abgeschlossen — das ist unglaublich! Pixel ist so stolz auf dich! 🌟
         </p>
 
         {result && (

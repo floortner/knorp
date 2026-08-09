@@ -24,15 +24,17 @@ backend concerns, `../backend/SPEC.md` §6/§10).
 ## 2. Screen map
 
 ```
-/login            staff email → code entry (no staff-enumeration; backend always 200s)
+/login            staff email entry → code entry (`/login/code`; no staff-enumeration; backend always 200s)
 /queue            "Chats": review pipeline (Offen | Erledigt | Alle), cursor-paged, student names,
                   waiting-since cue, "in Prüfung" claim locks; nav badge = open total
   └ /review/:uploadId    two-pane review (image lightbox | editable AnalysisEditor), claim on entry,
                          approve/correct/reject-with-confirm, submit → next open item; deep-link safe
-                         (direct GET /staff/queue/{id}); already-decided → hands over to /history
+                         (direct GET /staff/queue/{id}); already-decided → offers the link to /history
+                         ("Zur erledigten Anfrage" — a rendered link, not an auto-redirect)
   └ /history/:uploadId   read-only detail of a DECIDED review (verdict, analysis, student comment)
 /lectures         "Lektionen": content-library browse (current versions; drafts visible, unassignable)
   └ /lectures/:lectureId    Merksatz + items read-only, assign dialog (searchable, full directory),
+                            withdraw ("Zurückziehen" → DELETE …/assignments/{aid}; refused once completed),
                             per-student outcome table across all versions of the slug
 /students         "Schüler": learner directory — name-ordered, ACTIVE family accounts only, count +
                   per-row teaser (Einheit, weakest skills, last active, 7d/30d sessions, streak, attempts)
@@ -53,9 +55,11 @@ link, its badge query, and the screen itself are all admin-gated client-side; th
 ## 3. Data flow
 
 Transport: `lib/api.ts` (staff httpOnly cookie via `credentials:'include'`, no token in JS, one error
-envelope → `ApiError`). Types: `lib/api.gen.ts` **generated** from the backend OpenAPI (`npm run
-gen:api`, committed, CI drift-gated), aliased ergonomically in `lib/contract.ts` — never hand-author a
-wire shape. Wrappers: `lib/endpoints.ts` (`staffAuthApi`, `reviewApi`, `studentsApi`, `lecturesApi`,
+envelope → `ApiError`). Types: `lib/api.gen.ts` **generated** from the backend's **full** OpenAPI
+(`npm run gen:api`, committed, CI drift-gated) — the portal calls only `/staff/*`, but **any**
+contract change, family routes included, requires a regen here or the drift gate goes red
+(ARCHITECTURE §4 / AGENTS golden rule 2). Aliased ergonomically in `lib/contract.ts` — never
+hand-author a wire shape. Wrappers: `lib/endpoints.ts` (`staffAuthApi`, `reviewApi`, `studentsApi`, `lecturesApi`,
 `usersApi`).
 
 Endpoints consumed (shapes in `../backend/SPEC.md` §6):
@@ -76,9 +80,12 @@ DELETE /staff/users/{id}        GET  /staff/users/{id}/progress                 
 
 Query-key prefixes (mutations invalidate by prefix): `['staff-me']` · `['staff-queue', …]` (`'list'`,
 `'count'`, `'item'`) · `['staff-queue-progress', id]` · `['staff-students']` / `['staff-student…', …]`
-· `['staff-lecture…', …]` · `['staff-users', …]`. Queue list + badge refetch on a 30 s interval (small
-shared staff pool). A `401/SESSION_EXPIRED` anywhere clears the cached `['staff-me']` identity AND
-redirects to `/login` once (`ApiErrorBridge`); logout `qc.clear()`s the whole cache (shared machines).
+· `['staff-lecture…', …]` · `['staff-users', …]` · `['staff-user-progress', accountId]` (its own
+prefix — user-admin actions invalidate both). Queue list + badge refetch on a 30 s interval (small
+shared staff pool). A `401/SESSION_EXPIRED` anywhere **nulls** the cached `['staff-me']` identity
+(`setQueryData(…, null)` — never `removeQueries`, which would re-trigger the probe and hang login)
+AND redirects to `/login` once (`ApiErrorBridge`); logout `qc.clear()`s the whole cache (shared
+machines).
 
 ## 4. Review flow rules (the core — ARCHITECTURE §11)
 
@@ -105,8 +112,9 @@ The learner directory and assign picker list students of **active** family accou
 ```
 VITE_API_BASE=        # backend URL incl. /api/v1 (required for production builds)
 ```
-- `VITE_APP_VERSION` is injected at build by `vite.config.ts` (`<package version>+<commit>`; deploy
-  sets `GIT_COMMIT`) and shown on `/profile` — mirrors backend `/health`.
+- `VITE_APP_VERSION` is injected at build by `vite.config.ts` (`<package version>+<commit>`; the
+  commit resolves via `git rev-parse --short HEAD` — a `GIT_COMMIT` env override exists but the
+  deploy workflow doesn't set it) and shown on `/profile` — mirrors backend `/health`.
 - `npm run dev` (:5174, strict) · `build` (`tsc -b && vite build`) · `test` · `lint` · `gen:api`.
 - CI (`.github/workflows/ci.yml` `trainer` job): `lint · tsc -b · build · test · gen:api` + the
   `api.gen.ts` drift gate.

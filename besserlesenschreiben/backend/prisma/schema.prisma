@@ -49,7 +49,7 @@ model Profile {
   id           String   @id @default(uuid()) @db.Uuid
   accountId    String   @map("account_id") @db.Uuid
   name         String
-  buddy        String   @default("nepo") // nepo | stella
+  buddy        String   @default("nepo") // 8-value Lernbuddy enum — see profiles.dto.ts (contract source)
   goalPerWeek  Int      @default(5) @map("goal_per_week")
   // accessibility / settings
   soundOn      Boolean  @default(true) @map("sound_on")

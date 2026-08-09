@@ -37,10 +37,13 @@ export function useUserProgress(accountId: string, enabled: boolean) {
   });
 }
 
-/** approve / deactivate / delete — each refreshes every user list after it lands. */
+/** approve / deactivate / delete — each refreshes every user list (and any open progress panel) after it lands. */
 export function useUserActions() {
   const qc = useQueryClient();
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['staff-users'] });
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: ['staff-users'] });
+    void qc.invalidateQueries({ queryKey: ['staff-user-progress'] });
+  };
 
   const approve = useMutation({ mutationFn: (id: string) => usersApi.approve(id), onSuccess: invalidate });
   const deactivate = useMutation({ mutationFn: (id: string) => usersApi.deactivate(id), onSuccess: invalidate });

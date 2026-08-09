@@ -109,7 +109,7 @@ export const studentsApi = {
   assignments: (profileId: string) =>
     apiFetch<StudentAssignmentList>(`/staff/students/${encodeURIComponent(profileId)}/assignments`),
 
-  /** Session history, newest-first; optional source filter (bank | llm | homework). */
+  /** Session history, newest-first; optional source filter (bank | llm | homework | assigned). */
   sessions: (profileId: string, params: { limit?: number; cursor?: string; source?: SessionSource } = {}) => {
     const q = new URLSearchParams();
     if (params.limit !== undefined) q.set('limit', String(params.limit));
