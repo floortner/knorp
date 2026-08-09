@@ -204,15 +204,23 @@ retention via provider lifecycle rules, not the earlier 7d+4w scheme) · full �
 `/api/v1/health`" was never wired up in-repo — external checks and CloudWatch alarms remain the open
 P3 item in ROADMAP §G.)
 
-## §G — Security review (P1/P2/P3-batch-1 DONE)
+## §G — Security review (ALL P1/P2/P3 code shipped)
 
 Full review in `SECURITY_REVIEW.md`, tracking issue #81. **P1 (PR #80):** parent-PIN reset bypass,
 `blsb`→root deploy escalation, security headers + CSP, JWT out of the `/auth/verify` body.
 **P2 (PR #80):** SW-cache offline-logout bypass, telemetry-queue clear on logout, login-code resend
 throttle, homework skill-tag sanitisation, student name out of the LLM digest, API bound to
-localhost, backup dead-man's-switch. **P3 batch 1:** Swagger gated out of prod, `VITE_API_BASE`
+localhost, backup dead-man's-switch. **P3 batch 1 (#82):** Swagger gated out of prod, `VITE_API_BASE`
 guard, `qc.clear()` on logout, `dnf-automatic`, systemd hardening, CSRF note.
-*(P3 remainder is open — ROADMAP §G.)*
+**P3 batch 2 (#115, 2026-08-09, from a cloud review session):** 6-digit family login code
+(backend + CodeScreen), email normalisation at both auth boundaries, dedicated optional
+`IMAGE_TOKEN_SECRET`, homework-photo S3 lifecycle by object tag (`class=homework`) +
+`s3:PutObjectTagging`. **P3 batch 3 (2026-08-09):** CloudWatch ops alarms — EC2 status check,
+root + pgdata disk ≥85%, TLS cert ≤14 days — to the budget SNS topic, fed by a 5-min on-box
+metrics timer (`deploy/metrics.sh`, namespace-scoped PutMetricData, missing-data = breaching);
+deploy approval gate — both deploy jobs in the GitHub `beta` environment, OIDC trust `sub`
+scoped to `repo:…:environment:beta`, all workflow actions SHA-pinned.
+*(Operator activation steps for batch 3 + remaining operator actions: ROADMAP §G.)*
 
 ## §H1 + §H3 — The teaching console (DONE 2026-07-25)
 

@@ -1,0 +1,11 @@
+# Ops-metrics publisher (security review P3-5) — one shot per timer tick; alarms in infra/alarms.tf.
+# Root-owned in /usr/local/sbin like the backup script (P1-2): a root-run unit must never execute a
+# file the unprivileged blsb user can rewrite.
+[Unit]
+Description=besserlesenschreiben ops metrics (disk, TLS cert) to CloudWatch
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/blsb-metrics.sh

@@ -72,8 +72,14 @@ install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-api.service"    /etc/sy
 install -m 755 -o root -g root "$RELEASE_DIR/deploy/backup.sh"          /usr/local/sbin/blsb-backup.sh
 install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-backup.service" /etc/systemd/system/blsb-backup.service
 install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-backup.timer"   /etc/systemd/system/blsb-backup.timer
+install -m 755 -o root -g root "$RELEASE_DIR/deploy/metrics.sh"          /usr/local/sbin/blsb-metrics.sh
+install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-metrics.service" /etc/systemd/system/blsb-metrics.service
+install -m 644 -o root -g root "$RELEASE_DIR/deploy/blsb-metrics.timer"   /etc/systemd/system/blsb-metrics.timer
 systemctl daemon-reload
 systemctl enable blsb-api
+# Ops metrics (P3-5): no config needed — the instance role authorizes PutMetricData, so every
+# deploy just (re-)asserts the timer. Alarms on the metrics live in infra/alarms.tf.
+systemctl enable --now blsb-metrics.timer
 # Backups: config-gated auto-enable. Once the operator has created /etc/blsb/backup.env (keypair +
 # rclone remote — deploy/README.md "Backups"), every deploy re-asserts the timer; a fresh box without
 # the config still deploys cleanly, but says so loudly instead of silently never backing up.

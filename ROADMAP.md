@@ -196,18 +196,19 @@ confirmation.
 Full review in `SECURITY_REVIEW.md`; tracking issue **#81**. P1, P2, and P3 batch 1 are done
 (HISTORY.md §G).
 
-- **P3 remaining — DEFERRED (do here, opportunistically):**
-  1. 6-digit family login code (align with staff; touches the code regex + tests).
-  2. Normalise emails (`trim().toLowerCase()`) at the auth boundary (family + staff).
-  3. Dedicated image-token secret instead of reusing `STAFF_JWT_SECRET`.
-  4. Scope the S3 blob lifecycle rule to the `…/homework/` prefix (not all of `users/`).
-  5. Operational CloudWatch alarms (instance status-check, disk-full, cert-renewal) → SNS topic.
-  6. GitHub deploy approval gate (environment protection + OIDC `sub` scoped to
-     `environment:beta`) and SHA-pin third-party actions.
+- ✅ **P3 batch 2** (items 1–4, PR #115, 2026-08-09) → HISTORY.md §G: 6-digit family login code,
+  email normalisation at both auth boundaries, dedicated `IMAGE_TOKEN_SECRET`, homework-photo S3
+  lifecycle by object tag.
+- ✅ **P3 batch 3** (items 5–6, code landed 2026-08-09) → HISTORY.md §G: CloudWatch ops alarms
+  (status check, disk, cert expiry → budget SNS; on-box metrics timer) and the deploy approval
+  gate (deploy jobs in the `beta` environment, OIDC sub environment-scoped, all actions
+  SHA-pinned). **Not live until the operator applies:** `terraform apply` + create the `beta`
+  environment with a required reviewer (`infra/README.md` "Deploy approval gate").
 - **Operator actions (not code):** `terraform validate`/`plan` + staging CSP smoke-test before
-  apply; provision a write-only backup token + `HEALTHCHECK_URL` (cloud-init installs age/rclone;
-  the deploy auto-enables the timer once `/etc/blsb/backup.env` exists); re-verify the dormant P2-4
-  taxonomy filter once `SKILL_TAGS` is populated in §F. (All in #81.)
+  apply (also activates the alarms + OIDC scoping above); provision a write-only backup token +
+  `HEALTHCHECK_URL` (cloud-init installs age/rclone; the deploy auto-enables the timer once
+  `/etc/blsb/backup.env` exists); re-verify the dormant P2-4 taxonomy filter once `SKILL_TAGS` is
+  populated in §F. (All in #81.)
 
 **Data-retention decision (2026-08-06):** user and telemetry data in the DB — accounts, profiles,
 sessions/attempts (incl. transcribed homework answers in `attempt.given` and the
