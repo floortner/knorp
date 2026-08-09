@@ -52,9 +52,30 @@ CloudFront + ACM validation take ~10–20 min on first apply. State is local (gi
    ```
    Re-run after ANY apply that changes an output — especially an instance replacement
    (`INSTANCE_ID` goes stale) or a bucket/CloudFront recreation.
-6. **First deploy:** run the `Deploy` workflow (`workflow_dispatch`). Its `api` job runs `deploy/release.sh`
-   on the box (via SSM), which installs the systemd unit + nginx, obtains the Let's Encrypt cert, migrates,
-   seeds, and starts the API. The `web` job builds + uploads both frontends.
+6. **Deploy approval gate (security review P3-6):** create the `beta` GitHub environment with yourself
+   as required reviewer — the deploy jobs declare `environment: beta`, and the IAM trust policy only
+   accepts the environment-scoped OIDC sub (`repo:floortner/knorp:environment:beta`), so a run that
+   skipped the gate cannot assume the deploy role:
+   ```bash
+   gh api -X PUT "repos/floortner/knorp/environments/beta" \
+     --input - <<< "{\"reviewers\":[{\"type\":\"User\",\"id\":$(gh api user --jq .id)}]}"
+   ```
+   Until BOTH the environment exists and the new trust policy is applied, deploys fail at the
+   assume-role step — do this and the `terraform apply` together.
+7. **First deploy:** run the `Deploy` workflow (`workflow_dispatch`), approve it in the Actions UI
+   (the environment gate), and its `api` job runs `deploy/release.sh` on the box (via SSM), which
+   installs the systemd units + nginx, obtains the Let's Encrypt cert, migrates, seeds, and starts
+   the API. The `web` job builds + uploads both frontends.
+
+## Ops alarms (security review P3-5)
+
+`alarms.tf` wires four alarms to the budget SNS topic (same email): EC2 status check, root +
+Postgres-data-volume disk above 85%, and TLS cert under 14 days to expiry. Disk and cert metrics
+come from a 5-minute on-box timer (`deploy/metrics.sh`, installed + enabled by every deploy;
+`BLSB/Ops` namespace, PutMetricData scoped in `iam.tf`). Missing data is treated as **breaching**
+on purpose — a silent metrics pipeline is itself an incident. Expect the disk/cert alarms to sit
+in ALARM between the `apply` and the next deploy (the timer doesn't exist on the box until
+`release.sh` installs it).
 
 ## Break-glass access
 No SSH / no port 22. Use SSM Session Manager: `aws ssm start-session --target <instance_id>`.

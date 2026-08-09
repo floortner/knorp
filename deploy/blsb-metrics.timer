@@ -1,0 +1,12 @@
+# Every 5 minutes — frequent enough for the disk/cert alarms (infra/alarms.tf), cheap enough to be
+# invisible. No Persistent=true: a missed tick is meaningless at this cadence, and missing data is
+# itself alarmed (treat_missing_data = breaching).
+[Unit]
+Description=besserlesenschreiben ops metrics every 5 minutes
+
+[Timer]
+OnCalendar=*:0/5
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target

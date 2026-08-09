@@ -61,6 +61,18 @@ data "aws_iam_policy_document" "instance" {
     actions   = ["ses:SendEmail"]
     resources = [aws_sesv2_email_identity.domain.arn]
   }
+  # Publish the ops metrics the alarms watch (deploy/metrics.sh → alarms.tf), and nothing else:
+  # PutMetricData can't be resource-scoped, so the namespace condition is the fence.
+  statement {
+    sid       = "OpsMetrics"
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "cloudwatch:namespace"
+      values   = ["BLSB/Ops"]
+    }
+  }
   # Decrypt SecureString params (AWS-managed aws/ssm key), only via SSM.
   statement {
     sid       = "SsmKmsDecrypt"

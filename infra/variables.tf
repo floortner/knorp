@@ -58,9 +58,9 @@ variable "create_github_oidc_provider" {
 }
 
 variable "github_deploy_refs" {
-  description = "Git refs allowed to assume the deploy role (tags + main). Least-privilege: only these can deploy."
+  description = "OIDC subs allowed to assume the deploy role. The deploy jobs run in the GitHub 'beta' environment (deploy.yml), so the token's sub is environment-scoped (security review P3-6) — only a run that passed the environment's required-reviewer gate can assume the role. The gate itself is one-time GitHub configuration (infra/README.md 'Deploy approval gate')."
   type        = list(string)
-  default     = ["repo:floortner/knorp:ref:refs/tags/v*", "repo:floortner/knorp:ref:refs/heads/main"]
+  default     = ["repo:floortner/knorp:environment:beta"]
 }
 
 variable "owner_email" {
