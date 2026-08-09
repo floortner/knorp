@@ -26,10 +26,10 @@ locals {
     ANTHROPIC_MODEL        = "claude-sonnet-5"
     ANTHROPIC_VISION_MODEL = "claude-opus-4-8"
     LLM_RESIDENCY_ACK      = "true"
-    # Inference-routing region — blank omits the `inference_geo` parameter. Set to "eu" ONLY once EU
-    # inference routing is enabled on the Anthropic org (currently global/us only): without the org
-    # capability, "eu" 400s every LLM call (chat, sessions, homework vision).
-    INFERENCE_GEO = ""
+    # Inference-routing region: deliberately ABSENT (SSM rejects empty values; an absent env var makes
+    # the app omit the `inference_geo` parameter — the working default). Add `INFERENCE_GEO = "eu"`
+    # here ONLY once EU inference routing is enabled on the Anthropic org (currently global/us only):
+    # without the org capability, "eu" 400s every LLM call (chat, sessions, homework vision).
     # Tight beta caps (default 5/60) — protect the Anthropic budget; tune after watching real usage.
     LLM_SESSIONS_PER_DAY  = "3"
     CHAT_MESSAGES_PER_DAY = "20"
