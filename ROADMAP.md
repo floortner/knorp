@@ -12,20 +12,24 @@ Everything through the beta deployment is **done and live** (HISTORY.md): backen
 trainer portal on real HTTPS domains, €50/mo all-in budget, full ★ AI enabled with beta caps. The
 teaching console (§H1/§H3) and the content pipeline (§I) shipped 2026-07-25/26.
 
-**Now:** the content side owns the critical path. The §F export landed 2026-07-27
-(`content/linguist-contrib/iteration-1/`); engineering's Rückmeldung went back
-(`content/linguist-contrib/RUECKMELDUNG-ENGINEERING.md`). Since 2026-08-06 the content side is
-**one linguist — Angelika — authoring in-repo via Claude Code** (HISTORY.md pivot log): the open
-answers, above all the skill-tag taxonomy, are expected to be drafted in her Claude sessions with
-her pedagogical sign-off (see §F).
+**Now:** two tracks. **Operator:** redeploy the beta — the last deploy was 2026-07-25, and main
+has since accumulated the trainer login fix, night mode, 6-digit codes, the quick wins, the LLM
+fixes (`inference_geo`), and Sonnet 5; infra is applied and the deploy approval gate is live, so
+it's run-workflow → approve → the §G post-deploy checks. **Content:** the critical path still
+runs through Angelika (away as of 2026-08-09) — the §F export landed 2026-07-27
+(`content/linguist-contrib/iteration-1/`), engineering's Rückmeldung went back
+(`RUECKMELDUNG-ENGINEERING.md`), and since 2026-08-06 she authors in-repo via Claude Code
+(HISTORY.md pivot log): the open answers, above all the skill-tag taxonomy, are expected from her
+Claude sessions with her pedagogical sign-off (see §F).
 
 **Then, in rough order:** §F implementation as the answers land (word-list schema → taxonomy →
-training types → sequence → lecture prompt) · **D5/D6** (badges, weekly parent email) once real
-content is live · **C2** is *how* new exercise types land during §F · **§J** rides alongside — J1
-(digest hardening) with §F's taxonomy, J2–J4 (content analytics) once real content produces
-telemetry, J5 piecemeal (the robust-`time_ms` fix anytime) · §G's P3 remainder opportunistically.
+training types → sequence → lecture prompt) · **D5/D6** (badges, weekly parent email — D6 is
+designed, see §D) once real content is live · **C2** is *how* new exercise types land during §F ·
+**§J** rides alongside — J1 (digest hardening) with §F's taxonomy, J2–J4 (content analytics) once
+real content produces telemetry, J5 remainder with its natural triggers (J5.1 shipped).
 
-**Parked options:** §H4 (paper delivery channel — designed, build on demand).
+**Parked options:** §H4 (paper delivery channel — designed, build on demand) · §D6 (weekly
+parent email — designed 2026-08-08, build when §F content is live).
 **Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9) · TTS
 pipeline (Web-Speech fallback for now; target Amazon Polly) · full-prod hardening
 (multi-instance/ALB, managed RDS + DR, OTel collector build-out, staff MFA — ARCHITECTURE §7).
@@ -193,22 +197,24 @@ confirmation.
 
 ### G. Security review follow-ups
 
-Full review in `SECURITY_REVIEW.md`; tracking issue **#81**. P1, P2, and P3 batch 1 are done
-(HISTORY.md §G).
+**All review code is shipped and activated** — P1/P2 (#80), P3 batches 1–3 (#82/#115/#117;
+infra applied and the `beta` deploy gate created 2026-08-09) → HISTORY.md §G. Findings record:
+`SECURITY_REVIEW.md`; tracking issue **#81**. What remains is one operator checklist:
 
-- ✅ **P3 batch 2** (items 1–4, PR #115, 2026-08-09) → HISTORY.md §G: 6-digit family login code,
-  email normalisation at both auth boundaries, dedicated `IMAGE_TOKEN_SECRET`, homework-photo S3
-  lifecycle by object tag.
-- ✅ **P3 batch 3** (items 5–6, code landed 2026-08-09) → HISTORY.md §G: CloudWatch ops alarms
-  (status check, disk, cert expiry → budget SNS; on-box metrics timer) and the deploy approval
-  gate (deploy jobs in the `beta` environment, OIDC sub environment-scoped, all actions
-  SHA-pinned). **Not live until the operator applies:** `terraform apply` + create the `beta`
-  environment with a required reviewer (`infra/README.md` "Deploy approval gate").
-- **Operator actions (not code):** `terraform validate`/`plan` + staging CSP smoke-test before
-  apply (also activates the alarms + OIDC scoping above); provision a write-only backup token +
-  `HEALTHCHECK_URL` (cloud-init installs age/rclone; the deploy auto-enables the timer once
-  `/etc/blsb/backup.env` exists); re-verify the dormant P2-4 taxonomy filter once `SKILL_TAGS` is
-  populated in §F. (All in #81.)
+1. **Post-deploy checks** (first deploy after 2026-07-25): CSP smoke-test on family + trainer
+   over HTTPS (homework images render in chat, trainer queue renders, API XHR works — a
+   too-tight CSP fails closed); `systemctl status blsb-api` green (the systemd hardening is
+   config-only and unexercised until this deploy); disk/cert alarms flip to OK within ~15 min
+   of the metrics timer landing on the box.
+2. **Backups (P2-7):** provision a write-only rclone token (B2/R2), set `HEALTHCHECK_URL` in
+   `/etc/blsb/backup.env`, leave `PRUNE_MIN_AGE` unset (provider lifecycle rules prune), run a
+   restore drill — `deploy/README.md` "Backups". The deploy auto-enables the timer once the
+   config exists.
+3. **`INFERENCE_GEO=eu`** in `infra/ssm.tf` once EU inference routing is enabled on the
+   Anthropic org (currently global/us only — a hardcoded `eu` 400s every LLM call; see
+   ARCHITECTURE §8).
+4. **P2-4 taxonomy filter recheck** once `SKILL_TAGS` is populated in §F (the homework
+   skill-tag enum filter is dormant while the taxonomy is `placeholder`-only).
 
 **Data-retention decision (2026-08-06):** user and telemetry data in the DB — accounts, profiles,
 sessions/attempts (incl. transcribed homework answers in `attempt.given` and the

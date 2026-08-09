@@ -148,6 +148,29 @@ as chat trainer icon. **Regression fix:** civil-day/week bucketing UTC → Europ
 > The staff trainer portal is a separate subproject (`besserlesenschreiben/trainer`) — the only
 > homework surface in `-web` is upload + status in the Chat tab.
 
+### 2026-08 — maintenance & fixes (post-audit burst, 08-08/08-09)
+
+- ✅ **Night mode** end-to-end (#107, #109): per-profile `appearance` (auto|light|dark, contract
+  field + migration), semantic color tokens replacing all hardcoded colors, `html[data-theme]`
+  dark palette, no-flash boot script, Profil "Aussehen" (RadioRow primitive). Trainer untouched.
+- ✅ **Trainer login-hang fix** (#108): #104's 401-handler `removeQueries(['staff-me'])` detached
+  the mounted me-probe — every staff login hung on "Lädt …". Never deployed; caught by e2e.
+- ✅ **Quick wins** (#112): a11y settings UI (Schriftgröße presets + "Extra Abstand"), Wochenziel
+  editing (GOALS shared with onboarding), anti-crutch chat guardrail (never supply the target
+  spelling), TTS fallback rate 0.85→0.75. Closed two 2026-08-06 audit gaps.
+- ✅ **Robust `time_ms`** (#111) → §J5.1 below. **UpdatePrompt spec** (#114) — the mid-lesson
+  update-suppression promise finally pinned by tests.
+- ✅ **Servable exercise-type guard** (#118): `servableExerciseWhere` on every item read — retired
+  types (e.g. leftover pre-drop Vokaltraining rows) can never reach the wire again; §F insurance.
+- ✅ **`inference_geo` outage fix** (#119, #121): #105's hardcoded `'eu'` 400'd every LLM call
+  (org allows global/us only) — now env-gated `INFERENCE_GEO`, blank omits; SSM placeholder
+  dropped (SSM rejects empty values). Caught before it could reach prod.
+- ✅ **Sonnet 5 upgrade** (#120): `ANTHROPIC_MODEL` → `claude-sonnet-5`; llm-smoke fully green
+  (the heavier tokenizer even pushed the prompt prefix back over the cache minimum).
+- ✅ **Docs/process:** contract-regen playbook corrected — both SPAs type the FULL OpenAPI (#110);
+  Duolingo research corpus + evidence synthesis + derived proposal roadmap (#106,
+  `content/academia/`); §D6 parent-email design settled and parked on §F (#113).
+
 ---
 
 ## §A — Hardening & best practices (DONE)
@@ -215,12 +238,13 @@ guard, `qc.clear()` on logout, `dnf-automatic`, systemd hardening, CSRF note.
 **P3 batch 2 (#115, 2026-08-09, from a cloud review session):** 6-digit family login code
 (backend + CodeScreen), email normalisation at both auth boundaries, dedicated optional
 `IMAGE_TOKEN_SECRET`, homework-photo S3 lifecycle by object tag (`class=homework`) +
-`s3:PutObjectTagging`. **P3 batch 3 (2026-08-09):** CloudWatch ops alarms — EC2 status check,
-root + pgdata disk ≥85%, TLS cert ≤14 days — to the budget SNS topic, fed by a 5-min on-box
-metrics timer (`deploy/metrics.sh`, namespace-scoped PutMetricData, missing-data = breaching);
-deploy approval gate — both deploy jobs in the GitHub `beta` environment, OIDC trust `sub`
-scoped to `repo:…:environment:beta`, all workflow actions SHA-pinned.
-*(Operator activation steps for batch 3 + remaining operator actions: ROADMAP §G.)*
+`s3:PutObjectTagging`. **P3 batch 3 (#117, applied + activated 2026-08-09):** CloudWatch ops
+alarms — EC2 status check, root + pgdata disk ≥85%, TLS cert ≤14 days — live on the budget SNS
+topic, fed by a 5-min on-box metrics timer (`deploy/metrics.sh`, namespace-scoped PutMetricData,
+missing-data = breaching; the timer reaches the box with each deploy via `release.sh`); deploy
+approval gate — both deploy jobs in the GitHub `beta` environment (created, required reviewer:
+Flo), OIDC trust `sub` narrowed to `repo:…:environment:beta`, all workflow actions SHA-pinned.
+*(Remaining operator actions: ROADMAP §G.)*
 
 ## §H1 + §H3 — The teaching console (DONE 2026-07-25)
 

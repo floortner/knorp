@@ -8,6 +8,14 @@
 > identity stays admin-only. This is a sanctioned product decision, not drift. The report below is
 > otherwise historical (2026-07-14) and unedited.
 
+> **Addendum 2026-08-09 — review fully executed.** Every P1, P2, and P3 item is merged and live:
+> P1+P2 (#80), P3 batch 1 (#82), P3 batch 2 (#115 — 6-digit family code, email normalisation,
+> dedicated image-token secret, homework-blob lifecycle by tag), P3 batch 3 (#117 — CloudWatch ops
+> alarms + GitHub deploy approval gate, `terraform apply`'d and the `beta` environment created
+> 2026-08-09). The reviewer portal referenced below was renamed to `besserlesenschreiben/trainer/`.
+> The only open items are operator actions (backup token provisioning, post-deploy CSP smoke-test,
+> §F-time taxonomy recheck) — tracked in **ROADMAP §G** and issue **#81**, not here.
+
 ## Verdict
 
 This is a **disciplined, well-built codebase** and the beta topology is sound. The hard things are done correctly: two-realm auth separation with distinct signing keys enforced at boot, per-request account-status revocation, `user_id`/`profile_id` sourced only from the JWT, durable PIN lockout, argon2 hashing, enumeration-resistant signup, S3 keys always scoped to the caller's prefix, a pseudonymised staff queue, EXIF-stripping upload transcode, the homework draft-vs-authoritative gate, honest error envelopes, and clean logging. IAM is genuinely least-privilege, there's no SSH (SSM only), no static AWS keys (GitHub OIDC scoped to repo+ref), IMDSv2 required, and secrets never enter Terraform state.
@@ -98,6 +106,13 @@ The on-box rclone credential needs **delete** rights (for the prune step), so ro
 ---
 
 ## Priority 3 — hardening backlog (cheap, do as time permits)
+
+> **Status: all shipped.** Batch 1 (#82): Swagger prod gate, `VITE_API_BASE` guard, `qc.clear()`,
+> `dnf-automatic`, systemd hardening, `sudo --preserve-env`, CSRF note. Batch 2 (#115): 6-digit
+> family code, email normalisation, dedicated image-token secret, blob lifecycle scoped by tag.
+> Batch 3 (#117): operational alarms (status check, disk, cert expiry → budget SNS) and the
+> GitHub deploy approval gate + SHA-pinned actions — applied and activated 2026-08-09. The PWA
+> update prompt was wired separately (UpdatePrompt, spec'd in #114).
 
 - **OS patching story** — `infra/cloud-init.sh.tftpl` installs nothing like `dnf-automatic`; the internet-facing box would run unpatched. Add `dnf install -y dnf-automatic && systemctl enable --now dnf-automatic.timer` with `apply_updates = yes`. Also drop the `|| true` swallowing certbot install failures. (€0)
 - **GitHub deploy = root-RCE-by-design, no approval gate** — `infra/iam.tf:156-172` + `deploy.yml`. Put deploy jobs in a GitHub **environment** with a required reviewer and scope the OIDC `sub` to `environment:beta`; pin third-party actions to commit SHAs. (€0)
