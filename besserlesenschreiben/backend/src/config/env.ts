@@ -60,6 +60,12 @@ export const envSchema = z.object({
   // EU data-residency / DPA acknowledgement for Anthropic-direct. Required in production before any LLM
   // call goes out (ARCHITECTURE §8): the app refuses to start with a key set but this unacknowledged.
   LLM_RESIDENCY_ACK: z.string().default(''),
+  // Inference-routing region (`inference_geo` on every Anthropic call). Blank (default) omits the
+  // parameter. The allowed values are an ORG capability, not a model one — 'eu' requires EU inference
+  // routing enabled on the Anthropic org (ours allows only global/us as of 2026-08-09; a hardcoded
+  // 'eu' 400'd every LLM call). Set to 'eu' the day the org supports it; usage.inference_geo is
+  // logged per call as the audit trail either way.
+  INFERENCE_GEO: z.enum(['eu', 'us', 'global']).or(z.literal('')).default(''),
   // Per-profile daily caps on cost-bearing ★ ops (the app is free — approval gates WHO, these gate HOW
   // MUCH). Counted from existing rows (session/chat_message), UTC day. Over cap → friendly 429.
   LLM_SESSIONS_PER_DAY: z.coerce.number().int().positive().default(5),

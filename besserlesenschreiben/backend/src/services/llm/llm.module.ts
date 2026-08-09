@@ -17,6 +17,8 @@ export function createLlmProvider(opts: {
   visionModel?: string;
   isProd: boolean;
   residencyAck: boolean;
+  /** Inference-routing region (env INFERENCE_GEO) — omitted from requests when blank/undefined. */
+  inferenceGeo?: string;
   /** Optional per-call usage tap (token counts only) — used by scripts/llm-smoke.ts. */
   onUsage?: ConstructorParameters<typeof AnthropicLlmProvider>[0]['onUsage'];
 }): LlmProvider {
@@ -30,6 +32,7 @@ export function createLlmProvider(opts: {
     apiKey: opts.apiKey,
     model: opts.model,
     visionModel: opts.visionModel || opts.model,
+    inferenceGeo: opts.inferenceGeo || undefined,
     onUsage: opts.onUsage,
   });
 }
@@ -47,6 +50,7 @@ export function createLlmProvider(opts: {
           visionModel: config.get('ANTHROPIC_VISION_MODEL', { infer: true }),
           isProd: config.get('NODE_ENV', { infer: true }) === 'production',
           residencyAck: config.get('LLM_RESIDENCY_ACK', { infer: true }) === 'true',
+          inferenceGeo: config.get('INFERENCE_GEO', { infer: true }),
         }),
     },
     LlmService,

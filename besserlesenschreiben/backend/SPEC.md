@@ -18,9 +18,10 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
 - **Auth:** passwordless email code → JWT session token. No PIN/parent elevation — destructive actions are ownership-checked and double-confirmed in the UI (§4).
 - **LLM:** `@anthropic-ai/sdk` (session generation, chat, homework vision); structured JSON via a **forced
   tool** over the Zod-derived JSON Schema, re-validated against the same Zod schema with one corrective
-  re-ask (`services/llm`). EU inference residency pinned (`inference_geo: "eu"`; the response's
-  `usage.inference_geo` is logged as the audit trail). Model string configurable via env. See `../ARCHITECTURE.md` §8 for
-  the LLM data-flow decision (Anthropic-direct, `inference_geo: "eu"`).
+  re-ask (`services/llm`). Inference-routing region env-gated (`INFERENCE_GEO` → `inference_geo`;
+  blank omits the parameter — `eu` requires EU routing enabled on the Anthropic **org**, else every
+  call 400s; the response's `usage.inference_geo` is logged as the audit trail either way). Model
+  string configurable via env. See `../ARCHITECTURE.md` §8 for the LLM data-flow decision.
 - **TTS:** deferred — Web-Speech fallback in the client (§9).
 - **Payments:** none — the app is **free** (billing deferred; ARCHITECTURE §9).
 - **Hosting:** small **AWS EC2** instance, region Frankfurt eu-central-1 (`../ARCHITECTURE.md` §7 — the beta is live). **Never rely on local disk for persistence.**
@@ -731,6 +732,7 @@ ANTHROPIC_API_KEY=
 ANTHROPIC_MODEL=                 # default claude-sonnet-4-6 (../ARCHITECTURE.md §8)
 ANTHROPIC_VISION_MODEL=          # default claude-opus-4-8 (homework OCR)
 LLM_RESIDENCY_ACK=               # required in prod when a key is set (EU residency/DPA acknowledgement)
+INFERENCE_GEO=                   # optional inference_geo (eu|us|global); blank omits — 'eu' needs the org capability
 LLM_SESSIONS_PER_DAY= CHAT_MESSAGES_PER_DAY=   # per-profile daily caps on ★ ops (defaults 5 / 60)
 AWS_S3_BUCKET= AWS_REGION=       # object storage; auth via the IAM instance role, not keys in env
 STORAGE_LOCAL_DIR=               # dev-only local filesystem store; unused when AWS_S3_BUCKET is set
