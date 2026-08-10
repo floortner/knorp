@@ -1,11 +1,13 @@
 # TTS narration — provider decision + implementation plan
 
-**Status: PARKED 2026-08-09 (decided, not built).** Provider direction is settled — **ElevenLabs**
-replaces the old "target Amazon Polly" note — but implementation deliberately waits for §F: the
-training types and lectures have to exist before we know **where** narration is needed (which
-exercise types, which texts) and **which voices** fit. Pick this plan up when §F content lands;
-the voice itself gets chosen with Angelika by ear (see "Human step"). ARCHITECTURE/SPEC still say
-"Polly, deferred" — they get rewritten in the build PR per the docs step below, not before.
+**Status: SUPERSEDED 2026-08-10 → see `docs/tts-build-plan.md`.** First user tests found the Web
+Speech fallback "off-putting", so the build was pulled forward (no longer waiting for §F) and the
+design evolved: 4 user-switchable narrator voices, a decoupled `POST /speech/batch` lookup, Web
+Speech removed entirely. The **approved, self-contained build plan** — ready for any LLM/dev to
+execute — is `docs/tts-build-plan.md`. This file remains as the provider decision record
+(ElevenLabs over Azure/Polly/OpenAI, cost basis) and the original codebase survey; where the two
+differ, the build plan wins. ARCHITECTURE/SPEC still say "Polly, deferred" — they get rewritten
+in the build PR (T7), not before.
 
 ## Decision record (2026-08-09)
 
