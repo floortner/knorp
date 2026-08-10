@@ -274,8 +274,8 @@ mirroring content-import's bootstrapping):
 - `ROADMAP.md`: deferred-list TTS entry → shipped (move detail to `HISTORY.md` per repo
   convention); spoken-praise quick-win line references the new pipeline.
 - `docs/tts-narration-plan.md`: header → ACTIVATED/superseded, pointer to backend SPEC §9.
-- `docs/mobile-roadmap.md`: on-device-TTS paragraph gets a superseded note (clips are the answer
-  on all platforms; iOS audio-session gotcha still applies).
+- `docs/mobile-roadmap.md`: **already done 2026-08-10** (re-ranked around the clip pipeline;
+  on-device TTS marked superseded) — verify it's still true, don't redo it.
 - `HISTORY.md`: entry per its format. `backend/README.md` capability table TTS row.
 
 ### T8 — Final verification + PR
