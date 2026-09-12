@@ -66,6 +66,13 @@ CloudFront + ACM validation take ~10–20 min on first apply. State is local (gi
    (the environment gate), and its `api` job runs `deploy/release.sh` on the box (via SSM), which
    installs the systemd units + nginx, obtains the Let's Encrypt cert, migrates, seeds, and starts
    the API. The `web` job builds + uploads both frontends.
+8. **Backups (required — beta round 1 shipped without this and ran with NO backup of any kind):**
+   create `/etc/blsb/backup.env` on the box (`AGE_RECIPIENT`, `BACKUP_REMOTE`, `HEALTHCHECK_URL` —
+   see `../deploy/backup.sh`; keep the age private key and the rclone credentials **off-AWS**),
+   then `systemctl enable --now blsb-backup.timer` and verify one run end-to-end:
+   `systemctl start blsb-backup.service`, check the object landed on the remote, and confirm the
+   healthcheck ping arrived. With self-hosted Postgres this dump is the **only** backup tier
+   (ARCHITECTURE §7) — until this step is done, the box has no backup at all.
 
 ## Ops alarms (security review P3-5)
 
@@ -107,7 +114,7 @@ Final-state backups (all three verified 2026-09-12, Postgres stopped cleanly fir
    `gunzip -c <dump> | sudo -u blsb psql blsb`, then `prisma migrate deploy` from the release dir
    to bring the restored schema forward, and restart `blsb-api`.
 5. This round's gap to close: `/etc/blsb/backup.env` was **never configured**, so the off-platform
-   backup timer never ran — set it up (see `../deploy/backup.sh`) before letting families back in.
+   backup timer never ran — do "After apply" step 8 before letting families back in.
 
 ## Teardown
 `terraform destroy` removes everything **including the Postgres data volume**. Take an off-platform

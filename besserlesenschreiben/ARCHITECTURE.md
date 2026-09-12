@@ -24,9 +24,9 @@ media handling**), **this document wins**.
                                     AWS (Frankfurt eu-central-1)      │
               ┌───────────────────────┬──────────────────┬────────────┘
               ▼                       ▼                  ▼
-   Amazon RDS for PostgreSQL   Amazon S3            Anthropic API      (TTS: Amazon Polly de-DE,
-                               (per-user prefixes,  (sessions/          deferred — Web-Speech
-                                presigned URLs)      chat/vision)       fallback in the client)
+   PostgreSQL (self-hosted     Amazon S3            Anthropic API      (TTS: ElevenLabs de-DE,
+   on the EC2 box — beta;      (per-user prefixes,  (sessions/          deferred — Web-Speech
+   RDS is full-prod, §7)        presigned URLs)      chat/vision)       fallback in the client)
 ```
 
 - **Three repos, deployed independently.** The two **frontends** (`-web` family app, `-trainer` staff portal)
@@ -454,9 +454,19 @@ billing dispute or policy flag can suspend the account and take compute, databas
 simultaneously. The cheap insurance is to keep an independent copy **outside AWS**, so an account problem
 costs uptime, not data and users.
 
+**Beta reality (learned the hard way, 2026-09-12):** with self-hosted Postgres there is **no automated
+in-AWS backup tier at all** — no RDS snapshots exist, and no EBS snapshot automation unless one is stood
+up (e.g. a DLM policy on the data volume). The off-platform `pg_dump` (`deploy/backup.sh`) is therefore
+the **only** backup, and it is **not self-provisioning**: it needs a one-time manual `/etc/blsb/backup.env`
+plus `systemctl enable --now blsb-backup.timer` on the box (step 8 of infra/README's "After apply"
+checklist). Beta round 1 ran start to finish with this unconfigured — zero backups of any kind until the
+final teardown dump. Treat the `HEALTHCHECK_URL` dead-man ping as **required, not optional**: a backup
+that is missing or silently failing must page someone.
+
 - **Postgres:** scheduled `pg_dump` (daily; a cron on the instance or GitHub Actions) → compressed,
   **client-side encrypted** (age/gpg) → pushed to a **different provider** (e.g. Cloudflare R2, Backblaze B2,
-  or another cloud's object storage). Keep the in-AWS automated backups too; this is the off-platform tier.
+  or another cloud's object storage). At full prod, RDS's automated backups are the in-AWS tier and this
+  is the off-platform one; in beta (self-hosted PG) this dump is the **only** tier.
 - **Objects:** periodic export of the user prefixes (`users/{account}/{profile}/…` — homework images,
   generated sessions/digests) to the same off-platform target, encrypted; student homework + learning
   artifacts are the priority.
@@ -550,7 +560,8 @@ restore from the off-platform dumps) rather than the loss of every family's data
      cloud-internal data boundary is ever required — at the cost of feature lag (no same-day models,
      missing platform features) and a heavier integration.
   Whichever is used, the same rules hold: **DPA in place, send the digest not raw identifiers where possible,
-  and document the data flow.** TTS (Amazon Polly, deferred) follows the same DPA + minimal-data discipline.
+  and document the data flow.** TTS (ElevenLabs, deferred — provider decided 2026-08-09, plan parked in
+  `docs/tts-narration-plan.md`) follows the same DPA + minimal-data discipline.
   - **Model policy (Anthropic-direct default):** `ANTHROPIC_MODEL` = `claude-sonnet-5` (generation/chat),
     `ANTHROPIC_VISION_MODEL` = `claude-opus-4-8` (homework OCR — accuracy-critical). On current models
     `temperature`/`top_p`/`top_k` are rejected (400): steer with the prompt (and output effort), not sampling
