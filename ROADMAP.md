@@ -8,14 +8,16 @@ the system is*; this file tracks *what's left to build*. **Shipped detail and th
 
 ## Status & order
 
-Everything through the beta deployment is **done and live** (HISTORY.md): backend + family app +
+Everything through the beta deployment shipped (HISTORY.md): backend + family app +
 trainer portal on real HTTPS domains, €50/mo all-in budget, full ★ AI enabled with beta caps. The
 teaching console (§H1/§H3) and the content pipeline (§I) shipped 2026-07-25/26.
+**Beta paused 2026-09-12** — feedback round complete; the AWS compute (EC2 box, Postgres volume,
+EIP, api DNS, alarms) was torn down to near-zero running cost after securing a final DB dump +
+EBS snapshot. S3/CloudFront/SES/SSM/IAM and all Terraform code remain; resume is a plain
+`terraform apply` + Deploy workflow + restore — runbook in `infra/README.md` ("Paused state").
 
-**Now:** two tracks. **Operator:** redeploy the beta — the last deploy was 2026-07-25, and main
-has since accumulated the trainer login fix, night mode, 6-digit codes, the quick wins, the LLM
-fixes (`inference_geo`), and Sonnet 5; infra is applied and the deploy approval gate is live, so
-it's run-workflow → approve → the §G post-deploy checks. **Content:** the critical path still
+**Now:** two tracks. **Operator:** none while paused — next operator work is the resume runbook
+when the next iteration is ready to ship. **Content:** the critical path still
 runs through Angelika (away as of 2026-08-09) — the §F export landed 2026-07-27
 (`content/linguist-contrib/iteration-1/`), engineering's Rückmeldung went back
 (`RUECKMELDUNG-ENGINEERING.md`), and since 2026-08-06 she authors in-repo via Claude Code
