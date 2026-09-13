@@ -16,8 +16,8 @@ This file is just the **local-dev runbook**.
 
 Local dev runs the **Nest app on your host** (`npm run start:dev`, hot-reload) against a **local
 PostgreSQL** (a Homebrew service). Production is a small AWS EC2 instance running the built app under
-systemd (ARCHITECTURE §7 — the beta is **live**; deploys go through `deploy/release.sh` via GitHub
-Actions → SSM) and is unrelated to this setup.
+systemd (ARCHITECTURE §7 — the beta is **paused since 2026-09-12**, compute torn down; deploys go
+through `deploy/release.sh` via GitHub Actions → SSM once resumed) and is unrelated to this setup.
 
 Milestone 1 (auth + profiles) needs **only Postgres** — no AWS/Anthropic/TTS. The
 external services sit behind interfaces with dev fakes (see [stubs](#external-service-stubs)), so the
@@ -97,7 +97,7 @@ The app boots and milestones 1–4 are exercisable with **no external accounts**
 | Login email | `EMAIL_PROVIDER=console` — prints the code to stdout | `ses` in prod (IAM role; `resend` as alternative) |
 | Object storage (Blob) | local-filesystem fake under a temp dir | set `AWS_S3_BUCKET` (IAM role auth) |
 | LLM (Anthropic) | canned chat + a canned homework-vision draft; lecture generation 503s | set `ANTHROPIC_API_KEY` — see "LLM cutover" below |
-| TTS | Web-Speech fallback on the client | deferred (Polly later) |
+| TTS | Web-Speech fallback on the client (slated for removal) | ElevenLabs — build approved 2026-08-10, not built (`../../docs/tts-build-plan.md`) |
 
 ## LLM cutover (switching from the stub to real Claude)
 

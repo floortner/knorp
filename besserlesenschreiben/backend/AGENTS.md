@@ -37,6 +37,8 @@ in-memory security state. Follow them as written there. Backend-specific:
    runtime (dev throws, prod logs+strips).
 2. **Durable security state.** Lockout counters / rate-limit windows live in the DB (e.g. login-code
    attempts on `login_code`), never a process-local Map.
+3. **No sampling params.** `temperature`/`top_p`/`top_k` are rejected (400) by the pinned Anthropic
+   models — steer with the prompt, never add them.
 
 ## Conventions
 - **Wire format is camelCase JSON; DB columns are snake_case.** Use Prisma `@map`/`@@map` to bridge; keep the
@@ -53,20 +55,23 @@ in-memory security state. Follow them as written there. Backend-specific:
   `homework_upload.llm_analysis` (a draft); only the trainer's authoritative `reviewed_analysis` mutates
   `attempt`/`review_state` and feeds the next lecture (SPEC §10, ARCHITECTURE §11). No parent-confirm step.
 
-## Commands (create these as you scaffold)
-- Install: `npm ci`   ·   Run: `npm run start:dev`
+## Commands
+- Install: `npm ci`   ·   Run: `npm run start:dev`   ·   Build: `npm run build`
 - Test: `npm test` (Vitest; include **golden** tests for `digest.md` and the `Exercise` JSON shapes)
 - Lint/type: `npm run lint` (ESLint) · `npx tsc --noEmit`
 - Contract: `npm run openapi:export` (regenerate `openapi.json`) → then `npm run gen:api` in `../frontend` **and** `../trainer`; commit all three.
 - DB: `npx prisma migrate dev` (local) / `npx prisma migrate deploy` (CI) · `npx prisma generate`
-- Seed: `npm run seed` (`prisma db seed` → `prisma/seed.ts`)
+- Seed: `npm run seed` (`prisma db seed` → `prisma/seed.ts`) · `npm run seed:e2e` (e2e fixture accounts — `scripts/seed-e2e.ts`)
+- LLM: `npm run llm:smoke` (real-Anthropic pipeline probe, synthetic content only — `scripts/llm-smoke.ts`)
 - Content: `npm run content:validate` (lint the `content/` lecture library, German errors) ·
   `npm run content:import` (versioned, idempotent import — deploy + local after `migrate dev`; ROADMAP §I)
 - Full local-dev setup (local Postgres, env, first run, calling the API): see [`./README.md`](./README.md).
 
 ## Build milestones
 The forward plan lives in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)**; shipped detail + the pivot
-log in **[`HISTORY.md`](../../HISTORY.md)**. The beta is deployed and live; billing + TTS are deferred.
+log in **[`HISTORY.md`](../../HISTORY.md)**. The beta deployment is **paused since 2026-09-12** (compute
+torn down; resume via `../../infra/README.md`). Billing is deferred; the TTS build is approved and
+unstarted (`../../docs/tts-build-plan.md`).
 
 ## Definition of done for a feature
 Endpoint matches `SPEC.md §6`; `user_id` from token; correct error codes; structured logs with `requestId`

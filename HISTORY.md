@@ -2,7 +2,8 @@
 
 The shipped record and pivot log for *besserlesenschreiben*. **`ROADMAP.md` holds the forward
 plan**; when a milestone ships, its detail moves here. Section letters (§A…§J) match ROADMAP's
-plan, so cross-references like "§I2" resolve in either file.
+plan, so cross-references like "§I2" resolve by letter in either file (a given sub-number may
+exist in only one of the two).
 
 ## Pivot log
 
@@ -45,6 +46,14 @@ the current system.
   `fertigkeiten.md`) are now expected to be Claude-drafted in her sessions with her pedagogical
   sign-off. Authoring stays a role outside the auth realms (ARCHITECTURE §1a) — her trainer account
   is separate from the authoring path.
+- **2026-08-09/10 — TTS pulled forward, Web Speech to be removed:** the first user tests found the
+  Web-Speech narration off-putting → Web Speech will be removed entirely. ElevenLabs chosen
+  2026-08-09 (`docs/tts-narration-plan.md` = the provider-decision record, now superseded); the
+  full 4-voice clip-pipeline build plan approved 2026-08-10 (`docs/tts-build-plan.md`), pulled
+  ahead of §F. Not started — zero code exists.
+- **2026-09-12 — beta paused:** the feedback round completed; the AWS compute was destroyed to
+  reach ~zero running cost (final `pg_dump` + EBS snapshot secured; S3/CloudFront/SES/SSM/IAM
+  remain applied). Resume runbook: `infra/README.md` "Paused state (since 2026-09-12) & resume".
 
 ---
 
@@ -210,7 +219,7 @@ via IAM instance role; both frontends on S3 + CloudFront (`app.` / `trainer.`, p
 one Route-53 domain so the `SameSite=Lax` cookie flows subdomain↔subdomain. Secrets in SSM
 Parameter Store, rendered to a root-only systemd `EnvironmentFile` at deploy. Deploys from GitHub
 Actions via **OIDC → scoped IAM role → SSM Run Command** (no static keys, no SSH). All Terraform
-in `infra/`.
+in `infra/`. (Compute torn down 2026-09-12 — beta paused, see ROADMAP status.)
 
 Checklist (all ✅): Terraform infra (EC2 + EIP + SGs, IAM roles, OIDC deploy role, buckets + OAC +
 CloudFront, ACM, Route 53 + SES DKIM, SSM params, AWS Budgets alert + spend-cap auto-stop) · box
@@ -219,13 +228,15 @@ bootstrap (`infra/cloud-init.sh.tftpl`, `deploy/` — Node 24, Postgres, nginx, 
 job via SSM → `release.sh` with pre-traffic `migrate deploy`; web job build + `s3 sync` +
 invalidate) · prod config in `infra/ssm.tf` (SES email, beta caps `LLM_SESSIONS_PER_DAY=3` /
 `CHAT_MESSAGES_PER_DAY=20`, `LLM_RESIDENCY_ACK`) · off-platform backup **scaffolding** (`deploy/backup.sh` daily
-`pg_dump` → `age`-encrypt → non-AWS remote via rclone; tools installed by cloud-init and the timer
-auto-enabled at deploy once the operator supplies `/etc/blsb/backup.env` + the rclone remote —
-retention via provider lifecycle rules, not the earlier 7d+4w scheme) · full ★ AI on, watched.
+`pg_dump` → `age`-encrypt → non-AWS remote via rclone; tools installed by cloud-init, but the
+timer needs a manual enable once the operator supplies `/etc/blsb/backup.env` + the rclone
+remote — never configured in round 1, so the beta ran with **zero backups** (gap closed in docs
+2026-09-12, ROADMAP §G item 2); retention via provider lifecycle rules, not the earlier 7d+4w
+scheme) · full ★ AI on, watched.
 
 **Observability:** OTel chosen, collector build-out deferred. (The round-1 "free uptime ping on
-`/api/v1/health`" was never wired up in-repo — external checks and CloudWatch alarms remain the open
-P3 item in ROADMAP §G.)
+`/api/v1/health`" was never wired up; the CloudWatch ops alarms shipped 2026-08-09 — §G P3
+batch 3 below.)
 
 ## §G — Security review (ALL P1/P2/P3 code shipped)
 

@@ -10,8 +10,9 @@ what happened. Screens are iterated separately in Claude Design; this code defin
 
 ## Stack (pinned lines — see ARCHITECTURE §2)
 Node 24 LTS · TypeScript 5.x · React 19.2.x · Vite 8.1.x (+ @vitejs/plugin-react 6) · Tailwind CSS 4.3.x
-(CSS-first `@theme`, `@tailwindcss/vite`) · shadcn/ui · @tanstack/react-query 5.x · React Router 7 ·
-vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grotesque (display).
+(CSS-first `@theme`, `@tailwindcss/vite`) · in-repo shadcn-style `components/ui` primitives (cva +
+Tailwind — no Radix/shadcn dependency; never run the shadcn CLI) · @tanstack/react-query 5.x ·
+React Router 7 · vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grotesque (display).
 
 ## Read order before coding
 1. `./SPEC.md` §3 (the `Exercise` union + renderers — a single `placeholder` stand-in type until §F) and
@@ -39,24 +40,27 @@ vite-plugin-pwa (Workbox). Fonts: Atkinson Hyperlegible (body) + Bricolage Grote
 
 ## Conventions
 - Mobile-first: design at ~390px, scale up. The student user needs big targets and calm feedback.
-- TanStack Query for ALL server state; keys `['me']`,`['units']`,`['session',id]`,`['progress',pid]`,
-  `['chat',pid]`,`['assignments',pid]`. Invalidate `['me']`+`['progress']`+`['units']`+`['assignments']`
+- TanStack Query for ALL server state; keys `['me']`,`['units',pid]`,`['progress',pid]`,
+  `['chat',pid]`,`['assignments',pid]`,`['homework',uploadId]` (no session query — `POST /sessions`
+  is a mutation). Invalidate `['me']`+`['progress']`+`['units']`+`['assignments']`
   after `/sessions/{id}/complete`.
 - Auth: the backend's **httpOnly session cookie** is the source of truth (`credentials:'include'`); auth state
   is derived from a `/me` probe — never put a token in localStorage/JS.
 - Wrap risky subtrees in the `ErrorBoundary` (whole app + the `LessonRunner`); a renderer throw must never
   blank the app. `ExerciseView` throws on an unknown type so the boundary catches it.
-- Voice: play `audioUrl` if present, else Web Speech fallback (`de-DE`); respect `soundOn`.
+- Voice: play `audioUrl` if present, else Web Speech fallback (`de-DE`); respect `soundOn`. (TTS build
+  approved 2026-08-10 — `../../docs/tts-build-plan.md`; Web Speech is interim, slated for removal.)
 - A `401/SESSION_EXPIRED` clears auth and redirects once (no loops).
 
-## Commands (create these as you scaffold)
-- Install: `npm install`   ·   Dev: `npm run dev`   ·   Build: `npm run build`
+## Commands
+- Install: `npm install`   ·   Dev: `npm run dev`   ·   Build: `npm run build`   ·   Lint: `npm run lint`
 - Test: `npm test` (include **golden** snapshot tests for the `Exercise` rendering contract)
 - Types from API: `npm run gen:api` (openapi-typescript against the backend OpenAPI)
 
 ## Build milestones
 The forward plan lives in the repo-root **[`ROADMAP.md`](../../ROADMAP.md)**; shipped detail + the pivot
-log in **[`HISTORY.md`](../../HISTORY.md)**. The beta is live; the exercise contract holds a single
+log in **[`HISTORY.md`](../../HISTORY.md)**. The beta deployment is **paused since 2026-09-12** (AWS
+compute destroyed; redeployable from `../../infra/`); the exercise contract holds a single
 `placeholder` stand-in type until §F lands the new content set. No billing — the app is free.
 
 ## Definition of done for a feature

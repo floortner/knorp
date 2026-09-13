@@ -101,8 +101,11 @@ Frontend (Vite/React SPA/PWA)  ←→  Backend (NestJS/Fastify)
                                         │
                     ┌───────────────────┼──────────────────┐
                     ▼                   ▼                  ▼
-            AWS RDS PostgreSQL  Amazon S3             Anthropic API
+            PostgreSQL          Amazon S3             Anthropic API
             (Prisma 7)          (per-user presigned)  (sessions/chat/vision)
+            (self-hosted on the
+            EC2 box — beta; RDS
+            at full prod)
 ```
 
 The **API contract** (`backend/SPEC.md §6`) is the only boundary. The frontend holds no DB or business logic; the backend serves no HTML.
@@ -141,7 +144,8 @@ Homework photos are uploaded by the family but validated by an **internal staff 
 
 ### Build status & roadmap
 The forward plan lives in the repo-root **`ROADMAP.md`**; shipped detail + the **pivot log** in
-**`HISTORY.md`**. In short: the app is **live** on real HTTPS domains (beta, €50/mo budget); **next** is
+**`HISTORY.md`**. In short: the beta ran **live** on real HTTPS domains (€50/mo budget) and is
+**paused since 2026-09-12** (compute torn down; resume runbook in `infra/README.md`); **next** is
 **§F** — the content-set rebuild, driven by the content side (the iteration-1 export + engineering's
 Rückmeldung are in `content/linguist-contrib/`; blocked on the open answers, above all the skill
 taxonomy — since 2026-08-06 expected to be drafted in-repo in Angelika's Claude sessions with her
@@ -149,7 +153,8 @@ sign-off) —
 **then** D5/D6 (badges, weekly parent email). **Product decision — the app is FREE, including the AI
 features; access is gated by staff approval, not payment (ARCHITECTURE §1b/§9).** Billing is **deferred**
 and not built: no entitlement/credits/`402` anywhere, no billing tables; `★` means "AI-backed /
-cost-bearing op," free for any approved active account. TTS is deferred (Web-Speech fallback for now).
+cost-bearing op," free for any approved active account. TTS: build approved 2026-08-10 (ElevenLabs,
+`docs/tts-build-plan.md` — self-contained, not started; removes Web-Speech entirely).
 
 ## Non-negotiable security rules
 
@@ -183,7 +188,7 @@ working copy; on any doubt, ARCHITECTURE wins.)
 
 ## Hosting & env
 
-- **AWS**, region **Frankfurt (eu-central-1)** primary: small EC2 instance (backend, systemd, no container) + S3/CloudFront (frontends). The **beta deployment** (ROADMAP §E) is authored in `infra/` (Terraform) + `deploy/` (on-box scripts): for a €50/mo all-in budget it **self-hosts Postgres on the EC2 box** (not RDS), terminates TLS with **nginx + Let's Encrypt**, sends login-code email via **Amazon SES** (Terraform-managed DKIM; IAM-role auth, no key), and deploys from **GitHub Actions via OIDC → SSM Run Command** (no static keys, no SSH). Full-prod target (RDS, ALB, cross-region DR, OTel, staff MFA) is deferred — see ARCHITECTURE §7. Nothing is stood up until you `terraform apply`.
+- **AWS**, region **Frankfurt (eu-central-1)** primary: small EC2 instance (backend, systemd, no container) + S3/CloudFront (frontends). The **beta deployment** (ROADMAP §E) is authored in `infra/` (Terraform) + `deploy/` (on-box scripts): for a €50/mo all-in budget it **self-hosts Postgres on the EC2 box** (not RDS), terminates TLS with **nginx + Let's Encrypt**, sends login-code email via **Amazon SES** (Terraform-managed DKIM; IAM-role auth, no key), and deploys from **GitHub Actions via OIDC → SSM Run Command** (no static keys, no SSH). Full-prod target (RDS, ALB, cross-region DR, OTel, staff MFA) is deferred — see ARCHITECTURE §7. Nothing is stood up until you `terraform apply`. **Beta paused:** the compute was destroyed 2026-09-12 (S3/CloudFront/SES/SSM/IAM remain applied); resume per `infra/README.md`.
 - Secrets in **SSM Parameter Store** — nothing secret in the repo. See `backend/SPEC.md §11` for the full env var list (`.env.example` is committed).
 - Migrations run as a **pre-traffic release step** (`prisma migrate deploy`), never at app startup.
 - PWA update strategy: **prompt-to-update** (never silent reload mid-lesson).

@@ -66,6 +66,13 @@ CloudFront + ACM validation take ~10–20 min on first apply. State is local (gi
    (the environment gate), and its `api` job runs `deploy/release.sh` on the box (via SSM), which
    installs the systemd units + nginx, obtains the Let's Encrypt cert, migrates, seeds, and starts
    the API. The `web` job builds + uploads both frontends.
+8. **Backups (required — beta round 1 shipped without this and ran with NO backup of any kind):**
+   create `/etc/blsb/backup.env` on the box (`AGE_RECIPIENT`, `BACKUP_REMOTE`, `HEALTHCHECK_URL` —
+   see `../deploy/backup.sh`; keep the age private key and the rclone credentials **off-AWS**),
+   then `systemctl enable --now blsb-backup.timer` and verify one run end-to-end:
+   `systemctl start blsb-backup.service`, check the object landed on the remote, and confirm the
+   healthcheck ping arrived. With self-hosted Postgres this dump is the **only** backup tier
+   (ARCHITECTURE §7) — until this step is done, the box has no backup at all.
 
 ## Ops alarms (security review P3-5)
 
@@ -79,6 +86,35 @@ in ALARM between the `apply` and the next deploy (the timer doesn't exist on the
 
 ## Break-glass access
 No SSH / no port 22. Use SSM Session Manager: `aws ssm start-session --target <instance_id>`.
+
+## Paused state (since 2026-09-12) & resume
+
+The beta feedback round ended and the compute stack was destroyed to get running costs near zero
+(`terraform destroy -target=aws_instance.api -target=aws_ebs_volume.data` — took out the instance,
+data volume + attachment, EIP, `api.` DNS record, the 4 alarms, and the instance-referencing
+deploy/budget-action policies). **Everything else is still applied**: S3 buckets (incl. blobs),
+CloudFront (frontends still serve, API is gone), SES (production access persists), SSM
+config + secrets, IAM roles, budget + SNS alert. Remaining cost ≈ $0.60/mo (hosted zone + S3
+pennies + snapshot).
+
+Final-state backups (all three verified 2026-09-12, Postgres stopped cleanly first):
+- `s3://blsb-beta-blobs-774941690268/users/_final-backup/blsb-beta-20260912-final.sql.gz`
+  (untagged, so the homework lifecycle rule never expires it)
+- Local copy: `~/blsb-backups/blsb-beta-20260912-final.sql.gz` on Flo's machine
+  (sha256 `ec917e23…f911e4218c` matches the S3 object; 15 tables)
+- EBS snapshot of the pgdata volume: `snap-053d59b239dd7d592` (eu-central-1)
+
+**Resume:**
+1. `terraform apply` — recreates the box (fresh AMI, new IP; DNS follows), empty data volume,
+   alarms, deploy policy, budget action.
+2. `./set-github-vars.sh` — `INSTANCE_ID` is stale after any instance replacement.
+3. Run the `Deploy` workflow (installs nginx + cert, migrates, seeds).
+4. Restore the data: copy the dump onto the box, then
+   `sudo -u blsb psql -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' blsb`,
+   `gunzip -c <dump> | sudo -u blsb psql blsb`, then `prisma migrate deploy` from the release dir
+   to bring the restored schema forward, and restart `blsb-api`.
+5. This round's gap to close: `/etc/blsb/backup.env` was **never configured**, so the off-platform
+   backup timer never ran — do "After apply" step 8 before letting families back in.
 
 ## Teardown
 `terraform destroy` removes everything **including the Postgres data volume**. Take an off-platform

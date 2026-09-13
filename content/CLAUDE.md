@@ -45,8 +45,9 @@ repo-übergreifend, gilt wie gewohnt das Root-CLAUDE.md.)
 3. **Abgeben** (Slash-Befehl: `/abgeben`), wenn ein Stand fertig ist: neuen Branch
    `content/<kurzbeschreibung>` anlegen, committen, pushen, Pull Request mit deutscher
    Beschreibung erstellen und den Link nennen. Flo prüft und merged; nach dem Merge
-   ist die Lektion beim nächsten Deploy in der App. **Nie direkt auf `main` arbeiten
-   oder pushen.**
+   ist die Lektion beim nächsten Deploy in der App. (Die App ist derzeit pausiert —
+   die Lektion landet beim nächsten Deploy nach der Pause; Flo sagt Bescheid.)
+   **Nie direkt auf `main` arbeiten oder pushen.**
 
 ## Inhaltliche Konventionen
 

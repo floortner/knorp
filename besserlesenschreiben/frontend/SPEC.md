@@ -33,14 +33,15 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (student
 /onboarding       welcome (buddy intro) → choose buddy (8 Lernbuddies, Nepo default) → choose weekly goal
 /app
   ├ /lernen       home: greeting, weekly goal ring, buddy card (mood-dependent message, `BuddyCard`),
-  │               unit cards (title/subtitle/status, each with its own start), ✨ generated-lecture
+  │               unit cards (title/subtitle/status, each with its own start; the unit catalogue is
+  │               empty until §F — `fixtures/units.example.json`), ✨ generated-lecture
   │               card, "Übung von {Trainer}" assignment cards (content-library lectures assigned by
   │               a trainer, §H1/§I — an offer, never a push; personal via the known-trainer name)
-  │   └ /lesson   exercise runner (one renderer per contract type — §3), feedback; confetti + fanfare
+  ├ /lesson       exercise runner (one renderer per contract type — §3), feedback; confetti + fanfare
   │               only when ALL units are complete, a plain reward screen otherwise; sessions
   │               open with a teaching intro card (session.intro: mascot + Merksatz + "Los geht's!") —
   │               bank sessions carry the unit's Merksatz, generated lectures their own intro
-  ├ /erfolge      achievement standing (Silber→Gold), stars this week, stars-to-next, weekly bars,
+  ├ /erfolge      achievement standing (Bronze→Silber→Gold), stars this week, stars-to-next, weekly bars,
   │               monthly heatmap, streak + Joker status ("1 Joker verfügbar" — the weekly streak
   │               freeze; the TopBar streak pill shows ◆ while it's unused, and the lesson-complete
   │               screen says "Streak gerettet!" when one is consumed)
@@ -49,7 +50,7 @@ Mobile-first: design at ~390px width first, scale up. Large tap targets (student
   │               Verwaltung: reset progress + delete chat (destructive, two-step confirmation — §8),
   │               Abmelden, build-version stamp (ARCHITECTURE §7)
   └ /chat         message thread with trainer Angelika + input; 📷 homework upload — the photo shows as
-  │               a chat message, the review status/verdict comes back as trainer bubbles (§9)
+                  a chat message, the review status/verdict comes back as trainer bubbles (§9)
 ```
 
 **Tabs** (bottom nav, mobile): `lernen · erfolge · chat · profil`. There is no separate parent area and no
@@ -133,6 +134,8 @@ postAttempt({
 - If `ex.audioUrl` present → play it (`syllableAudio[i]` is the slot for future syllable-wise playback).
 - Else fall back to **Web Speech API** (`SpeechSynthesisUtterance`, `lang='de-DE'`, `rate≈0.75` —
   clear-speech evidence, `content/academia/DUOLINGO_ROADMAP.md` §C.2).
+- Provider decided: **ElevenLabs** — approved build plan `../../docs/tts-build-plan.md`, not started;
+  Web Speech is the interim fallback, slated for removal.
 - Respect `settings.soundOn`. Gate audio init behind first user gesture (mobile autoplay rules).
 
 ---
@@ -225,8 +228,8 @@ draft and has **no confirm/edit UI** (the trainer portal `-trainer` owns that, a
 
 1. The 📷 button next to the chat input opens the camera/picker → `POST /homework` (multipart). The photo
    appears as a chat message (the backend serves it back as a durable bubble in `/chat` history). The
-   current copy only says "lade ein Foto deiner Hausübung hoch" — explicit consent wording naming the
-   trained professional ("eine Fachkraft") is a **known gap, not yet shipped**.
+   current copy only says "lade ein Foto deiner Hausübung, Test oder Schularbeit hoch" — explicit
+   consent wording naming the trained professional ("eine Fachkraft") is a **known gap, not yet shipped**.
 2. `GET /homework/{id}` is polled at a fixed 20 s interval while in review; the trainer's status bubble reflects
    `pending_analysis` / `pending_review` → `reviewed` / `rejected`. Never display a draft state.
 3. On `reviewed`, the status bubble carries the **authoritative** result (topic + suggested focus from
@@ -241,7 +244,7 @@ draft and has **no confirm/edit UI** (the trainer portal `-trainer` owns that, a
 
 ## 10. Env & build
 ```
-VITE_API_BASE=        # backend URL (required for production builds)
+VITE_API_BASE=        # backend URL incl. /api/v1 (required for production builds)
 ```
 - `VITE_APP_VERSION` is **not** an env var — it's injected at build by `vite.config.ts` (`define`)
   as `<package version>+<commit>`; the commit resolves via `git rev-parse --short HEAD` (a
