@@ -16,8 +16,8 @@ This file is just the **local-dev runbook**.
 
 Local dev runs the **Nest app on your host** (`npm run start:dev`, hot-reload) against a **local
 PostgreSQL** (a Homebrew service). Production is a small AWS EC2 instance running the built app under
-systemd (ARCHITECTURE §7 — the beta is **live**; deploys go through `deploy/release.sh` via GitHub
-Actions → SSM) and is unrelated to this setup.
+systemd (ARCHITECTURE §7 — the beta is **paused since 2026-09-12**, compute torn down; deploys go
+through `deploy/release.sh` via GitHub Actions → SSM once resumed) and is unrelated to this setup.
 
 Milestone 1 (auth + profiles) needs **only Postgres** — no AWS/Anthropic/TTS. The
 external services sit behind interfaces with dev fakes (see [stubs](#external-service-stubs)), so the
