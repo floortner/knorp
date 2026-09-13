@@ -21,10 +21,11 @@ The frontend is a separate Vite/React SPA that talks to this service only over t
   re-ask (`services/llm`). Inference-routing region env-gated (`INFERENCE_GEO` → `inference_geo`;
   blank omits the parameter — `eu` requires EU routing enabled on the Anthropic **org**, else every
   call 400s; the response's `usage.inference_geo` is logged as the audit trail either way). Model
-  string configurable via env. See `../ARCHITECTURE.md` §8 for the LLM data-flow decision.
+  string configurable via env. See `../ARCHITECTURE.md` §8 for the LLM data-flow decision. Sampling
+  params (`temperature`/`top_p`/`top_k`) are rejected (400) by the pinned models — steer via the prompt.
 - **TTS:** deferred — Web-Speech fallback in the client (§9).
 - **Payments:** none — the app is **free** (billing deferred; ARCHITECTURE §9).
-- **Hosting:** small **AWS EC2** instance, region Frankfurt eu-central-1 (`../ARCHITECTURE.md` §7 — the beta is live). **Never rely on local disk for persistence.**
+- **Hosting:** small **AWS EC2** instance, region Frankfurt eu-central-1, with Postgres **self-hosted on the same box** (EBS data volume; managed RDS is the deferred full-prod target) — `../ARCHITECTURE.md` §7. The beta stack is **paused since 2026-09-12** (compute torn down; S3/SES/SSM retained; resume runbook `../../infra/README.md`). **Never rely on local disk for persistence of app artifacts** (those go to S3) — the DB deliberately lives on the box's EBS volume.
 
 **Hard rules (security boundary):**
 1. `user_id` / `profile_id` is **always derived from the JWT**, never from a client-supplied path or body field.
@@ -45,6 +46,7 @@ profile (1) ───< session ───< attempt
 profile (1) ───< homework_upload ───< homework_review
 profile (1) ───< chat_message
 profile (1) ───< review_state
+lecture (versioned) ───< assignment >─── profile
 item_bank (global, shared) ──referenced by── attempt.item_id
 # A word-list model grounding exercise generation is a §F slot (ROADMAP §F step 1) — not yet designed.
 
@@ -305,7 +307,9 @@ the `/profil` tab (frontend SPEC §8). Consequence to be aware of: anyone holdin
 the student on the family device) can trigger them; the double confirm is deliberate friction, not a
 security boundary.
 
-**Session cookie.** The session JWT (30-day TTL) is set as an **httpOnly, Secure, SameSite=Lax cookie** on `/auth/verify` and cleared on `POST /auth/logout`. `JwtAuthGuard` reads the cookie or a `Bearer` header (the SPA uses the cookie and holds no token in JS, deriving auth from a `/me` probe; API clients/tests may use Bearer).
+**Session cookie.** The session JWT (30-day TTL) is set as an **httpOnly, Secure, SameSite=Lax cookie** on `/auth/verify` and cleared on `POST /auth/logout` (Secure applies in production — `secure: isProd`). `JwtAuthGuard` reads the cookie or a `Bearer` header (the SPA uses the cookie and holds no token in JS, deriving auth from a `/me` probe; API clients/tests may use Bearer).
+
+**Staff realm.** Staff login mirrors the family flow on `/staff/auth/*` and sets an httpOnly staff cookie with `aud:"staff"` scoped to the staff surface, signed with the distinct `STAFF_JWT_SECRET` (boot-asserted ≠ `JWT_SECRET`) and enforced by `StaffAuthGuard`/`StaffAdminGuard` — full model in `../ARCHITECTURE.md` §1a.
 
 ---
 
@@ -328,7 +332,7 @@ Postgres holds metadata + pointers; S3 holds markdown + media. Reads via presign
 
 ## 6. API contract  *(shared boundary with frontend)*
 
-All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*` and three further `@Public()` routes: `GET /health` (deploy probe), `GET /storage/homework-image` (HMAC-capability image route used by the dev/no-S3 storage backend), and `GET /test/last-login-code` (exists only with `EMAIL_PROVIDER=capture` — e2e). `★` = AI-backed / cost-bearing op — **free** today (no credit gating; billing deferred, ARCHITECTURE §9); the marker only flags what *could* be metered later.
+All routes JSON unless noted. All require auth (cookie or `Bearer`) except `/auth/*` and three further `@Public()` routes: `GET /health` (deploy probe), `GET /storage/homework-image` (HMAC-capability image route used by the dev/no-S3 storage backend), and `GET /test/last-login-code` (exists only with `EMAIL_PROVIDER=capture` under `NODE_ENV=test` — e2e; the service throws otherwise). `★` = AI-backed / cost-bearing op — **free** today (no credit gating; billing deferred, ARCHITECTURE §9); the marker only flags what *could* be metered later.
 
 This contract is **generated, not hand-written**: Zod schemas in `src/contract/*` → `openapi.json` (`npm run openapi:export`) → frontend `api.gen.ts` (`npm run gen:api`), with a CI drift gate. Every 2xx response is also validated at runtime against its Zod schema by a global `ZodResponseInterceptor` (dev: throws on mismatch; prod: logs + strips), so the documented shape can't drift from the served one.
 
@@ -697,8 +701,10 @@ allUnitsComplete}`.
 ## 9. TTS pipeline — **DEFERRED (not built)**
 
 The client falls back to the Web Speech API today; `item_bank.audio_url`/`syllable_audio` are the ready
-slots for pre-generated audio. Target when built: synthesize once per item (bounded vocabulary, Amazon
-Polly neural `de-DE`), cache in S3, set `audio_url`. Verify voices/pricing at build time.
+slots for pre-generated audio. Target when built: synthesize once per item (bounded vocabulary,
+**ElevenLabs** `de-DE` — decided 2026-08-09; approved build plan `../../docs/tts-build-plan.md`: 4 voices,
+`POST /speech/batch` lookup, removes the Web-Speech fallback entirely), cache clips in S3, set `audio_url`.
+Amazon Polly is only the fallback if ElevenLabs disappoints.
 
 ## 10. Homework vision pipeline — professional-in-the-loop (ARCHITECTURE §11)
 
@@ -736,7 +742,9 @@ action audit-logged (ids + outcome, never content — ARCHITECTURE §6). Bake in
 ---
 
 ## 11. Env vars
-Validated at boot by a Zod env schema (`@nestjs/config`); fail fast if any are missing.
+Validated at boot by a Zod env schema (`@nestjs/config`); fails fast only for the required trio
+`DATABASE_URL`, `JWT_SECRET`, `STAFF_JWT_SECRET` (plus the secrets-differ boot check) — everything else
+has a default.
 The authoritative list is `src/config/env.ts` (`.env.example` documents every var). Summary:
 ```
 NODE_ENV= PORT=
@@ -759,13 +767,14 @@ LLM_SESSIONS_PER_DAY= CHAT_MESSAGES_PER_DAY=   # per-profile daily caps on ★ o
 AWS_S3_BUCKET= AWS_REGION=       # object storage; auth via the IAM instance role, not keys in env
 STORAGE_LOCAL_DIR=               # dev-only local filesystem store; unused when AWS_S3_BUCKET is set
 IMAGE_TOKEN_SECRET=              # HMAC key for the local store's capability URLs (GET /storage/homework-image)
+                                 #   — optional; unset falls back to STAFF_JWT_SECRET (set it to avoid cross-purpose key reuse)
 EMAIL_PROVIDER= EMAIL_KEY= EMAIL_FROM=   # login codes: console (dev only — boot-blocked in prod) |
                                  #   ses (prod, IAM role) | resend (alt prod) | capture (tests only)
 SEED_DEV_ACCOUNTS= DEV_FAMILY_EMAIL= DEV_TRAINER_EMAIL=   # dev-only seeded logins (never in production)
-CONTENT_DIR=                     # scripts only: content:import source; empty → the repo's content/
 ```
 Deploy-level (SSM/scripts, not read by the app itself): `API_FQDN`, `LETSENCRYPT_EMAIL` — consumed by
-`deploy/release.sh` for nginx/certbot; documented in `infra/README.md`.
+`../../deploy/release.sh` for nginx/certbot; documented in `../../infra/README.md` — and `CONTENT_DIR`
+(`content:import` source; empty → the repo's `content/`).
 
 ## 12. Acceptance checks
 - `user_id` never read from request body/path; only from JWT. (grep the codebase.)

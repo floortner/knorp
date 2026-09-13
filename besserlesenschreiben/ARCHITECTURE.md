@@ -14,7 +14,7 @@ media handling**), **this document wins**.
 │  FRONTEND (repo: -web)  │  ───────────────────────────▶ │  BACKEND (repo: -api)   │
 │  Vite + React SPA / PWA │   family cookie (httpOnly)    │  NestJS · AWS EC2        │
 │  static, S3+CloudFront  │ ◀───────────────────────────  │  (systemd, no container) │
-│  student app (family)     │                               │                          │
+│  student app (family)   │                               │                          │
 └─────────────────────────┘                               │                          │
 ┌─────────────────────────┐         HTTPS / JSON          │                          │
 │ TRAINER (repo: -trainer)│  ───────────────────────────▶ │                          │
@@ -24,9 +24,9 @@ media handling**), **this document wins**.
                                     AWS (Frankfurt eu-central-1)      │
               ┌───────────────────────┬──────────────────┬────────────┘
               ▼                       ▼                  ▼
-   PostgreSQL (self-hosted     Amazon S3            Anthropic API      (TTS: ElevenLabs de-DE,
-   on the EC2 box — beta;      (per-user prefixes,  (sessions/          deferred — Web-Speech
-   RDS is full-prod, §7)        presigned URLs)      chat/vision)       fallback in the client)
+   PostgreSQL (self-hosted     Amazon S3            Anthropic API      (TTS: ElevenLabs de-DE —
+   on the EC2 box — beta;      (per-user prefixes,  (sessions/          build approved, not built;
+   RDS is full-prod, §7)        presigned URLs)      chat/vision)       Web-Speech interim, §8)
 ```
 
 - **Three repos, deployed independently.** The two **frontends** (`-web` family app, `-trainer` staff portal)
@@ -60,7 +60,7 @@ additionally carry `aud:"staff"`, which the family guard explicitly rejects as d
   **never** sees: the parent email, free-text chat, billing, or account lifecycle — those stay on the
   admin-only surface. This keeps staff access to minors' data scoped to what the teaching task needs (§8).
 - The trainer's verdict is **authoritative** and **replaces the parent-confirm step** for homework
-  (§10). Review is **asynchronous**: it never blocks a student mid-lesson; it shapes the *next* generated
+  (§11). Review is **asynchronous**: it never blocks a student mid-lesson; it shapes the *next* generated
   lecture.
 - **Content authoring is a third ROLE, not a realm (2026-07-26 ROADMAP §I; solo model 2026-08-06,
   HISTORY.md pivot log).** All lecture content is authored as markdown files in the repo's `content/`
@@ -106,7 +106,8 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 
 ## 2. Tech stack & pinned versions
 
-> Versions verified against releases current as of **June 2026**. Pin the **exact** patch in lockfiles at
+> Versions verified against releases current as of **June 2026** (re-audited against the lockfiles
+> 2026-09-13 — no drift). Pin the **exact** patch in lockfiles at
 > install; let Renovate/Dependabot carry them forward. Treat the **major/minor** lines below as the contract.
 
 ### Frontend (`-web`)
@@ -118,10 +119,11 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 | Build tool | Vite (Rolldown engine) | **8.1.x** |
 | React plugin | @vitejs/plugin-react | 6.x |
 | Styling | Tailwind CSS (CSS-first `@theme`) + `@tailwindcss/vite` | **4.3.x** |
-| Components | shadcn/ui (CLI, copied in-repo; Tailwind v4 + React 19 compatible) | current |
+| Components | shadcn-*style* primitives, hand-rolled in-repo (cva + tailwind-merge — **no Radix/shadcn dependency**, no CLI) | — |
 | Server state | @tanstack/react-query | **5.101.x** (v5) |
 | Routing | React Router | 7.x |
 | PWA | vite-plugin-pwa (Workbox) | current |
+| Contract types | openapi-typescript (`npm run gen:api`, §4 — also in `-trainer`) | 7.x |
 | Fonts | Atkinson Hyperlegible (body), Bricolage Grotesque (display) | — |
 
 ### Backend (`-api`)
@@ -146,7 +148,9 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 | **Hosting (DB)** | PostgreSQL **self-hosted on the EC2 box** (beta; managed RDS is the full-prod target, §7) | PG 17 |
 | **Hosting (objects)** | Amazon S3 | — |
 | **Secrets** | AWS SSM Parameter Store (SecureString), fetched at boot | — |
-| **Login email** | Amazon SES (IAM-role auth) | — |
+| **Login email** | Amazon SES (`@aws-sdk/client-sesv2`, IAM-role auth) | — |
+| Image processing | sharp (EXIF strip + WebP transcode, §10) | current |
+| Hashing | argon2 (login codes, §8) | current |
 | **Region** | Frankfurt (eu-central-1) — single region in beta (eu-west-1 is the full-prod DR target) | — |
 
 **Backend-language decision (deliberate, revisitable):** **TypeScript/NestJS** is chosen for **one language
@@ -158,7 +162,12 @@ stronger pick *if* the AI/ML side grew heavy (richer data tooling, `fsrs`); the 
 slightly less rich ML ecosystem in exchange for full-stack TS. Decision: **NestJS for v1.** Do **not** split
 into two backend languages without a measured reason.
 
-**Dependency hygiene:** lockfiles committed (`package-lock.json` both repos). Renovate opens grouped PRs
+**Also in the system, not tabled above:** the repo-root `e2e/` suite is a **fourth npm project** on
+**Playwright 1.x** (local-only, see §7 CI/CD); the `-trainer` portal uses the frontend stack minus
+`vite-plugin-pwa` and the brand fonts (system font stack, neutral staff theme).
+
+**Dependency hygiene:** lockfiles committed (`package-lock.json` in all four npm projects — backend,
+frontend, trainer, `e2e/`). Renovate opens grouped PRs
 weekly. Majors are reviewed by hand; patches auto-merge on green CI. **Prisma 7** ships ESM-first — with
 NestJS's CommonJS setup, set `moduleFormat = "cjs"` in the client generator.
 
@@ -221,7 +230,7 @@ src/
                           # new types) + audio.ts (audio_url playback + Web Speech fallback)
     assignments/  auth/  lessons/  onboarding/  profile/  progress/  sessions/  settings/  units/
                           # homework upload lives in the Chat tab; no billing/ — the app is free
-  components/ui/          # shadcn components (@theme tokens live in index.css)
+  components/ui/          # hand-rolled shadcn-style components (@theme tokens live in index.css)
 public/                   # PWA icons (SVG), manifest, brand svgs (nepo.svg)
 monster-pets/             # served mascot SVGs (base + moods/poses), symlinked into public/monster-pets
                           #   (master source art + catalog live at repo-root assets/ — see § Media)
@@ -377,7 +386,7 @@ media rule, and the security-boundary invariants. It measurably improves agent o
 - Always show `requestId` on a hard error so a parent can quote it in support.
 
 **Retries:** idempotent GETs and `POST /attempts` retry with exponential backoff + jitter (max ~3). Never
-auto-retry non-idempotent POSTs (checkout, homework upload, chat send).
+auto-retry non-idempotent POSTs (homework upload, chat send).
 
 ---
 
@@ -393,7 +402,7 @@ wrapper over `console` (optionally shipping warn/error to Sentry).
 - `DEBUG` — local only; never enabled in prod.
 - `INFO` — request completed, session generated (counts, source), webhook processed, migration ran, homework
   review actioned (`{event:"homework.reviewed","trainerId":"…","uploadId":"…","decision":"corrected","agreedWithLlm":false}` — ids + outcome, never the analysis content).
-- `WARNING` — rate-limit hit, credit exhausted, provider slow/retried, login-code lockout, staff-auth failure.
+- `WARNING` — rate-limit hit, provider slow/retried, login-code lockout, staff-auth failure.
 - `ERROR` — unhandled exception (with `requestId`), provider failure, webhook signature mismatch.
 
 **NEVER log (this is an app for minors — treat it as the hard line):**
@@ -505,11 +514,11 @@ restore from the off-platform dumps) rather than the loss of every family's data
 - Implemented in `.github/workflows/ci.yml` (monorepo: one workflow with `backend`, `frontend`, and
   `trainer` jobs; on push to `main` + all PRs). The top-level Playwright suite (`e2e/`) is **run locally
   only, not in CI** (`cd e2e && npm test`). On the repo split each job moves to its own repo unchanged.
-- Frontend: install → typecheck (`tsc`) → lint → unit + **golden** tests → `vite build`. (Deploy to
-  S3+CloudFront on `main` lands with the deployment milestone.)
+- Frontend: install → typecheck (`tsc`) → lint → unit + **golden** tests → `vite build`. (Deploys are
+  **manual**: the `Deploy` workflow uploads both SPAs to S3 + invalidates CloudFront — never on push.)
 - Backend: `npm ci` → lint (ESLint) → typecheck (`tsc --noEmit`) → `vitest` (incl. **golden** tests) →
-  `prisma generate` → build. (Release to EC2 + `prisma migrate deploy` as a pre-traffic step lands with the
-  deployment milestone.)
+  `prisma generate` → build. (Release to EC2 runs via the same manual `Deploy` workflow — SSM Run Command
+  with `prisma migrate deploy` as the pre-traffic step.)
 - **Contract check:** regenerate `api.ts` types from the backend OpenAPI and fail the frontend build on drift.
 - **Golden/snapshot tests (dtctl lesson):** the two outputs that are *contracts* — the `digest.md` format
   (LLM-facing) and the `Exercise` JSON (client-facing) — are pinned with golden files built from real structs.
@@ -560,8 +569,8 @@ restore from the off-platform dumps) rather than the loss of every family's data
      cloud-internal data boundary is ever required — at the cost of feature lag (no same-day models,
      missing platform features) and a heavier integration.
   Whichever is used, the same rules hold: **DPA in place, send the digest not raw identifiers where possible,
-  and document the data flow.** TTS (ElevenLabs, deferred — provider decided 2026-08-09, plan parked in
-  `docs/tts-narration-plan.md`) follows the same DPA + minimal-data discipline.
+  and document the data flow.** TTS (ElevenLabs — build plan approved 2026-08-10, `../docs/tts-build-plan.md`,
+  not yet built; removes the Web-Speech fallback) follows the same DPA + minimal-data discipline.
   - **Model policy (Anthropic-direct default):** `ANTHROPIC_MODEL` = `claude-sonnet-5` (generation/chat),
     `ANTHROPIC_VISION_MODEL` = `claude-opus-4-8` (homework OCR — accuracy-critical). On current models
     `temperature`/`top_p`/`top_k` are rejected (400): steer with the prompt (and output effort), not sampling

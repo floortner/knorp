@@ -24,10 +24,10 @@ rules for agents in [`./AGENTS.md`](./AGENTS.md).
 ## Two non-negotiables
 
 1. **Staff realm only.** Auth is the staff httpOnly cookie; no token in JS. A family JWT never works here.
-2. **Known-trainer data minimisation (rule 10).** Trainer surfaces show the student's **name and learning
-   data** — the 2–3 trainers know each student personally — but **never** a parent email, chat text, or
-   billing; account identity/lifecycle stays on the admin-only Nutzer surface. The backend won't send
-   more; don't ask. (The pre-§H1.3 pseudonymisation model — no names anywhere — was retired; HISTORY.md.)
+2. **Known-trainer data minimisation (rule 10 — repo-root `CLAUDE.md`, Non-negotiable security rules).**
+   Trainer surfaces show the student's **name and learning data** — the 2–3 trainers know each student
+   personally — but **never** a parent email, chat text, or billing; account identity/lifecycle stays
+   on the admin-only Nutzer surface. The backend won't send more; don't ask. (The pre-§H1.3 pseudonymisation model — no names anywhere — was retired; HISTORY.md.)
 
 ## Stack
 
@@ -76,7 +76,8 @@ npm test                     # Vitest
 npm run gen:api              # regenerate types from backend OpenAPI (committed; CI drift-gates it)
 ```
 
-> **Status: shipped.** Wired to the live backend `staff/` module; types are generated from the backend's
+> **Status: built and CI-green.** The beta deployment is **paused since 2026-09-12** — there is no live
+> environment right now; the backend `staff/` module is the source of truth. Types are generated from the backend's
 > **full** published OpenAPI (`lib/api.gen.ts`, committed) and aliased in `lib/contract.ts`; CI fails on drift, same
 > as the family app. Beyond review, the portal carries the teaching console (**Lektionen** + **Schüler**,
 > all trainers) and the ADMIN surface **Nutzer** (account lifecycle + per-student learner progress).

@@ -97,7 +97,7 @@ The app boots and milestones 1–4 are exercisable with **no external accounts**
 | Login email | `EMAIL_PROVIDER=console` — prints the code to stdout | `ses` in prod (IAM role; `resend` as alternative) |
 | Object storage (Blob) | local-filesystem fake under a temp dir | set `AWS_S3_BUCKET` (IAM role auth) |
 | LLM (Anthropic) | canned chat + a canned homework-vision draft; lecture generation 503s | set `ANTHROPIC_API_KEY` — see "LLM cutover" below |
-| TTS | Web-Speech fallback on the client | deferred (Polly later) |
+| TTS | Web-Speech fallback on the client (slated for removal) | ElevenLabs — build approved 2026-08-10, not built (`../../docs/tts-build-plan.md`) |
 
 ## LLM cutover (switching from the stub to real Claude)
 

@@ -66,7 +66,7 @@ job. Comfortable tap targets for tablet are welcome.
 - Install: `npm install`  ·  Dev: `npm run dev` (port **5174**)  ·  Build: `npm run build` (tsc -b + vite)
 - Lint: `npm run lint`  ·  Test: `npm test` (Vitest)  ·  Types from API: `npm run gen:api`
 
-## What's built (Phase 2.5 + post-2.5 — all DONE; full roadmap in [`../../ROADMAP.md`](../../ROADMAP.md))
+## What's built (Phase 2.5 + post-2.5 — all DONE, per [`../../HISTORY.md`](../../HISTORY.md); forward plan in [`../../ROADMAP.md`](../../ROADMAP.md))
 - Shell + staff auth · queue "Chats" with history filter (Offen | Erledigt | Alle), "Mehr laden" cursor
   paging, waiting-since cue and "in Prüfung" claim locks + nav count badges · two-pane review screen (claim,
   approve/correct/reject-with-confirm, submit→next-item flow, unsaved-changes guard, image lightbox with

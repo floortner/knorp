@@ -50,7 +50,7 @@ backend concerns, `../backend/SPEC.md` §6/§10).
 
 **Nav** (top bar): `Chats · Lektionen · Schüler · (Nutzer, admin only) · Profil` + logout. The Nutzer
 link, its badge query, and the screen itself are all admin-gated client-side; the backend enforces
-`role='admin'` regardless (rule 8).
+`role='admin'` regardless (rule 8 — repo-root `CLAUDE.md`, Non-negotiable security rules).
 
 ## 3. Data flow
 
@@ -103,8 +103,10 @@ machines).
 ## 5. Data minimisation (rule 10 — known-trainer model)
 
 Trainer surfaces show the student's **name + learning data** (the 2–3 trainers know each student
-personally) and never a parent email, chat text, or billing. Account identity/lifecycle is the
-admin-only Nutzer surface (rule 8). Don't add a call that asks for more; the backend won't send it.
+personally) and never a parent email, chat text, or billing (billing is deferred and not built at
+all — ARCHITECTURE §9; the rule exists so it stays that way on staff surfaces). Account
+identity/lifecycle is the admin-only Nutzer surface (rule 8). Don't add a call that asks for more;
+the backend won't send it.
 The learner directory and assign picker list students of **active** family accounts only.
 
 ## 6. Env & build

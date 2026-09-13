@@ -16,8 +16,10 @@ EIP, api DNS, alarms) was torn down to near-zero running cost after securing a f
 EBS snapshot. S3/CloudFront/SES/SSM/IAM and all Terraform code remain; resume is a plain
 `terraform apply` + Deploy workflow + restore — runbook in `infra/README.md` ("Paused state").
 
-**Now:** two tracks. **Operator:** none while paused — next operator work is the resume runbook
-when the next iteration is ready to ship. **Content:** the critical path still
+**Now:** three tracks. **Operator:** none while paused — next operator work is the resume runbook
+when the next iteration is ready to ship. **Engineering:** the approved TTS build
+(`docs/tts-build-plan.md`, approved 2026-08-10, not started — 4 narrator voices, kills Web Speech,
+independent of §F) is ready to execute. **Content:** the critical path still
 runs through Angelika (away as of 2026-08-09) — the §F export landed 2026-07-27
 (`content/linguist-contrib/iteration-1/`), engineering's Rückmeldung went back
 (`RUECKMELDUNG-ENGINEERING.md`), and since 2026-08-06 she authors in-repo via Claude Code
@@ -31,11 +33,8 @@ designed, see §D) once real content is live · **C2** is *how* new exercise typ
 real content produces telemetry, J5 remainder with its natural triggers (J5.1 shipped).
 
 **Parked options:** §H4 (paper delivery channel — designed, build on demand).
-**Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9) · TTS
-narration (Web-Speech fallback for now; **provider decided 2026-08-09: ElevenLabs** — full
-implementation plan parked in `docs/tts-narration-plan.md`, deliberately waiting on §F: training
-types + lectures must exist to know where narration is needed and which voices fit) · full-prod
-hardening
+**Deferred:** billing (app is free; access gated by staff approval — ARCHITECTURE §1b/§9) ·
+full-prod hardening
 (multi-instance/ALB, managed RDS + DR, OTel collector build-out, staff MFA — ARCHITECTURE §7).
 
 ---
@@ -114,8 +113,10 @@ D1–D4 + D7 shipped (HISTORY.md §D).
      `login@`); operator: SES production-access request if still sandboxed. Logging: identifiers +
      outcomes only — never the recipient or the rendered body (it is re-identifying performance
      data). SPEC/ARCHITECTURE updates ride along in the build PR.
-8. **Spoken praise variety (later — needs the TTS pipeline, `docs/tts-narration-plan.md`; requires
-   a fixed praise pool, not per-item free text).** Audio reward beats visual for pre-readers.
+8. **Spoken praise variety (later — needs the TTS pipeline, `docs/tts-build-plan.md`; requires
+   a fixed praise pool, not per-item free text. The build plan decided praise stays visual text —
+   D8 would extend that decision, not ride the current build).** Audio reward beats visual for
+   pre-readers.
 
 Smaller noted gaps from the 2026-08-06 frontend consistency audit:
 - ✅ **A11y settings UI** + ✅ **weekly goal editing** — shipped 2026-08-08 (`/profil`
@@ -206,15 +207,17 @@ confirmation.
 infra applied and the `beta` deploy gate created 2026-08-09) → HISTORY.md §G. Findings record:
 `SECURITY_REVIEW.md`; tracking issue **#81**. What remains is one operator checklist:
 
-1. **Post-deploy checks** (first deploy after 2026-07-25): CSP smoke-test on family + trainer
-   over HTTPS (homework images render in chat, trainer queue renders, API XHR works — a
-   too-tight CSP fails closed); `systemctl status blsb-api` green (the systemd hardening is
-   config-only and unexercised until this deploy); disk/cert alarms flip to OK within ~15 min
-   of the metrics timer landing on the box.
-2. **Backups (P2-7):** provision a write-only rclone token (B2/R2), set `HEALTHCHECK_URL` in
-   `/etc/blsb/backup.env`, leave `PRUNE_MIN_AGE` unset (provider lifecycle rules prune), run a
-   restore drill — `deploy/README.md` "Backups". The deploy auto-enables the timer once the
-   config exists.
+1. **Post-deploy checks** (run at the first deploy after resume): CSP smoke-test on family +
+   trainer over HTTPS (homework images render in chat, trainer queue renders, API XHR works — a
+   too-tight CSP fails closed); `systemctl status blsb-api` green; disk/cert alarms flip to OK
+   within ~15 min of the metrics timer landing on the box (the alarms were deleted in the
+   2026-09-12 teardown and are recreated by `terraform apply`).
+2. **Backups (P2-7) — required before resume traffic:** provision a write-only rclone token
+   (B2/R2), set `HEALTHCHECK_URL` in `/etc/blsb/backup.env`, leave `PRUNE_MIN_AGE` unset
+   (provider lifecycle rules prune), enable the timer, run a restore drill — `deploy/README.md`
+   "Backups". Beta round 1 ran with **zero backups** (the config was never supplied); the final
+   `pg_dump` + EBS snapshot were taken at teardown 2026-09-12, and configuring
+   `/etc/blsb/backup.env` is now step 8 of `infra/README.md`'s "After apply" checklist.
 3. **`INFERENCE_GEO=eu`** in `infra/ssm.tf` once EU inference routing is enabled on the
    Anthropic org (currently global/us only — a hardcoded `eu` 400s every LLM call; see
    ARCHITECTURE §8).
@@ -322,7 +325,9 @@ author is also a trainer — see the channel note above).
    winsorized aggregations; J2 must reuse `common/time-ms.ts` when it lands).
 2. **`audio_plays` on `attempt` (lands with the audio/TTS work):** "played the audio 4× before
    answering" is a stronger reading-difficulty signal than time for this audience. Trivial additive
-   column + one counter in the exercise scaffolding.
+   column + one counter in the exercise scaffolding. **Note:** `docs/tts-build-plan.md` does not
+   currently include it — treat this as an explicit rider on the TTS build so it isn't silently
+   dropped.
 3. **Generation provenance on `item_bank` (lands with §F6):** stamp `generatedBy:'llm'` rows with
    model id + prompt version (additive columns) — enables "items from prompt v3 outperform v2".
 4. **Roll up `agreed_with_llm` (lands with J2):** stored per homework review since §H, never
