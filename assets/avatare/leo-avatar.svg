@@ -11,13 +11,13 @@
       <circle cx="128" cy="60" r="10" fill="#FF6B4A"></circle><circle cx="128" cy="60" r="5" fill="#FF9A80"></circle>
       <circle cx="100" cy="94" r="38" fill="#FF6B4A"></circle>
       <circle cx="86" cy="88" r="12" fill="#fff"></circle><circle cx="114" cy="88" r="12" fill="#fff"></circle>
-      <path d="M74 82 Q80 74 92 78" stroke="#6B1E0E" stroke-width="5" fill="none" stroke-linecap="round"></path>
-      <path d="M108 78 Q120 74 126 82" stroke="#6B1E0E" stroke-width="5" fill="none" stroke-linecap="round"></path>
+      <path d="M74 80 Q83 74 94 79" stroke="#6B1E0E" stroke-width="5" fill="none" stroke-linecap="round"></path>
+      <path d="M106 79 Q117 74 126 80" stroke="#6B1E0E" stroke-width="5" fill="none" stroke-linecap="round"></path>
       <circle cx="88" cy="91" r="6.5" fill="#4A1508"></circle><circle cx="112" cy="91" r="6.5" fill="#4A1508"></circle>
       <circle cx="90" cy="88" r="2.2" fill="#fff"></circle><circle cx="114" cy="88" r="2.2" fill="#fff"></circle>
       <ellipse cx="100" cy="112" rx="19" ry="15" fill="#FFE1D6"></ellipse>
       <path d="M94 104 L100 111 L106 104 Z" fill="#6B1E0E"></path>
-      <path d="M92 115 Q102 122 112 113" stroke="#4A1508" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <path d="M90 113 Q100 125 114 113" stroke="#4A1508" stroke-width="4" fill="none" stroke-linecap="round"></path>
 </g>
 </g>
 </svg>

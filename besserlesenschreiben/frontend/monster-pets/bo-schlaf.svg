@@ -12,8 +12,6 @@
       <circle cx="132" cy="64" r="5" fill="#3A2A0A"></circle>
       <ellipse cx="100" cy="112" rx="46" ry="42" fill="#FDC73B"></ellipse>
       <g clip-path="url(#clipBo)">
-        <rect x="50" y="128" width="100" height="13" fill="#3A2A0A"></rect>
-        <rect x="50" y="147" width="100" height="11" fill="#3A2A0A"></rect>
       </g>
       <path d="M79 100 Q86 107 93 100" stroke="#3A2A0A" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
       <path d="M107 100 Q114 107 121 100" stroke="#3A2A0A" stroke-width="4.5" fill="none" stroke-linecap="round"></path>

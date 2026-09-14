@@ -14,10 +14,6 @@
     <path d="M132 92 Q138 74 150 68" stroke="#3A2A0A" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
     <circle cx="152" cy="66" r="5.5" fill="#3A2A0A"></circle>
     <ellipse cx="120" cy="132" rx="50" ry="46" fill="#FDC73B"></ellipse>
-    <g clip-path="url(#clipBoF)">
-      <rect x="66" y="150" width="108" height="14" fill="#3A2A0A"></rect>
-      <rect x="66" y="170" width="108" height="12" fill="#3A2A0A"></rect>
-    </g>
     <path d="M114 176 L120 192 L126 176 Z" fill="#3A2A0A"></path>
     <circle cx="105" cy="118" r="14" fill="#fff"></circle>
     <circle cx="135" cy="118" r="14" fill="#fff"></circle>

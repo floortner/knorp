@@ -51,7 +51,7 @@
     "Tonale Figuren (svg/tonal) auf Petrol: #1E8578, #5FB5A8, #A9DBD1",
     "Pet-Reihenfolge: Bo · Axi · Leo · Echo",
     "Mindestgröße digital: 32px (Avatare)",
-    "Schrift: Nunito (Überschriften, Labels), DM Sans (Lauftext)"
+    "Schrift: Nunito (Überschriften, Labels), Nunito Sans (Lauftext)"
   ],
   "figures": [
     {
@@ -599,7 +599,7 @@
       "id": "leo",
       "name": "Leo",
       "type": "pet",
-      "tagline": "Löwe mit Biss",
+      "tagline": "Furchtloser Löwe",
       "category": "Streak · Dranbleiben",
       "colors": [
         "#FF6B4A",
@@ -726,7 +726,7 @@
   ],
   "schrift": {
     "headline": "Nunito 900/800",
-    "text": "DM Sans 400–700"
+    "text": "Nunito Sans 400–700"
   },
   "wortmarke": {
     "hinweis": "Reine Wortmarke, Nunito 900, kein Signet. Nur „besser“ farbig. SVGs enthalten Text – Nunito muss geladen/gebündelt sein; für Stellen ohne Font die PNGs aus logo/ verwenden.",
