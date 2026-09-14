@@ -49,7 +49,7 @@
     "Bodenschatten in Einzel-Assets entfernt",
     "Print-Petrol: Flächen #35B0A1, Kreise #48BCAE, Trenner #2A9686 – Website-Petrol #2A9D8F nie direkt drucken",
     "Tonale Figuren (svg/tonal) auf Petrol: #1E8578, #5FB5A8, #A9DBD1",
-    "Pet-Reihenfolge: Bo · Leo · Echo · Axi",
+    "Pet-Reihenfolge: Bo · Axi · Leo · Echo",
     "Mindestgröße digital: 32px (Avatare)",
     "Schrift: Nunito (Überschriften, Labels), DM Sans (Lauftext)"
   ],
@@ -547,6 +547,55 @@
       }
     },
     {
+      "id": "axi",
+      "name": "Axi",
+      "type": "pet",
+      "tagline": "Startet einfach neu",
+      "category": "Durchhaltevermögen · Langstrecke",
+      "colors": [
+        "#F6A9CE",
+        "#E8488F",
+        "#FDE1EE",
+        "#5A1840",
+        "#FF7AA0"
+      ],
+      "files": {
+        "svg": "svg/axi.svg",
+        "avatar": "avatare/axi-avatar.svg",
+        "tonal": "svg/tonal/axi-tonal.svg",
+        "png": [
+          "png/axi-256.png",
+          "png/axi-512.png",
+          "png/axi-1024.png"
+        ],
+        "posen": [
+          "svg/posen/axi-jubel.svg",
+          "svg/posen/axi-schlaf.svg"
+        ],
+        "avatarPng": [
+          "png/avatare/axi-avatar-64.png",
+          "png/avatare/axi-avatar-128.png",
+          "png/avatare/axi-avatar-256.png",
+          "png/avatare/axi-avatar-512.png",
+          "png/avatare/axi-avatar-1024.png"
+        ],
+        "posenPng": [
+          "png/posen/axi-jubel-256.png",
+          "png/posen/axi-jubel-512.png",
+          "png/posen/axi-jubel-1024.png",
+          "png/posen/axi-schlaf-256.png",
+          "png/posen/axi-schlaf-512.png",
+          "png/posen/axi-schlaf-1024.png"
+        ]
+      },
+      "stufen": [
+        "bronze",
+        "silber",
+        "gold",
+        "kosmisch"
+      ]
+    },
+    {
       "id": "leo",
       "name": "Leo",
       "type": "pet",
@@ -643,55 +692,6 @@
           "png/posen/echo-schlaf-1024.png"
         ]
       }
-    },
-    {
-      "id": "axi",
-      "name": "Axi",
-      "type": "pet",
-      "tagline": "Startet einfach neu",
-      "category": "Durchhaltevermögen · Langstrecke",
-      "colors": [
-        "#F6A9CE",
-        "#E8488F",
-        "#FDE1EE",
-        "#5A1840",
-        "#FF7AA0"
-      ],
-      "files": {
-        "svg": "svg/axi.svg",
-        "avatar": "avatare/axi-avatar.svg",
-        "tonal": "svg/tonal/axi-tonal.svg",
-        "png": [
-          "png/axi-256.png",
-          "png/axi-512.png",
-          "png/axi-1024.png"
-        ],
-        "posen": [
-          "svg/posen/axi-jubel.svg",
-          "svg/posen/axi-schlaf.svg"
-        ],
-        "avatarPng": [
-          "png/avatare/axi-avatar-64.png",
-          "png/avatare/axi-avatar-128.png",
-          "png/avatare/axi-avatar-256.png",
-          "png/avatare/axi-avatar-512.png",
-          "png/avatare/axi-avatar-1024.png"
-        ],
-        "posenPng": [
-          "png/posen/axi-jubel-256.png",
-          "png/posen/axi-jubel-512.png",
-          "png/posen/axi-jubel-1024.png",
-          "png/posen/axi-schlaf-256.png",
-          "png/posen/axi-schlaf-512.png",
-          "png/posen/axi-schlaf-1024.png"
-        ]
-      },
-      "stufen": [
-        "bronze",
-        "silber",
-        "gold",
-        "kosmisch"
-      ]
     },
     {
       "id": "angelika",
