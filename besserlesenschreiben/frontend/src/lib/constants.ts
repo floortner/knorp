@@ -25,9 +25,9 @@ export const BUDDIES = [
  */
 export const REWARD_PETS = [
   { id: 'bo', name: 'Bo' },
+  { id: 'axi', name: 'Axi' },
   { id: 'leo', name: 'Leo' },
   { id: 'echo', name: 'Echo' },
-  { id: 'axi', name: 'Axi' },
 ] as const;
 
 export type BuddyId = (typeof BUDDIES)[number]['id'];

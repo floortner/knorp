@@ -93,7 +93,7 @@ Rückmeldungen and expected answers (e.g. `fertigkeiten.md`) at the folder root;
 `website/` — static marketing page; `assets/` — the master brand/art library (assets-v2 package,
 2026-09-14): mascot SVGs + `manifest.json` catalog, the Wortmarke logo (`logo/` — SVGs contain live
 Nunito text, so the font-burned-in PNG fallbacks ARE versioned, unlike all other PNG renders which
-stay gitignored), and brand design tokens (`tokens/`). Pets are Bo · Leo · Echo · Axi (Inky/Pixel
+stay gitignored), and brand design tokens (`tokens/`). Pets are Bo · Axi · Leo · Echo (Inky/Pixel
 retired). The app serves the SVG subset from `besserlesenschreiben/frontend/monster-pets/`. The
 tokens' Nunito/DM-Sans fonts are for marketing/print — the family app deliberately keeps Atkinson
 Hyperlegible (dyslexia-friendly) in-app.

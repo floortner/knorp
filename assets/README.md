@@ -13,6 +13,6 @@
 ## Regeln (Kurzfassung)
 - Wortmarke: Nunito 900, nur „besser“ farbig, kein Signet. Web: besser #2A9D8F auf Weiß/Creme; negativ Gelb #FDC73B + Creme #FCF7EF auf Petrol/Schwarz. Mindestgröße einzeilig 140 px.
 - Web-Petrol #2A9D8F, Print-Petrol #35B0A1 (nie #2A9D8F drucken).
-- Haustiere: Bo · Leo · Echo · Axi. Begleiter: Nepo+Bo, Stella+Axi, Junior+Leo, Jax+Echo.
+- Haustiere: Bo · Axi · Leo · Echo. Begleiter: Nepo+Bo, Stella+Axi, Junior+Leo, Jax+Echo.
 - Mindestgröße digital: Avatare 32 px, ganze Figuren 64 px. Für Druck immer SVG.
 - Schriften: Nunito (Headlines/Labels), DM Sans (Lauftext) — Google Fonts.
