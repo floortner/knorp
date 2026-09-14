@@ -143,6 +143,8 @@
     .footer-links { flex-wrap:wrap !important; gap:10px 18px !important; }
   }
   @media (max-width:560px){
+    .contact-rows a { grid-template-columns:1fr !important; gap:4px !important; padding:20px 24px !important; }
+    .contact-rows > div { margin:0 24px !important; }
     .sec-pad { padding-left:18px !important; padding-right:18px !important; }
     .hero-pad { padding:32px 22px !important; border-radius:28px !important; }
     .hero-grid { gap:26px !important; }
@@ -1132,25 +1134,24 @@
 
   <!-- KONTAKT -->
   <section id="kontakt" class="sec-pad" style="max-width:1120px; margin:0 auto; padding:20px 24px 90px;">
-    <div class="contact-box" style="background:#fff; border:1px solid #F1EADF; border-radius:40px; padding:56px; text-align:center;">
+    <div class="contact-box" style="background:#FCF7EF; border:1px solid #F1EADF; border-radius:40px; padding:56px; text-align:center;">
       <div style="font-size:13px; font-weight:800; letter-spacing:0.1em; color:#F0915F; text-transform:uppercase; margin-bottom:12px;">Kontakt</div>
       <h2 class="h2-big" style="font-family:'Nunito'; font-weight:700; font-size:42px; line-height:1.08; margin-bottom:12px; letter-spacing:-0.02em;">Lernen wir einander kennen</h2>
       <p style="font-size:16px; color:#3D4C4A; line-height:1.6; max-width:480px; margin:0 auto 38px; font-weight:500;">Ich bin gerne für ein unverbindliches Erstgespräch erreichbar und freue mich über Ihre Nachricht.</p>
-      <div class="contact-grid" style="display:grid; grid-template-columns:repeat(3,260px); justify-content:center; gap:18px; margin:0 auto 34px;">
-        <a href="mailto:hallo@besserlesenschreiben.at" class="hoverbg" style="text-decoration:none; background:#fff; border:1px solid #F1EADF; border-radius:24px; padding:28px; --hb:#FCF7EF;">
-          <div style="width:46px; height:46px; border-radius:14px; background:#DEF0EC; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;"><div style="width:20px; height:14px; border:2.5px solid #2A9D8F; border-radius:3px;"></div></div>
-          <div style="font-size:11.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#6E7A78; margin-bottom:6px;">E-Mail</div>
-          <div style="font-size:14.5px; font-weight:800; color:#27403C; overflow-wrap:anywhere;">hallo@besserlesenschreiben.at</div>
+      <div class="contact-rows" style="background:#fff; border-radius:28px; box-shadow:0 4px 16px rgba(31,124,113,0.05); max-width:820px; margin:0 auto 34px; text-align:left;">
+        <a href="mailto:hallo@besserlesenschreiben.at" class="hoverbg" style="display:grid; grid-template-columns:130px 1fr; gap:18px; align-items:center; padding:25px 34px; text-decoration:none; border-radius:28px 28px 0 0; --hb:#FCF7EF;">
+          <span style="font-size:12.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1F7C71;">E-Mail</span>
+          <span style="font-size:17px; font-weight:800; color:#27403C; overflow-wrap:anywhere;">hallo@besserlesenschreiben.at</span>
         </a>
-        <a href="tel:+436508902419" class="hoverbg" style="text-decoration:none; background:#fff; border:1px solid #F1EADF; border-radius:24px; padding:28px; --hb:#FCF7EF;">
-          <div style="width:46px; height:46px; border-radius:14px; background:#DEF0EC; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;"><div style="width:16px; height:16px; border:2.5px solid #2A9D8F; border-radius:5px 5px 5px 0;"></div></div>
-          <div style="font-size:11.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#6E7A78; margin-bottom:6px;">Telefon</div>
-          <div style="font-size:14.5px; font-weight:800; color:#27403C;">+43 650 89 02 419</div>
+        <div style="height:1px; background:#F1EADF; margin:0 34px;"></div>
+        <a href="tel:+436508902419" class="hoverbg" style="display:grid; grid-template-columns:130px 1fr; gap:18px; align-items:center; padding:25px 34px; text-decoration:none; --hb:#FCF7EF;">
+          <span style="font-size:12.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1F7C71;">Telefon</span>
+          <span style="font-size:17px; font-weight:800; color:#27403C; overflow-wrap:anywhere;">+43 650 89 02 419</span>
         </a>
-        <a href="https://goo.gl/maps/PsFednfvuzN2" target="_blank" class="hoverbg" style="text-decoration:none; background:#fff; border:1px solid #F1EADF; border-radius:24px; padding:28px; --hb:#FCF7EF;">
-          <div style="width:46px; height:46px; border-radius:14px; background:#DEF0EC; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;"><div style="width:14px; height:14px; border-radius:50% 50% 50% 0; background:#2A9D8F; transform:rotate(-45deg);"></div></div>
-          <div style="font-size:11.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#6E7A78; margin-bottom:6px;">Praxis</div>
-          <div style="font-size:14.5px; font-weight:800; color:#27403C;">Nöbauerstraße 63, 4040 Linz</div>
+        <div style="height:1px; background:#F1EADF; margin:0 34px;"></div>
+        <a href="https://goo.gl/maps/PsFednfvuzN2" target="_blank" class="hoverbg" style="display:grid; grid-template-columns:130px 1fr; gap:18px; align-items:center; padding:25px 34px; text-decoration:none; border-radius:0 0 28px 28px; --hb:#FCF7EF;">
+          <span style="font-size:12.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1F7C71;">Praxis</span>
+          <span style="font-size:17px; font-weight:800; color:#27403C; overflow-wrap:anywhere;">Nöbauerstraße 63, 4040 Linz</span>
         </a>
       </div>
       <div style="display:flex; flex-wrap:wrap; gap:13px; align-items:center; justify-content:center;">
