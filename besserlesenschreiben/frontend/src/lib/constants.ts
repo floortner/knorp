@@ -1,15 +1,16 @@
 /**
  * Freely selectable learn buddies (monster mascots from Planet Knorp — base figure + 4 emotional states
  * each, served from /monster-pets/; master source art + catalog live at repo-root `assets/` — see
- * `assets/manifest.json`). Ids must match the backend's buddy enum (profiles.dto.ts). Nepo + Stella lead.
+ * `assets/manifest.json`). Ids must match the backend's buddy enum (profiles.dto.ts). Array order is
+ * the CI's canonical monster order (drives the picker grids in onboarding + Profil); Nepo + Stella lead.
  */
 export const BUDDIES = [
   { id: 'nepo', name: 'Nepo' },
   { id: 'stella', name: 'Stella' },
-  { id: 'charly', name: 'Charly' },
-  { id: 'jax', name: 'Jax' },
   { id: 'junior', name: 'Junior' },
+  { id: 'jax', name: 'Jax' },
   { id: 'li', name: 'Li' },
+  { id: 'charly', name: 'Charly' },
   { id: 'bruno', name: 'Bruno' },
   { id: 'greta', name: 'Greta' },
 ] as const;
