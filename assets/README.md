@@ -8,11 +8,11 @@
 - tokens/ — tokens.json + tokens.css (Farben, Schriften, Stufen, Figurfarben, Begleiter-Zuordnung).
 - manifest.json — Figuren, Taglines, Farben, Dateipfade (relativ zu diesem Ordner).
 - svg/angelika.svg + png/angelika-\*.png — Trainerin-Figur, aus dem v1-Bestand übernommen (nicht Teil
-  der v2-Lieferung; wird in der App als Trainer-Avatar im Chat verwendet).
+  der v3-Lieferung; wird in der App als Trainer-Avatar im Chat verwendet).
 
 ## Regeln (Kurzfassung)
 - Wortmarke: Nunito 900, nur „besser“ farbig, kein Signet. Web: besser #2A9D8F auf Weiß/Creme; negativ Gelb #FDC73B + Creme #FCF7EF auf Petrol/Schwarz. Mindestgröße einzeilig 140 px.
 - Web-Petrol #2A9D8F, Print-Petrol #35B0A1 (nie #2A9D8F drucken).
 - Haustiere: Bo · Axi · Leo · Echo. Begleiter: Nepo+Bo, Stella+Axi, Junior+Leo, Jax+Echo.
 - Mindestgröße digital: Avatare 32 px, ganze Figuren 64 px. Für Druck immer SVG.
-- Schriften: Nunito (Headlines/Labels), DM Sans (Lauftext) — Google Fonts.
+- Schriften: Nunito (Headlines/Labels), Nunito Sans (Lauftext) — Google Fonts.

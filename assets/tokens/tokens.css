@@ -30,7 +30,7 @@
   --bls-echo: #4650B0;
   --bls-axi: #F6A9CE;
   --bls-font-headline: 'Nunito', system-ui, sans-serif;
-  --bls-font-text: 'DM Sans', system-ui, sans-serif;
+  --bls-font-text: 'Nunito Sans', system-ui, sans-serif;
 }
 
 .bls-wortmarke { font-family: var(--bls-font-headline); font-weight: 900; line-height: 1.02; letter-spacing: -0.01em; color: var(--bls-tanne); }
