@@ -21,7 +21,6 @@
 <circle cx="78" cy="172" r="9" fill="#CB97CC"></circle>
 <circle cx="162" cy="172" r="9" fill="#CB97CC"></circle>
 <path d="M98 182 Q120 204 142 182 Q120 192 98 182 Z" fill="#1E2350"></path>
-<path d="M114 188 l2 8 5 -6 Z" fill="#fff"></path>
   <path d="M150 92 l-15 -8 0 17 Z" fill="#F272A8"></path>
 <path d="M150 92 l15 -8 0 17 Z" fill="#F272A8"></path>
 <circle cx="150" cy="93" r="5" fill="#DB4E8E"></circle>

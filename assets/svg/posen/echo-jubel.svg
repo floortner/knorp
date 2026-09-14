@@ -12,7 +12,6 @@
       <circle cx="86" cy="90" r="13" fill="#fff"></circle><circle cx="114" cy="90" r="13" fill="#fff"></circle>
       <circle cx="88" cy="87" r="7" fill="#191F4A"></circle><circle cx="112" cy="87" r="7" fill="#191F4A"></circle>
       <circle cx="90" cy="84" r="2.4" fill="#fff"></circle><circle cx="114" cy="84" r="2.4" fill="#fff"></circle>
-      <circle cx="68" cy="104" r="6" fill="#FF9FB0"></circle><circle cx="132" cy="104" r="6" fill="#FF9FB0"></circle>
       <path d="M88 108 Q100 122 112 108 Q100 115 88 108 Z" fill="#191F4A"></path>
       <path d="M34 34 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 Z" fill="#FDC73B"></path>
       <path d="M162 36 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4 Z" fill="#FDC73B"></path>

@@ -1,7 +1,7 @@
 {
-  "name": "Lernbuddies — Monster vom Planeten Knorp",
+  "name": "Lernbuddies — Monster vom Planeten Knorp · besserlesenschreiben.at",
   "style": "Flat Geometric (reine Volltöne, keine Konturen, keine Transparenzen, keine Verläufe)",
-  "generated": "2026-07-13",
+  "generated": "2026-09-14",
   "zielgruppe": "8–14 Jahre",
   "moods": [
     "froehlich",
@@ -26,17 +26,32 @@
     1024
   ],
   "namensschema": {
-    "figur": "assets/svg/{id}.svg",
-    "mood": "assets/svg/moods/{id}-{mood}.svg",
-    "pose": "assets/svg/posen/{id}-{pose}.svg",
-    "avatar": "assets/avatare/{id}-avatar.svg",
-    "png": "assets/png/[moods|posen|avatare/]{basisname}-{größe}.png"
+    "figur": "svg/{id}.svg",
+    "mood": "svg/moods/{id}-{mood}.svg",
+    "pose": "svg/posen/{id}-{pose}.svg",
+    "avatar": "avatare/{id}-avatar.svg",
+    "png": "png/[moods|posen|avatare/]{basisname}-{größe}.png",
+    "tonal": "svg/tonal/{id}-tonal.svg"
+  },
+  "markenfarben": {
+    "petrol": "#2A9D8F",
+    "tanne": "#27403C",
+    "creme": "#FCF7EF",
+    "mint": "#DEF0EC",
+    "apricot": "#F0915F",
+    "sand": "#FBE6D9",
+    "petrolPrint": "#35B0A1",
+    "kreisPrint": "#48BCAE",
+    "trennerPrint": "#2A9686"
   },
   "printHinweise": [
     "Alle SVGs CMYK-sicher: reine Volltöne, keine opacity/Verläufe/Filter",
     "Bodenschatten in Einzel-Assets entfernt",
+    "Print-Petrol: Flächen #35B0A1, Kreise #48BCAE, Trenner #2A9686 – Website-Petrol #2A9D8F nie direkt drucken",
+    "Tonale Figuren (svg/tonal) auf Petrol: #1E8578, #5FB5A8, #A9DBD1",
+    "Pet-Reihenfolge: Bo · Axi · Leo · Echo",
     "Mindestgröße digital: 32px (Avatare)",
-    "Schrift der Seiten: Poppins (Headlines), DM Sans (Copy)"
+    "Schrift: Nunito (Überschriften, Labels), DM Sans (Lauftext)"
   ],
   "figures": [
     {
@@ -51,19 +66,44 @@
         "#1593CC"
       ],
       "files": {
-        "svg": "assets/svg/nepo.svg",
-        "avatar": "assets/avatare/nepo-avatar.svg",
+        "svg": "svg/nepo.svg",
+        "avatar": "avatare/nepo-avatar.svg",
         "png": [
-          "assets/png/nepo-256.png",
-          "assets/png/nepo-512.png",
-          "assets/png/nepo-1024.png"
+          "png/nepo-256.png",
+          "png/nepo-512.png",
+          "png/nepo-1024.png"
         ],
         "moods": [
-          "assets/svg/moods/nepo-froehlich.svg",
-          "assets/svg/moods/nepo-ueberrascht.svg",
-          "assets/svg/moods/nepo-traurig.svg",
-          "assets/svg/moods/nepo-cool.svg",
-          "assets/svg/moods/nepo-neutral.svg"
+          "svg/moods/nepo-froehlich.svg",
+          "svg/moods/nepo-ueberrascht.svg",
+          "svg/moods/nepo-traurig.svg",
+          "svg/moods/nepo-cool.svg",
+          "svg/moods/nepo-neutral.svg"
+        ],
+        "tonal": "svg/tonal/nepo-tonal.svg",
+        "avatarPng": [
+          "png/avatare/nepo-avatar-64.png",
+          "png/avatare/nepo-avatar-128.png",
+          "png/avatare/nepo-avatar-256.png",
+          "png/avatare/nepo-avatar-512.png",
+          "png/avatare/nepo-avatar-1024.png"
+        ],
+        "moodPng": [
+          "png/moods/nepo-froehlich-256.png",
+          "png/moods/nepo-froehlich-512.png",
+          "png/moods/nepo-froehlich-1024.png",
+          "png/moods/nepo-ueberrascht-256.png",
+          "png/moods/nepo-ueberrascht-512.png",
+          "png/moods/nepo-ueberrascht-1024.png",
+          "png/moods/nepo-traurig-256.png",
+          "png/moods/nepo-traurig-512.png",
+          "png/moods/nepo-traurig-1024.png",
+          "png/moods/nepo-cool-256.png",
+          "png/moods/nepo-cool-512.png",
+          "png/moods/nepo-cool-1024.png",
+          "png/moods/nepo-neutral-256.png",
+          "png/moods/nepo-neutral-512.png",
+          "png/moods/nepo-neutral-1024.png"
         ]
       }
     },
@@ -80,48 +120,98 @@
         "#CE2E72"
       ],
       "files": {
-        "svg": "assets/svg/stella.svg",
-        "avatar": "assets/avatare/stella-avatar.svg",
+        "svg": "svg/stella.svg",
+        "avatar": "avatare/stella-avatar.svg",
         "png": [
-          "assets/png/stella-256.png",
-          "assets/png/stella-512.png",
-          "assets/png/stella-1024.png"
+          "png/stella-256.png",
+          "png/stella-512.png",
+          "png/stella-1024.png"
         ],
         "moods": [
-          "assets/svg/moods/stella-froehlich.svg",
-          "assets/svg/moods/stella-ueberrascht.svg",
-          "assets/svg/moods/stella-traurig.svg",
-          "assets/svg/moods/stella-cool.svg",
-          "assets/svg/moods/stella-neutral.svg"
+          "svg/moods/stella-froehlich.svg",
+          "svg/moods/stella-ueberrascht.svg",
+          "svg/moods/stella-traurig.svg",
+          "svg/moods/stella-cool.svg",
+          "svg/moods/stella-neutral.svg"
+        ],
+        "tonal": "svg/tonal/stella-tonal.svg",
+        "avatarPng": [
+          "png/avatare/stella-avatar-64.png",
+          "png/avatare/stella-avatar-128.png",
+          "png/avatare/stella-avatar-256.png",
+          "png/avatare/stella-avatar-512.png",
+          "png/avatare/stella-avatar-1024.png"
+        ],
+        "moodPng": [
+          "png/moods/stella-froehlich-256.png",
+          "png/moods/stella-froehlich-512.png",
+          "png/moods/stella-froehlich-1024.png",
+          "png/moods/stella-ueberrascht-256.png",
+          "png/moods/stella-ueberrascht-512.png",
+          "png/moods/stella-ueberrascht-1024.png",
+          "png/moods/stella-traurig-256.png",
+          "png/moods/stella-traurig-512.png",
+          "png/moods/stella-traurig-1024.png",
+          "png/moods/stella-cool-256.png",
+          "png/moods/stella-cool-512.png",
+          "png/moods/stella-cool-1024.png",
+          "png/moods/stella-neutral-256.png",
+          "png/moods/stella-neutral-512.png",
+          "png/moods/stella-neutral-1024.png"
         ]
       }
     },
     {
-      "id": "charly",
-      "name": "Charly",
+      "id": "junior",
+      "name": "Junior",
       "type": "monster",
-      "tagline": "Der mutige Abenteurer",
+      "tagline": "Der neugierige Kleine",
       "colors": [
-        "#3DBE74",
-        "#114A2E",
-        "#8FE0B0",
-        "#2A9E5C",
-        "#FF7A59"
+        "#A4D037",
+        "#21400A",
+        "#7FB024",
+        "#FF9FB0",
+        "#8FC02E"
       ],
       "files": {
-        "svg": "assets/svg/charly.svg",
-        "avatar": "assets/avatare/charly-avatar.svg",
+        "svg": "svg/junior.svg",
+        "avatar": "avatare/junior-avatar.svg",
         "png": [
-          "assets/png/charly-256.png",
-          "assets/png/charly-512.png",
-          "assets/png/charly-1024.png"
+          "png/junior-256.png",
+          "png/junior-512.png",
+          "png/junior-1024.png"
         ],
         "moods": [
-          "assets/svg/moods/charly-froehlich.svg",
-          "assets/svg/moods/charly-ueberrascht.svg",
-          "assets/svg/moods/charly-traurig.svg",
-          "assets/svg/moods/charly-cool.svg",
-          "assets/svg/moods/charly-neutral.svg"
+          "svg/moods/junior-froehlich.svg",
+          "svg/moods/junior-ueberrascht.svg",
+          "svg/moods/junior-traurig.svg",
+          "svg/moods/junior-cool.svg",
+          "svg/moods/junior-neutral.svg"
+        ],
+        "tonal": "svg/tonal/junior-tonal.svg",
+        "avatarPng": [
+          "png/avatare/junior-avatar-64.png",
+          "png/avatare/junior-avatar-128.png",
+          "png/avatare/junior-avatar-256.png",
+          "png/avatare/junior-avatar-512.png",
+          "png/avatare/junior-avatar-1024.png"
+        ],
+        "moodPng": [
+          "png/moods/junior-froehlich-256.png",
+          "png/moods/junior-froehlich-512.png",
+          "png/moods/junior-froehlich-1024.png",
+          "png/moods/junior-ueberrascht-256.png",
+          "png/moods/junior-ueberrascht-512.png",
+          "png/moods/junior-ueberrascht-1024.png",
+          "png/moods/junior-traurig-256.png",
+          "png/moods/junior-traurig-512.png",
+          "png/moods/junior-traurig-1024.png",
+          "png/moods/junior-cool-256.png",
+          "png/moods/junior-cool-512.png",
+          "png/moods/junior-cool-1024.png",
+          "png/moods/junior-neutral-256.png",
+          "png/moods/junior-neutral-512.png",
+          "png/moods/junior-neutral-1024.png"
         ]
       }
     },
@@ -141,19 +231,44 @@
         "#FFB59E"
       ],
       "files": {
-        "svg": "assets/svg/jax.svg",
-        "avatar": "assets/avatare/jax-avatar.svg",
+        "svg": "svg/jax.svg",
+        "avatar": "avatare/jax-avatar.svg",
         "png": [
-          "assets/png/jax-256.png",
-          "assets/png/jax-512.png",
-          "assets/png/jax-1024.png"
+          "png/jax-256.png",
+          "png/jax-512.png",
+          "png/jax-1024.png"
         ],
         "moods": [
-          "assets/svg/moods/jax-froehlich.svg",
-          "assets/svg/moods/jax-ueberrascht.svg",
-          "assets/svg/moods/jax-traurig.svg",
-          "assets/svg/moods/jax-cool.svg",
-          "assets/svg/moods/jax-neutral.svg"
+          "svg/moods/jax-froehlich.svg",
+          "svg/moods/jax-ueberrascht.svg",
+          "svg/moods/jax-traurig.svg",
+          "svg/moods/jax-cool.svg",
+          "svg/moods/jax-neutral.svg"
+        ],
+        "tonal": "svg/tonal/jax-tonal.svg",
+        "avatarPng": [
+          "png/avatare/jax-avatar-64.png",
+          "png/avatare/jax-avatar-128.png",
+          "png/avatare/jax-avatar-256.png",
+          "png/avatare/jax-avatar-512.png",
+          "png/avatare/jax-avatar-1024.png"
+        ],
+        "moodPng": [
+          "png/moods/jax-froehlich-256.png",
+          "png/moods/jax-froehlich-512.png",
+          "png/moods/jax-froehlich-1024.png",
+          "png/moods/jax-ueberrascht-256.png",
+          "png/moods/jax-ueberrascht-512.png",
+          "png/moods/jax-ueberrascht-1024.png",
+          "png/moods/jax-traurig-256.png",
+          "png/moods/jax-traurig-512.png",
+          "png/moods/jax-traurig-1024.png",
+          "png/moods/jax-cool-256.png",
+          "png/moods/jax-cool-512.png",
+          "png/moods/jax-cool-1024.png",
+          "png/moods/jax-neutral-256.png",
+          "png/moods/jax-neutral-512.png",
+          "png/moods/jax-neutral-1024.png"
         ]
       }
     },
@@ -174,48 +289,98 @@
         "#FF8A1E"
       ],
       "files": {
-        "svg": "assets/svg/li.svg",
-        "avatar": "assets/avatare/li-avatar.svg",
+        "svg": "svg/li.svg",
+        "avatar": "avatare/li-avatar.svg",
         "png": [
-          "assets/png/li-256.png",
-          "assets/png/li-512.png",
-          "assets/png/li-1024.png"
+          "png/li-256.png",
+          "png/li-512.png",
+          "png/li-1024.png"
         ],
         "moods": [
-          "assets/svg/moods/li-froehlich.svg",
-          "assets/svg/moods/li-ueberrascht.svg",
-          "assets/svg/moods/li-traurig.svg",
-          "assets/svg/moods/li-cool.svg",
-          "assets/svg/moods/li-neutral.svg"
+          "svg/moods/li-froehlich.svg",
+          "svg/moods/li-ueberrascht.svg",
+          "svg/moods/li-traurig.svg",
+          "svg/moods/li-cool.svg",
+          "svg/moods/li-neutral.svg"
+        ],
+        "tonal": "svg/tonal/li-tonal.svg",
+        "avatarPng": [
+          "png/avatare/li-avatar-64.png",
+          "png/avatare/li-avatar-128.png",
+          "png/avatare/li-avatar-256.png",
+          "png/avatare/li-avatar-512.png",
+          "png/avatare/li-avatar-1024.png"
+        ],
+        "moodPng": [
+          "png/moods/li-froehlich-256.png",
+          "png/moods/li-froehlich-512.png",
+          "png/moods/li-froehlich-1024.png",
+          "png/moods/li-ueberrascht-256.png",
+          "png/moods/li-ueberrascht-512.png",
+          "png/moods/li-ueberrascht-1024.png",
+          "png/moods/li-traurig-256.png",
+          "png/moods/li-traurig-512.png",
+          "png/moods/li-traurig-1024.png",
+          "png/moods/li-cool-256.png",
+          "png/moods/li-cool-512.png",
+          "png/moods/li-cool-1024.png",
+          "png/moods/li-neutral-256.png",
+          "png/moods/li-neutral-512.png",
+          "png/moods/li-neutral-1024.png"
         ]
       }
     },
     {
-      "id": "junior",
-      "name": "Junior",
+      "id": "charly",
+      "name": "Charly",
       "type": "monster",
-      "tagline": "Der neugierige Kleine",
+      "tagline": "Der mutige Abenteurer",
       "colors": [
-        "#A4D037",
-        "#21400A",
-        "#7FB024",
-        "#FF9FB0",
-        "#8FC02E"
+        "#3DBE74",
+        "#114A2E",
+        "#8FE0B0",
+        "#2A9E5C",
+        "#FF7A59"
       ],
       "files": {
-        "svg": "assets/svg/junior.svg",
-        "avatar": "assets/avatare/junior-avatar.svg",
+        "svg": "svg/charly.svg",
+        "avatar": "avatare/charly-avatar.svg",
         "png": [
-          "assets/png/junior-256.png",
-          "assets/png/junior-512.png",
-          "assets/png/junior-1024.png"
+          "png/charly-256.png",
+          "png/charly-512.png",
+          "png/charly-1024.png"
         ],
         "moods": [
-          "assets/svg/moods/junior-froehlich.svg",
-          "assets/svg/moods/junior-ueberrascht.svg",
-          "assets/svg/moods/junior-traurig.svg",
-          "assets/svg/moods/junior-cool.svg",
-          "assets/svg/moods/junior-neutral.svg"
+          "svg/moods/charly-froehlich.svg",
+          "svg/moods/charly-ueberrascht.svg",
+          "svg/moods/charly-traurig.svg",
+          "svg/moods/charly-cool.svg",
+          "svg/moods/charly-neutral.svg"
+        ],
+        "tonal": "svg/tonal/charly-tonal.svg",
+        "avatarPng": [
+          "png/avatare/charly-avatar-64.png",
+          "png/avatare/charly-avatar-128.png",
+          "png/avatare/charly-avatar-256.png",
+          "png/avatare/charly-avatar-512.png",
+          "png/avatare/charly-avatar-1024.png"
+        ],
+        "moodPng": [
+          "png/moods/charly-froehlich-256.png",
+          "png/moods/charly-froehlich-512.png",
+          "png/moods/charly-froehlich-1024.png",
+          "png/moods/charly-ueberrascht-256.png",
+          "png/moods/charly-ueberrascht-512.png",
+          "png/moods/charly-ueberrascht-1024.png",
+          "png/moods/charly-traurig-256.png",
+          "png/moods/charly-traurig-512.png",
+          "png/moods/charly-traurig-1024.png",
+          "png/moods/charly-cool-256.png",
+          "png/moods/charly-cool-512.png",
+          "png/moods/charly-cool-1024.png",
+          "png/moods/charly-neutral-256.png",
+          "png/moods/charly-neutral-512.png",
+          "png/moods/charly-neutral-1024.png"
         ]
       }
     },
@@ -236,19 +401,44 @@
         "#E2C19D"
       ],
       "files": {
-        "svg": "assets/svg/bruno.svg",
-        "avatar": "assets/avatare/bruno-avatar.svg",
+        "svg": "svg/bruno.svg",
+        "avatar": "avatare/bruno-avatar.svg",
         "png": [
-          "assets/png/bruno-256.png",
-          "assets/png/bruno-512.png",
-          "assets/png/bruno-1024.png"
+          "png/bruno-256.png",
+          "png/bruno-512.png",
+          "png/bruno-1024.png"
         ],
         "moods": [
-          "assets/svg/moods/bruno-froehlich.svg",
-          "assets/svg/moods/bruno-ueberrascht.svg",
-          "assets/svg/moods/bruno-traurig.svg",
-          "assets/svg/moods/bruno-cool.svg",
-          "assets/svg/moods/bruno-neutral.svg"
+          "svg/moods/bruno-froehlich.svg",
+          "svg/moods/bruno-ueberrascht.svg",
+          "svg/moods/bruno-traurig.svg",
+          "svg/moods/bruno-cool.svg",
+          "svg/moods/bruno-neutral.svg"
+        ],
+        "tonal": "svg/tonal/bruno-tonal.svg",
+        "avatarPng": [
+          "png/avatare/bruno-avatar-64.png",
+          "png/avatare/bruno-avatar-128.png",
+          "png/avatare/bruno-avatar-256.png",
+          "png/avatare/bruno-avatar-512.png",
+          "png/avatare/bruno-avatar-1024.png"
+        ],
+        "moodPng": [
+          "png/moods/bruno-froehlich-256.png",
+          "png/moods/bruno-froehlich-512.png",
+          "png/moods/bruno-froehlich-1024.png",
+          "png/moods/bruno-ueberrascht-256.png",
+          "png/moods/bruno-ueberrascht-512.png",
+          "png/moods/bruno-ueberrascht-1024.png",
+          "png/moods/bruno-traurig-256.png",
+          "png/moods/bruno-traurig-512.png",
+          "png/moods/bruno-traurig-1024.png",
+          "png/moods/bruno-cool-256.png",
+          "png/moods/bruno-cool-512.png",
+          "png/moods/bruno-cool-1024.png",
+          "png/moods/bruno-neutral-256.png",
+          "png/moods/bruno-neutral-512.png",
+          "png/moods/bruno-neutral-1024.png"
         ]
       }
     },
@@ -267,52 +457,44 @@
         "#DB4E8E"
       ],
       "files": {
-        "svg": "assets/svg/greta.svg",
-        "avatar": "assets/avatare/greta-avatar.svg",
+        "svg": "svg/greta.svg",
+        "avatar": "avatare/greta-avatar.svg",
         "png": [
-          "assets/png/greta-256.png",
-          "assets/png/greta-512.png",
-          "assets/png/greta-1024.png"
+          "png/greta-256.png",
+          "png/greta-512.png",
+          "png/greta-1024.png"
         ],
         "moods": [
-          "assets/svg/moods/greta-froehlich.svg",
-          "assets/svg/moods/greta-ueberrascht.svg",
-          "assets/svg/moods/greta-traurig.svg",
-          "assets/svg/moods/greta-cool.svg",
-          "assets/svg/moods/greta-neutral.svg"
-        ]
-      }
-    },
-    {
-      "id": "pixel",
-      "name": "Pixel",
-      "type": "pet",
-      "tagline": "Perfektions-Profi",
-      "category": "Perfektion · fehlerfrei",
-      "colors": [
-        "#0E4A4A",
-        "#1FA8A8",
-        "#7FE3E3",
-        "#58BFBF",
-        "#28C7C7"
-      ],
-      "stufen": [
-        "bronze",
-        "silber",
-        "gold",
-        "kosmisch"
-      ],
-      "files": {
-        "svg": "assets/svg/pixel.svg",
-        "avatar": "assets/avatare/pixel-avatar.svg",
-        "png": [
-          "assets/png/pixel-256.png",
-          "assets/png/pixel-512.png",
-          "assets/png/pixel-1024.png"
+          "svg/moods/greta-froehlich.svg",
+          "svg/moods/greta-ueberrascht.svg",
+          "svg/moods/greta-traurig.svg",
+          "svg/moods/greta-cool.svg",
+          "svg/moods/greta-neutral.svg"
         ],
-        "posen": [
-          "assets/svg/posen/pixel-jubel.svg",
-          "assets/svg/posen/pixel-schlaf.svg"
+        "tonal": "svg/tonal/greta-tonal.svg",
+        "avatarPng": [
+          "png/avatare/greta-avatar-64.png",
+          "png/avatare/greta-avatar-128.png",
+          "png/avatare/greta-avatar-256.png",
+          "png/avatare/greta-avatar-512.png",
+          "png/avatare/greta-avatar-1024.png"
+        ],
+        "moodPng": [
+          "png/moods/greta-froehlich-256.png",
+          "png/moods/greta-froehlich-512.png",
+          "png/moods/greta-froehlich-1024.png",
+          "png/moods/greta-ueberrascht-256.png",
+          "png/moods/greta-ueberrascht-512.png",
+          "png/moods/greta-ueberrascht-1024.png",
+          "png/moods/greta-traurig-256.png",
+          "png/moods/greta-traurig-512.png",
+          "png/moods/greta-traurig-1024.png",
+          "png/moods/greta-cool-256.png",
+          "png/moods/greta-cool-512.png",
+          "png/moods/greta-cool-1024.png",
+          "png/moods/greta-neutral-256.png",
+          "png/moods/greta-neutral-512.png",
+          "png/moods/greta-neutral-1024.png"
         ]
       }
     },
@@ -320,7 +502,7 @@
       "id": "bo",
       "name": "Bo",
       "type": "pet",
-      "tagline": "Fleißig wie eine Biene",
+      "tagline": "Fleißige kleine Biene",
       "category": "Fleiß · Volumen",
       "colors": [
         "#3A2A0A",
@@ -335,64 +517,144 @@
         "kosmisch"
       ],
       "files": {
-        "svg": "assets/svg/bo.svg",
-        "avatar": "assets/avatare/bo-avatar.svg",
+        "svg": "svg/bo.svg",
+        "avatar": "avatare/bo-avatar.svg",
         "png": [
-          "assets/png/bo-256.png",
-          "assets/png/bo-512.png",
-          "assets/png/bo-1024.png"
+          "png/bo-256.png",
+          "png/bo-512.png",
+          "png/bo-1024.png"
         ],
         "posen": [
-          "assets/svg/posen/bo-jubel.svg",
-          "assets/svg/posen/bo-schlaf.svg"
+          "svg/posen/bo-jubel.svg",
+          "svg/posen/bo-schlaf.svg"
+        ],
+        "tonal": "svg/tonal/bo-tonal.svg",
+        "avatarPng": [
+          "png/avatare/bo-avatar-64.png",
+          "png/avatare/bo-avatar-128.png",
+          "png/avatare/bo-avatar-256.png",
+          "png/avatare/bo-avatar-512.png",
+          "png/avatare/bo-avatar-1024.png"
+        ],
+        "posenPng": [
+          "png/posen/bo-jubel-256.png",
+          "png/posen/bo-jubel-512.png",
+          "png/posen/bo-jubel-1024.png",
+          "png/posen/bo-schlaf-256.png",
+          "png/posen/bo-schlaf-512.png",
+          "png/posen/bo-schlaf-1024.png"
         ]
       }
     },
     {
-      "id": "inky",
-      "name": "Inky",
+      "id": "axi",
+      "name": "Axi",
       "type": "pet",
-      "tagline": "Hält deine Serie fest",
-      "category": "Streak · Dranbleiben",
+      "tagline": "Startet einfach neu",
+      "category": "Durchhaltevermögen · Langstrecke",
       "colors": [
-        "#6C5CE7",
-        "#5247C4",
-        "#2E2A5C",
-        "#FF9FB0",
-        "#7D6DEA"
+        "#F6A9CE",
+        "#E8488F",
+        "#FDE1EE",
+        "#5A1840",
+        "#FF7AA0"
       ],
+      "files": {
+        "svg": "svg/axi.svg",
+        "avatar": "avatare/axi-avatar.svg",
+        "tonal": "svg/tonal/axi-tonal.svg",
+        "png": [
+          "png/axi-256.png",
+          "png/axi-512.png",
+          "png/axi-1024.png"
+        ],
+        "posen": [
+          "svg/posen/axi-jubel.svg",
+          "svg/posen/axi-schlaf.svg"
+        ],
+        "avatarPng": [
+          "png/avatare/axi-avatar-64.png",
+          "png/avatare/axi-avatar-128.png",
+          "png/avatare/axi-avatar-256.png",
+          "png/avatare/axi-avatar-512.png",
+          "png/avatare/axi-avatar-1024.png"
+        ],
+        "posenPng": [
+          "png/posen/axi-jubel-256.png",
+          "png/posen/axi-jubel-512.png",
+          "png/posen/axi-jubel-1024.png",
+          "png/posen/axi-schlaf-256.png",
+          "png/posen/axi-schlaf-512.png",
+          "png/posen/axi-schlaf-1024.png"
+        ]
+      },
       "stufen": [
         "bronze",
         "silber",
         "gold",
         "kosmisch"
+      ]
+    },
+    {
+      "id": "leo",
+      "name": "Leo",
+      "type": "pet",
+      "tagline": "Löwe mit Biss",
+      "category": "Streak · Dranbleiben",
+      "colors": [
+        "#FF6B4A",
+        "#B83A1E",
+        "#FF9A80",
+        "#FFE1D6",
+        "#4A1508"
       ],
       "files": {
-        "svg": "assets/svg/inky.svg",
-        "avatar": "assets/avatare/inky-avatar.svg",
+        "svg": "svg/leo.svg",
+        "avatar": "avatare/leo-avatar.svg",
+        "tonal": "svg/tonal/leo-tonal.svg",
         "png": [
-          "assets/png/inky-256.png",
-          "assets/png/inky-512.png",
-          "assets/png/inky-1024.png"
+          "png/leo-256.png",
+          "png/leo-512.png",
+          "png/leo-1024.png"
         ],
         "posen": [
-          "assets/svg/posen/inky-jubel.svg",
-          "assets/svg/posen/inky-schlaf.svg"
+          "svg/posen/leo-jubel.svg",
+          "svg/posen/leo-schlaf.svg"
+        ],
+        "avatarPng": [
+          "png/avatare/leo-avatar-64.png",
+          "png/avatare/leo-avatar-128.png",
+          "png/avatare/leo-avatar-256.png",
+          "png/avatare/leo-avatar-512.png",
+          "png/avatare/leo-avatar-1024.png"
+        ],
+        "posenPng": [
+          "png/posen/leo-jubel-256.png",
+          "png/posen/leo-jubel-512.png",
+          "png/posen/leo-jubel-1024.png",
+          "png/posen/leo-schlaf-256.png",
+          "png/posen/leo-schlaf-512.png",
+          "png/posen/leo-schlaf-1024.png"
         ]
-      }
+      },
+      "stufen": [
+        "bronze",
+        "silber",
+        "gold",
+        "kosmisch"
+      ]
     },
     {
       "id": "echo",
       "name": "Echo",
       "type": "pet",
-      "tagline": "Begleitet die Abendrunde",
+      "tagline": "Aufmerksamer Nachtflieger",
       "category": "Abend · Extra-Übungen",
       "colors": [
         "#4650B0",
         "#191F4A",
         "#353D8C",
         "#FFE29A",
-        "#FF9FB0",
         "#7B84D6"
       ],
       "stufen": [
@@ -402,16 +664,32 @@
         "kosmisch"
       ],
       "files": {
-        "svg": "assets/svg/echo.svg",
-        "avatar": "assets/avatare/echo-avatar.svg",
+        "svg": "svg/echo.svg",
+        "avatar": "avatare/echo-avatar.svg",
         "png": [
-          "assets/png/echo-256.png",
-          "assets/png/echo-512.png",
-          "assets/png/echo-1024.png"
+          "png/echo-256.png",
+          "png/echo-512.png",
+          "png/echo-1024.png"
         ],
         "posen": [
-          "assets/svg/posen/echo-jubel.svg",
-          "assets/svg/posen/echo-schlaf.svg"
+          "svg/posen/echo-jubel.svg",
+          "svg/posen/echo-schlaf.svg"
+        ],
+        "tonal": "svg/tonal/echo-tonal.svg",
+        "avatarPng": [
+          "png/avatare/echo-avatar-64.png",
+          "png/avatare/echo-avatar-128.png",
+          "png/avatare/echo-avatar-256.png",
+          "png/avatare/echo-avatar-512.png",
+          "png/avatare/echo-avatar-1024.png"
+        ],
+        "posenPng": [
+          "png/posen/echo-jubel-256.png",
+          "png/posen/echo-jubel-512.png",
+          "png/posen/echo-jubel-1024.png",
+          "png/posen/echo-schlaf-256.png",
+          "png/posen/echo-schlaf-512.png",
+          "png/posen/echo-schlaf-1024.png"
         ]
       }
     },
@@ -430,13 +708,91 @@
         "#6C5CE7"
       ],
       "files": {
-        "svg": "assets/svg/angelika.svg",
+        "svg": "svg/angelika.svg",
         "png": [
-          "assets/png/angelika-256.png",
-          "assets/png/angelika-512.png",
-          "assets/png/angelika-1024.png"
+          "png/angelika-256.png",
+          "png/angelika-512.png",
+          "png/angelika-1024.png"
         ]
       }
     }
-  ]
+  ],
+  "avatarPngSizes": [
+    64,
+    128,
+    256,
+    512,
+    1024
+  ],
+  "schrift": {
+    "headline": "Nunito 900/800",
+    "text": "DM Sans 400–700"
+  },
+  "wortmarke": {
+    "hinweis": "Reine Wortmarke, Nunito 900, kein Signet. Nur „besser“ farbig. SVGs enthalten Text – Nunito muss geladen/gebündelt sein; für Stellen ohne Font die PNGs aus logo/ verwenden.",
+    "varianten": {
+      "weiss": {
+        "hintergrund": "transparent/Weiß/Creme",
+        "besser": "#2A9D8F",
+        "lesenschreiben": "#27403C"
+      },
+      "petrol": {
+        "hintergrund": "#2A9D8F",
+        "besser": "#FDC73B",
+        "lesenschreiben": "#FCF7EF"
+      },
+      "petrolPrint": {
+        "hintergrund": "#35B0A1",
+        "besser": "#FDC73B",
+        "lesenschreiben": "#FCF7EF"
+      },
+      "schwarz": {
+        "hintergrund": "#1C2330",
+        "besser": "#FDC73B",
+        "lesenschreiben": "#FCF7EF"
+      }
+    },
+    "files": [
+      "logo/wortmarke-dreizeilig-weiss.svg",
+      "logo/wortmarke-einzeilig-weiss.svg",
+      "logo/wortmarke-dreizeilig-petrol.svg",
+      "logo/wortmarke-einzeilig-petrol.svg",
+      "logo/wortmarke-dreizeilig-petrol-print.svg",
+      "logo/wortmarke-einzeilig-petrol-print.svg",
+      "logo/wortmarke-dreizeilig-schwarz.svg",
+      "logo/wortmarke-einzeilig-schwarz.svg"
+    ],
+    "png": [
+      "logo/wortmarke-dreizeilig-weiss-1x.png",
+      "logo/wortmarke-dreizeilig-weiss-2x.png",
+      "logo/wortmarke-dreizeilig-weiss-3x.png",
+      "logo/wortmarke-einzeilig-weiss-1x.png",
+      "logo/wortmarke-einzeilig-weiss-2x.png",
+      "logo/wortmarke-einzeilig-weiss-3x.png",
+      "logo/wortmarke-dreizeilig-petrol-1x.png",
+      "logo/wortmarke-dreizeilig-petrol-2x.png",
+      "logo/wortmarke-dreizeilig-petrol-3x.png",
+      "logo/wortmarke-einzeilig-petrol-1x.png",
+      "logo/wortmarke-einzeilig-petrol-2x.png",
+      "logo/wortmarke-einzeilig-petrol-3x.png",
+      "logo/wortmarke-dreizeilig-petrol-print-1x.png",
+      "logo/wortmarke-dreizeilig-petrol-print-2x.png",
+      "logo/wortmarke-dreizeilig-petrol-print-3x.png",
+      "logo/wortmarke-einzeilig-petrol-print-1x.png",
+      "logo/wortmarke-einzeilig-petrol-print-2x.png",
+      "logo/wortmarke-einzeilig-petrol-print-3x.png",
+      "logo/wortmarke-dreizeilig-schwarz-1x.png",
+      "logo/wortmarke-dreizeilig-schwarz-2x.png",
+      "logo/wortmarke-dreizeilig-schwarz-3x.png",
+      "logo/wortmarke-einzeilig-schwarz-1x.png",
+      "logo/wortmarke-einzeilig-schwarz-2x.png",
+      "logo/wortmarke-einzeilig-schwarz-3x.png"
+    ]
+  },
+  "begleiter": {
+    "nepo": "bo",
+    "stella": "axi",
+    "junior": "leo",
+    "jax": "echo"
+  }
 }

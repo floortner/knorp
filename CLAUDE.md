@@ -90,9 +90,13 @@ for all lectures (`content/README.md` is the German authoring guide; validated b
 (`iteration-1/` = the §F developer handoff `lernapp3-opus.md` + `BLS_*.html` chapter plans), with engineering's
 Rückmeldungen and expected answers (e.g. `fertigkeiten.md`) at the folder root; **never imported into the app**
 (the importer reads only `content/lectures/`);
-`website/` — static marketing page; `assets/` — the master mascot/art source library +
-`manifest.json` catalog (SVG masters versioned, large PNG renders gitignored; the app serves the SVG subset
-from `besserlesenschreiben/frontend/monster-pets/`).
+`website/` — static marketing page; `assets/` — the master brand/art library (assets-v2 package,
+2026-09-14): mascot SVGs + `manifest.json` catalog, the Wortmarke logo (`logo/` — SVGs contain live
+Nunito text, so the font-burned-in PNG fallbacks ARE versioned, unlike all other PNG renders which
+stay gitignored), and brand design tokens (`tokens/`). Pets are Bo · Axi · Leo · Echo (Inky/Pixel
+retired). The app serves the SVG subset from `besserlesenschreiben/frontend/monster-pets/`. The
+tokens' Nunito/DM-Sans fonts are for marketing/print — the family app deliberately keeps Atkinson
+Hyperlegible (dyslexia-friendly) in-app.
 ## Architecture overview
 
 ### System topology

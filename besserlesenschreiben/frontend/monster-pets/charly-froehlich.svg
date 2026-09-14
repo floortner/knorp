@@ -13,7 +13,6 @@
 <circle cx="107" cy="153" r="9" fill="#114A2E"></circle><circle cx="153" cy="153" r="9" fill="#114A2E"></circle>
 <circle cx="111" cy="148" r="3.5" fill="#fff"></circle><circle cx="157" cy="148" r="3.5" fill="#fff"></circle>
 <path d="M108 186 Q130 208 152 186" stroke="#114A2E" stroke-width="6" fill="none" stroke-linecap="round"></path>
-<path d="M126 192 l2 10 5 -7 Z" fill="#fff"></path>
   
 </g>
 </svg>
