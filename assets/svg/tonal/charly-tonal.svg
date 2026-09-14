@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 270" width="260" height="270">
+<defs>
+<clipPath id="clipTankFlat"><rect x="58" y="74" width="144" height="162" rx="66"></rect></clipPath>
+</defs>
+<g>
+
+    <path d="M74 80 L66 50 L104 76 Z" fill="#5FB5A8"></path>
+    <path d="M186 80 L194 50 L156 76 Z" fill="#5FB5A8"></path>
+    <rect x="58" y="74" width="144" height="162" rx="66" fill="#5FB5A8"></rect>
+    <g clip-path="url(#clipTankFlat)"><path d="M46 196 H214 V236 H46 Z" fill="#5FB5A8"></path></g>
+    <g clip-path="url(#clipTankFlat)"><rect x="46" y="106" width="168" height="20" fill="#5FB5A8"></rect></g>
+    <circle cx="104" cy="152" r="20" fill="#A9DBD1"></circle>
+    <circle cx="156" cy="152" r="20" fill="#A9DBD1"></circle>
+    <circle cx="106" cy="156" r="9" fill="#1E8578"></circle>
+    <circle cx="154" cy="156" r="9" fill="#1E8578"></circle>
+    <circle cx="109" cy="152" r="3.5" fill="#A9DBD1"></circle>
+    <circle cx="157" cy="152" r="3.5" fill="#A9DBD1"></circle>
+    <path d="M108 186 Q130 208 152 186" stroke="#1E8578" stroke-width="6" fill="none" stroke-linecap="round"></path>
+    <circle cx="80" cy="176" r="8" fill="#5FB5A8"></circle>
+    <circle cx="180" cy="176" r="8" fill="#5FB5A8"></circle>
+  
+</g>
+</svg>

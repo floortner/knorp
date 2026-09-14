@@ -18,13 +18,15 @@ export const BUDDIES = [
  * REWARD pets — earned by completing tasks, NOT freely selectable (the backend buddy enum rejects
  * them) and not yet shown anywhere in the UI: the earn mechanic and their locked-picker slots land
  * with the D5 badges milestone. Pets have a base figure + `jubel`/`schlaf` POSES (no emotional
- * states), so they render via their base asset.
+ * states), so they render via their base asset. The assets-v2 brand package also pairs each pet
+ * with a buddy as its "Begleiter" (Nepo+Bo, Stella+Axi, Junior+Leo, Jax+Echo — `assets/manifest.json`),
+ * a D5 hook that isn't wired up yet.
  */
 export const REWARD_PETS = [
   { id: 'bo', name: 'Bo' },
+  { id: 'leo', name: 'Leo' },
   { id: 'echo', name: 'Echo' },
-  { id: 'inky', name: 'Inky' },
-  { id: 'pixel', name: 'Pixel' },
+  { id: 'axi', name: 'Axi' },
 ] as const;
 
 export type BuddyId = (typeof BUDDIES)[number]['id'];

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<g>
+      <path d="M68 132 Q46 112 42 86" stroke="#FF6B4A" stroke-width="13" fill="none" stroke-linecap="round"></path>
+      <path d="M132 132 Q154 112 158 86" stroke="#FF6B4A" stroke-width="13" fill="none" stroke-linecap="round"></path>
+      <circle cx="41" cy="82" r="10" fill="#FF6B4A"></circle><circle cx="159" cy="82" r="10" fill="#FF6B4A"></circle>
+      <ellipse cx="100" cy="128" rx="26" ry="34" fill="#FF6B4A"></ellipse>
+      <path d="M146 92 L158 108 L140 115 L142 134 L123 132 L116 150 L100 138 L84 150 L77 132 L58 134 L60 115 L42 108 L54 92 L42 76 L60 69 L58 50 L77 52 L84 34 L100 46 L116 34 L123 52 L142 50 L140 69 L158 76 Z" fill="#B83A1E"></path>
+      <circle cx="72" cy="60" r="10" fill="#FF6B4A"></circle><circle cx="72" cy="60" r="5" fill="#FF9A80"></circle>
+      <circle cx="128" cy="60" r="10" fill="#FF6B4A"></circle><circle cx="128" cy="60" r="5" fill="#FF9A80"></circle>
+      <circle cx="100" cy="94" r="38" fill="#FF6B4A"></circle>
+      <circle cx="86" cy="86" r="12" fill="#fff"></circle><circle cx="114" cy="86" r="12" fill="#fff"></circle>
+      <path d="M74 78 Q80 70 92 74" stroke="#6B1E0E" stroke-width="5" fill="none" stroke-linecap="round"></path>
+      <path d="M108 74 Q120 70 126 78" stroke="#6B1E0E" stroke-width="5" fill="none" stroke-linecap="round"></path>
+      <circle cx="87" cy="84" r="7" fill="#4A1508"></circle><circle cx="113" cy="84" r="7" fill="#4A1508"></circle>
+      <circle cx="90" cy="81" r="2.6" fill="#fff"></circle><circle cx="116" cy="81" r="2.6" fill="#fff"></circle>
+      <ellipse cx="100" cy="112" rx="19" ry="15" fill="#FFE1D6"></ellipse>
+      <path d="M94 104 L100 111 L106 104 Z" fill="#6B1E0E"></path>
+      <path d="M88 114 Q100 134 112 114 Z" fill="#4A1508"></path>
+      <path d="M95 123 Q100 130 105 123 Z" fill="#FF9AA8"></path>
+      <path d="M22 44 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 Z" fill="#FDC73B"></path>
+      <path d="M176 40 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4 Z" fill="#FDC73B"></path>
+</g>
+</svg>

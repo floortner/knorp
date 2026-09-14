@@ -149,7 +149,7 @@ describe('Profil', () => {
     renderProfil();
     await screen.findByText('Dein Lernfreund');
     expect(screen.queryByText('Belohnungen')).not.toBeInTheDocument();
-    for (const pet of ['Bo', 'Echo', 'Inky', 'Pixel']) {
+    for (const pet of ['Bo', 'Leo', 'Echo', 'Axi']) {
       expect(screen.queryByLabelText(`${pet} (noch gesperrt)`)).not.toBeInTheDocument();
     }
   });

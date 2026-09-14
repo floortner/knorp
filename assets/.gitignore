@@ -1,5 +1,8 @@
-# Mascot source-art library (master SVGs + manifest + avatars are versioned).
+# Mascot source-art library (master SVGs + manifest + avatars + tokens are versioned).
 # The large PNG renders are print-only — the app serves SVG (ARCHITECTURE §10) — so they're not versioned.
+# Exception: logo/ wordmark PNGs ARE versioned — the SVGs contain live text in Nunito 900, so the
+# font-burned-in PNGs are the only logo form that works where the font isn't loaded (email, docs).
 png/
 *.png
+!logo/*.png
 .DS_Store

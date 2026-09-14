@@ -16,7 +16,6 @@
 <circle cx="142" cy="148" r="9" fill="#5A1840"></circle>
 <circle cx="146" cy="144" r="3.4" fill="#fff"></circle>
 <path d="M98 192 Q118 199 146 181" stroke="#5A1840" stroke-width="6" fill="none" stroke-linecap="round"></path>
-<path d="M132 186 l2 8 6 -5 Z" fill="#fff"></path>
 <path d="M150 36 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 Z" fill="#FFC53D"></path>
   
 </g>

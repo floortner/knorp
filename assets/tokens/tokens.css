@@ -1,0 +1,39 @@
+:root {
+  --bls-petrol: #2A9D8F;
+  --bls-tanne: #27403C;
+  --bls-creme: #FCF7EF;
+  --bls-mint: #DEF0EC;
+  --bls-apricot: #F0915F;
+  --bls-sand: #FBE6D9;
+  --bls-petrol-print: #35B0A1;
+  --bls-kreis-print: #48BCAE;
+  --bls-trenner-print: #2A9686;
+  --bls-gelb: #FDC73B;
+  --bls-schwarz: #1C2330;
+  --bls-text: #3D4C4A;
+  --bls-text-muted: #6E7A78;
+  --bls-line: #F1EADF;
+  --bls-stufe-bronze: #C98A52;
+  --bls-stufe-silber: #B9C4CB;
+  --bls-stufe-gold: #F0B429;
+  --bls-stufe-kosmisch: #6C5CE7;
+  --bls-nepo: #1AA0E0;
+  --bls-stella: #E8488F;
+  --bls-charly: #3DBE74;
+  --bls-jax: #2B3543;
+  --bls-li: #E8A91E;
+  --bls-junior: #A4D037;
+  --bls-bruno: #EFCF7E;
+  --bls-greta: #232A6E;
+  --bls-bo: #3A2A0A;
+  --bls-leo: #FF6B4A;
+  --bls-echo: #4650B0;
+  --bls-axi: #F6A9CE;
+  --bls-font-headline: 'Nunito', system-ui, sans-serif;
+  --bls-font-text: 'DM Sans', system-ui, sans-serif;
+}
+
+.bls-wortmarke { font-family: var(--bls-font-headline); font-weight: 900; line-height: 1.02; letter-spacing: -0.01em; color: var(--bls-tanne); }
+.bls-wortmarke .besser { color: var(--bls-petrol); }
+.bls-wortmarke--negativ { color: var(--bls-creme); }
+.bls-wortmarke--negativ .besser { color: var(--bls-gelb); }

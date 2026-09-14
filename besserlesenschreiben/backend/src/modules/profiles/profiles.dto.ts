@@ -3,7 +3,7 @@ import { ZodDto } from '../../common/zod-dto';
 import { appearanceSchema } from '../../contract/models';
 
 // Freely selectable learn buddies (frontend/public/monster-pets/ — 4 emotional states each).
-// bo/echo/inky/pixel are REWARD pets — earned via tasks (D5), never freely selectable, so they are
+// bo/leo/echo/axi are REWARD pets — earned via tasks (D5), never freely selectable, so they are
 // deliberately NOT in this enum (a direct API PATCH must not bypass the lock).
 const buddy = z.enum([
   'nepo', 'stella', 'charly', 'jax',

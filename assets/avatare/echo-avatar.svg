@@ -18,7 +18,6 @@
       <circle cx="86" cy="92" r="13" fill="#fff"></circle><circle cx="114" cy="92" r="13" fill="#fff"></circle>
       <circle cx="88" cy="95" r="7" fill="#191F4A"></circle><circle cx="112" cy="95" r="7" fill="#191F4A"></circle>
       <circle cx="90" cy="92" r="2.4" fill="#fff"></circle><circle cx="114" cy="92" r="2.4" fill="#fff"></circle>
-      <circle cx="68" cy="106" r="6" fill="#FF9FB0"></circle><circle cx="132" cy="106" r="6" fill="#FF9FB0"></circle>
       <path d="M90 112 Q100 121 110 112" stroke="#191F4A" stroke-width="4" fill="none" stroke-linecap="round"></path>
     
 </g>
