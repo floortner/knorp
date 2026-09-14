@@ -6,8 +6,8 @@ import { appearanceSchema } from '../../contract/models';
 // bo/axi/leo/echo are REWARD pets — earned via tasks (D5), never freely selectable, so they are
 // deliberately NOT in this enum (a direct API PATCH must not bypass the lock).
 const buddy = z.enum([
-  'nepo', 'stella', 'charly', 'jax',
-  'junior', 'li', 'bruno', 'greta',
+  'nepo', 'stella', 'junior', 'jax',
+  'li', 'charly', 'bruno', 'greta',
 ]);
 
 // Defaults are applied in the service (not via Zod `.default()`) to keep the DTOs simple.
