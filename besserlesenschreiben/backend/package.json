@@ -30,6 +30,7 @@
     "@fastify/cookie": "^11.0.2",
     "@fastify/multipart": "^9.4.0",
     "@fastify/rate-limit": "^11.1.0",
+    "@fastify/static": "^10.1.4",
     "@nestjs/common": "^11",
     "@nestjs/config": "^4",
     "@nestjs/core": "^11",
@@ -45,7 +46,7 @@
     "pino-http": "^10",
     "reflect-metadata": "^0.2",
     "rxjs": "^7",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.4",
     "ts-fsrs": "^5.4.1",
     "zod": "^4"
   },
@@ -66,11 +67,14 @@
   },
   "allowScripts": {
     "argon2@0.43.1": true,
-    "esbuild@0.28.1": true,
-    "prisma@7.8.0": true,
-    "@prisma/engines@7.8.0": true,
-    "@swc/core@1.15.43": true,
+    "esbuild@0.28.2": true,
+    "prisma@7.10.0": true,
+    "@prisma/engines@7.10.0": true,
+    "@swc/core@1.16.2": true,
     "@scarf/scarf@1.4.0": true,
     "fsevents@2.3.3": true
+  },
+  "overrides": {
+    "fastify": "^5.12.5"
   }
 }
