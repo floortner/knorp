@@ -2,6 +2,9 @@
   "name": "besserlesenschreiben-e2e",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "type": "module",
   "description": "End-to-end tests (Playwright) — family frontend + backend, local and CI",
   "scripts": {

@@ -1,0 +1,43 @@
+# Dependabot — keeps the four npm projects, the pinned GitHub Actions and the Terraform provider
+# current. Grouped so a routine week is one PR per project, not one per package; majors stay
+# separate so each gets its own review (NestJS/Vite/Vitest majors touch the contract pipeline).
+#
+# After merging a backend npm bump that touches @swc/core, esbuild, prisma or argon2, re-pin the
+# matching `allowScripts` entry in backend/package.json (npm 11 warns, CI does not fail — but keep
+# it true). Contract changes (Zod bump → openapi.json) are caught by the CI drift gates.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /besserlesenschreiben/backend
+    schedule: { interval: weekly, day: monday, time: "06:00", timezone: Europe/Berlin }
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /besserlesenschreiben/frontend
+    schedule: { interval: weekly, day: monday, time: "06:00", timezone: Europe/Berlin }
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /besserlesenschreiben/trainer
+    schedule: { interval: weekly, day: monday, time: "06:00", timezone: Europe/Berlin }
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /e2e
+    schedule: { interval: weekly, day: monday, time: "06:00", timezone: Europe/Berlin }
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 2
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly, timezone: Europe/Berlin }
+  - package-ecosystem: terraform
+    directory: /infra
+    schedule: { interval: monthly, timezone: Europe/Berlin }
