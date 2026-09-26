@@ -14,6 +14,14 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
     open-pull-requests-limit: 5
+    ignore:
+      # TypeScript 7 is blocked: typescript-eslint 8.x accepts `typescript <6.1`, and the SPAs'
+      # `openapi-typescript` (gen:api) accepts `^5`. Lift when both peers allow the next major.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # @types/node must track the pinned runtime (Node 24 — engines + .nvmrc), never lead it.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /besserlesenschreiben/frontend
     schedule: { interval: weekly, day: monday, time: "06:00", timezone: Europe/Berlin }
@@ -21,6 +29,14 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
     open-pull-requests-limit: 5
+    ignore:
+      # TypeScript 7 is blocked: typescript-eslint 8.x accepts `typescript <6.1`, and the SPAs'
+      # `openapi-typescript` (gen:api) accepts `^5`. Lift when both peers allow the next major.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # @types/node must track the pinned runtime (Node 24 — engines + .nvmrc), never lead it.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /besserlesenschreiben/trainer
     schedule: { interval: weekly, day: monday, time: "06:00", timezone: Europe/Berlin }
@@ -28,6 +44,14 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
     open-pull-requests-limit: 5
+    ignore:
+      # TypeScript 7 is blocked: typescript-eslint 8.x accepts `typescript <6.1`, and the SPAs'
+      # `openapi-typescript` (gen:api) accepts `^5`. Lift when both peers allow the next major.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # @types/node must track the pinned runtime (Node 24 — engines + .nvmrc), never lead it.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /e2e
     schedule: { interval: weekly, day: monday, time: "06:00", timezone: Europe/Berlin }
@@ -35,9 +59,22 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
     open-pull-requests-limit: 2
+    ignore:
+      # TypeScript 7 is blocked: typescript-eslint 8.x accepts `typescript <6.1`, and the SPAs'
+      # `openapi-typescript` (gen:api) accepts `^5`. Lift when both peers allow the next major.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # @types/node must track the pinned runtime (Node 24 — engines + .nvmrc), never lead it.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly, timezone: Europe/Berlin }
   - package-ecosystem: terraform
     directory: /infra
     schedule: { interval: monthly, timezone: Europe/Berlin }
+    ignore:
+      # The AWS provider major is a live-apply change (beta paused since 2026-09-12): take it as part
+      # of the resume `terraform plan`, where the diff gets reviewed once, not from a bot PR.
+      - dependency-name: hashicorp/aws
+        update-types: ["version-update:semver-major"]
