@@ -131,7 +131,7 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 |---|---|---|
 | Runtime | Node.js (Active LTS "Krypton") | **24.x LTS** |
 | Language | TypeScript | 5.x (6.0 emerging) |
-| Web framework | NestJS (Fastify adapter) | **11.x** |
+| Web framework | NestJS (Fastify adapter) | **12.x** |
 | Validation / DTOs | Zod (local `ZodDto` factory — no `nestjs-zod`) | **4.x** |
 | OpenAPI | `@nestjs/swagger` (feeds frontend type-gen) | current |
 | ORM | Prisma (+ `@prisma/adapter-pg`) | **7.x** |
@@ -167,9 +167,11 @@ into two backend languages without a measured reason.
 `vite-plugin-pwa` and the brand fonts (system font stack, neutral staff theme).
 
 **Dependency hygiene:** lockfiles committed (`package-lock.json` in all four npm projects — backend,
-frontend, trainer, `e2e/`). Renovate opens grouped PRs
-weekly. Majors are reviewed by hand; patches auto-merge on green CI. **Prisma 7** ships ESM-first — with
-NestJS's CommonJS setup, set `moduleFormat = "cjs"` in the client generator.
+frontend, trainer, `e2e/`). Dependabot (`.github/dependabot.yml`) opens one grouped minor/patch PR per
+project weekly; majors arrive as separate PRs and are reviewed by hand (no auto-merge). **Prisma 7** ships
+ESM-first — with NestJS's CommonJS setup, set `moduleFormat = "cjs"` in the client generator. **NestJS 12**
+packages are ESM-only too; the backend stays CommonJS and consumes them via Node's `require(esm)` (Node
+≥ 22.12 / 24 — the pinned runtime), so no ESM migration of the backend is required or planned.
 
 > React 19's early "React2Shell" advisory is patched in the 19.2.x line — use a current patch, not 19.0.x.
 
