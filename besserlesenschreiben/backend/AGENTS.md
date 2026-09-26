@@ -8,7 +8,7 @@ The API service for an adaptive German literacy tutor for students (ages 8-14). 
 Pure HTTP/JSON service — it serves no HTML. The frontend (`../frontend`) is the only client.
 
 ## Stack (pinned lines — see ARCHITECTURE §2 for the table)
-Node 24 LTS · TypeScript 5.x · NestJS 11 (Fastify adapter) · Zod 4 (local `ZodDto`, no `nestjs-zod`) · `@nestjs/swagger` ·
+Node 24 LTS · TypeScript 6.0 · NestJS 12 (Fastify adapter) · Zod 4 (local `ZodDto`, no `nestjs-zod`) · `@nestjs/swagger` ·
 Prisma 7 (+ `@prisma/adapter-pg`, Prisma Migrate) · PostgreSQL 17 · `@aws-sdk/client-s3` +
 `@aws-sdk/s3-request-presigner` · `@anthropic-ai/sdk` · `ts-fsrs` · `nestjs-pino` · Vitest.
 Use `npm`; commit `package-lock.json`. Prisma 7 is ESM-first → set `moduleFormat = "cjs"` for NestJS.
