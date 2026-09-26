@@ -18,11 +18,13 @@ export interface LlmUsage {
  * idiomatic Claude way to get typed JSON. The SDK is lazy-imported so the stub path needs nothing installed
  * at runtime. We never log prompts, student answers, or image bytes (CLAUDE.md §6) — identifiers + outcomes only.
  *
- * Notes for the pinned models (Sonnet 5 / Opus 4.8 — see config/env.ts): `temperature`/`top_p`/`top_k` are rejected (400) — we send
- * none and steer via the prompt. Sonnet 5 runs **adaptive thinking by default** when `thinking` is omitted;
+ * Notes for the pinned models (Sonnet 5 / Opus 5 — see config/env.ts): `temperature`/`top_p`/`top_k` are rejected (400) — we send
+ * none and steer via the prompt. Both run **adaptive thinking by default** when `thinking` is omitted;
  * thinking tokens count against `max_tokens`, so an omitted field can silently eat the chat/vision budget and
  * truncate replies — we disable it explicitly (short, simple structured tasks; latency matters for students).
- * Homework vision uses a stronger `visionModel`.
+ * Opus 5 accepts `disabled` only at effort `high` or below — we never send `output_config.effort`, so the
+ * default `high` applies. Homework vision uses a stronger `visionModel`; its forced tool_choice means the
+ * "tool call as plain text" failure mode of disabled thinking cannot bite (no tool_use → 503 → re-ask).
  */
 export class AnthropicLlmProvider implements LlmProvider {
   readonly name = 'anthropic';

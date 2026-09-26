@@ -56,8 +56,10 @@ export const envSchema = z.object({
   // (temperature/top_p/top_k are rejected on current models; steer via the prompt instead.)
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-5'),
   // Homework vision uses a stronger model — student handwriting OCR is accuracy-critical and the draft is
-  // the trainer's starting point.
-  ANTHROPIC_VISION_MODEL: z.string().default('claude-opus-4-8'),
+  // the trainer's starting point. Opus 5 is the drop-in successor of Opus 4.8 at the same price; it thinks
+  // by default, so the provider keeps `thinking: disabled` (allowed at the default effort `high`) and the
+  // 4096-token vision budget stays reply-only.
+  ANTHROPIC_VISION_MODEL: z.string().default('claude-opus-5'),
   // EU data-residency / DPA acknowledgement for Anthropic-direct. Required in production before any LLM
   // call goes out (ARCHITECTURE §8): the app refuses to start with a key set but this unacknowledged.
   LLM_RESIDENCY_ACK: z.string().default(''),

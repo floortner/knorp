@@ -572,7 +572,7 @@ restore from the off-platform dumps) rather than the loss of every family's data
   and document the data flow.** TTS (ElevenLabs — build plan approved 2026-08-10, `../docs/tts-build-plan.md`,
   not yet built; removes the Web-Speech fallback) follows the same DPA + minimal-data discipline.
   - **Model policy (Anthropic-direct default):** `ANTHROPIC_MODEL` = `claude-sonnet-5` (generation/chat),
-    `ANTHROPIC_VISION_MODEL` = `claude-opus-4-8` (homework OCR — accuracy-critical). On current models
+    `ANTHROPIC_VISION_MODEL` = `claude-opus-5` (homework OCR — accuracy-critical; Opus 4.8 pricing). On current models
     `temperature`/`top_p`/`top_k` are rejected (400): steer with the prompt (and output effort), not sampling
     params. Stable system prompts are sent as prompt-cacheable blocks. Structured output is a forced tool over
     the `src/contract` Zod→JSON-Schema, re-validated (incl. solvability) with a one-shot re-ask on a miss.

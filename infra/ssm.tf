@@ -24,7 +24,7 @@ locals {
     EMAIL_FROM             = "besserlesenschreiben <login@${var.domain}>"
     STAFF_ADMIN_EMAILS     = join(",", length(var.staff_admin_emails) > 0 ? var.staff_admin_emails : [var.owner_email])
     ANTHROPIC_MODEL        = "claude-sonnet-5"
-    ANTHROPIC_VISION_MODEL = "claude-opus-4-8"
+    ANTHROPIC_VISION_MODEL = "claude-opus-5"
     LLM_RESIDENCY_ACK      = "true"
     # Inference-routing region: deliberately ABSENT (SSM rejects empty values; an absent env var makes
     # the app omit the `inference_geo` parameter — the working default). Add `INFERENCE_GEO = "eu"`

@@ -19,6 +19,8 @@ import { homeworkAnalysisSchema } from '../src/contract/staff';
 
 // Rough list prices per MTok for the cost estimate (update if pricing changes).
 const PRICE: Record<string, { in: number; out: number }> = {
+  'claude-sonnet-5': { in: 2, out: 10 },
+  'claude-opus-5': { in: 5, out: 25 },
   'claude-sonnet-4-6': { in: 3, out: 15 },
   'claude-opus-4-8': { in: 5, out: 25 },
 };
@@ -32,8 +34,8 @@ async function main(): Promise<void> {
   const usages: LlmUsage[] = [];
   const provider = createLlmProvider({
     apiKey: process.env.ANTHROPIC_API_KEY ?? '',
-    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
-    visionModel: process.env.ANTHROPIC_VISION_MODEL || 'claude-opus-4-8',
+    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
+    visionModel: process.env.ANTHROPIC_VISION_MODEL || 'claude-opus-5',
     isProd: false, // the smoke is a dev tool; prod boot enforces LLM_RESIDENCY_ACK separately
     residencyAck: true,
     onUsage: (u) => usages.push(u),
@@ -117,7 +119,7 @@ async function main(): Promise<void> {
   console.log('\n── Usage summary ──');
   let totalEur = 0;
   for (const u of usages) {
-    const p = PRICE[u.model] ?? PRICE['claude-sonnet-4-6'];
+    const p = PRICE[u.model] ?? PRICE['claude-sonnet-5'];
     // Cache reads bill at 10% of input; cache writes at 125%.
     const eur =
       ((u.inputTokens + 1.25 * u.cacheWriteTokens + 0.1 * u.cacheReadTokens) * p.in + u.outputTokens * p.out) / 1e6;

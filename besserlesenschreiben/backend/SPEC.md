@@ -760,7 +760,7 @@ STAFF_ADMIN_EMAILS=              # comma-separated admin bootstrap (seeded as ac
 HOMEWORK_REVIEW_CLAIM_TTL=       # queue soft-lock lease, e.g. 900 (seconds)
 ANTHROPIC_API_KEY=
 ANTHROPIC_MODEL=                 # default claude-sonnet-5 (../ARCHITECTURE.md §8)
-ANTHROPIC_VISION_MODEL=          # default claude-opus-4-8 (homework OCR)
+ANTHROPIC_VISION_MODEL=          # default claude-opus-5 (homework OCR)
 LLM_RESIDENCY_ACK=               # required in prod when a key is set (EU residency/DPA acknowledgement)
 INFERENCE_GEO=                   # optional inference_geo (eu|us|global); blank omits — 'eu' needs the org capability
 LLM_SESSIONS_PER_DAY= CHAT_MESSAGES_PER_DAY=   # per-profile daily caps on ★ ops (defaults 5 / 60)
