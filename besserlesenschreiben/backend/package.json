@@ -43,7 +43,7 @@
     "@prisma/adapter-pg": "^7",
     "@prisma/client": "^7",
     "argon2": "^0.45",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.3",
     "gray-matter": "^4.0.3",
     "nestjs-pino": "^5.2.1",
     "pino-http": "^11.0.0",
