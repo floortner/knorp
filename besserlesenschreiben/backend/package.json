@@ -45,7 +45,7 @@
     "argon2": "^0.43",
     "dotenv": "^17.4.2",
     "gray-matter": "^4.0.3",
-    "nestjs-pino": "^4",
+    "nestjs-pino": "^5",
     "pino-http": "^10",
     "reflect-metadata": "^0.2",
     "rxjs": "^7",
