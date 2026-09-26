@@ -54,7 +54,7 @@
     "zod": "^4"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11",
+    "@nestjs/cli": "^12",
     "@nestjs/schematics": "^11",
     "@nestjs/testing": "^12.1.0",
     "@swc/core": "^1",
