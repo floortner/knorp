@@ -10,7 +10,8 @@ This file is just the **local-dev runbook**.
 
 - **Node.js 24 LTS** (the pinned runtime — see ARCHITECTURE §2)
 - **PostgreSQL 17** — installed via Homebrew (steps below). Alternatively use Postgres.app or a managed
-  DB (Neon/Supabase/RDS) and just point `DATABASE_URL` at it; everything else is identical.
+  DB (Neon/Supabase/RDS) and just point `DATABASE_URL` at it; everything else is identical. (The beta
+  box provisions **PostgreSQL 15** via cloud-init — the app uses nothing version-specific, both work.)
 
 ## Local vs production
 
@@ -19,9 +20,8 @@ PostgreSQL** (a Homebrew service). Production is a small AWS EC2 instance runnin
 systemd (ARCHITECTURE §7 — the beta is **paused since 2026-09-12**, compute torn down; deploys go
 through `deploy/release.sh` via GitHub Actions → SSM once resumed) and is unrelated to this setup.
 
-Milestone 1 (auth + profiles) needs **only Postgres** — no AWS/Anthropic/TTS. The
-external services sit behind interfaces with dev fakes (see [stubs](#external-service-stubs)), so the
-early milestones run fully offline.
+The app boots and is fully exercisable with **only Postgres** — no AWS/Anthropic accounts. The external
+services sit behind interfaces with dev fakes (see [stubs](#external-service-stubs)).
 
 ## First-time setup
 
@@ -39,7 +39,7 @@ cp .env.example .env          # dev defaults already match the role/db created a
 npm ci                        # install deps
 npx prisma migrate dev        # create tables from prisma/schema.prisma
 npm run seed                  # staff admins + dev accounts (idempotent)
-npm run content:import        # import the content/ lecture library (idempotent, ROADMAP §I2)
+npm run content:import        # import the content/ lecture library (idempotent; HISTORY §I)
 ```
 
 ## Run
@@ -63,7 +63,7 @@ curl localhost:3000/api/v1/health        # -> {"status":"ok","version":"…","co
 
 ### Passwordless login (how to get an authed session locally)
 
-There's no email server in dev, so `EMAIL_PROVIDER=console` **prints the 4-digit code to the
+There's no email server in dev, so `EMAIL_PROVIDER=console` **prints the 6-digit code to the
 `start:dev` console** instead of sending it. Two things to know first:
 
 - **A fresh email gets NO code.** Signup is silent pending-on-first-code (CLAUDE.md rule 5): an unknown
@@ -81,7 +81,7 @@ curl -X POST localhost:3000/api/v1/auth/request-code \
 
 # 2. copy the code from the console, verify it → the session cookie lands in the jar
 curl -c /tmp/blsb.jar -X POST localhost:3000/api/v1/auth/verify \
-  -H 'Content-Type: application/json' -d '{"email":"family@example.test","code":"1234"}'
+  -H 'Content-Type: application/json' -d '{"email":"family@example.test","code":"123456"}'
 # -> {"isNewAccount":false}
 
 # 3. call an authed route with the cookie
@@ -90,7 +90,7 @@ curl -b /tmp/blsb.jar localhost:3000/api/v1/me
 
 ## External-service stubs
 
-The app boots and milestones 1–4 are exercisable with **no external accounts**:
+Everything runs with **no external accounts**:
 
 | Service | Dev stub | Real adapter |
 |---|---|---|
