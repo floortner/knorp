@@ -9,7 +9,7 @@ trainer portal for professional homework review. Free to use; access is approved
 | [`content/`](content/README.md) | The lecture library: one markdown file per lecture, authored by the linguist, validated in CI, imported at deploy (guide in German) |
 | [`e2e/`](e2e/README.md) | Playwright user journeys over family app + backend (run locally, not in CI) |
 | [`infra/`](infra/README.md) · [`deploy/`](deploy/README.md) | AWS beta deployment (Terraform) and the on-box release scripts |
-| [`assets/`](assets/README.md) · `website/` | Brand + mascot masters; the static marketing page |
+| [`assets/`](assets/README.md) · [`print/`](print/README.md) · `website/` | Brand + mascot masters; the finished print PDFs; the static marketing page |
 | [`ROADMAP.md`](ROADMAP.md) · [`HISTORY.md`](HISTORY.md) | What's next · what shipped, with the pivot log |
 
 **Status:** built through the beta deployment; the beta is paused since 2026-09-12 (resume runbook in
