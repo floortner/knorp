@@ -37,7 +37,7 @@
     "@types/react-dom": "^19.2",
     "@vitejs/plugin-react": "^6",
     "eslint": "^9",
-    "jsdom": "^25",
+    "jsdom": "^30",
     "openapi-typescript": "^7",
     "tailwindcss": "^4.3",
     "typescript": "^5",
