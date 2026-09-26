@@ -35,7 +35,7 @@
     "@fastify/rate-limit": "^11.1.0",
     "@fastify/static": "^10.1.4",
     "@nestjs/common": "^11",
-    "@nestjs/config": "^4",
+    "@nestjs/config": "^12",
     "@nestjs/core": "^11",
     "@nestjs/jwt": "^11",
     "@nestjs/platform-fastify": "^11",
