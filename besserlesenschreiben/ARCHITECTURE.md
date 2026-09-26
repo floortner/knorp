@@ -130,7 +130,7 @@ admins also see accounts. Same `Trainer.role` (`trainer | admin`) gates the diff
 | Concern | Choice | Version line |
 |---|---|---|
 | Runtime | Node.js (Active LTS "Krypton") | **24.x LTS** |
-| Language | TypeScript | 5.x (6.0 emerging) |
+| Language | TypeScript | **6.0** (backend + e2e; the SPAs stay on 5.9 until `openapi-typescript` accepts 6 — its peer is `^5`) |
 | Web framework | NestJS (Fastify adapter) | **12.x** |
 | Validation / DTOs | Zod (local `ZodDto` factory — no `nestjs-zod`) | **4.x** |
 | OpenAPI | `@nestjs/swagger` (feeds frontend type-gen) | current |
