@@ -10,6 +10,7 @@ These run on the beta EC2 box (provisioned by `../infra`). The GitHub Actions `a
 | `blsb-api.service` | systemd unit for the API (User=blsb, EnvironmentFile=/etc/blsb/env). |
 | `nginx-api.conf.template` | nginx site (HTTP form); `certbot --nginx` adds TLS on first run. |
 | `backup.sh` + `blsb-backup.{service,timer}` | Daily `pg_dump` → `age`-encrypt → `rclone` to a non-AWS store. |
+| `metrics.sh` + `blsb-metrics.{service,timer}` | 5-minute disk + TLS-expiry metrics → CloudWatch `BLSB/Ops` (feeds the alarms in `infra/alarms.tf`). |
 
 ## How a deploy flows
 1. `api` job (GitHub Actions): `tar` the backend + `deploy/` → `aws s3 cp` to the artifacts bucket →
