@@ -6,8 +6,16 @@ import { EmailService } from './email.service';
 // Mock the SES SDK so construction/send never touch AWS.
 const { sesSend } = vi.hoisted(() => ({ sesSend: vi.fn() }));
 vi.mock('@aws-sdk/client-sesv2', () => ({
-  SESv2Client: vi.fn(() => ({ send: sesSend })),
-  SendEmailCommand: vi.fn((input: unknown) => ({ __cmd: input })),
+  // A class, not `vi.fn(() => …)`: since Vitest 4, `new` on a spy with an arrow implementation throws.
+  SESv2Client: class {
+    send = sesSend;
+  },
+  SendEmailCommand: class {
+    __cmd: unknown;
+    constructor(input: unknown) {
+      this.__cmd = input;
+    }
+  },
 }));
 
 /** Minimal ConfigService stub returning the given env values. */
