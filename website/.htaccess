@@ -1,3 +1,6 @@
+# Older Apache builds lack the WebP MIME type.
+AddType image/webp .webp
+
 # ── Compression ─────────────────────────────────────────────────────────────
 # Brotli first (best ratio) if the module is available on the server…
 <IfModule mod_brotli.c>
@@ -25,6 +28,7 @@
   # Images / icons / fonts: long cache (rename the file if you change it).
   ExpiresByType image/jpeg               "access plus 1 year"
   ExpiresByType image/png                "access plus 1 year"
+  ExpiresByType image/webp               "access plus 1 year"
   ExpiresByType image/svg+xml            "access plus 1 year"
   ExpiresByType image/x-icon             "access plus 1 year"
   ExpiresByType font/woff2               "access plus 1 year"
